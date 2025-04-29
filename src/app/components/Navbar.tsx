@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
       {/* Desktop Links */}
       <div className="hidden md:flex flex-1 justify-center">
         <ul className="flex space-x-7">
-          {["Home", "Portfolio", "Resume Builder", "Contact"].map((item) => (
+          {["Home", "Portfolio", "Resume Builder", "Quiz Score", "Contact"].map((item) => (
             <li key={item}>
               <a
                 href={item === "Home" ? "/" : `/${item.toLowerCase().replace(' ', '-')}`}
