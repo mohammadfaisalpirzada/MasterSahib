@@ -11,23 +11,23 @@ export default function JudgesSheet() {
     { name: "Round 3 Mystery Picks", questions: 10 }
   ];
 
-  const [scores, setScores] = useState(
+  const [scores, setScores] = useState<number[][][]>(
     rounds.map(round => 
       Array.from({ length: round.questions }, () => [0, 0, 0, 0])
     )
   );
 
-  const updateScore = (roundIndex, questionIndex, teamIndex, value) => {
+  const updateScore = (roundIndex: number, questionIndex: number, teamIndex: number, value: number) => {
     const newScores = [...scores];
     newScores[roundIndex][questionIndex][teamIndex] = value;
     setScores(newScores);
   };
 
-  const calculateTotal = (roundIndex, teamIndex) => {
+  const calculateTotal = (roundIndex: number, teamIndex: number) => {
     return scores[roundIndex].reduce((sum, question) => sum + question[teamIndex], 0);
   };
 
-  const calculateFinalTotal = (teamIndex) => {
+  const calculateFinalTotal = (teamIndex: number) => {
     return rounds.reduce((sum, _, roundIndex) => sum + calculateTotal(roundIndex, teamIndex), 0);
   };
 
@@ -47,6 +47,8 @@ export default function JudgesSheet() {
                     key={index}
                     type="text"
                     value={name}
+                    aria-label={`Judge name ${index + 1}`}
+                    title={`Judge name ${index + 1}`}
                     onChange={(e) => {
                       const newJudges = [...judges];
                       newJudges[index] = e.target.value;
@@ -95,6 +97,8 @@ export default function JudgesSheet() {
                             type="number"
                             min="0"
                             value={scores[roundIndex][num-1][teamIndex]}
+                            aria-label={`${round.name} question ${num} score for ${teams[teamIndex]}`}
+                            title={`${round.name} question ${num} score for ${teams[teamIndex]}`}
                             onChange={(e) => updateScore(roundIndex, num-1, teamIndex, parseInt(e.target.value) || 0)}
                             className="w-full p-1 text-center border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                           />

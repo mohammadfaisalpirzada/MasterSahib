@@ -3,6 +3,12 @@ import React from 'react';
 import Image from 'next/image';
 
 const HomePage = () => {
+  const getDelayClass = (index: number) => {
+    if (index === 1) return 'animation-delay-300';
+    if (index === 2) return 'animation-delay-600';
+    return 'animation-delay-0';
+  };
+
   const blogPosts = [
     {
       title: "Getting Started with Web Development",
@@ -94,8 +100,7 @@ const HomePage = () => {
             {features.map((feature, index) => (
               <div 
                 key={feature.title}
-                className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 animate-slideUp"
-                style={{ animationDelay: `${index * 100}ms` }}
+                className={`bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 animate-slideUp ${getDelayClass(index)}`}
               >
                 <div className="text-indigo-600 mb-4">
                   {feature.icon}
@@ -119,8 +124,7 @@ const HomePage = () => {
              
 <article 
   key={post.title}
-  className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 animate-slideUp"
-  style={{ animationDelay: `${index * 100}ms` }}
+  className={`bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 animate-slideUp ${getDelayClass(index)}`}
   
 >
   

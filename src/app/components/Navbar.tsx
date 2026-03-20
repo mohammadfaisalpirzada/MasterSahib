@@ -22,7 +22,7 @@ const Navbar: React.FC = () => {
   return (
     <nav className="bg-indigo-600 text-white p-2 flex items-center justify-between text-xl">
       {/* Logo */}
-      <div className="text-3xl font-bold">Learnify</div>
+      <div className="text-3xl font-bold">MasterSahib</div>
 
       {/* Desktop Links */}
       <div className="hidden md:flex flex-1 justify-center">
@@ -54,7 +54,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu Icon */}
       <div className="md:hidden flex items-center" onClick={handleToggleMenu}>
-        <button className="text-white focus:outline-none">
+        <button className="text-white focus:outline-none" aria-label="Open navigation menu" title="Open navigation menu">
           <svg
             className="w-6 h-6"
             fill="none"
@@ -70,7 +70,7 @@ const Navbar: React.FC = () => {
       {/* Mobile Links */}
       {isMobileOpen && (
         <div className="md:hidden fixed inset-0 bg-gray-800 bg-opacity-95 flex flex-col items-center space-y-6 py-10 z-50">
-          {["Home", "Portfolio", "Resume Builder", "Contact"].map((item) => (
+          {["Home", "Peace Quiz", "Portfolio", "Resume Builder", "Contact"].map((item) => (
             <a
               key={item}
               href={item === "Home" ? "/" : `/${item.toLowerCase().replace(' ', '-')}`}
