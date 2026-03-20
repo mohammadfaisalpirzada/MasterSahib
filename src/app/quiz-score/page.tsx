@@ -74,7 +74,7 @@ export default function LiveScore() {
     });
   };
   // Score update
-  const updateScore = (id, change) => {
+  const updateScore = (id: number, change: number) => {
     const teamIndex = state.teams.findIndex(t => t.id === id);
     if (teamIndex === -1) return;
 
