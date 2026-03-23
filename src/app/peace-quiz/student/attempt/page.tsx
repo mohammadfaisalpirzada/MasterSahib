@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import PeaceQuizNavbar from '../../../components/PeaceQuizNavbar';
-import { getAuthStorageKey, parseAuthSession } from '../../../lib/auth';
+import { fetchAuthSession } from '../../../lib/auth';
 import { getQuizProgramName } from '../../../lib/quizBranding';
 
 type QuizApiResponse = {
@@ -145,24 +145,28 @@ export default function QuizAttemptPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const session = parseAuthSession(localStorage.getItem(getAuthStorageKey()));
-    setUsername(session?.username || 'Student');
-    setProgramName(session?.programName || getQuizProgramName());
+    const loadSessionAndConfig = async () => {
+      const session = await fetchAuthSession();
+      setUsername(session?.username || 'Student');
+      setProgramName(session?.programName || getQuizProgramName());
 
-    const rawConfig = localStorage.getItem(LAST_SESSION_KEY);
-    if (!rawConfig) {
-      setError('No practice setup found. Please configure Start Practice first.');
-      setLoading(false);
-      return;
-    }
+      const rawConfig = localStorage.getItem(LAST_SESSION_KEY);
+      if (!rawConfig) {
+        setError('No practice setup found. Please configure Start Practice first.');
+        setLoading(false);
+        return;
+      }
 
-    try {
-      const parsed = JSON.parse(rawConfig) as PracticeSessionConfig;
-      setConfig(parsed);
-    } catch {
-      setError('Invalid practice setup. Please open Start Practice again.');
-      setLoading(false);
-    }
+      try {
+        const parsed = JSON.parse(rawConfig) as PracticeSessionConfig;
+        setConfig(parsed);
+      } catch {
+        setError('Invalid practice setup. Please open Start Practice again.');
+        setLoading(false);
+      }
+    };
+
+    loadSessionAndConfig();
   }, []);
 
   useEffect(() => {

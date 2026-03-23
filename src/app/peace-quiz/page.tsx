@@ -3,8 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getAuthStorageKey, parseAuthSession, Role } from '../lib/auth';
-import { getQuizCredentialsForProgram } from '../lib/quizAccounts';
+import { fetchAuthSession, roleRouteMap, Role } from '../lib/auth';
 import {
   DEFAULT_QUIZ_PROGRAM_NAME,
   QUIZ_PROGRAM_NAME_KEY,
@@ -12,12 +11,6 @@ import {
   getQuizProgramName,
   setQuizProgramName,
 } from '../lib/quizBranding';
-
-const roleRouteMap: Record<Role, string> = {
-  admin: '/admin',
-  teacher: '/teacher',
-  student: '/peace-quiz/student',
-};
 
 export default function PeaceQuizLoginPage() {
   const router = useRouter();
@@ -44,21 +37,26 @@ export default function PeaceQuizLoginPage() {
     syncProgramName();
     window.addEventListener(QUIZ_PROGRAM_NAME_UPDATED_EVENT, syncProgramName);
 
-    const session = parseAuthSession(localStorage.getItem(getAuthStorageKey()));
-    if (!session) {
-      return () => {
-        window.removeEventListener(QUIZ_PROGRAM_NAME_UPDATED_EVENT, syncProgramName);
-      };
-    }
+    let timeout: ReturnType<typeof setTimeout> | undefined;
 
-    setRedirectingRole(session.role);
+    const checkSession = async () => {
+      const session = await fetchAuthSession();
+      if (!session) {
+        return;
+      }
 
-    const timeout = setTimeout(() => {
-      router.push(roleRouteMap[session.role]);
-    }, 1400);
+      setRedirectingRole(session.role);
+      timeout = setTimeout(() => {
+        router.push(roleRouteMap[session.role]);
+      }, 900);
+    };
+
+    checkSession();
 
     return () => {
-      clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
       window.removeEventListener(QUIZ_PROGRAM_NAME_UPDATED_EVENT, syncProgramName);
     };
   }, [router]);
@@ -71,8 +69,6 @@ export default function PeaceQuizLoginPage() {
     return redirectingRole.charAt(0).toUpperCase() + redirectingRole.slice(1);
   }, [redirectingRole]);
 
-  const programCredentials = useMemo(() => getQuizCredentialsForProgram(programName), [programName]);
-
   const selectRoleAndOpenLogin = (nextRole: Role) => {
     setRole(nextRole);
     setShowLoginPanel(true);
@@ -82,7 +78,7 @@ export default function PeaceQuizLoginPage() {
     }, 50);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
 
@@ -91,35 +87,34 @@ export default function PeaceQuizLoginPage() {
       return;
     }
 
-    if (!programCredentials) {
-      setError(`No login setup found for ${programName}. Add it in src/app/lib/quizAccounts.ts.`);
-      return;
-    }
-
-    const selectedRoleCredential = programCredentials[role];
-    if (
-      username.trim() !== selectedRoleCredential.username ||
-      password !== selectedRoleCredential.password
-    ) {
-      setError('Invalid username or password for the selected role.');
-      return;
-    }
-
     setIsSubmitting(true);
 
-    // Simulate successful login, then redirect by selected role.
-    setTimeout(() => {
-      localStorage.setItem(
-        getAuthStorageKey(),
-        JSON.stringify({
-          role,
-          source: 'peace-quiz',
+    try {
+      const response = await fetch('/api/peace-quiz/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           username: username.trim(),
+          password,
+          role,
           programName,
-        })
-      );
+        }),
+      });
+
+      const payload = (await response.json()) as { success: boolean; message?: string };
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || 'Login failed.');
+      }
+
       router.push(roleRouteMap[role]);
-    }, 450);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Login failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleProgramNameSave = () => {
@@ -275,11 +270,9 @@ export default function PeaceQuizLoginPage() {
                   You are signing in to <span className="font-semibold text-slate-800">{programName}</span> Quiz Program.
                 </p>
 
-                {!programCredentials ? (
-                  <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
-                    No login setup found for this school. Add credentials in `src/app/lib/quizAccounts.ts`.
-                  </div>
-                ) : null}
+                <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3 text-sm text-indigo-700">
+                  Login is validated securely on server with HttpOnly session cookie.
+                </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <p className="rounded-lg border border-indigo-100 bg-indigo-50 p-2 text-xs text-indigo-700">
@@ -312,13 +305,6 @@ export default function PeaceQuizLoginPage() {
                       placeholder="Enter your password"
                       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                     />
-                  </div>
-
-                  <div className="rounded-lg bg-slate-100 p-3 text-sm text-slate-700">
-                    <p className="font-semibold">Configured credentials for {programName}:</p>
-                    <p>Admin: {programCredentials?.admin.username || '-'} / {programCredentials?.admin.password || '-'}</p>
-                    <p>Teacher: {programCredentials?.teacher.username || '-'} / {programCredentials?.teacher.password || '-'}</p>
-                    <p>Student: {programCredentials?.student.username || '-'} / {programCredentials?.student.password || '-'}</p>
                   </div>
 
                   {error ? <p className="text-sm text-red-600">{error}</p> : null}

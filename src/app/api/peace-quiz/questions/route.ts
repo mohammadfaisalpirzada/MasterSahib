@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import {
   appendQuizRowToSheet,
   getFirstColumnValuesFromTab,
@@ -6,6 +7,7 @@ import {
   getQuizSheetTabs,
 } from '@/app/lib/googleSheets';
 import { getQuizSheetConfigForProgram } from '@/app/lib/quizSheets';
+import { AUTH_SESSION_COOKIE, verifySessionToken } from '@/lib/session';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -222,11 +224,19 @@ const getProgressSummary = (records: ProgressRecord[]) => {
 
 export async function GET(request: Request) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
+    const session = token ? await verifySessionToken(token) : null;
+
+    if (!session) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
     const url = new URL(request.url);
-    const programName = url.searchParams.get('programName') || '';
+    const programName = session.programName || '';
     const mode = (url.searchParams.get('mode') || 'questions').toLowerCase();
     const classLevel = url.searchParams.get('classLevel') || '';
-    const username = url.searchParams.get('username') || '';
+    const username = session.username || '';
 
     const sheetConfig = getQuizSheetConfigForProgram(programName);
 
@@ -344,9 +354,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
+    const session = token ? await verifySessionToken(token) : null;
+
+    if (!session) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = (await request.json()) as {
-      programName?: string;
-      username?: string;
       classLevel?: string;
       subject?: string;
       difficulty?: string;
@@ -359,8 +375,8 @@ export async function POST(request: Request) {
       status?: string;
     };
 
-    const programName = body.programName || '';
-    const username = (body.username || '').trim();
+    const programName = session.programName || '';
+    const username = (session.username || '').trim();
     if (!username) {
       throw new Error('username is required for saving progress.');
     }

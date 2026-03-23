@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { parseAuthSession, getAuthStorageKey } from '../../lib/auth';
+import { fetchAuthSession } from '../../lib/auth';
 import {
   DEFAULT_QUIZ_PROGRAM_NAME,
   QUIZ_PROGRAM_NAME_UPDATED_EVENT,
@@ -47,7 +47,7 @@ export default function StudentDashboardOverview() {
 
   useEffect(() => {
     const syncDashboardIdentity = async () => {
-      const session = parseAuthSession(localStorage.getItem(getAuthStorageKey()));
+      const session = await fetchAuthSession();
       const user = session?.username || 'Student';
       const program = session?.programName || getQuizProgramName();
 

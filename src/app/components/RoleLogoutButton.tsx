@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { getAuthStorageKey } from '../lib/auth';
 
 type RoleLogoutButtonProps = {
   redirectTo?: string;
@@ -14,8 +13,11 @@ export default function RoleLogoutButton({
 }: RoleLogoutButtonProps) {
   const router = useRouter();
 
-  const handleLogout = () => {
-    localStorage.removeItem(getAuthStorageKey());
+  const handleLogout = async () => {
+    await fetch('/api/peace-quiz/auth/logout', {
+      method: 'POST',
+      cache: 'no-store',
+    });
     router.push(redirectTo);
   };
 

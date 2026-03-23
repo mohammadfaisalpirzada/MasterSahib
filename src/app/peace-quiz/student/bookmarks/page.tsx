@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import PeaceQuizNavbar from '../../../components/PeaceQuizNavbar';
-import { getAuthStorageKey, parseAuthSession } from '../../../lib/auth';
+import { fetchAuthSession } from '../../../lib/auth';
 import { getQuizProgramName } from '../../../lib/quizBranding';
 
 const BOOKMARKS_KEY_PREFIX = 'mastersahib_bookmarks';
@@ -30,21 +30,25 @@ export default function BookmarksPage() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const session = parseAuthSession(localStorage.getItem(getAuthStorageKey()));
-    const uname = session?.username || 'Student';
-    const pname = session?.programName || getQuizProgramName();
-    setUsername(uname);
-    setProgramName(pname);
+    const load = async () => {
+      const session = await fetchAuthSession();
+      const uname = session?.username || 'Student';
+      const pname = session?.programName || getQuizProgramName();
+      setUsername(uname);
+      setProgramName(pname);
 
-    try {
-      const raw = localStorage.getItem(`${BOOKMARKS_KEY_PREFIX}_${pname}_${uname}`);
-      if (raw) {
-        const parsed = JSON.parse(raw) as BookmarkedQuestion[];
-        setBookmarks(parsed.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()));
+      try {
+        const raw = localStorage.getItem(`${BOOKMARKS_KEY_PREFIX}_${pname}_${uname}`);
+        if (raw) {
+          const parsed = JSON.parse(raw) as BookmarkedQuestion[];
+          setBookmarks(parsed.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()));
+        }
+      } catch {
+        setBookmarks([]);
       }
-    } catch {
-      setBookmarks([]);
-    }
+    };
+
+    load();
   }, []);
 
   const removeBookmark = (id: string) => {

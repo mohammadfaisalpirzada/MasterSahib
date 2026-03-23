@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import PeaceQuizNavbar from '../../../components/PeaceQuizNavbar';
-import { getAuthStorageKey, parseAuthSession } from '../../../lib/auth';
+import { fetchAuthSession } from '../../../lib/auth';
 import { getQuizProgramName } from '../../../lib/quizBranding';
 
 const LAST_SESSION_KEY = 'mastersahib_last_practice_session';
@@ -98,14 +98,14 @@ export default function HistoryPage() {
   const [dateFilter, setDateFilter] = useState('All');
 
   useEffect(() => {
-    const session = parseAuthSession(localStorage.getItem(getAuthStorageKey()));
-    const uname = session?.username || 'Student';
-    const pname = session?.programName || getQuizProgramName();
-    setUsername(uname);
-    setProgramName(pname);
-
     const load = async () => {
       try {
+        const session = await fetchAuthSession();
+        const uname = session?.username || 'Student';
+        const pname = session?.programName || getQuizProgramName();
+        setUsername(uname);
+        setProgramName(pname);
+
         const params = new URLSearchParams({ programName: pname, mode: 'student-history', username: uname });
         const res = await fetch(`/api/peace-quiz/questions?${params.toString()}`, { cache: 'no-store' });
         const data = (await res.json()) as ApiResponse;

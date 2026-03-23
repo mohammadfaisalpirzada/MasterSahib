@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import PeaceQuizNavbar from '../../../components/PeaceQuizNavbar';
-import { getAuthStorageKey, parseAuthSession } from '../../../lib/auth';
+import { fetchAuthSession } from '../../../lib/auth';
 import { getQuizProgramName } from '../../../lib/quizBranding';
 
 type QuizApiResponse = {
@@ -53,12 +53,16 @@ export default function StartPracticePage() {
   const [mode, setMode] = useState<'Practice' | 'Timed'>('Practice');
 
   useEffect(() => {
-    const session = parseAuthSession(localStorage.getItem(getAuthStorageKey()));
-    setUsername(session?.username || 'Student');
-    setProgramName(session?.programName || getQuizProgramName());
+    const loadSession = async () => {
+      const session = await fetchAuthSession();
+      setUsername(session?.username || 'Student');
+      setProgramName(session?.programName || getQuizProgramName());
 
-    const savedSession = localStorage.getItem(LAST_SESSION_KEY);
-    setHasSavedSession(Boolean(savedSession));
+      const savedSession = localStorage.getItem(LAST_SESSION_KEY);
+      setHasSavedSession(Boolean(savedSession));
+    };
+
+    loadSession();
   }, []);
 
   useEffect(() => {
