@@ -25,7 +25,7 @@ export default function AppShell({ children }: AppShellProps) {
           aria-label="Back to global website"
         >
           <HiArrowLeft className="h-4 w-4" />
-          Back to MasterSahib
+          Back to TheMasterSahib
         </Link>
       ) : null}
     </>

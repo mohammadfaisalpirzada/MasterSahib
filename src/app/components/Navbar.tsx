@@ -43,13 +43,13 @@ const Navbar: React.FC = () => {
         >
           <Image
             src="/images/main_logo.png"
-            alt="Master Sahib Logo"
+            alt="TheMasterSahib Logo"
             width={48}
             height={48}
             className="h-10 w-10 rounded-full border border-white/30 object-cover sm:h-11 sm:w-11"
           />
           <div className="min-w-0">
-            <p className="truncate text-base font-extrabold leading-tight sm:text-xl">MasterSahib</p>
+            <p className="truncate text-base font-extrabold leading-tight sm:text-xl">TheMasterSahib</p>
             <p className="hidden truncate text-xs text-indigo-100 sm:block">Learn. Build. Grow.</p>
           </div>
         </Link>
@@ -124,7 +124,7 @@ const Navbar: React.FC = () => {
               ))}
             </ul>
 
-            <div className="mt-auto pb-8 text-sm text-indigo-100">MasterSahib | Responsive Learning Platform</div>
+            <div className="mt-auto pb-8 text-sm text-indigo-100">themastersahib.com | Responsive Learning Platform</div>
           </div>
         </div>
       ) : null}
