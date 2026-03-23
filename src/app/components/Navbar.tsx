@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const Navbar: React.FC = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -22,12 +23,14 @@ const Navbar: React.FC = () => {
   return (
     <nav className="bg-indigo-600 text-white p-2 flex items-center justify-between text-xl">
       {/* Logo */}
-      <div className="text-3xl font-bold">MasterSahib</div>
+      <Link href="/" className="text-3xl font-bold hover:text-gray-300" aria-label="Go to home page">
+        MasterSahib
+      </Link>
 
       {/* Desktop Links */}
       <div className="hidden md:flex flex-1 justify-center">
         <ul className="flex space-x-7">
-          {["Home", "Portfolio", "Resume Builder", "Quiz Score", "Contact"].map((item) => (
+          {["Home", "Peace Quiz", "Portfolio", "Resume Builder", "Contact"].map((item) => (
             <li key={item}>
               <a
                 href={item === "Home" ? "/" : `/${item.toLowerCase().replace(' ', '-')}`}
