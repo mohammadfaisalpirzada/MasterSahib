@@ -1,9 +1,16 @@
 'use client';
 import { useState } from 'react';
+import { useEffect } from 'react';
+import {
+  DEFAULT_QUIZ_PROGRAM_NAME,
+  QUIZ_PROGRAM_NAME_UPDATED_EVENT,
+  getQuizProgramName,
+} from '../../lib/quizBranding';
 
 export default function JudgesSheet() {
   const [date] = useState("30-05-2025");
   const [judges, setJudges] = useState(["", "", "", ""]);
+  const [programName, setProgramName] = useState(DEFAULT_QUIZ_PROGRAM_NAME);
   const teams = ["Hazrat Zainab", "Hazrat Ayesha", "Hazrat Asia", "Hazrat Memoona"];
   const rounds = [
     { name: "Round 1 Mind Over Matter", questions: 20 },
@@ -31,11 +38,21 @@ export default function JudgesSheet() {
     return rounds.reduce((sum, _, roundIndex) => sum + calculateTotal(roundIndex, teamIndex), 0);
   };
 
+  useEffect(() => {
+    const syncProgramName = () => setProgramName(getQuizProgramName());
+    syncProgramName();
+
+    window.addEventListener(QUIZ_PROGRAM_NAME_UPDATED_EVENT, syncProgramName);
+    return () => {
+      window.removeEventListener(QUIZ_PROGRAM_NAME_UPDATED_EVENT, syncProgramName);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 print:p-0">
       <div className="max-w-6xl mx-auto bg-white p-6 shadow-md print:shadow-none">
         <header className="text-center mb-8">
-          <h1 className="text-3xl font-bold">Peace International School</h1>
+          <h1 className="text-3xl font-bold">{programName} International School</h1>
           <h2 className="text-2xl font-semibold my-4">Judges Sheet for Quiz Competition 2025</h2>
           <div className="flex justify-between items-center mb-6">
             <div className="text-lg">Date: {date}</div>

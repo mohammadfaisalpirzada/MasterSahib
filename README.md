@@ -1,5 +1,39 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Google Sheet Credentials (Peace Quiz)
+
+Use environment variables for service account credentials. Do not put private keys in code files.
+
+1. Copy `.env.example` to `.env.local`.
+2. Set these values in `.env.local`:
+	- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+	- `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
+	- `GOOGLE_QUIZ_SPREADSHEET_ID`
+	- `GOOGLE_QUIZ_SHEET_RANGE` (optional, default: `Sheet1!A:Z`)
+3. For Vercel deployment, add the same variables in Project Settings -> Environment Variables.
+
+Helper file for sheet access:
+
+- `src/app/lib/googleSheets.ts`
+
+It exports:
+
+- `getGoogleSheetsClient()`
+- `getQuizRowsFromSheet()`
+
+## Peace Quiz API Endpoint
+
+After setting env variables, use this endpoint:
+
+- `GET /api/peace-quiz/questions`
+
+Response format:
+
+- `success`: boolean
+- `totalRows`: number
+- `headers`: string[]
+- `items`: object[]
+
 ## Getting Started
 
 First, run the development server:

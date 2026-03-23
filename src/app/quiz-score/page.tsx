@@ -1,8 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  DEFAULT_QUIZ_PROGRAM_NAME,
+  QUIZ_PROGRAM_NAME_UPDATED_EVENT,
+  getQuizProgramName,
+} from '../lib/quizBranding';
 
 export default function LiveScore() {
+  const [programName, setProgramName] = useState(DEFAULT_QUIZ_PROGRAM_NAME);
+
   // Team configurations
   const teamConfig = {
     girls: [
@@ -40,6 +47,9 @@ export default function LiveScore() {
 
   // Hide navigation when component mounts
   useEffect(() => {
+    const syncProgramName = () => setProgramName(getQuizProgramName());
+    syncProgramName();
+
     const nav = document.querySelector('nav');
     if (nav) nav.style.display = 'none';
 
@@ -51,10 +61,12 @@ export default function LiveScore() {
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener(QUIZ_PROGRAM_NAME_UPDATED_EVENT, syncProgramName);
     
     return () => {
       if (nav) nav.style.display = 'block';
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener(QUIZ_PROGRAM_NAME_UPDATED_EVENT, syncProgramName);
     };
   }, []);
 
@@ -139,7 +151,7 @@ export default function LiveScore() {
     <div className="min-h-screen bg-gray-100 p-4">
       {/* Header - Centered */}
       <header className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">Peace International School</h1>
+        <h1 className="text-3xl font-bold mb-2">{programName} International School</h1>
         <div className="bg-gradient-to-r from-red-500 via-blue-500 to-green-500 p-2 rounded-lg mx-auto max-w-md">
           <h2 className="text-2xl font-bold text-white">Quiz Live Score</h2>
         </div>
