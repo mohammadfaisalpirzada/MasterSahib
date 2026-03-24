@@ -185,8 +185,8 @@ export default function PeaceQuizLoginPage() {
             </div>
 
             <div className="mt-4 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-slate-700">
-              <p className="font-semibold text-slate-900">Where to set school logins</p>
-              <p className="mt-1">Edit `src/app/lib/quizAccounts.ts` and add your school name with role-based credentials.</p>
+              <p className="font-semibold text-slate-900">School Login Support</p>
+              <p className="mt-1">If your school login is not working, please contact your institute admin for account activation.</p>
             </div>
 
             {isProgramNameSaved ? (

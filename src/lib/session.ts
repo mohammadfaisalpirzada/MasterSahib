@@ -15,17 +15,23 @@ const SESSION_TTL_SECONDS = 60 * 60 * 8;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
+const SESSION_SECRET_ENV_KEYS = ['AUTH_SESSION_SECRET', 'AUTH_SECRET', 'NEXTAUTH_SECRET'] as const;
+
 const getSessionSecret = () => {
-  const envSecret = process.env.AUTH_SESSION_SECRET?.trim();
-  if (envSecret) {
-    return envSecret;
+  for (const key of SESSION_SECRET_ENV_KEYS) {
+    const envSecret = process.env[key]?.trim();
+    if (envSecret) {
+      return envSecret;
+    }
   }
 
   if (process.env.NODE_ENV !== 'production') {
     return 'dev-only-session-secret-change-me';
   }
 
-  throw new Error('Missing AUTH_SESSION_SECRET environment variable.');
+  throw new Error(
+    'Missing session secret environment variable. Set AUTH_SESSION_SECRET (or AUTH_SECRET / NEXTAUTH_SECRET).'
+  );
 };
 
 const toBase64Url = (bytes: Uint8Array) => {
@@ -96,39 +102,43 @@ export const createSessionToken = async (params: {
 };
 
 export const verifySessionToken = async (token: string): Promise<SessionPayload | null> => {
-  const [payloadPart, signaturePart] = token.split('.');
-  if (!payloadPart || !signaturePart) {
+  try {
+    const [payloadPart, signaturePart] = token.split('.');
+    if (!payloadPart || !signaturePart) {
+      return null;
+    }
+
+    const expectedSignature = await signValue(payloadPart, getSessionSecret());
+    if (signaturePart !== expectedSignature) {
+      return null;
+    }
+
+    const payloadJson = decoder.decode(fromBase64Url(payloadPart));
+    const payload = safeJsonParse<SessionPayload>(payloadJson);
+
+    if (!payload) {
+      return null;
+    }
+
+    if (!payload.username || !payload.programName) {
+      return null;
+    }
+
+    if (!['admin', 'teacher', 'student'].includes(payload.role)) {
+      return null;
+    }
+
+    if (payload.source !== 'peace-quiz') {
+      return null;
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp <= now) {
+      return null;
+    }
+
+    return payload;
+  } catch {
     return null;
   }
-
-  const expectedSignature = await signValue(payloadPart, getSessionSecret());
-  if (signaturePart !== expectedSignature) {
-    return null;
-  }
-
-  const payloadJson = decoder.decode(fromBase64Url(payloadPart));
-  const payload = safeJsonParse<SessionPayload>(payloadJson);
-
-  if (!payload) {
-    return null;
-  }
-
-  if (!payload.username || !payload.programName) {
-    return null;
-  }
-
-  if (!['admin', 'teacher', 'student'].includes(payload.role)) {
-    return null;
-  }
-
-  if (payload.source !== 'peace-quiz') {
-    return null;
-  }
-
-  const now = Math.floor(Date.now() / 1000);
-  if (payload.exp <= now) {
-    return null;
-  }
-
-  return payload;
 };

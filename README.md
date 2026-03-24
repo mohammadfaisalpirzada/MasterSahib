@@ -6,6 +6,7 @@ Use environment variables for service account credentials. Do not put private ke
 
 1. Copy `.env.example` to `.env.local`.
 2. Set these values in `.env.local`:
+	- `AUTH_SESSION_SECRET` (required for auth cookie signing)
 	- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
 	- `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
 	- `GOOGLE_QUIZ_SPREADSHEET_ID`
