@@ -148,7 +148,7 @@ const getSheetConfig = (programName?: string) => {
   const config = getQuizSheetConfigForProgram(programName || DEFAULT_PROGRAM_NAME);
 
   if (!config && !process.env.GOOGLE_QUIZ_SPREADSHEET_ID) {
-    throw new Error('Missing spreadsheet mapping for teachers data. Configure quizSheets.ts or GOOGLE_QUIZ_SPREADSHEET_ID.');
+    throw new Error('Missing teachers spreadsheet mapping. Configure quizSheets.ts or GOOGLE_QUIZ_SPREADSHEET_ID.');
   }
 
   return config;

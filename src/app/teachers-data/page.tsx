@@ -60,34 +60,62 @@ export default function StaffRecordPage() {
   const [message, setMessage] = useState('');
   const [editMessage, setEditMessage] = useState('');
   const [formData, setFormData] = useState<Partial<StaffRecord>>({});
+  const [saveToastVisible, setSaveToastVisible] = useState(false);
+  const [saveToastText, setSaveToastText] = useState('');
+  const [saveToastTone, setSaveToastTone] = useState<'success' | 'error'>('success');
+
+  const showSaveToast = (text: string, tone: 'success' | 'error' = 'success') => {
+    setSaveToastText(text);
+    setSaveToastTone(tone);
+    setSaveToastVisible(true);
+  };
 
   useEffect(() => {
-    const loadStaffData = async () => {
-      try {
+    if (!saveToastVisible) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setSaveToastVisible(false);
+    }, 2200);
+
+    return () => window.clearTimeout(timer);
+  }, [saveToastVisible, saveToastText]);
+
+  const loadStaffData = async ({ silent = false }: { silent?: boolean } = {}) => {
+    try {
+      if (!silent) {
         setLoading(true);
-        setLoadError('');
+      }
 
-        const response = await fetch('/api/staff-records', { cache: 'no-store' });
-        const data = (await response.json()) as StaffApiResponse;
+      setLoadError('');
 
-        if (!response.ok || !data.success) {
-          throw new Error(data.message || 'Unable to load teachers data.');
-        }
+      const response = await fetch('/api/staff-records', { cache: 'no-store' });
+      const data = (await response.json()) as StaffApiResponse;
 
-        const items = (data.items || []).map((item) => ({
-          ...item,
-          contactNo: sanitizePhone(item.contactNo || ''),
-        }));
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Unable to load teachers data.');
+      }
 
-        setStaffData(items);
-      } catch (error) {
-        setLoadError(error instanceof Error ? error.message : 'Unable to load teachers data.');
-      } finally {
+      const items = (data.items || []).map((item) => ({
+        ...item,
+        contactNo: sanitizePhone(item.contactNo || ''),
+      }));
+
+      setStaffData(items);
+      return items;
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Unable to load teachers data.');
+      return [] as StaffRecord[];
+    } finally {
+      if (!silent) {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    loadStaffData();
+  useEffect(() => {
+    void loadStaffData();
   }, []);
 
   const sortedNames = useMemo(
@@ -127,6 +155,15 @@ export default function StaffRecordPage() {
     setMessage('Record verified successfully.');
   };
 
+  const handleVerifyPidKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+
+    event.preventDefault();
+    handleVerify();
+  };
+
   const handleEnableEdit = () => {
     if (!verifiedRecord) {
       setEditMessage('Please verify your record first.');
@@ -142,6 +179,15 @@ export default function StaffRecordPage() {
     setEditAccessPid(editPidInput.trim());
     setEditMode(true);
     setEditMessage('Edit mode enabled.');
+  };
+
+  const handleEditPidKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+
+    event.preventDefault();
+    handleEnableEdit();
   };
 
   const handleFieldChange = (key: keyof StaffRecord, value: string) => {
@@ -181,24 +227,22 @@ export default function StaffRecordPage() {
         throw new Error(data.message || 'Unable to save changes in sheet.');
       }
 
-      setStaffData((prev) =>
-        prev.map((item) =>
-          item.sno === data.item?.sno
-            ? {
-                ...item,
-                ...data.item,
-                contactNo: sanitizePhone(data.item.contactNo || ''),
-              }
-            : item
-        )
-      );
-      setFormData(data.item);
+      const refreshedItems = await loadStaffData({ silent: true });
+      const refreshedRecord = refreshedItems.find((item) => item.sno === verifiedRecord.sno) || data.item;
+
+      setFormData(refreshedRecord);
+      setSelectedName(refreshedRecord.name);
+      setVerifiedRecordId(refreshedRecord.sno);
+      setMessage('Record verified successfully.');
       setEditMode(false);
       setEditPidInput('');
       setEditAccessPid('');
-      setEditMessage('Changes saved to TeachersData sheet successfully.');
+      setEditMessage('');
+      showSaveToast('Data saved', 'success');
     } catch (error) {
-      setEditMessage(error instanceof Error ? error.message : 'Unable to save changes in sheet.');
+      const errorMessage = error instanceof Error ? error.message : 'Unable to save changes in sheet.';
+      setEditMessage(errorMessage);
+      showSaveToast(errorMessage, 'error');
     } finally {
       setSaving(false);
     }
@@ -214,6 +258,21 @@ export default function StaffRecordPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 px-3 py-4 text-slate-900 sm:px-4 sm:py-6 lg:px-6 lg:py-10">
+      <div
+        className={`pointer-events-none fixed right-4 top-4 z-50 transition-all duration-500 ease-out ${
+          saveToastVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
+        }`}
+        aria-live="polite"
+      >
+        <div
+          className={`rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-lg ${
+            saveToastTone === 'success' ? 'bg-emerald-600' : 'bg-rose-600'
+          }`}
+        >
+          {saveToastText}
+        </div>
+      </div>
+
       <div className="mx-auto max-w-5xl space-y-4 sm:space-y-6 lg:space-y-8">
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6 md:p-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -277,6 +336,7 @@ export default function StaffRecordPage() {
                     inputMode="numeric"
                     value={pidInput}
                     onChange={(e) => setPidInput(e.target.value)}
+                    onKeyDown={handleVerifyPidKeyDown}
                     placeholder="Enter your PID"
                     className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                   />
@@ -367,6 +427,7 @@ export default function StaffRecordPage() {
                           inputMode="numeric"
                           value={editPidInput}
                           onChange={(e) => setEditPidInput(e.target.value)}
+                          onKeyDown={handleEditPidKeyDown}
                           placeholder="Re-enter PID to edit"
                           className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                         />
