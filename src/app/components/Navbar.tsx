@@ -8,6 +8,7 @@ import { HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
 const navItems = [
   { label: 'Home', href: '/' },
   { label: 'Quiz Program', href: '/peace-quiz' },
+  { label: 'Teachers Data', href: '/teachers-data' },
   { label: 'Portfolio', href: '/portfolio' },
   { label: 'Resume Builder', href: '/resume-builder' },
   { label: 'Contact', href: '/contact' },

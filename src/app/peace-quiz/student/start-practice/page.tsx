@@ -26,9 +26,11 @@ type PracticeSessionConfig = {
   mode: 'Practice' | 'Timed';
   programName: string;
   updatedAt: string;
+  attemptId: string;
 };
 
 const LAST_SESSION_KEY = 'mastersahib_last_practice_session';
+const createAttemptId = () => `attempt_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
 const difficultyOptions = ['Easy', 'Medium', 'Hard'] as const;
 const questionCountOptions = ['10', '20', '50', 'custom'];
@@ -153,13 +155,19 @@ export default function StartPracticePage() {
 
     try {
       const parsed = JSON.parse(rawSession) as PracticeSessionConfig;
-      setClassLevel(parsed.classLevel);
-      setSubject(parsed.subject);
-      setDifficulty(parsed.difficulty);
-      setQuestionCount(parsed.questionCount);
-      setCustomQuestionCount(parsed.customQuestionCount);
-      setMode(parsed.mode);
-      setStatusMessage(`Last session restored from ${new Date(parsed.updatedAt).toLocaleString()}.`);
+      const normalizedSession: PracticeSessionConfig = {
+        ...parsed,
+        attemptId: parsed.attemptId || createAttemptId(),
+      };
+      localStorage.setItem(LAST_SESSION_KEY, JSON.stringify(normalizedSession));
+      setClassLevel(normalizedSession.classLevel);
+      setSubject(normalizedSession.subject);
+      setDifficulty(normalizedSession.difficulty);
+      setQuestionCount(normalizedSession.questionCount);
+      setCustomQuestionCount(normalizedSession.customQuestionCount);
+      setMode(normalizedSession.mode);
+      setStatusMessage(`Last session resumed from ${new Date(normalizedSession.updatedAt).toLocaleString()}.`);
+      router.push('/peace-quiz/student/attempt');
     } catch {
       setStatusMessage('Could not restore last session.');
     }
@@ -190,6 +198,7 @@ export default function StartPracticePage() {
       mode,
       programName,
       updatedAt: new Date().toISOString(),
+      attemptId: createAttemptId(),
     };
 
     localStorage.setItem(LAST_SESSION_KEY, JSON.stringify(sessionPayload));

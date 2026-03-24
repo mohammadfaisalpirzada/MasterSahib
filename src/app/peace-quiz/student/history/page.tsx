@@ -40,7 +40,10 @@ type PracticeSessionConfig = {
   mode: string;
   programName: string;
   updatedAt: string;
+  attemptId: string;
 };
+
+const createAttemptId = () => `attempt_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
 const toNum = (v: string) => Number(v || 0) || 0;
 
@@ -152,6 +155,7 @@ export default function HistoryPage() {
       mode: 'Practice',
       programName: record.program_name || programName,
       updatedAt: new Date().toISOString(),
+      attemptId: createAttemptId(),
     };
     localStorage.setItem(LAST_SESSION_KEY, JSON.stringify(config));
     router.push('/peace-quiz/student/attempt');

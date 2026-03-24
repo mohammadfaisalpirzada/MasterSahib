@@ -129,6 +129,12 @@ type QuizSheetAppendOptions = {
   values: string[];
 };
 
+type QuizSheetUpdateOptions = {
+  spreadsheetId?: string;
+  range: string;
+  values: string[];
+};
+
 export const appendQuizRowToSheet = async (options: QuizSheetAppendOptions) => {
   const spreadsheetId = resolveSpreadsheetId(options.spreadsheetId);
   const sheets = getGoogleSheetsClient();
@@ -138,6 +144,20 @@ export const appendQuizRowToSheet = async (options: QuizSheetAppendOptions) => {
     range: options.range,
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
+    requestBody: {
+      values: [options.values],
+    },
+  });
+};
+
+export const updateQuizRowInSheet = async (options: QuizSheetUpdateOptions) => {
+  const spreadsheetId = resolveSpreadsheetId(options.spreadsheetId);
+  const sheets = getGoogleSheetsClient();
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: options.range,
+    valueInputOption: 'USER_ENTERED',
     requestBody: {
       values: [options.values],
     },

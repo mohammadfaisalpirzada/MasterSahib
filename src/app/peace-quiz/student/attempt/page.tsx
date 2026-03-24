@@ -23,6 +23,7 @@ type PracticeSessionConfig = {
   mode: 'Practice' | 'Timed';
   programName: string;
   updatedAt: string;
+  attemptId: string;
 };
 
 type AttemptQuestion = {
@@ -39,6 +40,7 @@ type SavedAttemptState = {
   currentIndex: number;
   timerEnabled: boolean;
   elapsedSeconds: number;
+  questions: AttemptQuestion[];
 };
 
 const LAST_SESSION_KEY = 'mastersahib_last_practice_session';
@@ -127,6 +129,38 @@ const formatTime = (totalSeconds: number) => {
   return `${minutes}:${seconds}`;
 };
 
+const createAttemptId = () => `attempt_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+const normalizePracticeSessionConfig = (config: PracticeSessionConfig): PracticeSessionConfig => ({
+  ...config,
+  attemptId: config.attemptId?.trim() || createAttemptId(),
+});
+
+const buildQuestionFingerprint = (question: AttemptQuestion) => {
+  return [question.text.trim().toLowerCase(), question.subject.trim().toLowerCase(), ...question.options.map((option) => option.trim().toLowerCase())].join('||');
+};
+
+const getUniqueQuestions = (items: AttemptQuestion[]) => {
+  const seen = new Set<string>();
+  return items.filter((question) => {
+    const fingerprint = buildQuestionFingerprint(question);
+    if (seen.has(fingerprint)) {
+      return false;
+    }
+    seen.add(fingerprint);
+    return true;
+  });
+};
+
+const shuffleQuestions = (items: AttemptQuestion[]) => {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+  }
+  return shuffled;
+};
+
 export default function QuizAttemptPage() {
   const [username, setUsername] = useState('Student');
   const [programName, setProgramName] = useState('');
@@ -159,7 +193,9 @@ export default function QuizAttemptPage() {
 
       try {
         const parsed = JSON.parse(rawConfig) as PracticeSessionConfig;
-        setConfig(parsed);
+        const normalizedConfig = normalizePracticeSessionConfig(parsed);
+        localStorage.setItem(LAST_SESSION_KEY, JSON.stringify(normalizedConfig));
+        setConfig(normalizedConfig);
       } catch {
         setError('Invalid practice setup. Please open Start Practice again.');
         setLoading(false);
@@ -207,34 +243,43 @@ export default function QuizAttemptPage() {
         });
 
         const finalPool = filteredByDifficulty.length ? filteredByDifficulty : filteredBySubject.length ? filteredBySubject : parsedQuestions;
+        const uniqueQuestionPool = getUniqueQuestions(finalPool);
 
         const requestedCount = Math.max(
           1,
           Number(config.questionCount === 'custom' ? config.customQuestionCount : config.questionCount) || 10
         );
 
-        const selected = finalPool.slice(0, requestedCount);
+        const selected = shuffleQuestions(uniqueQuestionPool).slice(0, requestedCount);
 
         if (!selected.length) {
           throw new Error('No questions found for selected filters. Check subject/difficulty columns in sheet.');
         }
 
-        setQuestions(selected);
-
-        const attemptStateKey = `${ATTEMPT_STATE_KEY_PREFIX}_${config.programName}_${username}`;
+        const attemptStateKey = `${ATTEMPT_STATE_KEY_PREFIX}_${config.programName}_${username}_${config.attemptId}`;
         const rawAttemptState = localStorage.getItem(attemptStateKey);
         if (rawAttemptState) {
           try {
             const saved = JSON.parse(rawAttemptState) as SavedAttemptState;
+            const restoredQuestions = Array.isArray(saved.questions) && saved.questions.length ? saved.questions : selected;
+            setQuestions(restoredQuestions);
             setAnswers(saved.answers || {});
             setMarkedForReview(saved.markedForReview || []);
-            setCurrentIndex(Math.min(saved.currentIndex || 0, selected.length - 1));
+            setCurrentIndex(Math.min(saved.currentIndex || 0, restoredQuestions.length - 1));
             setTimerEnabled(Boolean(saved.timerEnabled));
             setElapsedSeconds(saved.elapsedSeconds || 0);
+            return;
           } catch {
             // Ignore invalid saved state.
           }
         }
+
+        setQuestions(selected);
+        setAnswers({});
+        setMarkedForReview([]);
+        setCurrentIndex(0);
+        setTimerEnabled(false);
+        setElapsedSeconds(0);
       } catch (requestError) {
         setError(requestError instanceof Error ? requestError.message : 'Failed to load questions.');
       } finally {
@@ -262,13 +307,14 @@ export default function QuizAttemptPage() {
       return;
     }
 
-    const attemptStateKey = `${ATTEMPT_STATE_KEY_PREFIX}_${config.programName}_${username}`;
+    const attemptStateKey = `${ATTEMPT_STATE_KEY_PREFIX}_${config.programName}_${username}_${config.attemptId}`;
     const statePayload: SavedAttemptState = {
       answers,
       markedForReview,
       currentIndex,
       timerEnabled,
       elapsedSeconds,
+      questions,
     };
 
     localStorage.setItem(attemptStateKey, JSON.stringify(statePayload));
@@ -290,6 +336,58 @@ export default function QuizAttemptPage() {
       return [...current, currentIndex];
     });
   };
+
+  const syncAttemptProgress = async (status: 'in_progress' | 'submitted') => {
+    if (!config || !questions.length) {
+      return;
+    }
+
+    try {
+      await fetch('/api/peace-quiz/questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          attemptId: config.attemptId,
+          username,
+          programName: config.programName,
+          classLevel: config.classLevel,
+          subject: config.subject,
+          difficulty: config.difficulty,
+          mode: config.mode,
+          attempted: answeredCount,
+          total: questions.length,
+          reviewMarked: markedForReview.length,
+          elapsedSeconds,
+          submittedAt: new Date().toISOString(),
+          status,
+        }),
+      });
+    } catch {
+      // Ignore background sync failures; final submit still reports result.
+    }
+  };
+
+  useEffect(() => {
+    if (!config || !questions.length || loading || Boolean(error)) {
+      return;
+    }
+
+    const syncTimer = window.setTimeout(() => {
+      void syncAttemptProgress('in_progress');
+    }, 1200);
+
+    return () => window.clearTimeout(syncTimer);
+  }, [answers, markedForReview, currentIndex, config, questions.length, loading, error]);
+
+  useEffect(() => {
+    if (!config || !questions.length || loading || Boolean(error) || elapsedSeconds === 0 || elapsedSeconds % 15 !== 0) {
+      return;
+    }
+
+    void syncAttemptProgress('in_progress');
+  }, [elapsedSeconds, config, questions.length, loading, error]);
 
   const handleSubmit = async () => {
     if (!config) {
@@ -318,6 +416,7 @@ export default function QuizAttemptPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          attemptId: config.attemptId,
           username,
           programName: config.programName,
           classLevel: config.classLevel,
@@ -353,30 +452,30 @@ export default function QuizAttemptPage() {
         <PeaceQuizNavbar role="student" />
 
         <section className="rounded-3xl border border-indigo-100 bg-white p-6 shadow-lg sm:p-8">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3 sm:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-600">Quiz Attempt Screen</p>
-              <h1 className="mt-2 text-2xl font-black text-slate-900">Question {questions.length ? currentIndex + 1 : 0}/{questions.length || 0}</h1>
+              <h1 className="mt-2 text-xl font-black text-slate-900 sm:text-2xl">Question {questions.length ? currentIndex + 1 : 0}/{questions.length || 0}</h1>
               <p className="mt-1 text-sm text-slate-600">Student: {username}</p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
               <Link
                 href="/peace-quiz/student/start-practice"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-400 hover:text-indigo-700"
+                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-indigo-400 hover:text-indigo-700 sm:flex-none"
               >
                 Back to Setup
               </Link>
               <button
                 type="button"
                 onClick={() => setTimerEnabled((current) => !current)}
-                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition sm:flex-none ${
                   timerEnabled ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'border border-slate-300 text-slate-700 hover:border-indigo-400 hover:text-indigo-700'
                 }`}
               >
                 {timerEnabled ? 'Timer On' : 'Timer Off'}
               </button>
-              <span className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white">{formatTime(elapsedSeconds)}</span>
+              <span className="w-full rounded-lg bg-slate-900 px-3 py-2 text-center text-sm font-semibold text-white sm:w-auto">{formatTime(elapsedSeconds)}</span>
             </div>
           </div>
 
@@ -419,20 +518,29 @@ export default function QuizAttemptPage() {
                   })}
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
                   <button
                     type="button"
                     onClick={() => setCurrentIndex((current) => Math.max(0, current - 1))}
                     disabled={currentIndex === 0}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-400 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-400 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
                     Previous
                   </button>
 
                   <button
                     type="button"
+                    onClick={() => setCurrentIndex((current) => Math.min(questions.length - 1, current + 1))}
+                    disabled={currentIndex === questions.length - 1}
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-400 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3 sm:w-auto"
+                  >
+                    Next
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={toggleMarkForReview}
-                    className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                    className={`col-span-2 w-full rounded-lg px-4 py-2 text-sm font-semibold transition sm:order-2 sm:w-auto ${
                       markedForReview.includes(currentIndex)
                         ? 'bg-amber-500 text-white hover:bg-amber-600'
                         : 'border border-amber-300 text-amber-700 hover:border-amber-400'
@@ -440,21 +548,12 @@ export default function QuizAttemptPage() {
                   >
                     {markedForReview.includes(currentIndex) ? 'Marked for Review' : 'Mark for Review'}
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setCurrentIndex((current) => Math.min(questions.length - 1, current + 1))}
-                    disabled={currentIndex === questions.length - 1}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-400 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Next
-                  </button>
                 </div>
               </div>
 
               <aside className="rounded-2xl border border-slate-200 bg-white p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-600">Question Palette</p>
-                <div className="mt-4 grid grid-cols-5 gap-2">
+                <div className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-5">
                   {questions.map((_, index) => {
                     const isCurrent = index === currentIndex;
                     const isAnswered = answers[index] !== undefined;

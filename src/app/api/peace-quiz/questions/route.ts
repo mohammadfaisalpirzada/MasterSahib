@@ -5,6 +5,7 @@ import {
   getFirstColumnValuesFromTab,
   getQuizRowsFromSheet,
   getQuizSheetTabs,
+  updateQuizRowInSheet,
 } from '@/app/lib/googleSheets';
 import { getQuizSheetConfigForProgram } from '@/app/lib/quizSheets';
 import { AUTH_SESSION_COOKIE, verifySessionToken } from '@/lib/session';
@@ -69,6 +70,7 @@ type ProgressRecord = {
   review_marked: string;
   elapsed_seconds: string;
   status: string;
+  attempt_id: string;
 };
 
 const defaultProgressRecord: ProgressRecord = {
@@ -85,7 +87,27 @@ const defaultProgressRecord: ProgressRecord = {
   review_marked: '0',
   elapsed_seconds: '0',
   status: '',
+  attempt_id: '',
 };
+
+const PROGRESS_COLUMN_COUNT = 14;
+
+const buildProgressRecordValues = (record: ProgressRecord) => [
+  record.submitted_at,
+  record.username,
+  record.program_name,
+  record.class_level,
+  record.subject,
+  record.difficulty,
+  record.mode,
+  record.attempted,
+  record.total,
+  record.accuracy_percent,
+  record.review_marked,
+  record.elapsed_seconds,
+  record.status,
+  record.attempt_id,
+];
 
 const parseProgressRows = (rows: string[][]) => {
   if (!rows.length) {
@@ -117,7 +139,27 @@ const parseProgressRows = (rows: string[][]) => {
     review_marked: String(row[10] ?? '0'),
     elapsed_seconds: String(row[11] ?? '0'),
     status: String(row[12] ?? ''),
+    attempt_id: String(row[13] ?? ''),
   }));
+};
+
+const findProgressRowNumberByAttemptId = (rows: string[][], attemptId: string) => {
+  if (!attemptId.trim() || !rows.length) {
+    return null;
+  }
+
+  const firstRowNormalized = rows[0].map((cell, index) => toKey(String(cell ?? ''), index));
+  const hasHeader = firstRowNormalized.includes('username') && firstRowNormalized.includes('submitted_at');
+  const startIndex = hasHeader ? 1 : 0;
+
+  for (let index = startIndex; index < rows.length; index += 1) {
+    const rowAttemptId = String(rows[index]?.[13] ?? '').trim();
+    if (rowAttemptId && rowAttemptId === attemptId.trim()) {
+      return index + 1;
+    }
+  }
+
+  return null;
 };
 
 const toNum = (value: string) => Number(value || 0) || 0;
@@ -293,7 +335,8 @@ export async function GET(request: Request) {
       const userRecords = allRecords.filter((record) => {
         const sameUser = record.username.trim().toLowerCase() === username.trim().toLowerCase();
         const sameProgram = !programName || record.program_name.trim().toLowerCase() === programName.trim().toLowerCase();
-        return sameUser && sameProgram;
+        const isSubmitted = record.status.trim().toLowerCase() === 'submitted';
+        return sameUser && sameProgram && isSubmitted;
       });
 
       return NextResponse.json({
@@ -317,7 +360,8 @@ export async function GET(request: Request) {
         .filter((record) => {
           const sameUser = record.username.trim().toLowerCase() === username.trim().toLowerCase();
           const sameProgram = !programName || record.program_name.trim().toLowerCase() === programName.trim().toLowerCase();
-          return sameUser && sameProgram && record.submitted_at;
+          const isSubmitted = record.status.trim().toLowerCase() === 'submitted';
+          return sameUser && sameProgram && record.submitted_at && isSubmitted;
         })
         .sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
 
@@ -373,6 +417,7 @@ export async function POST(request: Request) {
       elapsedSeconds?: number;
       submittedAt?: string;
       status?: string;
+      attemptId?: string;
     };
 
     const programName = session.programName || '';
@@ -389,25 +434,48 @@ export async function POST(request: Request) {
     const attempted = Math.max(0, Number(body.attempted ?? 0) || 0);
     const total = Math.max(0, Number(body.total ?? 0) || 0);
     const accuracy = total > 0 ? Math.round((attempted / total) * 100) : 0;
+    const attemptId = String(body.attemptId ?? '').trim();
+    const nextRecord: ProgressRecord = {
+      submitted_at: body.submittedAt || new Date().toISOString(),
+      username,
+      program_name: programName,
+      class_level: body.classLevel || '',
+      subject: body.subject || '',
+      difficulty: body.difficulty || '',
+      mode: body.mode || 'Practice',
+      attempted: String(attempted),
+      total: String(total),
+      accuracy_percent: String(accuracy),
+      review_marked: String(Math.max(0, Number(body.reviewMarked ?? 0) || 0)),
+      elapsed_seconds: String(Math.max(0, Number(body.elapsedSeconds ?? 0) || 0)),
+      status: body.status || 'submitted',
+      attempt_id: attemptId,
+    };
+
+    const progressRows = await getQuizRowsFromSheet({
+      spreadsheetId: sheetConfig?.spreadsheetId,
+      range: toSheetRange(PROGRESS_TAB_NAME, `A:N`),
+    });
+
+    const existingRowNumber = findProgressRowNumberByAttemptId(progressRows as string[][], attemptId);
+
+    if (existingRowNumber) {
+      await updateQuizRowInSheet({
+        spreadsheetId: sheetConfig?.spreadsheetId,
+        range: toSheetRange(PROGRESS_TAB_NAME, `A${existingRowNumber}:N${existingRowNumber}`),
+        values: buildProgressRecordValues(nextRecord),
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Progress updated in Google Sheet.',
+      });
+    }
 
     await appendQuizRowToSheet({
       spreadsheetId: sheetConfig?.spreadsheetId,
       range: toSheetRange(PROGRESS_TAB_NAME),
-      values: [
-        body.submittedAt || new Date().toISOString(),
-        username,
-        programName,
-        body.classLevel || '',
-        body.subject || '',
-        body.difficulty || '',
-        body.mode || 'Practice',
-        String(attempted),
-        String(total),
-        String(accuracy),
-        String(Math.max(0, Number(body.reviewMarked ?? 0) || 0)),
-        String(Math.max(0, Number(body.elapsedSeconds ?? 0) || 0)),
-        body.status || 'submitted',
-      ],
+      values: buildProgressRecordValues(nextRecord),
     });
 
     return NextResponse.json({
