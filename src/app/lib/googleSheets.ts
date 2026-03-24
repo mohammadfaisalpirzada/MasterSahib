@@ -103,6 +103,19 @@ export const getQuizSheetTabs = async (options?: QuizSheetMetaOptions) => {
   );
 };
 
+export const getQuizSheetTitleById = async (sheetId: number, options?: QuizSheetMetaOptions) => {
+  const spreadsheetId = resolveSpreadsheetId(options?.spreadsheetId);
+  const sheets = getGoogleSheetsClient();
+
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: 'sheets(properties(sheetId,title))',
+  });
+
+  const matchedSheet = response.data.sheets?.find((sheet) => sheet.properties?.sheetId === sheetId);
+  return matchedSheet?.properties?.title?.trim() || '';
+};
+
 const toQuotedSheetName = (sheetName: string) => {
   const escaped = sheetName.replace(/'/g, "''");
   return `'${escaped}'`;

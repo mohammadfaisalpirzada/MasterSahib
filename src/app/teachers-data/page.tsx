@@ -2,67 +2,69 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 
-type StaffRecord = {
-  sno: number;
+type ColumnMeta = {
+  key: string;
+  label: string;
+  editable: boolean;
+};
+
+type DirectoryItem = {
+  rowId: string;
+  sno: string;
   name: string;
-  fatherName: string;
-  cnic: string;
-  designation: string;
-  bps: string;
-  placeOfPosting: string;
-  contactNo: string;
-  ibanNo: string;
-  pid: string;
 };
 
 type StaffApiResponse = {
   success: boolean;
-  items?: StaffRecord[];
-  item?: StaffRecord;
+  items?: DirectoryItem[];
+  record?: Record<string, string>;
+  columns?: ColumnMeta[];
+  verifyToken?: string;
   message?: string;
+  source?: {
+    sheetName: string;
+  };
 };
 
-const sanitizePhone = (value: string) => {
-  const raw = value.replace(/\s+/g, '').trim();
+const parseJsonResponse = async (response: Response) => {
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) {
+    const rawText = await response.text();
+    throw new Error(rawText.slice(0, 120) || 'Server returned a non-JSON response.');
+  }
 
-  if (!raw || raw === '-') return '-';
-  if (raw.startsWith('+923')) return raw;
-  if (raw.startsWith('923')) return `+${raw}`;
-  if (raw.startsWith('03')) return `+92${raw.slice(1)}`;
-  if (raw.startsWith('3')) return `+92${raw}`;
-  return raw;
+  return (await response.json()) as StaffApiResponse;
 };
-
-const fields: Array<{ key: keyof StaffRecord; label: string; editable: boolean; inputType?: string }> = [
-  { key: 'name', label: 'Name', editable: false },
-  { key: 'fatherName', label: 'Father Name', editable: true },
-  { key: 'cnic', label: 'CNIC', editable: true, inputType: 'text' },
-  { key: 'designation', label: 'Designation', editable: true },
-  { key: 'bps', label: 'BPS', editable: true },
-  { key: 'placeOfPosting', label: 'Place of Posting', editable: true },
-  { key: 'contactNo', label: 'Contact Number', editable: true, inputType: 'tel' },
-  { key: 'ibanNo', label: 'IBAN No.', editable: true },
-  { key: 'pid', label: 'PID', editable: false },
-];
 
 export default function StaffRecordPage() {
-  const [staffData, setStaffData] = useState<StaffRecord[]>([]);
+  const [directoryItems, setDirectoryItems] = useState<DirectoryItem[]>([]);
+  const [columns, setColumns] = useState<ColumnMeta[]>([]);
+  const [record, setRecord] = useState<Record<string, string>>({});
+  const [verifyToken, setVerifyToken] = useState('');
+  const [sourceLabel, setSourceLabel] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  const [selectedName, setSelectedName] = useState('');
+  const [selectedRowId, setSelectedRowId] = useState('');
   const [pidInput, setPidInput] = useState('');
-  const [verifiedRecordId, setVerifiedRecordId] = useState<number | null>(null);
+  const [verified, setVerified] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editPidInput, setEditPidInput] = useState('');
-  const [editAccessPid, setEditAccessPid] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [editMessage, setEditMessage] = useState('');
-  const [formData, setFormData] = useState<Partial<StaffRecord>>({});
+  const [formData, setFormData] = useState<Record<string, string>>({});
   const [saveToastVisible, setSaveToastVisible] = useState(false);
   const [saveToastText, setSaveToastText] = useState('');
   const [saveToastTone, setSaveToastTone] = useState<'success' | 'error'>('success');
+
+  const selectedDirectoryItem = useMemo(
+    () => directoryItems.find((item) => item.rowId === selectedRowId) || null,
+    [directoryItems, selectedRowId]
+  );
+
+  const editableColumns = useMemo(() => columns.filter((column) => column.editable), [columns]);
+  const readonlyColumns = useMemo(() => columns.filter((column) => !column.editable), [columns]);
 
   const showSaveToast = (text: string, tone: 'success' | 'error' = 'success') => {
     setSaveToastText(text);
@@ -82,77 +84,107 @@ export default function StaffRecordPage() {
     return () => window.clearTimeout(timer);
   }, [saveToastVisible, saveToastText]);
 
-  const loadStaffData = async ({ silent = false }: { silent?: boolean } = {}) => {
+  const loadDirectory = async () => {
     try {
-      if (!silent) {
-        setLoading(true);
-      }
-
+      setLoading(true);
       setLoadError('');
-
-      const response = await fetch('/api/staff-records', { cache: 'no-store' });
-      const data = (await response.json()) as StaffApiResponse;
+      const response = await fetch('/api/staff-records?mode=directory', { cache: 'no-store' });
+      const data = await parseJsonResponse(response);
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || 'Unable to load teachers data.');
+        throw new Error(data.message || 'Unable to load staff directory.');
       }
 
-      const items = (data.items || []).map((item) => ({
-        ...item,
-        contactNo: sanitizePhone(item.contactNo || ''),
-      }));
-
-      setStaffData(items);
-      return items;
+      setDirectoryItems(data.items || []);
+      setSourceLabel(data.source?.sheetName || 'GGSS staff sheet');
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : 'Unable to load teachers data.');
-      return [] as StaffRecord[];
+      setLoadError(error instanceof Error ? error.message : 'Unable to load staff directory.');
     } finally {
-      if (!silent) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    void loadStaffData();
+    void loadDirectory();
   }, []);
 
-  const sortedNames = useMemo(
-    () => [...staffData].sort((a, b) => a.name.localeCompare(b.name)),
-    [staffData]
-  );
-
-  const selectedRecord = useMemo(
-    () => staffData.find((item) => item.name === selectedName) || null,
-    [selectedName, staffData]
-  );
-
-  const verifiedRecord = useMemo(
-    () => staffData.find((item) => item.sno === verifiedRecordId) || null,
-    [verifiedRecordId, staffData]
-  );
-
-  const handleVerify = () => {
-    setMessage('');
+  const resetRecordState = () => {
+    setVerified(false);
     setEditMode(false);
+    setColumns([]);
+    setRecord({});
+    setFormData({});
+    setVerifyToken('');
+    setMessage('');
     setEditMessage('');
+    setPidInput('');
+    setEditPidInput('');
+  };
 
-    if (!selectedRecord) {
-      setVerifiedRecordId(null);
-      setMessage('Please select your name first.');
+  const verifyRecord = async (pid: string, enableEdit = false) => {
+    if (!selectedRowId) {
+      const errorMessage = 'Please select a staff member first.';
+      if (enableEdit) {
+        setEditMessage(errorMessage);
+      } else {
+        setMessage(errorMessage);
+      }
       return;
     }
 
-    if (pidInput.trim() !== selectedRecord.pid) {
-      setVerifiedRecordId(null);
-      setMessage('Incorrect PID. Please try again.');
-      return;
-    }
+    try {
+      if (enableEdit) {
+        setEditMessage('');
+      } else {
+        setMessage('');
+      }
 
-    setVerifiedRecordId(selectedRecord.sno);
-    setFormData(selectedRecord);
-    setMessage('Record verified successfully.');
+      const response = await fetch('/api/staff-records', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rowId: selectedRowId,
+          pid,
+        }),
+      });
+
+      const data = await parseJsonResponse(response);
+      if (!response.ok || !data.success || !data.record || !data.columns || !data.verifyToken) {
+        throw new Error(data.message || 'Verification failed.');
+      }
+
+      setColumns(data.columns);
+      setRecord(data.record);
+      setFormData(data.record);
+      setVerifyToken(data.verifyToken);
+      setVerified(true);
+
+      if (enableEdit) {
+        setEditMode(true);
+        setEditMessage('Edit mode enabled.');
+      } else {
+        setMessage('Record verified successfully.');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Verification failed.';
+      if (enableEdit) {
+        setEditMode(false);
+        setEditMessage(errorMessage);
+      } else {
+        setVerified(false);
+        setMessage(errorMessage);
+      }
+    }
+  };
+
+  const handleVerify = async () => {
+    await verifyRecord(pidInput.trim(), false);
+  };
+
+  const handleEnableEdit = async () => {
+    await verifyRecord(editPidInput.trim(), true);
   };
 
   const handleVerifyPidKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -161,24 +193,7 @@ export default function StaffRecordPage() {
     }
 
     event.preventDefault();
-    handleVerify();
-  };
-
-  const handleEnableEdit = () => {
-    if (!verifiedRecord) {
-      setEditMessage('Please verify your record first.');
-      return;
-    }
-
-    if (editPidInput.trim() !== verifiedRecord.pid) {
-      setEditMode(false);
-      setEditMessage('Incorrect PID. Edit access denied.');
-      return;
-    }
-
-    setEditAccessPid(editPidInput.trim());
-    setEditMode(true);
-    setEditMessage('Edit mode enabled.');
+    void handleVerify();
   };
 
   const handleEditPidKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -187,20 +202,26 @@ export default function StaffRecordPage() {
     }
 
     event.preventDefault();
-    handleEnableEdit();
+    void handleEnableEdit();
   };
 
-  const handleFieldChange = (key: keyof StaffRecord, value: string) => {
-    if (key === 'name' || key === 'pid') return;
-    setFormData((prev) => ({ ...prev, [key]: key === 'contactNo' ? sanitizePhone(value) : value }));
+  const handleFieldChange = (key: string, value: string) => {
+    setFormData((current) => ({ ...current, [key]: value }));
   };
 
   const handleSave = async () => {
-    if (!verifiedRecord) return;
+    if (!verifyToken) {
+      setEditMessage('Verification expired. Please verify again.');
+      return;
+    }
 
     try {
       setSaving(true);
       setEditMessage('');
+
+      const updates = Object.fromEntries(
+        editableColumns.map((column) => [column.key, formData[column.key] || ''])
+      );
 
       const response = await fetch('/api/staff-records', {
         method: 'PATCH',
@@ -208,39 +229,27 @@ export default function StaffRecordPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          sno: verifiedRecord.sno,
-          pid: editAccessPid,
-          updates: {
-            fatherName: String(formData.fatherName ?? ''),
-            cnic: String(formData.cnic ?? ''),
-            designation: String(formData.designation ?? ''),
-            bps: String(formData.bps ?? ''),
-            placeOfPosting: String(formData.placeOfPosting ?? ''),
-            contactNo: sanitizePhone(String(formData.contactNo ?? '')),
-            ibanNo: String(formData.ibanNo ?? ''),
-          },
+          verifyToken,
+          updates,
         }),
       });
 
-      const data = (await response.json()) as StaffApiResponse;
-      if (!response.ok || !data.success || !data.item) {
-        throw new Error(data.message || 'Unable to save changes in sheet.');
+      const data = await parseJsonResponse(response);
+      if (!response.ok || !data.success || !data.record || !data.columns) {
+        throw new Error(data.message || 'Unable to save staff data.');
       }
 
-      const refreshedItems = await loadStaffData({ silent: true });
-      const refreshedRecord = refreshedItems.find((item) => item.sno === verifiedRecord.sno) || data.item;
-
-      setFormData(refreshedRecord);
-      setSelectedName(refreshedRecord.name);
-      setVerifiedRecordId(refreshedRecord.sno);
-      setMessage('Record verified successfully.');
+      setColumns(data.columns);
+      setRecord(data.record);
+      setFormData(data.record);
       setEditMode(false);
       setEditPidInput('');
-      setEditAccessPid('');
       setEditMessage('');
+      setMessage('Record verified successfully.');
       showSaveToast('Data saved', 'success');
+      await loadDirectory();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unable to save changes in sheet.';
+      const errorMessage = error instanceof Error ? error.message : 'Unable to save staff data.';
       setEditMessage(errorMessage);
       showSaveToast(errorMessage, 'error');
     } finally {
@@ -249,10 +258,9 @@ export default function StaffRecordPage() {
   };
 
   const handleCancel = () => {
-    if (verifiedRecord) setFormData(verifiedRecord);
+    setFormData(record);
     setEditMode(false);
     setEditPidInput('');
-    setEditAccessPid('');
     setEditMessage('Editing canceled.');
   };
 
@@ -273,56 +281,59 @@ export default function StaffRecordPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl space-y-4 sm:space-y-6 lg:space-y-8">
+      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-6 lg:space-y-8">
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6 md:p-8">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">
-                GGSS Nishtar Road Staff Record
-              </h1>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">Staff Management Portal</p>
+              <h1 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">GGSS Nishtar Road Staff Data</h1>
               <p className="mt-2 text-xs text-slate-600 sm:text-sm md:text-base">
-                Data source: TeachersData tab from Google Sheet
+                Secure, server-verified workflow with direct synchronization to your configured Google Sheet.
               </p>
-              <p className="text-xs text-slate-500 sm:text-sm">Semis Code: 408070227</p>
             </div>
-            <div className="rounded-2xl bg-slate-100 px-3 py-2 text-xs text-slate-700 sm:px-4 sm:py-3 sm:text-sm">
-              Select your name and enter PID to view and update your record.
+
+            <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-3 py-2 text-xs text-cyan-800 sm:px-4 sm:py-3 sm:text-sm">
+              Directory loads first. Full data appears only after PID verification.
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 sm:text-sm">
+              <span className="font-semibold text-slate-900">Active Tab:</span> {sourceLabel || 'Loading...'}
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 sm:text-sm">
+              <span className="font-semibold text-slate-900">Directory Size:</span> {directoryItems.length}
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 sm:text-sm">
+              <span className="font-semibold text-slate-900">Editable Fields:</span> {editableColumns.length}
             </div>
           </div>
         </div>
 
-        {loading ? <p className="rounded-xl bg-white p-4 text-sm text-slate-600">Loading teachers data from sheet...</p> : null}
+        {loading ? <p className="rounded-xl bg-white p-4 text-sm text-slate-600">Loading secure staff directory...</p> : null}
         {loadError ? <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">{loadError}</p> : null}
 
         {!loading && !loadError ? (
-          <div className="grid gap-4 lg:grid-cols-[1fr,1.25fr] lg:gap-8">
+          <div className="grid gap-4 lg:grid-cols-[0.92fr,1.08fr] lg:gap-8">
             <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6">
-              <h2 className="text-lg font-semibold sm:text-xl">Find Your Record</h2>
+              <h2 className="text-lg font-semibold sm:text-xl">Find Staff Record</h2>
               <div className="mt-4 space-y-4 sm:mt-5">
                 <div>
-                  <label htmlFor="staff-name-select" className="mb-2 block text-sm font-medium text-slate-700">Select Name</label>
+                  <label htmlFor="staff-name-select" className="mb-2 block text-sm font-medium text-slate-700">Select Staff Name</label>
                   <select
                     id="staff-name-select"
-                    title="Select Name"
-                    value={selectedName}
-                    onChange={(e) => {
-                      setSelectedName(e.target.value);
-                      setPidInput('');
-                      setVerifiedRecordId(null);
-                      setEditMode(false);
-                      setEditPidInput('');
-                      setEditAccessPid('');
-                      setMessage('');
-                      setEditMessage('');
-                      const record = staffData.find((item) => item.name === e.target.value);
-                      setFormData(record || {});
+                    title="Select Staff Name"
+                    value={selectedRowId}
+                    onChange={(event) => {
+                      setSelectedRowId(event.target.value);
+                      resetRecordState();
                     }}
                     className="min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                   >
-                    <option value="">Choose your name</option>
-                    {sortedNames.map((person) => (
-                      <option key={person.sno} value={person.name}>
-                        {person.name}
+                    <option value="">Choose staff member</option>
+                    {directoryItems.map((item) => (
+                      <option key={item.rowId} value={item.rowId}>
+                        {item.sno ? `${item.sno} - ` : ''}{item.name}
                       </option>
                     ))}
                   </select>
@@ -333,9 +344,15 @@ export default function StaffRecordPage() {
                   <input
                     id="verify-pid"
                     type="password"
+                    name="record-verification-code"
+                    autoComplete="off"
+                    spellCheck={false}
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-form-type="other"
                     inputMode="numeric"
                     value={pidInput}
-                    onChange={(e) => setPidInput(e.target.value)}
+                    onChange={(event) => setPidInput(event.target.value)}
                     onKeyDown={handleVerifyPidKeyDown}
                     placeholder="Enter your PID"
                     className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
@@ -343,14 +360,20 @@ export default function StaffRecordPage() {
                 </div>
 
                 <button
-                  onClick={handleVerify}
-                  className="min-h-[48px] w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
+                  onClick={() => void handleVerify()}
+                  className="min-h-[48px] w-full rounded-2xl bg-gradient-to-r from-slate-900 to-slate-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:from-slate-800 hover:to-slate-600"
                 >
                   Verify Record
                 </button>
 
+                {selectedDirectoryItem ? (
+                  <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
+                    Selected: <span className="font-semibold">{selectedDirectoryItem.name}</span>
+                  </div>
+                ) : null}
+
                 {message ? (
-                  <div className={`rounded-2xl px-4 py-3 text-sm ${verifiedRecord ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  <div className={`rounded-2xl px-4 py-3 text-sm ${verified ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                     {message}
                   </div>
                 ) : null}
@@ -359,52 +382,50 @@ export default function StaffRecordPage() {
 
             <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-lg font-semibold sm:text-xl">Record Details</h2>
-                {verifiedRecord ? (
-                  <span className="w-fit rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                    Verified
-                  </span>
+                <h2 className="text-lg font-semibold sm:text-xl">Staff Details</h2>
+                {verified ? (
+                  <span className="w-fit rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Verified</span>
                 ) : (
-                  <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                    Locked
-                  </span>
+                  <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Locked</span>
                 )}
               </div>
 
-              {!verifiedRecord ? (
+              {verified ? (
+                <p className="mt-2 text-xs text-slate-500 sm:text-sm">
+                  {readonlyColumns.length} locked fields and {editableColumns.length} editable fields are available for this staff record.
+                </p>
+              ) : null}
+
+              {!verified ? (
                 <div className="mt-5 rounded-2xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500 sm:mt-6 sm:p-8">
-                  Your data will appear here after successful PID verification.
+                  Staff data will appear here after secure PID verification.
                 </div>
               ) : (
-                <div className="mt-5 space-y-4 sm:mt-6 sm:space-y-5">
-                  {fields.map((field) => {
-                    const value = String(formData[field.key] ?? '');
-                    const isReadOnly = !editMode || !field.editable;
-                    const fieldInputId = `staff-field-${field.key}`;
+                <div className="mt-5 grid gap-4 sm:mt-6 lg:grid-cols-2">
+                  {columns.map((column) => {
+                    const value = String(formData[column.key] ?? '');
+                    const isReadOnly = !editMode || !column.editable;
+                    const fieldInputId = `staff-field-${column.key}`;
 
                     return (
-                      <div key={field.key} className="rounded-2xl border border-slate-200 p-3 sm:p-4">
+                      <div key={column.key} className="rounded-2xl border border-slate-200 p-3 sm:p-4">
                         <label htmlFor={fieldInputId} className="mb-2 block text-sm font-medium text-slate-700">
-                          {field.label}
-                          {!field.editable ? (
-                            <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500">
-                              locked
-                            </span>
+                          {column.label}
+                          {!column.editable ? (
+                            <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500">locked</span>
                           ) : null}
                         </label>
 
                         {isReadOnly ? (
-                          <div className="break-words rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-800 sm:px-4">
-                            {value || '—'}
-                          </div>
+                          <div className="break-words rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-800 sm:px-4">{value || '—'}</div>
                         ) : (
                           <input
                             id={fieldInputId}
-                            type={field.inputType || 'text'}
+                            type="text"
                             value={value}
-                            onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                            title={field.label}
-                            placeholder={field.label}
+                            onChange={(event) => handleFieldChange(column.key, event.target.value)}
+                            title={column.label}
+                            placeholder={column.label}
                             className="min-h-[48px] w-full rounded-xl border border-slate-300 px-3 py-3 text-sm outline-none transition focus:border-slate-500 sm:px-4"
                           />
                         )}
@@ -412,11 +433,9 @@ export default function StaffRecordPage() {
                     );
                   })}
 
-                  <div className="rounded-2xl border border-slate-200 p-3 sm:p-4">
+                  <div className="rounded-2xl border border-slate-200 p-3 sm:p-4 lg:col-span-2">
                     <h3 className="text-sm font-semibold text-slate-800">Edit Access</h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                      To edit the record, enter PID again. Name and PID cannot be changed.
-                    </p>
+                    <p className="mt-1 text-sm text-slate-500">To edit the record, enter PID again. Locked columns stay protected.</p>
 
                     {!editMode ? (
                       <div className="mt-4 flex flex-col gap-3">
@@ -424,16 +443,22 @@ export default function StaffRecordPage() {
                         <input
                           id="edit-pid"
                           type="password"
+                          name="record-edit-verification-code"
+                          autoComplete="off"
+                          spellCheck={false}
+                          data-lpignore="true"
+                          data-1p-ignore="true"
+                          data-form-type="other"
                           inputMode="numeric"
                           value={editPidInput}
-                          onChange={(e) => setEditPidInput(e.target.value)}
+                          onChange={(event) => setEditPidInput(event.target.value)}
                           onKeyDown={handleEditPidKeyDown}
                           placeholder="Re-enter PID to edit"
                           className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                         />
                         <button
-                          onClick={handleEnableEdit}
-                          className="min-h-[48px] w-full rounded-2xl bg-amber-500 px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 sm:w-auto"
+                          onClick={() => void handleEnableEdit()}
+                          className="min-h-[48px] w-full rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:from-amber-600 hover:to-orange-600 sm:w-auto"
                         >
                           Enable Edit
                         </button>
@@ -441,16 +466,16 @@ export default function StaffRecordPage() {
                     ) : (
                       <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                         <button
-                          onClick={handleSave}
+                          onClick={() => void handleSave()}
                           disabled={saving}
-                          className="min-h-[48px] w-full rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="min-h-[48px] w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:from-emerald-700 hover:to-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           {saving ? 'Saving...' : 'Save Changes'}
                         </button>
                         <button
                           onClick={handleCancel}
                           disabled={saving}
-                          className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+                          className="min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
                         >
                           Cancel
                         </button>
@@ -458,7 +483,7 @@ export default function StaffRecordPage() {
                     )}
 
                     {editMessage ? (
-                      <div className={`mt-4 rounded-2xl px-4 py-3 text-sm ${editMode || editMessage.toLowerCase().includes('saved') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                      <div className={`mt-4 rounded-2xl px-4 py-3 text-sm ${editMode || editMessage.toLowerCase().includes('enabled') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                         {editMessage}
                       </div>
                     ) : null}

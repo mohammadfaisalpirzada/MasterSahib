@@ -274,7 +274,7 @@ export default function PeaceQuizLoginPage() {
                   Login is validated securely on server with HttpOnly session cookie.
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
                   <p className="rounded-lg border border-indigo-100 bg-indigo-50 p-2 text-xs text-indigo-700">
                     Selected role: <span className="font-semibold capitalize">{role}</span>
                   </p>
@@ -286,6 +286,9 @@ export default function PeaceQuizLoginPage() {
                     <input
                       id="username"
                       type="text"
+                      name="quiz-portal-username"
+                      autoComplete="off"
+                      spellCheck={false}
                       value={username}
                       onChange={(event) => setUsername(event.target.value)}
                       placeholder="Enter your username"
@@ -300,6 +303,12 @@ export default function PeaceQuizLoginPage() {
                     <input
                       id="password"
                       type="password"
+                      name="quiz-portal-access-code"
+                      autoComplete="new-password"
+                      spellCheck={false}
+                      data-lpignore="true"
+                      data-1p-ignore="true"
+                      data-form-type="other"
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       placeholder="Enter your password"

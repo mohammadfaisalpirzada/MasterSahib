@@ -12,22 +12,22 @@ export default function GgssNishtarRoadLandingPage() {
 
           <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
             GGSS Nishtar Road
-            <span className="block text-cyan-700">Teacher Data Center</span>
+            <span className="block text-cyan-700">Staff Data Center</span>
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-            Yahan se aap staff record verify, update aur manage kar sakte hain. Data direct Google Sheet ke TeachersData tab se
-            load hota hai aur edit ke baad wahi tab par save hota hai.
+            Yahan se aap GGSS Nishtar Road staff record verify, update aur manage kar sakte hain. Data dedicated Google Sheet
+            se load hota hai aur secure verification ke baad wahi source par save hota hai.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Live Source</p>
-              <p className="mt-1 text-sm font-bold text-slate-800">Google Sheet: TeachersData tab</p>
+              <p className="mt-1 text-sm font-bold text-slate-800">Google Sheet: GGSS Staff Register</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Security</p>
-              <p className="mt-1 text-sm font-bold text-slate-800">PID verification before edit</p>
+              <p className="mt-1 text-sm font-bold text-slate-800">Server-side PID verification before edit</p>
             </div>
           </div>
 
@@ -36,7 +36,7 @@ export default function GgssNishtarRoadLandingPage() {
               href="/teachers-data"
               className="inline-flex items-center justify-center rounded-2xl bg-cyan-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-200 transition hover:-translate-y-0.5 hover:bg-cyan-700"
             >
-              Open Teacher Data
+              Open Staff Data
             </Link>
             <span className="text-xs font-medium text-slate-500">Semis Code: 408070227</span>
           </div>
