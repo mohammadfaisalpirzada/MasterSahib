@@ -43,11 +43,24 @@ export async function POST(request: Request) {
         );
       }
 
-      const sheetUsers = await getQuizUsersFromSheet(sheetConfig.spreadsheetId);
+      let sheetUsers;
+      try {
+        sheetUsers = await getQuizUsersFromSheet(sheetConfig.spreadsheetId);
+      } catch {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Unable to read student users sheet. Check service account access and production env variables.',
+          },
+          { status: 500 }
+        );
+      }
+
       const normalizedProgram = programName.trim().toLowerCase();
+      const normalizedUsername = username.trim().toLowerCase();
       const matchedUser = sheetUsers.find(
         (u) =>
-          u.username === username &&
+          u.username.toLowerCase() === normalizedUsername &&
           u.password === password &&
           u.role === 'student' &&
           u.program === normalizedProgram
@@ -64,7 +77,7 @@ export async function POST(request: Request) {
 
       const token = await createSessionToken({
         role,
-        username,
+        username: matchedUser.username,
         programName,
         ...(studentClassLevel ? { classLevel: studentClassLevel } : {}),
       });
@@ -73,7 +86,7 @@ export async function POST(request: Request) {
         success: true,
         session: {
           role,
-          username,
+          username: matchedUser.username,
           programName,
           source: 'peace-quiz',
           ...(studentClassLevel ? { classLevel: studentClassLevel } : {}),

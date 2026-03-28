@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { IoEyeOffOutline, IoEyeOutline } from 'react-icons/io5';
 import { fetchAuthSession, roleRouteMap, Role } from '../lib/auth';
 import {
   DEFAULT_QUIZ_PROGRAM_NAME,
@@ -16,6 +17,7 @@ export default function PeaceQuizLoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [role, setRole] = useState<Role>('student');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -391,20 +393,30 @@ export default function PeaceQuizLoginPage() {
                     <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
                       Password
                     </label>
-                    <input
-                      id="password"
-                      type="password"
-                      name="quiz-portal-access-code"
-                      autoComplete="new-password"
-                      spellCheck={false}
-                      data-lpignore="true"
-                      data-1p-ignore="true"
-                      data-form-type="other"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="Enter your password"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                    />
+                    <div className="relative">
+                      <input
+                        id="password"
+                        type={showLoginPassword ? 'text' : 'password'}
+                        name="quiz-portal-access-code"
+                        autoComplete="new-password"
+                        spellCheck={false}
+                        data-lpignore="true"
+                        data-1p-ignore="true"
+                        data-form-type="other"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Enter your password"
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-16 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowLoginPassword((current) => !current)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-slate-300 p-1.5 text-slate-700 transition hover:border-indigo-400 hover:text-indigo-700"
+                        aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showLoginPassword ? <IoEyeOffOutline size={16} /> : <IoEyeOutline size={16} />}
+                      </button>
+                    </div>
                   </div>
 
                   {role === 'student' ? (

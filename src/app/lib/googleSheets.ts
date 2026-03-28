@@ -187,31 +187,27 @@ export type SheetUser = {
 
 // Reads the 'Users' tab — expected header: username | password | role | program | class
 export const getQuizUsersFromSheet = async (spreadsheetIdInput?: string): Promise<SheetUser[]> => {
-  try {
-    const spreadsheetId = resolveSpreadsheetId(spreadsheetIdInput);
-    const sheets = getGoogleSheetsClient();
+  const spreadsheetId = resolveSpreadsheetId(spreadsheetIdInput);
+  const sheets = getGoogleSheetsClient();
 
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: "'Users'!A:E",
-    });
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: "'Users'!A:E",
+  });
 
-    const rows = response.data.values ?? [];
-    if (rows.length < 2) return [];
+  const rows = response.data.values ?? [];
+  if (rows.length < 2) return [];
 
-    const [, ...dataRows] = rows;
-    return dataRows
-      .filter((row) => row.some((cell) => String(cell ?? '').trim()))
-      .map((row) => ({
-        username: String(row[0] ?? '').trim(),
-        password: String(row[1] ?? '').trim(),
-        role: String(row[2] ?? '').trim().toLowerCase(),
-        program: String(row[3] ?? '').trim().toLowerCase(),
-        class: String(row[4] ?? '').trim(),
-      }));
-  } catch {
-    return [];
-  }
+  const [, ...dataRows] = rows;
+  return dataRows
+    .filter((row) => row.some((cell) => String(cell ?? '').trim()))
+    .map((row) => ({
+      username: String(row[0] ?? '').trim(),
+      password: String(row[1] ?? '').trim(),
+      role: String(row[2] ?? '').trim().toLowerCase(),
+      program: String(row[3] ?? '').trim().toLowerCase(),
+      class: String(row[4] ?? '').trim(),
+    }));
 };
 
 // Updates the password for a matching user row in the 'Users' tab
