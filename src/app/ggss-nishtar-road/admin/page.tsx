@@ -229,16 +229,30 @@ export default function GgssAdminPage() {
 
     const selectedItem = items.find((item) => item.rowId === selectedRowId) || null;
     const genderValue = String(selectedRecord.gender ?? '').trim().toLowerCase();
-    const teacherPrefix = genderValue === 'male' ? 'Mr.' : genderValue === 'female' ? 'Mrs.' : '';
-    const teacherName = selectedItem?.name?.trim() || String(selectedRecord.name ?? '').trim() || 'Staff Record';
-    const teacherHeading = [teacherPrefix, teacherName].filter(Boolean).join(' ');
+    const titlePrefix = genderValue === 'male' ? 'Mr.' : genderValue === 'female' ? 'Mrs.' : '';
+    const displayName = selectedItem?.name?.trim() || String(selectedRecord.name ?? '').trim() || 'Staff Record';
+    const designation = String(
+      selectedRecord.designation ??
+      selectedRecord.designaton ??
+      selectedRecord.desgination ??
+      selectedRecord.post ??
+      ''
+    )
+      .trim();
+
+    const headingBase = [titlePrefix, displayName].filter(Boolean).join(' ');
+    const headingText = designation ? `${headingBase} (${designation})` : headingBase;
+    const codeOnly = '408070227';
+
     const websiteLink = `${window.location.origin}/ggss-nishtar-road`;
+    const printedAt = new Date().toLocaleString();
     const printWindow = window.open('', '_blank', 'width=960,height=720');
     if (!printWindow) {
       return;
     }
 
     const fieldsHtml = columns
+      .filter((column) => !['remarks', 'remark'].includes(column.key.toLowerCase()))
       .map((column) => {
         const value = String(selectedRecord[column.key] ?? '').trim() || '-';
         return `
@@ -256,7 +270,7 @@ export default function GgssAdminPage() {
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>GGSS Staff Record Print</title>
+          <title></title>
           <style>
             @page {
               size: A4;
@@ -284,24 +298,72 @@ export default function GgssAdminPage() {
             }
 
             .topbar {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
+              display: grid;
+              grid-template-columns: 1fr auto 1fr;
+              align-items: center;
               gap: 12px;
-              padding-bottom: 10px;
-              border-bottom: 2px solid #0891b2;
+              padding-bottom: 6px;
             }
 
             .eyebrow {
-              display: inline-block;
-              padding: 4px 10px;
-              border-radius: 999px;
-              background: #ecfeff;
+              display: block;
               color: #0e7490;
-              font-size: 11px;
+              font-size: 12px;
               font-weight: 700;
               letter-spacing: 0.12em;
               text-transform: uppercase;
+            }
+
+            .sub-meta {
+              margin-top: 4px;
+              font-size: 12px;
+              font-weight: 700;
+              color: #0f172a;
+              letter-spacing: 0.08em;
+            }
+
+            .name-meta {
+              margin-top: 2px;
+              font-size: 14px;
+              font-weight: 700;
+              color: #0e7490;
+              letter-spacing: 0.02em;
+            }
+
+            .profile-heading {
+              text-align: center;
+              font-size: 16px;
+              font-weight: 700;
+              color: #0f172a;
+              letter-spacing: 0.08em;
+            }
+
+            .photo-slot-wrap {
+              display: flex;
+              justify-content: flex-end;
+              padding-right: 6mm;
+            }
+
+            .photo-slot {
+              width: 25.4mm;
+              height: 25.4mm;
+              border: 1px dashed #94a3b8;
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 10px;
+              color: #64748b;
+              text-transform: uppercase;
+              letter-spacing: 0.08em;
+            }
+
+            .half-line {
+              width: 50%;
+              height: 2px;
+              background: #0891b2;
+              margin: 4px auto 0;
+              border-radius: 999px;
             }
 
             h1 {
@@ -348,10 +410,12 @@ export default function GgssAdminPage() {
             }
 
             .section-title {
-              margin: 14px 0 8px;
+              margin: 4px 0 8px;
               font-size: 13px;
               font-weight: 700;
               color: #0f172a;
+              border-bottom: 1px solid #cbd5e1;
+              padding-bottom: 6px;
             }
 
             .fields {
@@ -372,7 +436,10 @@ export default function GgssAdminPage() {
               margin-top: 12px;
               font-size: 10px;
               color: #64748b;
-              text-align: right;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 12px;
             }
 
             .footer a {
@@ -394,30 +461,23 @@ export default function GgssAdminPage() {
             <div class="topbar">
               <div>
                 <div class="eyebrow">GGSS Nishtar Road</div>
-                <h1>${teacherHeading}</h1>
+                <div class="sub-meta">${codeOnly}</div>
+                <div class="name-meta">${headingText}</div>
               </div>
-              <div class="meta">Printed: ${new Date().toLocaleString()}</div>
-            </div>
-
-            <div class="summary">
-              <div class="summary-card">
-                <div class="summary-label">Teacher Name</div>
-                <div class="summary-value">${selectedItem?.name || '-'}</div>
-              </div>
-              <div class="summary-card">
-                <div class="summary-label">Serial No</div>
-                <div class="summary-value">${selectedItem?.sno || '-'}</div>
-              </div>
-              <div class="summary-card">
-                <div class="summary-label">Sheet Row</div>
-                <div class="summary-value">${selectedRecord.rowId || '-'}</div>
+              <div class="profile-heading">PROFILE</div>
+              <div class="photo-slot-wrap">
+                <div class="photo-slot">Photo</div>
               </div>
             </div>
+            <div class="half-line"></div>
 
             <div class="section-title">Staff Details</div>
             <div class="fields">${fieldsHtml}</div>
 
-            <div class="footer">Website: <a href="${websiteLink}">${websiteLink}</a></div>
+            <div class="footer">
+              <span>Website: <a href="${websiteLink}">${websiteLink}</a></span>
+              <span>Printed: ${printedAt}</span>
+            </div>
           </div>
         </body>
       </html>

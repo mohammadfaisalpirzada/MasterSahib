@@ -267,6 +267,189 @@ export default function StaffRecordPage() {
     setEditMessage('Editing canceled.');
   };
 
+  const handlePrintRecord = () => {
+    if (!verified || !columns.length) {
+      return;
+    }
+
+    const genderValue = String(formData.gender ?? record.gender ?? '').trim().toLowerCase();
+    const titlePrefix = genderValue === 'male' ? 'Mr.' : genderValue === 'female' ? 'Mrs.' : '';
+    const displayName = selectedDirectoryItem?.name?.trim() || String(formData.name ?? record.name ?? '').trim() || 'Staff Record';
+    const designation = String(
+      formData.designation ??
+      formData.designaton ??
+      formData.desgination ??
+      formData.post ??
+      record.designation ??
+      record.designaton ??
+      record.desgination ??
+      record.post ??
+      ''
+    )
+      .trim();
+
+    const headingBase = [titlePrefix, displayName].filter(Boolean).join(' ');
+    const headingText = designation ? `${headingBase} (${designation})` : headingBase;
+    const websiteLink = `${window.location.origin}/ggss-nishtar-road`;
+    const printedAt = new Date().toLocaleString();
+
+    const printWindow = window.open('', '_blank', 'width=960,height=720');
+    if (!printWindow) {
+      return;
+    }
+
+    const fieldsHtml = columns
+      .filter((column) => !['remarks', 'remark'].includes(column.key.toLowerCase()))
+      .map((column) => {
+        const value = String(formData[column.key] ?? '').trim() || '-';
+        return `
+          <div class="field-card">
+            <div class="field-label">${column.label}</div>
+            <div class="field-value">${value}</div>
+          </div>
+        `;
+      })
+      .join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title></title>
+          <style>
+            @page { size: A4; margin: 12mm; }
+            * { box-sizing: border-box; }
+            body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #0f172a; background: #fff; }
+            .sheet {
+              width: 100%;
+              max-width: 190mm;
+              margin: 0 auto;
+              padding: 6mm;
+              border: 1px solid #cbd5e1;
+              border-radius: 12px;
+            }
+            .topbar {
+              display: grid;
+              grid-template-columns: 1fr auto 1fr;
+              align-items: center;
+              gap: 12px;
+              padding-bottom: 6px;
+            }
+            .eyebrow {
+              display: block;
+              color: #0e7490;
+              font-size: 12px;
+              font-weight: 700;
+              letter-spacing: 0.12em;
+              text-transform: uppercase;
+            }
+            .sub-meta {
+              margin-top: 4px;
+              font-size: 12px;
+              font-weight: 700;
+              color: #0f172a;
+              letter-spacing: 0.08em;
+            }
+            .name-meta {
+              margin-top: 2px;
+              font-size: 14px;
+              font-weight: 700;
+              color: #0e7490;
+              letter-spacing: 0.02em;
+            }
+            .profile-heading {
+              text-align: center;
+              font-size: 16px;
+              font-weight: 700;
+              color: #0f172a;
+              letter-spacing: 0.08em;
+            }
+            .photo-slot-wrap { display: flex; justify-content: flex-end; padding-right: 6mm; }
+            .photo-slot {
+              width: 25.4mm;
+              height: 25.4mm;
+              border: 1px dashed #94a3b8;
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 10px;
+              color: #64748b;
+              text-transform: uppercase;
+              letter-spacing: 0.08em;
+            }
+            .half-line { width: 50%; height: 2px; background: #0891b2; margin: 4px auto 0; border-radius: 999px; }
+            .section-title {
+              margin: 4px 0 8px;
+              font-size: 13px;
+              font-weight: 700;
+              color: #0f172a;
+              border-bottom: 1px solid #cbd5e1;
+              padding-bottom: 6px;
+            }
+            .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+            .field-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; background: #f8fafc; }
+            .field-label {
+              font-size: 10px;
+              font-weight: 700;
+              color: #64748b;
+              text-transform: uppercase;
+              letter-spacing: 0.08em;
+            }
+            .field-value {
+              margin-top: 5px;
+              font-size: 12px;
+              line-height: 1.35;
+              color: #0f172a;
+              word-break: break-word;
+            }
+            .footer {
+              margin-top: 12px;
+              font-size: 10px;
+              color: #64748b;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 12px;
+            }
+            .footer a { color: #0e7490; text-decoration: none; }
+            @media print {
+              .sheet { border: none; border-radius: 0; padding: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="sheet">
+            <div class="topbar">
+              <div>
+                <div class="eyebrow">GGSS Nishtar Road</div>
+                <div class="sub-meta">408070227</div>
+                <div class="name-meta">${headingText}</div>
+              </div>
+              <div class="profile-heading">PROFILE</div>
+              <div class="photo-slot-wrap"><div class="photo-slot">Photo</div></div>
+            </div>
+            <div class="half-line"></div>
+
+            <div class="section-title">Staff Details</div>
+            <div class="fields">${fieldsHtml}</div>
+
+            <div class="footer">
+              <span>Website: <a href="${websiteLink}">${websiteLink}</a></span>
+              <span>Printed: ${printedAt}</span>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 px-3 py-4 text-slate-900 sm:px-4 sm:py-6 lg:px-6 lg:py-10">
       <div
@@ -397,7 +580,16 @@ export default function StaffRecordPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="text-lg font-semibold sm:text-xl">Staff Details</h2>
                 {verified ? (
-                  <span className="w-fit rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Verified</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handlePrintRecord}
+                      className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700"
+                    >
+                      Print / PDF A4
+                    </button>
+                    <span className="w-fit rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Verified</span>
+                  </div>
                 ) : (
                   <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Locked</span>
                 )}

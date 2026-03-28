@@ -27,7 +27,18 @@ export type SheetContext = {
 export const STAFF_RANGE = 'A:AZ';
 export const NAME_KEY = 'name';
 export const PID_KEY = 'pid';
-export const LOCKED_KEYS = new Set([NAME_KEY, PID_KEY, 's_no', 'sno', 'serial_no', 'serial']);
+export const LOCKED_KEYS = new Set([
+  NAME_KEY,
+  PID_KEY,
+  's_no',
+  'sno',
+  'serial_no',
+  'serial',
+  // Retirement date is derived from DOB formula and should remain locked for users.
+  'date_of_retirement',
+  'retirement_date',
+  'date_of_retiremnet',
+]);
 
 const requiredEnv = (key: string) => {
   const value = process.env[key]?.trim();
