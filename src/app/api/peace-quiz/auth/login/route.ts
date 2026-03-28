@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getQuizCredentialsForProgram } from '@/app/lib/quizAccounts';
+import { getQuizUsersFromSheet } from '@/app/lib/googleSheets';
+import { getQuizSheetConfigForProgram } from '@/app/lib/quizSheets';
 import { AUTH_SESSION_COOKIE, createSessionToken } from '@/lib/session';
 
 export const runtime = 'nodejs';
@@ -30,25 +32,83 @@ export async function POST(request: Request) {
     }
 
     const credentials = getQuizCredentialsForProgram(programName);
-    if (!credentials) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `No login setup found for ${programName}.`,
-        },
-        { status: 401 }
-      );
-    }
 
-    const selected = credentials[role];
-    if (!selected || selected.username !== username || selected.password !== password) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Invalid username or password for selected role.',
-        },
-        { status: 401 }
+    if (role === 'student') {
+      // Students: verify from Google Sheets 'Users' tab only
+      const sheetConfig = getQuizSheetConfigForProgram(programName);
+      if (!sheetConfig) {
+        return NextResponse.json(
+          { success: false, message: `No login setup found for ${programName}.` },
+          { status: 401 }
+        );
+      }
+
+      const sheetUsers = await getQuizUsersFromSheet(sheetConfig.spreadsheetId);
+      const normalizedProgram = programName.trim().toLowerCase();
+      const matchedUser = sheetUsers.find(
+        (u) =>
+          u.username === username &&
+          u.password === password &&
+          u.role === 'student' &&
+          u.program === normalizedProgram
       );
+
+      if (!matchedUser) {
+        return NextResponse.json(
+          { success: false, message: 'Invalid username or password for selected role.' },
+          { status: 401 }
+        );
+      }
+
+      const studentClassLevel = matchedUser.class?.trim() || '';
+
+      const token = await createSessionToken({
+        role,
+        username,
+        programName,
+        ...(studentClassLevel ? { classLevel: studentClassLevel } : {}),
+      });
+
+      const response = NextResponse.json({
+        success: true,
+        session: {
+          role,
+          username,
+          programName,
+          source: 'peace-quiz',
+          ...(studentClassLevel ? { classLevel: studentClassLevel } : {}),
+        },
+      });
+
+      response.cookies.set(AUTH_SESSION_COOKIE, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 8,
+      });
+
+      return response;
+    } else {
+      // Admin / Teacher: verify from hardcoded quizAccounts
+      if (!credentials) {
+        return NextResponse.json(
+          { success: false, message: `No login setup found for ${programName}.` },
+          { status: 401 }
+        );
+      }
+
+      const selected = credentials[role];
+      const isValid =
+        Array.isArray(selected) &&
+        selected.some((cred) => cred.username === username && cred.password === password);
+
+      if (!isValid) {
+        return NextResponse.json(
+          { success: false, message: 'Invalid username or password for selected role.' },
+          { status: 401 }
+        );
+      }
     }
 
     const token = await createSessionToken({

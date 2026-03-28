@@ -5,6 +5,7 @@ export type AuthSession = {
   source: 'peace-quiz';
   username: string;
   programName: string;
+  classLevel?: string;
 };
 
 export const roleRouteMap: Record<Role, string> = {
@@ -37,12 +38,12 @@ export const fetchAuthSession = async (): Promise<AuthSession | null> => {
       return null;
     }
 
-    const { role, source, username, programName } = data.session;
+    const { role, source, username, programName, classLevel } = data.session;
     if (!role || source !== 'peace-quiz' || !username || !programName) {
       return null;
     }
 
-    return data.session;
+    return { role, source, username, programName, ...(classLevel ? { classLevel } : {}) };
   } catch {
     return null;
   }

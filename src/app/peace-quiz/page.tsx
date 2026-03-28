@@ -24,6 +24,13 @@ export default function PeaceQuizLoginPage() {
   const [programNameInput, setProgramNameInput] = useState(DEFAULT_QUIZ_PROGRAM_NAME);
   const [isProgramNameSaved, setIsProgramNameSaved] = useState(false);
   const [showLoginPanel, setShowLoginPanel] = useState(false);
+  const [showChangePasswordPanel, setShowChangePasswordPanel] = useState(false);
+  const [currentPasswordForChange, setCurrentPasswordForChange] = useState('');
+  const [newPasswordForChange, setNewPasswordForChange] = useState('');
+  const [confirmPasswordForChange, setConfirmPasswordForChange] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [changePasswordMessage, setChangePasswordMessage] = useState('');
+  const [changePasswordError, setChangePasswordError] = useState('');
 
   useEffect(() => {
     const syncProgramName = () => {
@@ -129,11 +136,95 @@ export default function PeaceQuizLoginPage() {
     setError('');
   };
 
+  const handleChangePassword = async () => {
+    setChangePasswordError('');
+    setChangePasswordMessage('');
+
+    if (role !== 'student') {
+      setChangePasswordError('Password change on login page is available for students only.');
+      return;
+    }
+
+    if (!username.trim()) {
+      setChangePasswordError('Enter your username first.');
+      return;
+    }
+
+    if (!currentPasswordForChange || !newPasswordForChange || !confirmPasswordForChange) {
+      setChangePasswordError('Please fill current, new, and confirm password fields.');
+      return;
+    }
+
+    if (newPasswordForChange !== confirmPasswordForChange) {
+      setChangePasswordError('New password and confirm password do not match.');
+      return;
+    }
+
+    if (newPasswordForChange.length < 6) {
+      setChangePasswordError('New password must be at least 6 characters.');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const response = await fetch('/api/peace-quiz/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          role: 'student',
+          programName,
+          currentPassword: currentPasswordForChange,
+          newPassword: newPasswordForChange,
+        }),
+      });
+
+      const payload = (await response.json()) as { success: boolean; message?: string };
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || 'Password change failed.');
+      }
+
+      setChangePasswordMessage('Password updated. You can now login with your new password.');
+      setCurrentPasswordForChange('');
+      setNewPasswordForChange('');
+      setConfirmPasswordForChange('');
+      setPassword('');
+    } catch (requestError) {
+      setChangePasswordError(
+        requestError instanceof Error ? requestError.message : 'Password change failed.'
+      );
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleChangePasswordEnter = (
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+
+    // Prevent login form submit when user is working inside change-password fields.
+    event.preventDefault();
+    if (!isChangingPassword) {
+      handleChangePassword();
+    }
+  };
+
   const handleBackToSetup = () => {
     setShowLoginPanel(false);
     setError('');
     setUsername('');
     setPassword('');
+    setShowChangePasswordPanel(false);
+    setCurrentPasswordForChange('');
+    setNewPasswordForChange('');
+    setConfirmPasswordForChange('');
+    setChangePasswordError('');
+    setChangePasswordMessage('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -315,6 +406,87 @@ export default function PeaceQuizLoginPage() {
                       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                     />
                   </div>
+
+                  {role === 'student' ? (
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+                          Need to change password?
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowChangePasswordPanel((current) => !current);
+                            setChangePasswordError('');
+                            setChangePasswordMessage('');
+                          }}
+                          className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-indigo-400 hover:text-indigo-700"
+                        >
+                          {showChangePasswordPanel ? 'Hide' : 'Change Password'}
+                        </button>
+                      </div>
+
+                      {showChangePasswordPanel ? (
+                        <div className="mt-3 space-y-3">
+                          <p className="text-xs text-slate-600">
+                            Verify your current password, then set a new one.
+                          </p>
+
+                          <div>
+                            <label className="mb-1 block text-xs font-medium text-slate-700">Current Password</label>
+                            <input
+                              type="password"
+                              value={currentPasswordForChange}
+                              onChange={(event) => setCurrentPasswordForChange(event.target.value)}
+                              onKeyDown={handleChangePasswordEnter}
+                              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                              placeholder="Enter current password"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-xs font-medium text-slate-700">New Password</label>
+                            <input
+                              type="password"
+                              value={newPasswordForChange}
+                              onChange={(event) => setNewPasswordForChange(event.target.value)}
+                              onKeyDown={handleChangePasswordEnter}
+                              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                              placeholder="Enter new password"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1 block text-xs font-medium text-slate-700">Confirm New Password</label>
+                            <input
+                              type="password"
+                              value={confirmPasswordForChange}
+                              onChange={(event) => setConfirmPasswordForChange(event.target.value)}
+                              onKeyDown={handleChangePasswordEnter}
+                              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                              placeholder="Confirm new password"
+                            />
+                          </div>
+
+                          {changePasswordError ? (
+                            <p className="text-xs text-red-600">{changePasswordError}</p>
+                          ) : null}
+                          {changePasswordMessage ? (
+                            <p className="text-xs text-emerald-700">{changePasswordMessage}</p>
+                          ) : null}
+
+                          <button
+                            type="button"
+                            onClick={handleChangePassword}
+                            disabled={isChangingPassword}
+                            className="w-full rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {isChangingPassword ? 'Updating password...' : 'Update Password'}
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
 
                   {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

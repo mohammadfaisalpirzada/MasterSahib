@@ -39,6 +39,7 @@ export default function StartPracticePage() {
   const router = useRouter();
   const [username, setUsername] = useState('Student');
   const [programName, setProgramName] = useState('');
+  const [sessionClassLevel, setSessionClassLevel] = useState('');
   const [loadingClasses, setLoadingClasses] = useState(true);
   const [loadingSubjects, setLoadingSubjects] = useState(true);
   const [classOptions, setClassOptions] = useState<string[]>([]);
@@ -59,6 +60,7 @@ export default function StartPracticePage() {
       const session = await fetchAuthSession();
       setUsername(session?.username || 'Student');
       setProgramName(session?.programName || getQuizProgramName());
+      setSessionClassLevel(session?.classLevel?.trim() || '');
 
       const savedSession = localStorage.getItem(LAST_SESSION_KEY);
       setHasSavedSession(Boolean(savedSession));
@@ -92,7 +94,12 @@ export default function StartPracticePage() {
         }
 
         setClassOptions(classes);
-        setClassLevel((current) => (classes.includes(current) ? current : classes[0]));
+        // Default to student's own class if known, else first tab
+        setClassLevel((current) => {
+          if (current && classes.includes(current)) return current;
+          if (sessionClassLevel && classes.includes(sessionClassLevel)) return sessionClassLevel;
+          return classes[0];
+        });
       } catch (error) {
         setLoadError(error instanceof Error ? error.message : 'Unable to load classes.');
         setClassOptions([]);
@@ -103,7 +110,7 @@ export default function StartPracticePage() {
     };
 
     loadClasses();
-  }, [programName]);
+  }, [programName, sessionClassLevel]);
 
   useEffect(() => {
     if (!programName || !classLevel) {

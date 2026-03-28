@@ -176,3 +176,79 @@ export const updateQuizRowInSheet = async (options: QuizSheetUpdateOptions) => {
     },
   });
 };
+
+export type SheetUser = {
+  username: string;
+  password: string;
+  role: string;
+  program: string;
+  class: string;
+};
+
+// Reads the 'Users' tab — expected header: username | password | role | program | class
+export const getQuizUsersFromSheet = async (spreadsheetIdInput?: string): Promise<SheetUser[]> => {
+  try {
+    const spreadsheetId = resolveSpreadsheetId(spreadsheetIdInput);
+    const sheets = getGoogleSheetsClient();
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "'Users'!A:E",
+    });
+
+    const rows = response.data.values ?? [];
+    if (rows.length < 2) return [];
+
+    const [, ...dataRows] = rows;
+    return dataRows
+      .filter((row) => row.some((cell) => String(cell ?? '').trim()))
+      .map((row) => ({
+        username: String(row[0] ?? '').trim(),
+        password: String(row[1] ?? '').trim(),
+        role: String(row[2] ?? '').trim().toLowerCase(),
+        program: String(row[3] ?? '').trim().toLowerCase(),
+        class: String(row[4] ?? '').trim(),
+      }));
+  } catch {
+    return [];
+  }
+};
+
+// Updates the password for a matching user row in the 'Users' tab
+export const updateQuizUserPasswordInSheet = async (
+  username: string,
+  program: string,
+  role: string,
+  newPassword: string,
+  spreadsheetIdInput?: string
+): Promise<boolean> => {
+  const spreadsheetId = resolveSpreadsheetId(spreadsheetIdInput);
+  const sheets = getGoogleSheetsClient();
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: "'Users'!A:D",
+  });
+
+  const rows = response.data.values ?? [];
+  const normalizedProgram = program.trim().toLowerCase();
+
+  for (let i = 1; i < rows.length; i += 1) {
+    const rowUsername = String(rows[i]?.[0] ?? '').trim();
+    const rowRole = String(rows[i]?.[2] ?? '').trim().toLowerCase();
+    const rowProgram = String(rows[i]?.[3] ?? '').trim().toLowerCase();
+
+    if (rowUsername === username && rowRole === role && rowProgram === normalizedProgram) {
+      const sheetRowNumber = i + 1;
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `'Users'!B${sheetRowNumber}`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: { values: [[newPassword]] },
+      });
+      return true;
+    }
+  }
+
+  return false;
+};

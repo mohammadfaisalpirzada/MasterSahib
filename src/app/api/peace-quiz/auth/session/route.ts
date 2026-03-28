@@ -25,6 +25,7 @@ export async function GET() {
       source: payload.source,
       username: payload.username,
       programName: payload.programName,
+      ...(payload.classLevel ? { classLevel: payload.classLevel } : {}),
     },
   });
 }

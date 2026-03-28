@@ -23,7 +23,20 @@ const toSheetRange = (sheetName: string, columnRange = 'A:Z') => {
 
 const normalizeClassTab = (value: string) => value.trim().toLowerCase().replace(/^class\s*/i, '');
 
-const isClassTab = (value: string) => CLASS_TAB_KEYS.has(normalizeClassTab(value));
+// Supports base class tabs (e.g. VIII) and section tabs (e.g. VIIIM, VIIIO)
+const isClassTab = (value: string) => {
+  const normalized = normalizeClassTab(value);
+  if (CLASS_TAB_KEYS.has(normalized)) {
+    return true;
+  }
+
+  const match = normalized.match(/^(i|ii|iii|iv|v|vi|vii|viii|ix|x)([a-z]+)$/i);
+  if (!match) {
+    return false;
+  }
+
+  return CLASS_TAB_KEYS.has(match[1].toLowerCase());
+};
 
 const toKey = (value: string, index: number) => {
   const base = value

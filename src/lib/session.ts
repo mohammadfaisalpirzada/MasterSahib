@@ -5,6 +5,7 @@ export type SessionPayload = {
   source: 'peace-quiz';
   username: string;
   programName: string;
+  classLevel?: string;
   iat: number;
   exp: number;
 };
@@ -83,6 +84,7 @@ export const createSessionToken = async (params: {
   role: SessionRole;
   username: string;
   programName: string;
+  classLevel?: string;
   source?: 'peace-quiz';
   ttlSeconds?: number;
 }) => {
@@ -92,6 +94,7 @@ export const createSessionToken = async (params: {
     source: params.source ?? 'peace-quiz',
     username: params.username,
     programName: params.programName,
+    ...(params.classLevel ? { classLevel: params.classLevel } : {}),
     iat: now,
     exp: now + (params.ttlSeconds ?? SESSION_TTL_SECONDS),
   };
