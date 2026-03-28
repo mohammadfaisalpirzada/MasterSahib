@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { IoEyeOffOutline, IoEyeOutline } from 'react-icons/io5';
 
 type ColumnMeta = {
   key: string;
@@ -57,6 +58,8 @@ export default function StaffRecordPage() {
   const [saveToastVisible, setSaveToastVisible] = useState(false);
   const [saveToastText, setSaveToastText] = useState('');
   const [saveToastTone, setSaveToastTone] = useState<'success' | 'error'>('success');
+  const [showVerifyPid, setShowVerifyPid] = useState(false);
+  const [showEditPid, setShowEditPid] = useState(false);
 
   const selectedDirectoryItem = useMemo(
     () => directoryItems.find((item) => item.rowId === selectedRowId) || null,
@@ -341,22 +344,32 @@ export default function StaffRecordPage() {
 
                 <div>
                   <label htmlFor="verify-pid" className="mb-2 block text-sm font-medium text-slate-700">Enter PID</label>
-                  <input
-                    id="verify-pid"
-                    type="password"
-                    name="record-verification-code"
-                    autoComplete="off"
-                    spellCheck={false}
-                    data-lpignore="true"
-                    data-1p-ignore="true"
-                    data-form-type="other"
-                    inputMode="numeric"
-                    value={pidInput}
-                    onChange={(event) => setPidInput(event.target.value)}
-                    onKeyDown={handleVerifyPidKeyDown}
-                    placeholder="Enter your PID"
-                    className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
-                  />
+                  <div className="relative">
+                    <input
+                      id="verify-pid"
+                      type={showVerifyPid ? 'text' : 'password'}
+                      name="record-verification-code"
+                      autoComplete="off"
+                      spellCheck={false}
+                      data-lpignore="true"
+                      data-1p-ignore="true"
+                      data-form-type="other"
+                      inputMode="numeric"
+                      value={pidInput}
+                      onChange={(event) => setPidInput(event.target.value)}
+                      onKeyDown={handleVerifyPidKeyDown}
+                      placeholder="Enter your PID"
+                      className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 pr-12 text-sm outline-none transition focus:border-slate-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowVerifyPid((current) => !current)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-slate-300 p-1.5 text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
+                      aria-label={showVerifyPid ? 'Hide PID' : 'Show PID'}
+                    >
+                      {showVerifyPid ? <IoEyeOffOutline size={16} /> : <IoEyeOutline size={16} />}
+                    </button>
+                  </div>
                 </div>
 
                 <button
@@ -440,22 +453,32 @@ export default function StaffRecordPage() {
                     {!editMode ? (
                       <div className="mt-4 flex flex-col gap-3">
                         <label htmlFor="edit-pid" className="text-sm font-medium text-slate-700">Re-enter PID</label>
-                        <input
-                          id="edit-pid"
-                          type="password"
-                          name="record-edit-verification-code"
-                          autoComplete="off"
-                          spellCheck={false}
-                          data-lpignore="true"
-                          data-1p-ignore="true"
-                          data-form-type="other"
-                          inputMode="numeric"
-                          value={editPidInput}
-                          onChange={(event) => setEditPidInput(event.target.value)}
-                          onKeyDown={handleEditPidKeyDown}
-                          placeholder="Re-enter PID to edit"
-                          className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
-                        />
+                        <div className="relative">
+                          <input
+                            id="edit-pid"
+                            type={showEditPid ? 'text' : 'password'}
+                            name="record-edit-verification-code"
+                            autoComplete="off"
+                            spellCheck={false}
+                            data-lpignore="true"
+                            data-1p-ignore="true"
+                            data-form-type="other"
+                            inputMode="numeric"
+                            value={editPidInput}
+                            onChange={(event) => setEditPidInput(event.target.value)}
+                            onKeyDown={handleEditPidKeyDown}
+                            placeholder="Re-enter PID to edit"
+                            className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 pr-12 text-sm outline-none transition focus:border-slate-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowEditPid((current) => !current)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-slate-300 p-1.5 text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
+                            aria-label={showEditPid ? 'Hide PID' : 'Show PID'}
+                          >
+                            {showEditPid ? <IoEyeOffOutline size={16} /> : <IoEyeOutline size={16} />}
+                          </button>
+                        </div>
                         <button
                           onClick={() => void handleEnableEdit()}
                           className="min-h-[48px] w-full rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:from-amber-600 hover:to-orange-600 sm:w-auto"

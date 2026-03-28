@@ -38,6 +38,12 @@ export default function GgssNishtarRoadLandingPage() {
             >
               Open Staff Data
             </Link>
+            <Link
+              href="/ggss-nishtar-road/admin"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-400 hover:text-cyan-700"
+            >
+              Admin Dashboard
+            </Link>
             <span className="text-xs font-medium text-slate-500">Semis Code: 408070227</span>
           </div>
         </div>
