@@ -16,8 +16,8 @@ export default function GgssNishtarRoadLandingPage() {
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-            Yahan se aap GGSS Nishtar Road staff record verify, update aur manage kar sakte hain. Data dedicated Google Sheet
-            se load hota hai aur secure verification ke baad wahi source par save hota hai.
+            From here, you can verify, update, and manage GGSS Nishtar Road staff records. Data is loaded from the dedicated
+            Google Sheet and saved back to the same source after secure verification.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">

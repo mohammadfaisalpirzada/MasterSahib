@@ -862,7 +862,7 @@ export default function GgssAdminPage() {
           </p>
           <h1 className="mt-4 text-3xl font-black text-slate-900">Secure Admin Login</h1>
           <p className="mt-3 text-sm leading-relaxed text-slate-600">
-            Admin dashboard se aap poora Google Sheet data dekh sakte hain, individual staff detail inspect kar sakte hain, aur selected columns ko Excel mein export kar sakte hain.
+            Access the full Google Sheet, inspect individual staff records, and export selected columns to Excel.
           </p>
 
           <form onSubmit={handleLogin} className="mt-6 space-y-4">
@@ -921,7 +921,7 @@ export default function GgssAdminPage() {
               </p>
               <h1 className="mt-4 text-3xl font-black text-slate-900 sm:text-4xl">Staff Sheet Control Center</h1>
               <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
-                Yahan admin poori staff sheet ko table form mein dekh sakta hai, kisi bhi individual staff record ko inspect kar sakta hai, aur selected columns ka Excel export nikaal sakta hai.
+                View the complete staff sheet in table format, inspect any individual record, and export selected columns to Excel.
               </p>
             </div>
 
@@ -1335,7 +1335,7 @@ export default function GgssAdminPage() {
               <div>
                 <h2 className="text-xl font-bold text-slate-900">Excel Export</h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Sirf woh columns select karein jo export chahiye hon. Downloaded file mein tamam staff rows hongi.
+                  Select only the columns you want to export. The downloaded file will include all staff rows.
                 </p>
               </div>
               <button

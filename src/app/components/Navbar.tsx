@@ -9,10 +9,11 @@ const navItems = [
   { label: 'Home', href: '/' },
   { label: 'Quiz Program', href: '/peace-quiz' },
   { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },
-  { label: 'Portfolio', href: '/portfolio' },
   { label: 'Resume Builder', href: '/resume-builder' },
   { label: 'Contact', href: '/contact' },
 ];
+
+const secondaryNavItem = { label: 'Portfolio', href: '/portfolio' };
 
 const Navbar: React.FC = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -73,6 +74,16 @@ const Navbar: React.FC = () => {
         </ul>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <Link
+            href={secondaryNavItem.href}
+            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+              isActiveRoute(secondaryNavItem.href)
+                ? 'border-white bg-white text-indigo-700'
+                : 'border-white/35 bg-white/10 text-white hover:bg-white/20'
+            }`}
+          >
+            {secondaryNavItem.label}
+          </Link>
           <div className="rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm text-indigo-50">
             Welcome back
           </div>
@@ -124,6 +135,21 @@ const Navbar: React.FC = () => {
                 </li>
               ))}
             </ul>
+
+            <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-100">More</p>
+              <Link
+                href={secondaryNavItem.href}
+                className={`mt-3 block rounded-xl border px-4 py-3 text-base font-semibold transition ${
+                  isActiveRoute(secondaryNavItem.href)
+                    ? 'border-white/70 bg-white text-indigo-700'
+                    : 'border-white/20 bg-white/10 text-white hover:bg-white/20'
+                }`}
+                onClick={() => setIsMobileOpen(false)}
+              >
+                {secondaryNavItem.label}
+              </Link>
+            </div>
 
             <div className="mt-auto pb-8 text-sm text-indigo-100">themastersahib.com | Responsive Learning Platform</div>
           </div>

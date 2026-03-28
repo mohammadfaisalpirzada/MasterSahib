@@ -352,7 +352,7 @@ export default function StaffRecordPage() {
       setPendingPictureMessage('Compressing image...');
       const compressedBase64 = await compressImageForSheet(file);
       setPendingPicture(compressedBase64);
-      setPendingPictureMessage('Photo ready — Save Changes dabayen.');
+      setPendingPictureMessage('Photo ready — click Save Changes.');
     } catch (error) {
       setPendingPictureMessage(error instanceof Error ? error.message : 'Unable to process image.');
     }

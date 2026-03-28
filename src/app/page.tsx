@@ -1,189 +1,384 @@
 'use client';
-import React from 'react';
-import Image from 'next/image';
 
-const HomePage = () => {
-  const getDelayClass = (index: number) => {
-    if (index === 1) return 'animation-delay-300';
-    if (index === 2) return 'animation-delay-600';
-    return 'animation-delay-0';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+
+const quickCards = [
+  {
+    title: 'Quiz',
+    description: 'Attempt quiz modules, check progress, and practice daily.',
+    href: '/peace-quiz',
+    accent: 'from-cyan-500 to-sky-600',
+  },
+  {
+    title: 'GGSS',
+    description: 'Open GGSS staff and profile management workspace.',
+    href: '/ggss-nishtar-road',
+    accent: 'from-amber-500 to-orange-600',
+  },
+  {
+    title: 'Contact',
+    description: 'Get in touch quickly for support and collaboration.',
+    href: '/contact',
+    accent: 'from-emerald-500 to-teal-600',
+  },
+  {
+    title: 'Teaching Tools',
+    description: 'Your daily-use teaching toolbox and classroom helpers.',
+    href: '/teaching-tools',
+    accent: 'from-fuchsia-500 to-pink-600',
+  },
+];
+
+const highlights = [
+  { label: 'Fast Access', value: '1 Click' },
+  { label: 'Modules', value: '4+' },
+  { label: 'Daily Ready', value: '100%' },
+];
+
+type PadletPin = {
+  id: string;
+  author: string;
+  idea: string;
+  createdAt: string;
+  styleIndex: number;
+};
+
+const padletStyles = [
+  'rotate-[-1deg] bg-gradient-to-br from-amber-50 to-orange-100 border-amber-200',
+  'rotate-[1deg] bg-gradient-to-br from-cyan-50 to-sky-100 border-cyan-200',
+  'rotate-[-2deg] bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200',
+  'rotate-[2deg] bg-gradient-to-br from-fuchsia-50 to-pink-100 border-fuchsia-200',
+];
+
+const defaultPins: PadletPin[] = [
+  {
+    id: 'seed-1',
+    author: 'Areeba (Class 8)',
+    idea: 'Add a daily 10-question revision quiz with instant feedback.',
+    createdAt: '2026-03-29T08:30:00.000Z',
+    styleIndex: 0,
+  },
+  {
+    id: 'seed-2',
+    author: 'Sir Hamza',
+    idea: 'Create a quick attendance summary tool for weekly parent updates.',
+    createdAt: '2026-03-29T09:10:00.000Z',
+    styleIndex: 1,
+  },
+  {
+    id: 'seed-3',
+    author: 'Student Council',
+    idea: 'Add a shared notice pin area for events, tests, and deadlines.',
+    createdAt: '2026-03-29T09:45:00.000Z',
+    styleIndex: 2,
+  },
+];
+
+type PadletApiResponse = {
+  success: boolean;
+  items?: PadletPin[];
+  item?: PadletPin;
+  message?: string;
+};
+
+const formatPinDate = (iso: string) => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return 'Just now';
+  }
+
+  return date.toLocaleDateString(undefined, {
+    day: '2-digit',
+    month: 'short',
+  });
+};
+
+export default function HomePage() {
+  const HOME_PADLET_LIMIT = 4;
+  const [pins, setPins] = useState<PadletPin[]>(defaultPins);
+  const [ideaAuthor, setIdeaAuthor] = useState('');
+  const [ideaText, setIdeaText] = useState('');
+  const [ideaError, setIdeaError] = useState('');
+  const [padletLoading, setPadletLoading] = useState(true);
+  const [padletSaving, setPadletSaving] = useState(false);
+
+  useEffect(() => {
+    const loadPadlet = async () => {
+      try {
+        setPadletLoading(true);
+        const response = await fetch('/api/padlet', { cache: 'no-store' });
+        const data = (await response.json()) as PadletApiResponse;
+
+        if (!response.ok || !data.success || !Array.isArray(data.items)) {
+          throw new Error(data.message || 'Unable to load ideas.');
+        }
+
+        setPins(data.items);
+      } catch (error) {
+        setIdeaError(error instanceof Error ? error.message : 'Unable to load ideas.');
+      } finally {
+        setPadletLoading(false);
+      }
+    };
+
+    void loadPadlet();
+  }, []);
+
+  const handleAddIdea = async () => {
+    const author = ideaAuthor.trim() || 'Anonymous';
+    const idea = ideaText.trim();
+
+    if (!idea) {
+      setIdeaError('Please write an idea before posting.');
+      return;
+    }
+
+    try {
+      setPadletSaving(true);
+      setIdeaError('');
+
+      const response = await fetch('/api/padlet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ author, idea }),
+      });
+
+      const data = (await response.json()) as PadletApiResponse;
+      if (!response.ok || !data.success || !data.item) {
+        throw new Error(data.message || 'Unable to save idea.');
+      }
+
+      setPins((current) => [data.item as PadletPin, ...current]);
+      setIdeaText('');
+      setIdeaAuthor('');
+    } catch (error) {
+      setIdeaError(error instanceof Error ? error.message : 'Unable to save idea.');
+    } finally {
+      setPadletSaving(false);
+    }
   };
 
-  const blogPosts = [
-    {
-      title: "Getting Started with Web Development",
-      category: "Programming",
-      readTime: "5 min read",
-      image: "/images/Mastering.png",
-      excerpt: "Begin your journey into web development with this comprehensive guide for beginners."
-    },
-    {
-      title: "Building Your First React App",
-      category: "React",
-      readTime: "8 min read",
-      image: "/images/ReactApp.jpeg",
-      excerpt: "Learn how to create your first React application from scratch with this step-by-step tutorial."
-    },
-    {
-      title: "Mastering CSS Grid Layout",
-      category: "CSS",
-      readTime: "6 min read",
-      image: "/images/Mastering.png",
-      excerpt: "Deep dive into CSS Grid and learn how to create complex layouts with ease."
-    }
-  ];
-
-  const features = [
-    {
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
-      ),
-      title: "Learn",
-      description: "Access comprehensive tutorials and guides"
-    },
-    {
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
-      title: "Connect",
-      description: "Join our community of learners"
-    },
-    {
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-        </svg>
-      ),
-      title: "Achieve",
-      description: "Earn certificates and build your portfolio"
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 ">
-      <div className='bg-white h-1'>
-        <h1> </h1>
-      </div>
-          {/* Hero Section with Animation */}
-      <section className="bg-indigo-600 text-white py-2 animate-fadeIn">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="space-y-6 animate-slideUp">
-            <h1 className="text-6xl font-bold leading-tight">
-              Empower Your Learning Journey 
-            </h1>
-            <p className="text-xl text-indigo-100 max-w-2xl">
-              Discover comprehensive tutorials, build practical projects, and advance your skills with Learnify (Master Sahub).
-            </p>
-            <div className="pt-4">
-              <button className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition duration-300 flex items-center group">
-                Start Learning
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+    <main className="min-h-screen bg-[#f4f7fb] text-slate-900">
+      <section className="relative overflow-hidden border-b border-slate-200/70 bg-white">
+        <div className="absolute -left-20 top-[-120px] h-64 w-64 rounded-full bg-cyan-200/50 blur-3xl" />
+        <div className="absolute right-[-90px] top-14 h-72 w-72 rounded-full bg-orange-200/45 blur-3xl" />
+
+        <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-16 sm:px-6 lg:px-8 lg:pt-20">
+          <div className="grid gap-8 lg:grid-cols-[1.15fr,0.85fr] lg:items-end">
+            <div className="space-y-6">
+              <p className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
+                Master Sahib Workspace
+              </p>
+
+              <h1 className="text-4xl font-black leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                One Clean Entry
+                <span className="block bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                  For Learning + Teaching
+                </span>
+              </h1>
+
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/peace-quiz"
+                  className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-700"
+                >
+                  Open Quiz
+                </Link>
+                <Link
+                  href="/teaching-tools"
+                  className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-400"
+                >
+                  Open Teaching Tools
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur sm:p-5">
+              <div className="grid grid-cols-3 gap-3">
+                {highlights.map((item) => (
+                  <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-4 text-center">
+                    <p className="text-xl font-black text-slate-900 sm:text-2xl">{item.value}</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">{item.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
+      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+        <div className="mb-5 flex items-end justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Quick Access</p>
+            <h2 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">Core Modules</h2>
+          </div>
+        </div>
 
-
-
-      {/* Features Section */}
-      <section className="py-16 animate-fadeIn animation-delay-300">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div 
-                key={feature.title}
-                className={`bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 animate-slideUp ${getDelayClass(index)}`}
-              >
-                <div className="text-indigo-600 mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {quickCards.map((card) => (
+            <Link
+              key={card.title}
+              href={card.href}
+              className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div className={`mb-4 h-1.5 w-16 rounded-full bg-gradient-to-r ${card.accent}`} />
+              <h3 className="text-xl font-bold text-slate-900">{card.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{card.description}</p>
+              <div className="mt-5 inline-flex items-center text-sm font-semibold text-slate-900">
+                Open
+                <span className="ml-2 transition group-hover:translate-x-1">→</span>
               </div>
-            ))}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-12">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Open For All ·{' '}
+                <span className="rounded-full border border-cyan-200 bg-cyan-100/80 px-2 py-1 text-cyan-800">
+                  Public board: no login required
+                </span>
+              </p>
+              <h2 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">Community Idea Padlet</h2>
+              <p className="mt-2 max-w-3xl text-sm text-slate-600 sm:text-base">
+                Anyone can drop a new idea. Notes are pinned here in a live wall style so everyone can see and build on them.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1.05fr,0.95fr]">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+              <p className="text-sm font-bold text-slate-900">Post a New Idea</p>
+              <div className="mt-3 space-y-3">
+                <input
+                  type="text"
+                  value={ideaAuthor}
+                  onChange={(event) => setIdeaAuthor(event.target.value)}
+                  placeholder="Your name (optional)"
+                  className="min-h-[46px] w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-slate-500"
+                />
+                <textarea
+                  rows={4}
+                  value={ideaText}
+                  onChange={(event) => setIdeaText(event.target.value)}
+                  placeholder="Write your idea..."
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-slate-500"
+                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleAddIdea}
+                    disabled={padletSaving}
+                    className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {padletSaving ? 'Pinning...' : 'Pin Idea'}
+                  </button>
+                  {ideaError ? <p className="text-sm font-medium text-rose-600">{ideaError}</p> : null}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {padletLoading ? (
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 sm:col-span-2">
+                  Loading ideas...
+                </div>
+              ) : null}
+
+              {!padletLoading && pins.length === 0 ? (
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 sm:col-span-2">
+                  No ideas yet. Be the first to pin one.
+                </div>
+              ) : null}
+
+              {pins.slice(0, HOME_PADLET_LIMIT).map((pin) => (
+                <article
+                  key={pin.id}
+                  className={`relative rounded-2xl border p-4 shadow-sm transition hover:-translate-y-0.5 ${padletStyles[pin.styleIndex % padletStyles.length]}`}
+                >
+                  <span className="absolute -top-2 left-6 inline-flex h-4 w-4 rounded-full border border-white bg-slate-700 shadow" />
+                  <p className="pr-2 text-sm leading-6 text-slate-800">{pin.idea}</p>
+                  <div className="mt-3 flex items-center justify-between text-xs font-semibold text-slate-600">
+                    <span>{pin.author}</span>
+                    <span>{formatPinDate(pin.createdAt)}</span>
+                  </div>
+                </article>
+              ))}
+
+              {!padletLoading && pins.length > HOME_PADLET_LIMIT ? (
+                <div className="sm:col-span-2 flex flex-wrap items-center gap-3 pt-2">
+                  <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    +{pins.length - HOME_PADLET_LIMIT} more ideas available
+                  </span>
+                  <Link
+                    href="/padlet"
+                    className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+                  >
+                    Open Idea Wall →
+                  </Link>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Latest Blog Posts */}
-      <section className="py-16 bg-white animate-fadeIn animation-delay-600">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <h2 className="text-3xl font-bold mb-12 text-center">Latest Articles</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {blogPosts.map((post, index) => (
+      <footer className="border-t border-slate-200 bg-white/80 backdrop-blur">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Master Sahib</p>
+            <h3 className="mt-2 text-xl font-black text-slate-900">Learning Hub</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Clean digital workspace for quiz, GGSS management, and daily teaching flow.
+            </p>
+          </div>
 
+          <div>
+            <p className="text-sm font-bold text-slate-900">Quick Links</p>
+            <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
+              <Link href="/peace-quiz" className="transition hover:text-slate-900">Quiz</Link>
+              <Link href="/ggss-nishtar-road" className="transition hover:text-slate-900">GGSS</Link>
+              <Link href="/teaching-tools" className="transition hover:text-slate-900">Teaching Tools</Link>
+              <Link href="/contact" className="transition hover:text-slate-900">Contact</Link>
+            </div>
+          </div>
 
-             
-<article 
-  key={post.title}
-  className={`bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 animate-slideUp ${getDelayClass(index)}`}
-  
->
-  
- <Image
-  src={post.image}
-  //src="/images/profile.jpg" 
-  alt={post.title}
-  width={800} // Set a width value (e.g., 800px)
-  height={400} // Set a height value (e.g., 400px)
-  className="w-full h-48 object-cover"
-/>
+          <div>
+            <p className="text-sm font-bold text-slate-900">Workspace</p>
+            <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
+              <p>Fast module access</p>
+              <p>Teacher daily tools</p>
+              <p>Profile & data workflow</p>
+            </div>
+          </div>
 
-  <div className="p-6">
-    
-    <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
-      <span>{post.category}</span>
-      <span>{post.readTime}</span>
-    </div>
-    <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 transition-colors">
-      {post.title}
-    </h3>
-    <p className="text-gray-600">{post.excerpt}</p>
-    <button className="mt-4 text-indigo-600 font-semibold hover:text-indigo-700 transition-colors flex items-center group">
-      Read More
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
-    </button>
-  </div>
-</article>
-
-
-
-
-
-
-
-
-
-            ))}
+          <div>
+            <p className="text-sm font-bold text-slate-900">Support</p>
+            <p className="mt-3 text-sm text-slate-600">Need a new tool? Share requirements in Contact.</p>
+            <Link
+              href="/contact"
+              className="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+            >
+              Request Feature
+            </Link>
           </div>
         </div>
-      </section>
 
-      {/* Call to Action */}
-      <section className="bg-indigo-600 text-white py-8 animate-fadeIn animation-delay-900">
-        <div className="container mx-auto px-4 max-w-6xl text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Start Learning?</h2>
-          <p className="text-indigo-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of learners who are already advancing their careers with Learnify.
-          </p>
-          <button className="bg-white text-indigo-600 px-8 py-1 rounded-lg font-semibold hover:bg-indigo-50 transition duration-300">
-            Get Started Today
-          </button>
+        <div className="border-t border-slate-200">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-slate-500 sm:flex-row sm:px-6 lg:px-8">
+            <p>© {new Date().getFullYear()} Master Sahib. All rights reserved.</p>
+            <p>Built for practical daily use.</p>
+          </div>
         </div>
-      </section>
-    </div>
+      </footer>
+    </main>
   );
-};
-
-export default HomePage;
+}
 
