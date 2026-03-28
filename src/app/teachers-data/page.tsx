@@ -27,6 +27,10 @@ type StaffApiResponse = {
   };
 };
 
+const MAX_PICTURE_UPLOAD_BYTES = 1024 * 1024; // 1MB
+const MAX_PICTURE_CELL_CHARS = 49000; // Keep below Google Sheets single-cell limit.
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
 const parseJsonResponse = async (response: Response) => {
   const contentType = response.headers.get('content-type') || '';
   if (!contentType.toLowerCase().includes('application/json')) {
@@ -35,6 +39,65 @@ const parseJsonResponse = async (response: Response) => {
   }
 
   return (await response.json()) as StaffApiResponse;
+};
+
+const readFileAsDataUrl = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Unable to read selected image.'));
+    reader.readAsDataURL(file);
+  });
+
+const loadImageElement = (dataUrl: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Invalid image file.'));
+    img.src = dataUrl;
+  });
+
+const compressImageForSheet = async (file: File): Promise<string> => {
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    throw new Error('Only JPG, PNG or WebP images are allowed.');
+  }
+
+  if (file.size > MAX_PICTURE_UPLOAD_BYTES) {
+    throw new Error('Image must be 1MB or smaller.');
+  }
+
+  const originalDataUrl = await readFileAsDataUrl(file);
+  const image = await loadImageElement(originalDataUrl);
+  let scale = Math.min(1, 900 / Math.max(image.width, image.height));
+  let quality = 0.86;
+
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.width * scale));
+    canvas.height = Math.max(1, Math.round(image.height * scale));
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('Unable to process image in browser.');
+    }
+
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const jpegDataUrl = canvas.toDataURL('image/jpeg', quality);
+    const base64 = jpegDataUrl.split(',')[1] || '';
+
+    if (base64.length <= MAX_PICTURE_CELL_CHARS) {
+      return base64;
+    }
+
+    if (quality > 0.46) {
+      quality -= 0.08;
+    } else {
+      scale *= 0.82;
+      quality = 0.86;
+    }
+  }
+
+  throw new Error('Image is still too large for Google Sheet cell. Use a smaller photo.');
 };
 
 export default function StaffRecordPage() {
@@ -60,6 +123,9 @@ export default function StaffRecordPage() {
   const [saveToastTone, setSaveToastTone] = useState<'success' | 'error'>('success');
   const [showVerifyPid, setShowVerifyPid] = useState(false);
   const [showEditPid, setShowEditPid] = useState(false);
+  const [pendingPicture, setPendingPicture] = useState<string | null>(null);
+  const [pendingPictureMessage, setPendingPictureMessage] = useState('');
+  const [pictureInputKey, setPictureInputKey] = useState(0);
 
   const selectedDirectoryItem = useMemo(
     () => directoryItems.find((item) => item.rowId === selectedRowId) || null,
@@ -226,6 +292,11 @@ export default function StaffRecordPage() {
         editableColumns.map((column) => [column.key, formData[column.key] || ''])
       );
 
+      // Include pending picture change
+      if (pendingPicture !== null) {
+        updates.picture = pendingPicture;
+      }
+
       const response = await fetch('/api/staff-records', {
         method: 'PATCH',
         headers: {
@@ -249,6 +320,9 @@ export default function StaffRecordPage() {
       setEditPidInput('');
       setEditMessage('');
       setMessage('Record verified successfully.');
+      setPendingPicture(null);
+      setPendingPictureMessage('');
+      setPictureInputKey((k) => k + 1);
       showSaveToast('Data saved', 'success');
       await loadDirectory();
     } catch (error) {
@@ -265,6 +339,37 @@ export default function StaffRecordPage() {
     setEditMode(false);
     setEditPidInput('');
     setEditMessage('Editing canceled.');
+    setPendingPicture(null);
+    setPendingPictureMessage('');
+    setPictureInputKey((k) => k + 1);
+  };
+
+  const handlePictureFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setPendingPictureMessage('Compressing image...');
+      const compressedBase64 = await compressImageForSheet(file);
+      setPendingPicture(compressedBase64);
+      setPendingPictureMessage('Photo ready — Save Changes dabayen.');
+    } catch (error) {
+      setPendingPictureMessage(error instanceof Error ? error.message : 'Unable to process image.');
+    }
+  };
+
+  const handleDeletePicture = () => {
+    setPendingPicture('');
+    setPendingPictureMessage('Photo will be removed when you save.');
+  };
+
+  const handleBackToSearch = () => {
+    setVerified(false);
+    setSelectedRowId('');
+    resetRecordState();
+    setPendingPicture(null);
+    setPendingPictureMessage('');
+    setPictureInputKey((k) => k + 1);
   };
 
   const handlePrintRecord = () => {
@@ -429,7 +534,7 @@ export default function StaffRecordPage() {
                 <div class="name-meta">${headingText}</div>
               </div>
               <div class="profile-heading">PROFILE</div>
-              <div class="photo-slot-wrap"><div class="photo-slot">Photo</div></div>
+              <div class="photo-slot-wrap">${record.picture ? `<img src="data:image/jpeg;base64,${record.picture}" alt="Photo" class="photo-slot" style="border-radius: 8px; object-fit: contain; border: 1px solid #e2e8f0;" />` : '<div class="photo-slot">Photo</div>'}</div>
             </div>
             <div class="half-line"></div>
 
@@ -467,32 +572,24 @@ export default function StaffRecordPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-6 lg:space-y-8">
+      <div className="mx-auto max-w-3xl space-y-4 sm:space-y-6">
+        {/* Header */}
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6 md:p-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">Staff Management Portal</p>
               <h1 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">GGSS Nishtar Road Staff Data</h1>
-              <p className="mt-2 text-xs text-slate-600 sm:text-sm md:text-base">
-                Secure, server-verified workflow with direct synchronization to your configured Google Sheet.
-              </p>
+              <p className="mt-1 text-xs text-slate-500">408070227</p>
             </div>
-
-            <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-3 py-2 text-xs text-cyan-800 sm:px-4 sm:py-3 sm:text-sm">
-              Directory loads first. Full data appears only after PID verification.
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-2 sm:grid-cols-3">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 sm:text-sm">
-              <span className="font-semibold text-slate-900">Active Tab:</span> {sourceLabel || 'Loading...'}
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 sm:text-sm">
-              <span className="font-semibold text-slate-900">Directory Size:</span> {directoryItems.length}
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 sm:text-sm">
-              <span className="font-semibold text-slate-900">Editable Fields:</span> {editableColumns.length}
-            </div>
+            {verified ? (
+              <button
+                type="button"
+                onClick={handleBackToSearch}
+                className="shrink-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                ← Change Staff
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -500,86 +597,92 @@ export default function StaffRecordPage() {
         {loadError ? <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">{loadError}</p> : null}
 
         {!loading && !loadError ? (
-          <div className="grid gap-4 lg:grid-cols-[0.92fr,1.08fr] lg:gap-8">
-            <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6">
-              <h2 className="text-lg font-semibold sm:text-xl">Find Staff Record</h2>
-              <div className="mt-4 space-y-4 sm:mt-5">
-                <div>
-                  <label htmlFor="staff-name-select" className="mb-2 block text-sm font-medium text-slate-700">Select Staff Name</label>
-                  <select
-                    id="staff-name-select"
-                    title="Select Staff Name"
-                    value={selectedRowId}
-                    onChange={(event) => {
-                      setSelectedRowId(event.target.value);
-                      resetRecordState();
-                    }}
-                    className="min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-500"
-                  >
-                    <option value="">Choose staff member</option>
-                    {directoryItems.map((item) => (
-                      <option key={item.rowId} value={item.rowId}>
-                        {item.sno ? `${item.sno} - ` : ''}{item.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="verify-pid" className="mb-2 block text-sm font-medium text-slate-700">Enter PID</label>
-                  <div className="relative">
-                    <input
-                      id="verify-pid"
-                      type={showVerifyPid ? 'text' : 'password'}
-                      name="record-verification-code"
-                      autoComplete="off"
-                      spellCheck={false}
-                      data-lpignore="true"
-                      data-1p-ignore="true"
-                      data-form-type="other"
-                      inputMode="numeric"
-                      value={pidInput}
-                      onChange={(event) => setPidInput(event.target.value)}
-                      onKeyDown={handleVerifyPidKeyDown}
-                      placeholder="Enter your PID"
-                      className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 pr-12 text-sm outline-none transition focus:border-slate-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowVerifyPid((current) => !current)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-slate-300 p-1.5 text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
-                      aria-label={showVerifyPid ? 'Hide PID' : 'Show PID'}
+          <>
+            {/* ── BEFORE VERIFICATION: Search panel ── */}
+            {!verified ? (
+              <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6">
+                <h2 className="text-lg font-semibold sm:text-xl">Find Staff Record</h2>
+                <div className="mt-4 space-y-4 sm:mt-5">
+                  <div>
+                    <label htmlFor="staff-name-select" className="mb-2 block text-sm font-medium text-slate-700">Select Staff Name</label>
+                    <select
+                      id="staff-name-select"
+                      title="Select Staff Name"
+                      value={selectedRowId}
+                      onChange={(event) => {
+                        setSelectedRowId(event.target.value);
+                        resetRecordState();
+                      }}
+                      className="min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                     >
-                      {showVerifyPid ? <IoEyeOffOutline size={16} /> : <IoEyeOutline size={16} />}
-                    </button>
+                      <option value="">Choose staff member</option>
+                      {directoryItems.map((item) => (
+                        <option key={item.rowId} value={item.rowId}>
+                          {item.sno ? `${item.sno} - ` : ''}{item.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                  <div>
+                    <label htmlFor="verify-pid" className="mb-2 block text-sm font-medium text-slate-700">Enter PID</label>
+                    <div className="relative">
+                      <input
+                        id="verify-pid"
+                        type={showVerifyPid ? 'text' : 'password'}
+                        name="record-verification-code"
+                        autoComplete="off"
+                        spellCheck={false}
+                        data-lpignore="true"
+                        data-1p-ignore="true"
+                        data-form-type="other"
+                        inputMode="numeric"
+                        value={pidInput}
+                        onChange={(event) => setPidInput(event.target.value)}
+                        onKeyDown={handleVerifyPidKeyDown}
+                        placeholder="Enter your PID"
+                        className="min-h-[48px] w-full rounded-2xl border border-slate-300 px-4 py-3 pr-12 text-sm outline-none transition focus:border-slate-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowVerifyPid((current) => !current)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-slate-300 p-1.5 text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
+                        aria-label={showVerifyPid ? 'Hide PID' : 'Show PID'}
+                      >
+                        {showVerifyPid ? <IoEyeOffOutline size={16} /> : <IoEyeOutline size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => void handleVerify()}
+                    className="min-h-[48px] w-full rounded-2xl bg-gradient-to-r from-slate-900 to-slate-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:from-slate-800 hover:to-slate-600"
+                  >
+                    Verify Record
+                  </button>
+
+                  {selectedDirectoryItem ? (
+                    <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
+                      Selected: <span className="font-semibold">{selectedDirectoryItem.name}</span>
+                    </div>
+                  ) : null}
+
+                  {message ? (
+                    <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{message}</div>
+                  ) : null}
                 </div>
+              </section>
+            ) : null}
 
-                <button
-                  onClick={() => void handleVerify()}
-                  className="min-h-[48px] w-full rounded-2xl bg-gradient-to-r from-slate-900 to-slate-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:from-slate-800 hover:to-slate-600"
-                >
-                  Verify Record
-                </button>
-
-                {selectedDirectoryItem ? (
-                  <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
-                    Selected: <span className="font-semibold">{selectedDirectoryItem.name}</span>
+            {/* ── AFTER VERIFICATION: Full staff record ── */}
+            {verified ? (
+              <section className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 sm:rounded-3xl">
+                {/* Top bar */}
+                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-6">
+                  <div>
+                    <p className="text-base font-semibold text-slate-900">{selectedDirectoryItem?.name || record.name || ''}</p>
+                    <p className="text-xs text-slate-500">{sourceLabel}</p>
                   </div>
-                ) : null}
-
-                {message ? (
-                  <div className={`rounded-2xl px-4 py-3 text-sm ${verified ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                    {message}
-                  </div>
-                ) : null}
-              </div>
-            </section>
-
-            <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-lg font-semibold sm:text-xl">Staff Details</h2>
-                {verified ? (
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -588,57 +691,119 @@ export default function StaffRecordPage() {
                     >
                       Print / PDF A4
                     </button>
-                    <span className="w-fit rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Verified</span>
+                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Verified</span>
                   </div>
-                ) : (
-                  <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Locked</span>
-                )}
-              </div>
-
-              {verified ? (
-                <p className="mt-2 text-xs text-slate-500 sm:text-sm">
-                  {readonlyColumns.length} locked fields and {editableColumns.length} editable fields are available for this staff record.
-                </p>
-              ) : null}
-
-              {!verified ? (
-                <div className="mt-5 rounded-2xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500 sm:mt-6 sm:p-8">
-                  Staff data will appear here after secure PID verification.
                 </div>
-              ) : (
-                <div className="mt-5 grid gap-4 sm:mt-6 lg:grid-cols-2">
-                  {columns.map((column) => {
-                    const value = String(formData[column.key] ?? '');
-                    const isReadOnly = !editMode || !column.editable;
-                    const fieldInputId = `staff-field-${column.key}`;
+
+                <div className="p-4 sm:p-6">
+                  {/* ── PHOTO (1×1, centered) ── */}
+                  {(() => {
+                    const displayPic =
+                      pendingPicture !== null
+                        ? pendingPicture
+                        : (record.picture || '');
 
                     return (
-                      <div key={column.key} className="rounded-2xl border border-slate-200 p-3 sm:p-4">
-                        <label htmlFor={fieldInputId} className="mb-2 block text-sm font-medium text-slate-700">
-                          {column.label}
-                          {!column.editable ? (
-                            <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500">locked</span>
-                          ) : null}
-                        </label>
+                      <div className="mb-6 flex flex-col items-center gap-3">
+                        {/* passport-size square */}
+                        <div className="relative h-32 w-32 overflow-hidden rounded-2xl border-2 border-slate-200 bg-slate-100 shadow-sm">
+                          {displayPic ? (
+                            <img
+                              src={`data:image/jpeg;base64,${displayPic}`}
+                              alt="Staff photo"
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-center text-xs font-medium uppercase tracking-wide text-slate-400">
+                              No<br/>Photo
+                            </div>
+                          )}
+                        </div>
 
-                        {isReadOnly ? (
-                          <div className="break-words rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-800 sm:px-4">{value || '—'}</div>
-                        ) : (
-                          <input
-                            id={fieldInputId}
-                            type="text"
-                            value={value}
-                            onChange={(event) => handleFieldChange(column.key, event.target.value)}
-                            title={column.label}
-                            placeholder={column.label}
-                            className="min-h-[48px] w-full rounded-xl border border-slate-300 px-3 py-3 text-sm outline-none transition focus:border-slate-500 sm:px-4"
-                          />
-                        )}
+                        {/* Photo controls — only in edit mode */}
+                        {editMode ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="flex gap-2">
+                              {displayPic ? (
+                                <>
+                                  <label
+                                    htmlFor="staff-photo-input"
+                                    className="cursor-pointer rounded-xl border border-cyan-300 bg-cyan-50 px-4 py-2 text-xs font-semibold text-cyan-700 transition hover:bg-cyan-100"
+                                  >
+                                    Replace Photo
+                                  </label>
+                                  <button
+                                    type="button"
+                                    onClick={handleDeletePicture}
+                                    className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                                  >
+                                    Delete Photo
+                                  </button>
+                                </>
+                              ) : (
+                                <label
+                                  htmlFor="staff-photo-input"
+                                  className="cursor-pointer rounded-xl border border-slate-300 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                                >
+                                  + Add Photo
+                                </label>
+                              )}
+                            </div>
+                            <input
+                              key={pictureInputKey}
+                              id="staff-photo-input"
+                              type="file"
+                              accept="image/*"
+                              onChange={handlePictureFileChange}
+                              className="hidden"
+                            />
+                            {pendingPictureMessage ? (
+                              <p className={`text-xs ${pendingPictureMessage.includes('ready') || pendingPictureMessage.includes('will') ? 'text-amber-600' : 'text-rose-600'}`}>
+                                {pendingPictureMessage}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
                     );
-                  })}
+                  })()}
 
-                  <div className="rounded-2xl border border-slate-200 p-3 sm:p-4 lg:col-span-2">
+                  {/* ── FIELDS GRID ── */}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {columns.map((column) => {
+                      const value = String(formData[column.key] ?? '');
+                      const isReadOnly = !editMode || !column.editable;
+                      const fieldInputId = `staff-field-${column.key}`;
+
+                      return (
+                        <div key={column.key} className="rounded-2xl border border-slate-200 p-3 sm:p-4">
+                          <label htmlFor={fieldInputId} className="mb-2 block text-sm font-medium text-slate-700">
+                            {column.label}
+                            {!column.editable ? (
+                              <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500">locked</span>
+                            ) : null}
+                          </label>
+
+                          {isReadOnly ? (
+                            <div className="break-words rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-800 sm:px-4">{value || '—'}</div>
+                          ) : (
+                            <input
+                              id={fieldInputId}
+                              type="text"
+                              value={value}
+                              onChange={(event) => handleFieldChange(column.key, event.target.value)}
+                              title={column.label}
+                              placeholder={column.label}
+                              className="min-h-[48px] w-full rounded-xl border border-slate-300 px-3 py-3 text-sm outline-none transition focus:border-slate-500 sm:px-4"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* ── EDIT SECTION ── */}
+                  <div className="mt-6 rounded-2xl border border-slate-200 p-3 sm:p-4">
                     <h3 className="text-sm font-semibold text-slate-800">Edit Access</h3>
                     <p className="mt-1 text-sm text-slate-500">To edit the record, enter PID again. Locked columns stay protected.</p>
 
@@ -704,9 +869,9 @@ export default function StaffRecordPage() {
                     ) : null}
                   </div>
                 </div>
-              )}
-            </section>
-          </div>
+              </section>
+            ) : null}
+          </>
         ) : null}
       </div>
     </div>

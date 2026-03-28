@@ -1,6 +1,16 @@
 import 'server-only';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { getQuizRowsFromSheet, getQuizSheetTitleById, updateQuizRowInSheet } from '@/app/lib/googleSheets';
+import {
+  clearRowInTabByKey,
+  deleteSheetRow,
+  ensureSheetTabExists,
+  getQuizRowsFromSheet,
+  getQuizSheetIdByTitle,
+  getQuizSheetTitleById,
+  getRowFromTabByKey,
+  updateQuizRowInSheet,
+  upsertRowByKeyInTab,
+} from '@/app/lib/googleSheets';
 
 export type ColumnMeta = {
   key: string;
@@ -27,18 +37,72 @@ export type SheetContext = {
 export const STAFF_RANGE = 'A:AZ';
 export const NAME_KEY = 'name';
 export const PID_KEY = 'pid';
+export const PICTURE_KEY = 'picture';
 export const LOCKED_KEYS = new Set([
   NAME_KEY,
   PID_KEY,
+  PICTURE_KEY,
   's_no',
   'sno',
   'serial_no',
   'serial',
-  // Retirement date is derived from DOB formula and should remain locked for users.
+]);
+
+export const PICTURES_TAB_NAME = 'pictures';
+
+export const savePictureToStaffTab = async (staffName: string, base64: string) => {
+  const { context } = await getStaffSheetRows();
+  await ensureSheetTabExists(PICTURES_TAB_NAME, ['name', 'picture'], { spreadsheetId: context.spreadsheetId });
+  await upsertRowByKeyInTab(PICTURES_TAB_NAME, staffName, [staffName, base64], { spreadsheetId: context.spreadsheetId });
+};
+
+export const loadPictureFromStaffTab = async (staffName: string): Promise<string> => {
+  if (!staffName) return '';
+  try {
+    const { context } = await getStaffSheetRows();
+    await ensureSheetTabExists(PICTURES_TAB_NAME, ['name', 'picture'], { spreadsheetId: context.spreadsheetId });
+    const row = await getRowFromTabByKey(PICTURES_TAB_NAME, staffName, { spreadsheetId: context.spreadsheetId });
+    return row[1] ?? '';
+  } catch {
+    return '';
+  }
+};
+
+export const deletePictureFromStaffTab = async (staffName: string) => {
+  if (!staffName) return;
+  const { context } = await getStaffSheetRows();
+  await ensureSheetTabExists(PICTURES_TAB_NAME, ['name', 'picture'], { spreadsheetId: context.spreadsheetId });
+  await clearRowInTabByKey(PICTURES_TAB_NAME, staffName, { spreadsheetId: context.spreadsheetId });
+};
+
+const RETIREMENT_KEYS = new Set([
   'date_of_retirement',
   'retirement_date',
   'date_of_retiremnet',
+  'retirement',
+  'dor',
+  'date_of_superannuation',
+  'superannuation_date',
 ]);
+
+const isLockedStaffField = (key: string) => {
+  return LOCKED_KEYS.has(key) || RETIREMENT_KEYS.has(key);
+};
+
+const isRetirementLabel = (label: string) => {
+  const normalized = label.trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+
+  // Covers variations like "Date of Retirement", typo variants, and superannuation labels.
+  return (
+    normalized.includes('retirement') ||
+    normalized.includes('retiremnet') ||
+    normalized.includes('retire') ||
+    normalized.includes('superannuation')
+  );
+};
 
 const requiredEnv = (key: string) => {
   const value = process.env[key]?.trim();
@@ -70,6 +134,10 @@ export const toFriendlySheetsError = (error: unknown, fallbackMessage: string) =
 
   if (normalized.includes('insufficient permissions') || normalized.includes('the caller does not have permission')) {
     return 'Service account does not have access to this sheet. Share the sheet with GOOGLE_SERVICE_ACCOUNT_EMAIL as Editor.';
+  }
+
+  if (normalized.includes('maximum of 50000 characters in a single cell')) {
+    return 'Photo is too large for Google Sheet cell. Please upload a smaller or compressed image.';
   }
 
   return rawMessage || fallbackMessage;
@@ -160,11 +228,13 @@ export const getStaffSheetRows = async () => {
 
 export const buildColumns = (headerRow: string[]): ColumnMeta[] => {
   return headerRow.map((label, index) => {
+    const normalizedLabel = String(label ?? '').trim();
     const key = normalizeKey(String(label ?? ''), index);
+    const lockedByLabel = isRetirementLabel(normalizedLabel);
     return {
       key,
-      label: String(label ?? '').trim() || `Column ${index + 1}`,
-      editable: !LOCKED_KEYS.has(key),
+      label: normalizedLabel || `Column ${index + 1}`,
+      editable: !isLockedStaffField(key) && !lockedByLabel,
     };
   });
 };
@@ -220,12 +290,61 @@ export const toRowValues = (record: Record<string, string>, columns: ColumnMeta[
   return columns.map((column) => record[column.key] || '');
 };
 
-export const saveStaffRow = async (rowNumber: number, nextRecord: Record<string, string>, columns: ColumnMeta[]) => {
+const toSheetColumnLabel = (index: number) => {
+  let value = index + 1;
+  let label = '';
+
+  while (value > 0) {
+    const remainder = (value - 1) % 26;
+    label = String.fromCharCode(65 + remainder) + label;
+    value = Math.floor((value - 1) / 26);
+  }
+
+  return label;
+};
+
+export const saveStaffRow = async (
+  rowNumber: number,
+  updates: Record<string, string>,
+  columns: ColumnMeta[]
+) => {
   const { context } = await getStaffSheetRows();
-  const rowRange = toSheetRange(context.sheetName, `A${rowNumber}:AZ${rowNumber}`);
-  await updateQuizRowInSheet({
+
+  // Update only editable changed cells so formula-driven columns are never overwritten.
+  for (let i = 0; i < columns.length; i += 1) {
+    const column = columns[i];
+    if (!column.editable) {
+      continue;
+    }
+
+    const nextValue = updates[column.key];
+    if (typeof nextValue !== 'string') {
+      continue;
+    }
+
+    const colLabel = toSheetColumnLabel(i);
+    const cellRange = toSheetRange(context.sheetName, `${colLabel}${rowNumber}:${colLabel}${rowNumber}`);
+    await updateQuizRowInSheet({
+      spreadsheetId: context.spreadsheetId,
+      range: cellRange,
+      values: [nextValue],
+    });
+  }
+};
+
+export const deleteStaffRow = async (rowNumber: number) => {
+  const { context } = await getStaffSheetRows();
+  const sheetId = await getQuizSheetIdByTitle(context.sheetName, {
     spreadsheetId: context.spreadsheetId,
-    range: rowRange,
-    values: toRowValues(nextRecord, columns),
+  });
+
+  if (sheetId === null) {
+    throw new Error('Could not resolve GGSS staff sheet id for row deletion.');
+  }
+
+  await deleteSheetRow({
+    spreadsheetId: context.spreadsheetId,
+    sheetId,
+    rowNumber,
   });
 };

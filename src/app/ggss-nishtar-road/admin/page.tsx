@@ -27,6 +27,7 @@ type AdminApiResponse = {
   columns?: ColumnMeta[];
   records?: AdminRecord[];
   items?: DirectoryItem[];
+  record?: AdminRecord;
   message?: string;
   source?: {
     sheetName: string;
@@ -58,11 +59,54 @@ export default function GgssAdminPage() {
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState('');
   const [hasLoadedData, setHasLoadedData] = useState(false);
-  const [activeView, setActiveView] = useState<'individual' | 'export' | 'table' | null>(null);
+  const [activeView, setActiveView] = useState<'individual' | 'export' | 'table' | 'picture' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRowId, setSelectedRowId] = useState('');
   const [selectedColumnKeys, setSelectedColumnKeys] = useState<string[]>([]);
   const [exportMessage, setExportMessage] = useState('');
+  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [editMode, setEditMode] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editPassword, setEditPassword] = useState('');
+  const [showEditPassword, setShowEditPassword] = useState(false);
+  const [editMessage, setEditMessage] = useState('');
+  const [unlockingEdit, setUnlockingEdit] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleteMessage, setDeleteMessage] = useState('');
+  const [deletingRecord, setDeletingRecord] = useState(false);
+  const [actionMessage, setActionMessage] = useState('');
+  const [pictureUploadMessage, setPictureUploadMessage] = useState('');
+  const [pictureSaving, setPictureSaving] = useState(false);
+  const [picturePreview, setPicturePreview] = useState<string>('');
+
+  const createFormSnapshot = (record: AdminRecord | null) => {
+    if (!record) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      columns.map((column) => [column.key, String(record[column.key] ?? '')])
+    );
+  };
+
+  const resetAdminActionState = () => {
+    setEditMode(false);
+    setEditDialogOpen(false);
+    setEditPassword('');
+    setShowEditPassword(false);
+    setEditMessage('');
+    setDeleteDialogOpen(false);
+    setDeletePassword('');
+    setShowDeletePassword(false);
+    setDeleteConfirmText('');
+    setDeleteMessage('');
+    setActionMessage('');
+    setSearchTerm('');
+  };
 
   const loadAdminData = async () => {
     try {
@@ -80,7 +124,16 @@ export default function GgssAdminPage() {
       setItems(data.items);
       setSourceLabel(data.source?.sheetName || 'GGSS staff sheet');
       setSelectedColumnKeys(data.columns.map((column) => column.key));
-      setSelectedRowId((current) => current || data.items?.[0]?.rowId || '');
+      
+      // Preserve selection if it still exists
+      setSelectedRowId((current) => {
+        const nextItems = data.items || [];
+        if (current && nextItems.some((item) => item.rowId === current)) {
+          return current;
+        }
+        return nextItems[0]?.rowId || '';
+      });
+      
       setHasLoadedData(true);
     } catch (error) {
       setDataError(error instanceof Error ? error.message : 'Unable to load admin data.');
@@ -134,9 +187,28 @@ export default function GgssAdminPage() {
     return records.find((record) => record.rowId === selectedRowId) || null;
   }, [records, selectedRowId]);
 
+  const selectedItem = useMemo(() => {
+    if (!selectedRowId) {
+      return null;
+    }
+
+    return items.find((item) => item.rowId === selectedRowId) || null;
+  }, [items, selectedRowId]);
+
   const exportableColumns = useMemo(() => {
     return columns.filter((column) => selectedColumnKeys.includes(column.key));
   }, [columns, selectedColumnKeys]);
+
+  useEffect(() => {
+    if (selectedRecord && !editMode) {
+      setFormData(createFormSnapshot(selectedRecord));
+      return;
+    }
+
+    if (!selectedRecord) {
+      setFormData({});
+    }
+  }, [selectedRecord, editMode, columns]);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -181,14 +253,22 @@ export default function GgssAdminPage() {
     setSelectedColumnKeys([]);
     setSearchTerm('');
     setExportMessage('');
+    setFormData({});
+    resetAdminActionState();
   };
 
-  const openView = async (view: 'individual' | 'export' | 'table') => {
+  const openView = async (view: 'individual' | 'export' | 'table' | 'picture') => {
     setActiveView(view);
     setExportMessage('');
+    setPictureUploadMessage('');
+    setPicturePreview('');
 
     if (!hasLoadedData && !dataLoading) {
       await loadAdminData();
+    }
+
+    if (view === 'picture' && selectedRecord && selectedRecord.picture) {
+      setPicturePreview(selectedRecord.picture as string);
     }
   };
 
@@ -222,12 +302,217 @@ export default function GgssAdminPage() {
     setExportMessage(`Excel export ready with ${exportableColumns.length} selected columns.`);
   };
 
+  const handleSelectedStaffChange = (rowId: string) => {
+    setSelectedRowId(rowId);
+    resetAdminActionState();
+  };
+
+  const handleFieldChange = (key: string, value: string) => {
+    setFormData((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  };
+
+  const openEditDialog = () => {
+    if (!selectedRecord) {
+      setActionMessage('Select a staff member first.');
+      return;
+    }
+
+    setDeleteDialogOpen(false);
+    setDeleteMessage('');
+    setEditMessage('');
+    setActionMessage('');
+    setShowEditPassword(false);
+    setEditDialogOpen(true);
+  };
+
+  const closeEditDialog = () => {
+    if (unlockingEdit) {
+      return;
+    }
+
+    setEditDialogOpen(false);
+    setEditMessage('');
+    setShowEditPassword(false);
+  };
+
+  const openDeleteDialog = () => {
+    if (!selectedRecord) {
+      setActionMessage('Select a staff member first.');
+      return;
+    }
+
+    setEditDialogOpen(false);
+    setEditMessage('');
+    setDeleteMessage('');
+    setActionMessage('');
+    setShowDeletePassword(false);
+    setDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    if (deletingRecord) {
+      return;
+    }
+
+    setDeleteDialogOpen(false);
+    setDeletePassword('');
+    setDeleteConfirmText('');
+    setDeleteMessage('');
+    setShowDeletePassword(false);
+  };
+
+  const unlockEditMode = async () => {
+    setEditMessage('');
+    setActionMessage('');
+    setDeleteDialogOpen(false);
+    setDeleteMessage('');
+
+    if (!selectedRecord) {
+      setEditMessage('Select a staff member first.');
+      return;
+    }
+
+    if (!editPassword.trim()) {
+      setEditMessage('Admin password is required to unlock edit mode.');
+      return;
+    }
+
+    try {
+      setUnlockingEdit(true);
+      const response = await fetch('/api/staff-records/admin/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: editPassword }),
+      });
+      const data = await parseAdminResponse(response);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Unable to unlock edit mode.');
+      }
+
+      setFormData(createFormSnapshot(selectedRecord));
+      setEditMode(true);
+      setEditMessage('');
+      setActionMessage('');
+    } catch (error) {
+      setEditMode(false);
+      setEditMessage(error instanceof Error ? error.message : 'Unable to unlock edit mode.');
+    } finally {
+      setUnlockingEdit(false);
+    }
+  };
+
+  const saveAdminChanges = async () => {
+    setActionMessage('');
+    setEditMessage('');
+
+    if (!selectedRecord) {
+      setActionMessage('Select a staff member first.');
+      return;
+    }
+
+    if (!editPassword.trim()) {
+      setEditMode(false);
+      setActionMessage('Admin password expired. Unlock edit mode again.');
+      return;
+    }
+
+    try {
+      setSavingEdit(true);
+      const response = await fetch('/api/staff-records/admin', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rowId: selectedRecord.rowId,
+          password: editPassword,
+          updates: Object.fromEntries(columns.map((column) => [column.key, formData[column.key] ?? ''])),
+        }),
+      });
+      const data = await parseAdminResponse(response);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Unable to save admin changes.');
+      }
+
+      setActionMessage(data.message || 'Staff record updated successfully.');
+      resetAdminActionState();
+      setEditDialogOpen(false);
+      await loadAdminData();
+    } catch (error) {
+      setActionMessage(error instanceof Error ? error.message : 'Unable to save admin changes.');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const cancelAdminEdit = () => {
+    setFormData(createFormSnapshot(selectedRecord));
+    setEditMode(false);
+    setEditPassword('');
+    setShowEditPassword(false);
+    setEditMessage('');
+    setActionMessage('Edit cancelled.');
+  };
+
+  const deleteStaffRecord = async () => {
+    setDeleteMessage('');
+    setActionMessage('');
+
+    if (!selectedRecord) {
+      setDeleteMessage('Select a staff member first.');
+      return;
+    }
+
+    if (!deletePassword.trim()) {
+      setDeleteMessage('Admin password is required before deletion.');
+      return;
+    }
+
+    if (deleteConfirmText.trim().toUpperCase() !== 'DELETE') {
+      setDeleteMessage('Type DELETE to confirm permanent removal.');
+      return;
+    }
+
+    try {
+      setDeletingRecord(true);
+      const response = await fetch('/api/staff-records/admin', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rowId: selectedRecord.rowId,
+          password: deletePassword,
+        }),
+      });
+      const data = await parseAdminResponse(response);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Unable to delete staff record.');
+      }
+
+      resetAdminActionState();
+      setActionMessage(data.message || 'Staff record deleted successfully.');
+      await loadAdminData();
+    } catch (error) {
+      setDeleteMessage(error instanceof Error ? error.message : 'Unable to delete staff record.');
+    } finally {
+      setDeletingRecord(false);
+    }
+  };
+
   const printSelectedRecord = () => {
     if (!selectedRecord) {
       return;
     }
 
-    const selectedItem = items.find((item) => item.rowId === selectedRowId) || null;
     const genderValue = String(selectedRecord.gender ?? '').trim().toLowerCase();
     const titlePrefix = genderValue === 'male' ? 'Mr.' : genderValue === 'female' ? 'Mrs.' : '';
     const displayName = selectedItem?.name?.trim() || String(selectedRecord.name ?? '').trim() || 'Staff Record';
@@ -466,7 +751,7 @@ export default function GgssAdminPage() {
               </div>
               <div class="profile-heading">PROFILE</div>
               <div class="photo-slot-wrap">
-                <div class="photo-slot">Photo</div>
+                ${selectedRecord.picture ? `<img src="data:image/jpeg;base64,${selectedRecord.picture}" alt="Photo" class="photo-slot" style="border-radius: 8px; object-fit: contain; border: 1px solid #e2e8f0;" />` : '<div class="photo-slot">Photo</div>'}
               </div>
             </div>
             <div class="half-line"></div>
@@ -486,6 +771,82 @@ export default function GgssAdminPage() {
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
+  };
+
+  const handlePictureFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setPictureUploadMessage('Processing image...');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/staff-records/picture', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = (await response.json()) as { success: boolean; data?: string; message?: string };
+
+      if (!response.ok || !data.success) {
+        setPictureUploadMessage(data.message || 'Unable to process image.');
+        return;
+      }
+
+      if (data.data) {
+        setPicturePreview(data.data);
+        setPictureUploadMessage('Image ready. Click "Save Picture" to update.');
+      }
+    } catch (error) {
+      setPictureUploadMessage(error instanceof Error ? error.message : 'Unable to process image.');
+    }
+  };
+
+  const savePictureToSheet = async () => {
+    if (!selectedRecord || !picturePreview) {
+      setPictureUploadMessage('Please upload an image first.');
+      return;
+    }
+
+    if (!editPassword.trim()) {
+      setPictureUploadMessage('Admin password required to save picture.');
+      return;
+    }
+
+    try {
+      setPictureSaving(true);
+      const response = await fetch('/api/staff-records/admin', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rowId: selectedRecord.rowId,
+          password: editPassword,
+          updates: { picture: picturePreview },
+        }),
+      });
+      const data = await parseAdminResponse(response);
+
+      if (!response.ok || !data.success) {
+        setPictureUploadMessage(data.message || 'Unable to save picture.');
+        return;
+      }
+
+      setPictureUploadMessage('Picture saved successfully!');
+      setEditPassword('');
+      await loadAdminData();
+    } catch (error) {
+      setPictureUploadMessage(error instanceof Error ? error.message : 'Unable to save picture.');
+    } finally {
+      setPictureSaving(false);
+    }
+  };
+
+  const removePicturePreview = () => {
+    setPicturePreview('');
+    setPictureUploadMessage('');
   };
 
   if (authLoading) {
@@ -632,6 +993,15 @@ export default function GgssAdminPage() {
                 <p className="text-sm font-bold">Export Selected Columns</p>
                 <p className="mt-1 text-xs text-slate-500">Choose only needed columns and download Excel</p>
               </button>
+
+              <button
+                type="button"
+                onClick={() => void openView('picture')}
+                className={`rounded-2xl border px-5 py-4 text-left transition ${activeView === 'picture' ? 'border-cyan-500 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-cyan-300'}`}
+              >
+                <p className="text-sm font-bold">Staff Picture Upload</p>
+                <p className="mt-1 text-xs text-slate-500">Upload or change staff member photo</p>
+              </button>
             </div>
 
             {activeView ? (
@@ -650,36 +1020,31 @@ export default function GgssAdminPage() {
 
         {activeView === 'individual' ? (
           <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-xl font-bold text-slate-900">Individual Staff View</h2>
-              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-slate-900">Individual Staff View</h2>
+                <p className="mt-1 text-sm text-slate-600">Select a staff member to view and manage details</p>
+              </div>
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search staff by name or S.No"
-                  className="min-h-[46px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 sm:w-72"
+                  placeholder="Search name or S.No"
+                  className="min-h-[46px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 sm:w-56"
                 />
-                <button
-                  type="button"
-                  onClick={printSelectedRecord}
-                  disabled={!selectedRecord}
-                  className="rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Print / PDF A4
-                </button>
               </div>
             </div>
 
-            <div className="mt-4 max-w-xl">
-              <label htmlFor="admin-staff-select" className="mb-2 block text-sm font-medium text-slate-700">Select Staff</label>
+            <div className="mt-4 max-w-2xl">
+              <label htmlFor="admin-staff-select" className="mb-2 block text-sm font-medium text-slate-700">Select Staff Member</label>
               <select
                 id="admin-staff-select"
                 value={selectedRowId}
-                onChange={(event) => setSelectedRowId(event.target.value)}
+                onChange={(event) => handleSelectedStaffChange(event.target.value)}
                 className="min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500"
               >
-                <option value="">Choose staff member</option>
+                <option value="">Choose staff member...</option>
                 {filteredItems.map((item) => (
                   <option key={item.rowId} value={item.rowId}>
                     {item.sno ? `${item.sno} - ` : ''}{item.name}
@@ -689,20 +1054,279 @@ export default function GgssAdminPage() {
             </div>
 
             {!selectedRecord ? (
-              <div className="mt-4 rounded-2xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
-                Select a staff member to view individual details.
+              <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
+                <p className="text-sm text-slate-500">Select a staff member to view and edit details</p>
               </div>
             ) : (
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {columns.map((column) => (
-                  <div key={column.key} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{column.label}</p>
-                    <p className="mt-1 break-words text-sm font-medium text-slate-800">{String(selectedRecord[column.key] ?? '—') || '—'}</p>
+              <>
+                <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">Staff Name</p>
+                      <h3 className="mt-2 text-lg font-bold text-slate-900">{selectedItem?.name || 'Unknown'}</h3>
+                      <p className="mt-1 text-xs text-slate-500">Row ID: {selectedRecord.rowId}{selectedItem?.sno ? ` | S.No: ${selectedItem.sno}` : ''}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={printSelectedRecord}
+                        disabled={!selectedRecord}
+                        className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Print A4
+                      </button>
+                      <button
+                        type="button"
+                        onClick={openEditDialog}
+                        className="rounded-xl bg-amber-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-amber-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={openDeleteDialog}
+                        className="rounded-xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  {columns.map((column) => {
+                    const currentValue = String(selectedRecord[column.key] ?? '');
+                    return (
+                      <div key={column.key} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5">
+                        <p className="text-xs font-semibold uppercase text-slate-500">{column.label}</p>
+                        <p className="mt-1 break-words text-sm font-medium text-slate-800">{currentValue || '—'}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {actionMessage ? (
+                  <p className={`mt-4 rounded-xl px-4 py-3 text-sm font-medium ${actionMessage.toLowerCase().includes('success') || actionMessage.toLowerCase().includes('updated') || actionMessage.toLowerCase().includes('deleted') ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                    {actionMessage}
+                  </p>
+                ) : null}
+              </>
             )}
           </section>
+        ) : null}
+
+        {editDialogOpen ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Edit Staff Record</h3>
+                  <p className="mt-1 text-sm text-slate-600">{selectedItem?.name || 'Staff Record'}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeEditDialog}
+                  className="text-slate-400 transition hover:text-slate-600"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {!editMode ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                  <p className="text-sm font-semibold text-amber-900">Verification Required</p>
+                  <p className="mt-2 text-sm text-amber-800">Enter admin password to unlock edit mode</p>
+                  
+                  <div className="mt-4 space-y-3">
+                    <div>
+                      <label htmlFor="edit-modal-password" className="block text-sm font-medium text-slate-700">
+                        Admin Password
+                      </label>
+                      <div className="relative mt-2">
+                        <input
+                          id="edit-modal-password"
+                          type={showEditPassword ? 'text' : 'password'}
+                          value={editPassword}
+                          onChange={(event) => setEditPassword(event.target.value)}
+                          placeholder="Enter password"
+                          className="min-h-[44px] w-full rounded-lg border border-slate-300 px-4 py-2 pr-12 text-sm outline-none transition focus:border-amber-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowEditPassword((current) => !current)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
+                          aria-label={showEditPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showEditPassword ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {editMessage ? (
+                      <p className={`rounded-lg px-3 py-2 text-sm ${editMode ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                        {editMessage}
+                      </p>
+                    ) : null}
+
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={unlockEditMode}
+                        disabled={unlockingEdit}
+                        className="flex-1 rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-70"
+                      >
+                        {unlockingEdit ? 'Verifying...' : 'Unlock Edit'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={closeEditDialog}
+                        className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {columns.map((column) => {
+                      const currentValue = String(formData[column.key] ?? '');
+                      const fieldId = `edit-modal-field-${column.key}`;
+                      return (
+                        <div key={column.key}>
+                          <label htmlFor={fieldId} className="block text-xs font-semibold uppercase text-slate-600">
+                            {column.label}
+                          </label>
+                          {column.editable ? (
+                            <input
+                              id={fieldId}
+                              type="text"
+                              value={currentValue}
+                              onChange={(event) => handleFieldChange(column.key, event.target.value)}
+                              className="mt-1.5 min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                            />
+                          ) : (
+                            <p className="mt-1.5 min-h-[40px] flex items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                              {currentValue || '—'} <span className="ml-2 text-xs text-slate-400">(read-only)</span>
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={saveAdminChanges}
+                      disabled={savingEdit}
+                      className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {savingEdit ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelAdminEdit}
+                      disabled={savingEdit}
+                      className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {deleteDialogOpen ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md space-y-4 rounded-3xl bg-white p-6 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-rose-700">Delete Staff Record</h3>
+                <button
+                  type="button"
+                  onClick={closeDeleteDialog}
+                  className="text-slate-400 transition hover:text-slate-600"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3 rounded-lg border border-rose-200 bg-rose-50 p-4">
+                <p className="text-sm font-semibold text-rose-900">Permanent Delete</p>
+                <p className="text-sm text-rose-800">
+                  Yeh action select kiye huay staff record ko permanently sheet se delete kar dega. Isko undo nahi kar sakty.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label htmlFor="delete-modal-password" className="block text-sm font-medium text-slate-700">
+                    Confirm Password
+                  </label>
+                  <div className="relative mt-2">
+                    <input
+                      id="delete-modal-password"
+                      type={showDeletePassword ? 'text' : 'password'}
+                      value={deletePassword}
+                      onChange={(event) => setDeletePassword(event.target.value)}
+                      placeholder="Enter password"
+                      className="min-h-[44px] w-full rounded-lg border border-slate-300 px-4 py-2 pr-12 text-sm outline-none transition focus:border-rose-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDeletePassword((current) => !current)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
+                      aria-label={showDeletePassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showDeletePassword ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="delete-modal-confirm" className="block text-sm font-medium text-slate-700">
+                    Type <span className="font-bold">DELETE</span> to confirm
+                  </label>
+                  <input
+                    id="delete-modal-confirm"
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(event) => setDeleteConfirmText(event.target.value)}
+                    placeholder="DELETE"
+                    className="mt-2 min-h-[44px] w-full rounded-lg border border-slate-300 px-4 py-2 text-sm uppercase outline-none transition focus:border-rose-500"
+                  />
+                </div>
+
+                {deleteMessage ? (
+                  <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{deleteMessage}</p>
+                ) : null}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={deleteStaffRecord}
+                  disabled={deletingRecord}
+                  className="flex-1 rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {deletingRecord ? 'Deleting...' : 'Delete Permanently'}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeDeleteDialog}
+                  disabled={deletingRecord}
+                  className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         ) : null}
 
         {activeView === 'export' ? (
@@ -772,6 +1396,122 @@ export default function GgssAdminPage() {
                 </tbody>
               </table>
             </div>
+          </section>
+        ) : null}
+
+        {activeView === 'picture' ? (
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900">Staff Picture Upload</h2>
+            <p className="mt-1 text-sm text-slate-600">Select a staff member and upload their photo (JPG or PNG, max 500KB)</p>
+
+            <div className="mt-4 max-w-2xl">
+              <label htmlFor="picture-staff-select" className="mb-2 block text-sm font-medium text-slate-700">Select Staff Member</label>
+              <select
+                id="picture-staff-select"
+                value={selectedRowId}
+                onChange={(event) => {
+                  handleSelectedStaffChange(event.target.value);
+                  const newRecord = records.find((r) => r.rowId === event.target.value);
+                  setPicturePreview(newRecord?.picture ? String(newRecord.picture) : '');
+                }}
+                className="min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500"
+              >
+                <option value="">Choose staff member...</option>
+                {filteredItems.map((item) => (
+                  <option key={item.rowId} value={item.rowId}>
+                    {item.sno ? `${item.sno} - ` : ''}{item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {!selectedRecord ? (
+              <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
+                <p className="text-sm text-slate-500">Select a staff member to upload photo</p>
+              </div>
+            ) : (
+              <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                <div>
+                  <p className="font-semibold text-slate-900">{selectedItem?.name}</p>
+                  <p className="mt-1 text-xs text-slate-500">Row ID: {selectedRecord.rowId}</p>
+
+                  <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6">
+                    <label htmlFor="picture-file-input" className="cursor-pointer">
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-slate-700">Click to upload photo</p>
+                        <p className="mt-1 text-xs text-slate-500">JPG or PNG, max 500KB</p>
+                      </div>
+                      <input
+                        id="picture-file-input"
+                        type="file"
+                        accept="image/jpeg,image/png"
+                        onChange={handlePictureFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {pictureUploadMessage ? (
+                    <p className={`mt-4 rounded-lg px-3 py-2 text-sm ${pictureUploadMessage.includes('successfully') || pictureUploadMessage.includes('ready') ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                      {pictureUploadMessage}
+                    </p>
+                  ) : null}
+
+                  {picturePreview && (
+                    <div className="mt-4 space-y-3">
+                      <div className="space-y-2">
+                        <label htmlFor="picture-admin-password" className="block text-sm font-medium text-slate-700">
+                          Admin Password to Save
+                        </label>
+                        <input
+                          id="picture-admin-password"
+                          type="password"
+                          value={editPassword}
+                          onChange={(event) => setEditPassword(event.target.value)}
+                          placeholder="Enter password"
+                          className="min-h-[44px] w-full rounded-lg border border-slate-300 px-4 py-2 text-sm outline-none transition focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={savePictureToSheet}
+                          disabled={pictureSaving || !editPassword.trim()}
+                          className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          {pictureSaving ? 'Saving...' : 'Save Picture'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={removePicturePreview}
+                          className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                  <p className="text-sm font-semibold text-slate-700">Preview</p>
+                  <div className="mt-4 flex items-center justify-center rounded-lg border border-slate-200 bg-white p-4">
+                    {picturePreview ? (
+                      <img
+                        src={`data:image/jpeg;base64,${picturePreview}`}
+                        alt="Preview"
+                        className="max-h-64 max-w-full rounded-lg object-contain"
+                      />
+                    ) : (
+                      <div className="flex h-64 items-center justify-center text-slate-500">
+                        <p className="text-sm">No photo selected</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
         ) : null}
       </div>

@@ -33,7 +33,7 @@ export default function GgssNishtarRoadLandingPage() {
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              href="/teachers-data"
+              href="/staff-data"
               className="inline-flex items-center justify-center rounded-2xl bg-cyan-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-200 transition hover:-translate-y-0.5 hover:bg-cyan-700"
             >
               Open Staff Data

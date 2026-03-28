@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import {
+  NAME_KEY,
+  PICTURE_KEY,
   PID_KEY,
   createStaffVerifyToken,
+  deletePictureFromStaffTab,
   getDirectoryItems,
   getStaffSheetRows,
+  loadPictureFromStaffTab,
   rowsToRecords,
   saveStaffRow,
+  savePictureToStaffTab,
   toFriendlySheetsError,
   toPublicRecord,
   verifyStaffVerifyToken,
@@ -13,6 +18,7 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+const MAX_PICTURE_CELL_CHARS = 50000;
 
 export async function GET(request: Request) {
   try {
@@ -64,10 +70,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Incorrect PID. Please try again.' }, { status: 401 });
     }
 
+    const staffName = String(record[NAME_KEY] || '').trim();
+    const picture = await loadPictureFromStaffTab(staffName);
+    const publicRecord = toPublicRecord(record, columns);
+    publicRecord.picture = picture;
+
     return NextResponse.json({
       success: true,
-      record: toPublicRecord(record, columns),
-      columns: columns.filter((column) => column.key !== PID_KEY),
+      record: publicRecord,
+      columns: columns.filter((column) => column.key !== PID_KEY && column.key !== PICTURE_KEY),
       verifyToken: createStaffVerifyToken({ rowNumber, verifiedAt: Date.now() }),
     });
   } catch (error) {
@@ -102,27 +113,55 @@ export async function PATCH(request: Request) {
       nextRecord[column.key] = String(target[column.key] || '');
     });
 
+    const normalizedEditableUpdates: Record<string, string> = {};
+
     columns.forEach((column) => {
-      if (!column.editable) {
+      if (!column.editable || column.key === PICTURE_KEY) {
         return;
       }
 
       const nextValue = body.updates?.[column.key];
       if (typeof nextValue === 'string') {
-        nextRecord[column.key] = nextValue.trim();
+        const trimmedValue = nextValue.trim();
+        nextRecord[column.key] = trimmedValue;
+        normalizedEditableUpdates[column.key] = trimmedValue;
       }
     });
 
-    await saveStaffRow(rowNumber, nextRecord, columns);
+    if (Object.keys(normalizedEditableUpdates).length > 0) {
+      await saveStaffRow(rowNumber, normalizedEditableUpdates, columns);
+    }
+
+    // Handle picture separately (saved to pictures tab, not main sheet)
+    const pictureUpdate = body.updates?.[PICTURE_KEY];
+    const staffName = String(target[NAME_KEY] || '').trim();
+    if (typeof pictureUpdate === 'string' && staffName) {
+      if (pictureUpdate.length > MAX_PICTURE_CELL_CHARS) {
+        return NextResponse.json(
+          { success: false, message: 'Image is too large for Google Sheet cell. Please upload a smaller/compressed photo.' },
+          { status: 400 }
+        );
+      }
+
+      if (pictureUpdate === '') {
+        await deletePictureFromStaffTab(staffName);
+      } else {
+        await savePictureToStaffTab(staffName, pictureUpdate);
+      }
+    }
+
+    const picture = staffName ? await loadPictureFromStaffTab(staffName) : '';
+    const updatedPublicRecord = Object.fromEntries(
+      columns
+        .filter((column) => column.key !== PID_KEY && column.key !== PICTURE_KEY)
+        .map((column) => [column.key, nextRecord[column.key] || ''])
+    );
+    updatedPublicRecord.picture = picture;
 
     return NextResponse.json({
       success: true,
-      record: Object.fromEntries(
-        columns
-          .filter((column) => column.key !== PID_KEY)
-          .map((column) => [column.key, nextRecord[column.key] || ''])
-      ),
-      columns: columns.filter((column) => column.key !== PID_KEY),
+      record: updatedPublicRecord,
+      columns: columns.filter((column) => column.key !== PID_KEY && column.key !== PICTURE_KEY),
       message: 'Data saved successfully.',
     });
   } catch (error) {

@@ -116,6 +116,27 @@ export const getQuizSheetTitleById = async (sheetId: number, options?: QuizSheet
   return matchedSheet?.properties?.title?.trim() || '';
 };
 
+export const getQuizSheetIdByTitle = async (sheetTitle: string, options?: QuizSheetMetaOptions) => {
+  const spreadsheetId = resolveSpreadsheetId(options?.spreadsheetId);
+  const sheets = getGoogleSheetsClient();
+  const normalizedTitle = sheetTitle.trim();
+
+  if (!normalizedTitle) {
+    throw new Error('Sheet title is required.');
+  }
+
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: 'sheets(properties(sheetId,title))',
+  });
+
+  const matchedSheet = response.data.sheets?.find(
+    (sheet) => (sheet.properties?.title?.trim() || '') === normalizedTitle
+  );
+
+  return matchedSheet?.properties?.sheetId ?? null;
+};
+
 const toQuotedSheetName = (sheetName: string) => {
   const escaped = sheetName.replace(/'/g, "''");
   return `'${escaped}'`;
@@ -173,6 +194,35 @@ export const updateQuizRowInSheet = async (options: QuizSheetUpdateOptions) => {
     valueInputOption: 'USER_ENTERED',
     requestBody: {
       values: [options.values],
+    },
+  });
+};
+
+type DeleteSheetRowOptions = {
+  spreadsheetId?: string;
+  sheetId: number;
+  rowNumber: number;
+};
+
+export const deleteSheetRow = async (options: DeleteSheetRowOptions) => {
+  const spreadsheetId = resolveSpreadsheetId(options.spreadsheetId);
+  const sheets = getGoogleSheetsClient();
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          deleteDimension: {
+            range: {
+              sheetId: options.sheetId,
+              dimension: 'ROWS',
+              startIndex: options.rowNumber - 1,
+              endIndex: options.rowNumber,
+            },
+          },
+        },
+      ],
     },
   });
 };
@@ -247,4 +297,120 @@ export const updateQuizUserPasswordInSheet = async (
   }
 
   return false;
+};
+
+// ── Pictures tab helpers ──────────────────────────────────────────────────────
+
+export const ensureSheetTabExists = async (
+  tabName: string,
+  headerRow: string[],
+  options?: QuizSheetMetaOptions,
+) => {
+  const spreadsheetId = resolveSpreadsheetId(options?.spreadsheetId);
+  const sheets = getGoogleSheetsClient();
+
+  const metaResponse = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: 'sheets(properties(title))',
+  });
+
+  const existingTabs =
+    metaResponse.data.sheets?.map((s) => s.properties?.title?.trim() ?? '') ?? [];
+
+  if (!existingTabs.includes(tabName)) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: { requests: [{ addSheet: { properties: { title: tabName } } }] },
+    });
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${toQuotedSheetName(tabName)}!A1`,
+      valueInputOption: 'RAW',
+      requestBody: { values: [headerRow] },
+    });
+  }
+};
+
+export const upsertRowByKeyInTab = async (
+  tabName: string,
+  keyValue: string,
+  rowValues: string[],
+  options?: QuizSheetMetaOptions,
+) => {
+  const spreadsheetId = resolveSpreadsheetId(options?.spreadsheetId);
+  const sheets = getGoogleSheetsClient();
+
+  const colResponse = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${toQuotedSheetName(tabName)}!A:A`,
+  });
+
+  const colValues = colResponse.data.values ?? [];
+  const rowIndex = colValues.findIndex(
+    (row, idx) => idx > 0 && String(row[0] ?? '').trim() === keyValue,
+  );
+
+  if (rowIndex !== -1) {
+    const sheetRow = rowIndex + 1;
+    const endCol = String.fromCharCode(64 + rowValues.length);
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${toQuotedSheetName(tabName)}!A${sheetRow}:${endCol}${sheetRow}`,
+      valueInputOption: 'RAW',
+      requestBody: { values: [rowValues] },
+    });
+  } else {
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `${toQuotedSheetName(tabName)}!A:B`,
+      valueInputOption: 'RAW',
+      insertDataOption: 'INSERT_ROWS',
+      requestBody: { values: [rowValues] },
+    });
+  }
+};
+
+export const getRowFromTabByKey = async (
+  tabName: string,
+  keyValue: string,
+  options?: QuizSheetMetaOptions,
+): Promise<string[]> => {
+  const spreadsheetId = resolveSpreadsheetId(options?.spreadsheetId);
+  const sheets = getGoogleSheetsClient();
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${toQuotedSheetName(tabName)}!A:B`,
+  });
+
+  const rows = response.data.values ?? [];
+  const dataRow = rows.find((row, idx) => idx > 0 && String(row[0] ?? '').trim() === keyValue);
+  return dataRow ? dataRow.map((cell) => String(cell ?? '')) : [];
+};
+
+export const clearRowInTabByKey = async (
+  tabName: string,
+  keyValue: string,
+  options?: QuizSheetMetaOptions,
+) => {
+  const spreadsheetId = resolveSpreadsheetId(options?.spreadsheetId);
+  const sheets = getGoogleSheetsClient();
+
+  const colResponse = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${toQuotedSheetName(tabName)}!A:A`,
+  });
+
+  const colValues = colResponse.data.values ?? [];
+  const rowIndex = colValues.findIndex(
+    (row, idx) => idx > 0 && String(row[0] ?? '').trim() === keyValue,
+  );
+
+  if (rowIndex !== -1) {
+    const sheetRow = rowIndex + 1;
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId,
+      range: `${toQuotedSheetName(tabName)}!A${sheetRow}:B${sheetRow}`,
+    });
+  }
 };
