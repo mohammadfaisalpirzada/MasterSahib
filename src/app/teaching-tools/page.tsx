@@ -4,16 +4,22 @@ import Link from 'next/link';
 
 const tools = [
   {
+    title: 'Students Age Calculator',
+    description: 'Tool of the Day: calculate exact student age and get recommended class as per age.',
+    status: 'Ready',
+    href: '/teaching-tools/students-age-calculator',
+  },
+  {
     title: 'Resume Builder',
     description: 'Create teacher CV/resume quickly for applications and profile updates.',
     status: 'Ready',
     href: '/resume-builder',
   },
   {
-    title: 'Lesson Planner',
-    description: 'Plan daily and weekly lessons with quick structure blocks.',
+    title: 'Automatic Lesson Planner (Google AI)',
+    description: 'Upload book PDF/image or enter topic details to auto-generate a complete lesson plan.',
     status: 'Ready',
-    href: '#',
+    href: '/teaching-tools/automatic-lesson-plan',
   },
   {
     title: 'Attendance Tracker',
