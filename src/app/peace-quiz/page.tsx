@@ -363,10 +363,6 @@ export default function PeaceQuizLoginPage() {
                   You are signing in to <span className="font-semibold text-slate-800">{programName}</span> Quiz Program.
                 </p>
 
-                <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-3 text-sm text-indigo-700">
-                  Login is validated securely on server with HttpOnly session cookie.
-                </div>
-
                 <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
                   <p className="rounded-lg border border-indigo-100 bg-indigo-50 p-2 text-xs text-indigo-700">
                     Selected role: <span className="font-semibold capitalize">{role}</span>

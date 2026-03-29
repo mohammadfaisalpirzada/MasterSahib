@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
+import { usePathname } from 'next/navigation';import { useSession, signIn, signOut } from 'next-auth/react';import { HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -18,6 +17,7 @@ const secondaryNavItem = { label: 'Portfolio', href: '/portfolio' };
 const Navbar: React.FC = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session, status } = useSession();
 
   const isActiveRoute = (href: string) => {
     if (href === '/') {
@@ -84,12 +84,44 @@ const Navbar: React.FC = () => {
           >
             {secondaryNavItem.label}
           </Link>
-          <div className="rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm text-indigo-50">
-            Welcome back
-          </div>
-          <div className="h-10 w-10 overflow-hidden rounded-full border border-white/30">
-            <Image src="/images/profile.jpg" alt="Profile" width={40} height={40} className="h-full w-full object-cover" />
-          </div>
+
+          {status === 'loading' ? (
+            <div className="rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm text-indigo-50">
+              Loading...
+            </div>
+          ) : session ? (
+            <div className="flex items-center gap-3 rounded-full border border-white/25 bg-white/15 px-3 py-1.5">
+              {session.user?.image && (
+                <div className="h-8 w-8 overflow-hidden rounded-full border border-white/30">
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name || 'Profile'}
+                    width={32}
+                    height={32}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex flex-col">
+                <p className="text-xs font-semibold text-white">
+                  {session.user?.name || 'User'}
+                </p>
+                <button
+                  onClick={() => signOut()}
+                  className="text-xs text-indigo-100 hover:text-white transition"
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => signIn('google')}
+              className="rounded-full border border-white bg-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/30"
+            >
+              Sign in
+            </button>
+          )}
         </div>
 
         <button
@@ -149,6 +181,51 @@ const Navbar: React.FC = () => {
               >
                 {secondaryNavItem.label}
               </Link>
+
+              {status === 'loading' ? (
+                <div className="mt-3 text-sm text-indigo-100">Loading...</div>
+              ) : session ? (
+                <div className="mt-4 rounded-xl border border-white/20 bg-white/10 p-3">
+                  <div className="flex items-center gap-3">
+                    {session.user?.image && (
+                      <div className="h-10 w-10 overflow-hidden rounded-full border border-white/30">
+                        <Image
+                          src={session.user.image}
+                          alt={session.user.name || 'Profile'}
+                          width={40}
+                          height={40}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-white">
+                        {session.user?.name || 'User'}
+                      </p>
+                      <p className="text-xs text-indigo-100">{session.user?.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setIsMobileOpen(false);
+                    }}
+                    className="mt-3 w-full rounded-lg border border-rose-300/30 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    signIn('google');
+                    setIsMobileOpen(false);
+                  }}
+                  className="mt-3 w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
+                >
+                  Sign in with Google
+                </button>
+              )}
             </div>
 
             <div className="mt-auto pb-8 text-sm text-indigo-100">themastersahib.com | Responsive Learning Platform</div>

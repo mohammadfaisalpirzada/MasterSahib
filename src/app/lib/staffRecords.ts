@@ -1,6 +1,8 @@
 import 'server-only';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import {
+  appendQuizRowToSheet,
+  appendSheetColumns,
   clearRowInTabByKey,
   deleteSheetRow,
   ensureSheetTabExists,
@@ -330,6 +332,68 @@ export const saveStaffRow = async (
       values: [nextValue],
     });
   }
+};
+
+export const addStaffRow = async (
+  values: Record<string, string>,
+  columns: ColumnMeta[],
+  newColumns?: Array<{ label: string; value: string }>
+) => {
+  const { context } = await getStaffSheetRows();
+
+  const nextRow = columns.map((column) => {
+    const requestedValue = values[column.key];
+    return typeof requestedValue === 'string' ? requestedValue.trim() : '';
+  });
+
+  // Write new column headers to row 1 and extend the new data row.
+  if (newColumns && newColumns.length > 0) {
+    const currentColCount = columns.length;
+    for (let i = 0; i < newColumns.length; i += 1) {
+      const colLabel = toSheetColumnLabel(currentColCount + i);
+      const headerRange = toSheetRange(context.sheetName, `${colLabel}1:${colLabel}1`);
+      await updateQuizRowInSheet({
+        spreadsheetId: context.spreadsheetId,
+        range: headerRange,
+        values: [newColumns[i].label.trim()],
+      });
+      nextRow.push(newColumns[i].value.trim());
+    }
+  }
+
+  await appendQuizRowToSheet({
+    spreadsheetId: context.spreadsheetId,
+    range: toSheetRange(context.sheetName, STAFF_RANGE),
+    values: nextRow,
+  });
+};
+
+export const addSheetColumn = async (columnLabel: string) => {
+  const { context, rows } = await getStaffSheetRows();
+
+  const headerRow = rows[0] ?? [];
+  const nextColIndex = headerRow.length; // 0-based index of the new column
+  const colLabel = toSheetColumnLabel(nextColIndex);
+
+  // The sheet grid may not have enough columns — expand it first.
+  const sheetId = await getQuizSheetIdByTitle(context.sheetName, {
+    spreadsheetId: context.spreadsheetId,
+  });
+
+  if (sheetId === null) {
+    throw new Error('Could not resolve GGSS staff sheet id for column insertion.');
+  }
+
+  await appendSheetColumns({ spreadsheetId: context.spreadsheetId, sheetId });
+
+  const headerRange = toSheetRange(context.sheetName, `${colLabel}1:${colLabel}1`);
+  await updateQuizRowInSheet({
+    spreadsheetId: context.spreadsheetId,
+    range: headerRange,
+    values: [columnLabel.trim()],
+  });
+
+  return { columnIndex: nextColIndex, columnLabel: columnLabel.trim() };
 };
 
 export const deleteStaffRow = async (rowNumber: number) => {

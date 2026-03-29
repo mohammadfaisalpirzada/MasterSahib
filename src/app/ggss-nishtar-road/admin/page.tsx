@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { IoEyeOffOutline, IoEyeOutline } from 'react-icons/io5';
+import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 
 type ColumnMeta = {
@@ -67,6 +68,13 @@ export default function GgssAdminPage() {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [editMode, setEditMode] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addPassword, setAddPassword] = useState('');
+  const [showAddPassword, setShowAddPassword] = useState(false);
+  const [addFormData, setAddFormData] = useState<Record<string, string>>({});
+  const [addNewCols, setAddNewCols] = useState<Array<{ id: number; label: string; value: string }>>([]);
+  const [addMessage, setAddMessage] = useState('');
+  const [addingRecord, setAddingRecord] = useState(false);
   const [editPassword, setEditPassword] = useState('');
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [editMessage, setEditMessage] = useState('');
@@ -78,10 +86,54 @@ export default function GgssAdminPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleteMessage, setDeleteMessage] = useState('');
   const [deletingRecord, setDeletingRecord] = useState(false);
+  const [bulkEditMode, setBulkEditMode] = useState(false);
+  const [bulkEdits, setBulkEdits] = useState<Record<string, Record<string, string>>>({});
+  const [bulkPassword, setBulkPassword] = useState('');
+  const [showBulkPassword, setShowBulkPassword] = useState(false);
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState('');
+  const [addColDialogOpen, setAddColDialogOpen] = useState(false);
+  const [addColLabel, setAddColLabel] = useState('');
+  const [addColPassword, setAddColPassword] = useState('');
+  const [showAddColPassword, setShowAddColPassword] = useState(false);
+  const [addColSaving, setAddColSaving] = useState(false);
+  const [addColMessage, setAddColMessage] = useState('');
   const [actionMessage, setActionMessage] = useState('');
   const [pictureUploadMessage, setPictureUploadMessage] = useState('');
   const [pictureSaving, setPictureSaving] = useState(false);
   const [picturePreview, setPicturePreview] = useState<string>('');
+
+  const nameColumnKey = useMemo(() => {
+    const byKey = columns.find((column) => column.key.toLowerCase() === 'name');
+    if (byKey) {
+      return byKey.key;
+    }
+
+    const byLabel = columns.find((column) => column.label.trim().toLowerCase() === 'name');
+    return byLabel?.key || '';
+  }, [columns]);
+
+  const nonEmptyRecords = useMemo(() => {
+    if (!columns.length) {
+      return records;
+    }
+
+    // Primary filter: only rows with actual staff name are treated as real data rows.
+    if (nameColumnKey) {
+      return records.filter((record) => String(record[nameColumnKey] ?? '').trim() !== '');
+    }
+
+    // Fallback if Name column is missing: ignore placeholder/formula-only style rows.
+    const serialLikeKeys = new Set(['s_no', 'sno', 'serial_no', 'serial']);
+    return records.filter((record) => {
+      return columns
+        .filter((column) => !serialLikeKeys.has(column.key.toLowerCase()))
+        .some((column) => {
+          const value = String(record[column.key] ?? '').trim().toLowerCase();
+          return value !== '' && value !== '-' && value !== '—' && value !== 'n/a' && value !== 'na';
+        });
+    });
+  }, [records, columns, nameColumnKey]);
 
   const createFormSnapshot = (record: AdminRecord | null) => {
     if (!record) {
@@ -124,7 +176,11 @@ export default function GgssAdminPage() {
       setItems(data.items);
       setSourceLabel(data.source?.sheetName || 'GGSS staff sheet');
       setSelectedColumnKeys(data.columns.map((column) => column.key));
-      
+      setBulkEdits({});
+      setBulkPassword('');
+      setShowBulkPassword(false);
+      setBulkMessage('');
+
       // Preserve selection if it still exists
       setSelectedRowId((current) => {
         const nextItems = data.items || [];
@@ -199,6 +255,18 @@ export default function GgssAdminPage() {
     return columns.filter((column) => selectedColumnKeys.includes(column.key));
   }, [columns, selectedColumnKeys]);
 
+  const addableColumns = useMemo(() => {
+    return columns.filter((column) => {
+      return (
+        column.editable ||
+        column.key.toLowerCase() === 'name' ||
+        column.label.trim().toLowerCase() === 'name'
+      );
+    });
+  }, [columns]);
+
+  const bulkEditedRowCount = useMemo(() => Object.keys(bulkEdits).length, [bulkEdits]);
+
   useEffect(() => {
     if (selectedRecord && !editMode) {
       setFormData(createFormSnapshot(selectedRecord));
@@ -272,6 +340,21 @@ export default function GgssAdminPage() {
     }
   };
 
+  useEffect(() => {
+    if (!activeView) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const targetSection = document.getElementById(`admin-panel-${activeView}`);
+      targetSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [activeView]);
+
   const toggleColumn = (key: string) => {
     setSelectedColumnKeys((current) => {
       if (current.includes(key)) {
@@ -288,7 +371,7 @@ export default function GgssAdminPage() {
       return;
     }
 
-    const exportRows = records.map((record) => {
+    const exportRows = nonEmptyRecords.map((record) => {
       return Object.fromEntries(
         exportableColumns.map((column) => [column.label, String(record[column.key] ?? '')])
       );
@@ -300,6 +383,158 @@ export default function GgssAdminPage() {
     const dateKey = new Date().toISOString().slice(0, 10);
     XLSX.writeFile(workbook, `ggss-staff-export-${dateKey}.xlsx`);
     setExportMessage(`Excel export ready with ${exportableColumns.length} selected columns.`);
+  };
+
+  const selectAllColumns = () => {
+    setSelectedColumnKeys(columns.map((column) => column.key));
+    setExportMessage('All columns selected.');
+  };
+
+  const deselectAllColumns = () => {
+    setSelectedColumnKeys([]);
+    setExportMessage('All columns deselected.');
+  };
+
+  const exportSelectedColumnsPdf = () => {
+    setExportMessage('');
+    if (!exportableColumns.length) {
+      setExportMessage('Select at least one column for PDF export.');
+      return;
+    }
+
+    if (!nonEmptyRecords.length) {
+      setExportMessage('No non-empty rows available for PDF export.');
+      return;
+    }
+
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    const margin = 24;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const rowHeight = 18;
+    const headerY = 52;
+    const startY = 76;
+    const colWidth = Math.max(80, (pageWidth - margin * 2) / exportableColumns.length);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text('GGSS Staff Export', margin, 28);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(`Columns: ${exportableColumns.length} | Rows: ${nonEmptyRecords.length}`, margin, 42);
+
+    const drawHeader = (y: number) => {
+      doc.setFillColor(241, 245, 249);
+      doc.rect(margin, y - 12, colWidth * exportableColumns.length, rowHeight, 'F');
+      doc.setDrawColor(203, 213, 225);
+      doc.rect(margin, y - 12, colWidth * exportableColumns.length, rowHeight);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      exportableColumns.forEach((column, index) => {
+        const x = margin + index * colWidth + 4;
+        doc.text(column.label.slice(0, 26), x, y);
+      });
+    };
+
+    drawHeader(headerY);
+
+    let cursorY = startY;
+    nonEmptyRecords.forEach((record, rowIndex) => {
+      if (cursorY + rowHeight > pageHeight - margin) {
+        doc.addPage();
+        drawHeader(headerY);
+        cursorY = startY;
+      }
+
+      if (rowIndex % 2 === 1) {
+        doc.setFillColor(248, 250, 252);
+        doc.rect(margin, cursorY - 12, colWidth * exportableColumns.length, rowHeight, 'F');
+      }
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      exportableColumns.forEach((column, index) => {
+        const x = margin + index * colWidth + 4;
+        const value = String(record[column.key] ?? '').replace(/\s+/g, ' ').trim();
+        doc.text(value.slice(0, 30) || '-', x, cursorY);
+      });
+
+      cursorY += rowHeight;
+    });
+
+    const dateKey = new Date().toISOString().slice(0, 10);
+    doc.save(`ggss-staff-export-${dateKey}.pdf`);
+    setExportMessage(`PDF export ready with ${exportableColumns.length} selected columns.`);
+  };
+
+  const printSelectedColumns = () => {
+    setExportMessage('');
+    if (!exportableColumns.length) {
+      setExportMessage('Select at least one column for print.');
+      return;
+    }
+
+    if (!nonEmptyRecords.length) {
+      setExportMessage('No non-empty rows available for print.');
+      return;
+    }
+
+    const headerCells = exportableColumns
+      .map((column) => `<th>${column.label}</th>`)
+      .join('');
+
+    const bodyRows = nonEmptyRecords
+      .map((record) => {
+        const cells = exportableColumns
+          .map((column) => `<td>${String(record[column.key] ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`)
+          .join('');
+        return `<tr>${cells}</tr>`;
+      })
+      .join('');
+
+    const printWindow = window.open('', '_blank', 'width=1200,height=800');
+    if (!printWindow) {
+      setExportMessage('Unable to open print window. Allow pop-ups and try again.');
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>GGSS Staff Export</title>
+          <style>
+            body { font-family: Arial, Helvetica, sans-serif; margin: 18px; color: #0f172a; }
+            h1 { margin: 0 0 6px; font-size: 18px; }
+            p { margin: 0 0 12px; color: #475569; font-size: 12px; }
+            table { border-collapse: collapse; width: 100%; font-size: 10px; }
+            thead th { background: #f1f5f9; }
+            th, td { border: 1px solid #cbd5e1; padding: 5px 6px; text-align: left; vertical-align: top; }
+            tr:nth-child(even) td { background: #f8fafc; }
+            @media print { body { margin: 10mm; } }
+          </style>
+        </head>
+        <body>
+          <h1>GGSS Staff Export</h1>
+          <p>Columns: ${exportableColumns.length} | Rows: ${nonEmptyRecords.length}</p>
+          <table>
+            <thead><tr>${headerCells}</tr></thead>
+            <tbody>${bodyRows}</tbody>
+          </table>
+          <script>
+            window.onload = function () {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    setExportMessage('Print view opened successfully.');
   };
 
   const handleSelectedStaffChange = (rowId: string) => {
@@ -325,6 +560,222 @@ export default function GgssAdminPage() {
     setEditMessage('');
     setActionMessage('');
     setShowEditPassword(false);
+    setEditDialogOpen(true);
+  };
+
+  const openAddDialog = () => {
+    const initialValues = Object.fromEntries(addableColumns.map((column) => [column.key, '']));
+    setAddFormData(initialValues);
+    setAddNewCols([]);
+    setAddPassword('');
+    setShowAddPassword(false);
+    setAddMessage('');
+    setAddDialogOpen(true);
+  };
+
+  const closeAddDialog = () => {
+    if (addingRecord) {
+      return;
+    }
+
+    setAddDialogOpen(false);
+    setAddNewCols([]);
+    setAddPassword('');
+    setShowAddPassword(false);
+    setAddMessage('');
+  };
+
+  const handleAddFieldChange = (key: string, value: string) => {
+    setAddFormData((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  };
+
+  const handleBulkCellChange = (
+    rowId: string,
+    columnKey: string,
+    value: string,
+    originalValue: string,
+  ) => {
+    setBulkEdits((current) => {
+      const currentRow = current[rowId] || {};
+
+      if (value === originalValue) {
+        const { [columnKey]: _removed, ...remainingRow } = currentRow;
+        if (Object.keys(remainingRow).length === 0) {
+          const { [rowId]: _removedRow, ...remaining } = current;
+          return remaining;
+        }
+
+        return {
+          ...current,
+          [rowId]: remainingRow,
+        };
+      }
+
+      return {
+        ...current,
+        [rowId]: {
+          ...currentRow,
+          [columnKey]: value,
+        },
+      };
+    });
+    setBulkMessage('');
+  };
+
+  const saveAllBulkChanges = async () => {
+    setBulkMessage('');
+
+    if (!bulkEditedRowCount) {
+      setBulkMessage('No pending changes to save.');
+      return;
+    }
+
+    if (!bulkPassword.trim()) {
+      setBulkMessage('Admin password is required to save all changes.');
+      return;
+    }
+
+    const updatesList = Object.entries(bulkEdits).map(([rowId, updates]) => ({
+      rowId,
+      updates,
+    }));
+
+    try {
+      setBulkSaving(true);
+      const response = await fetch('/api/staff-records/admin', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: bulkPassword,
+          updatesList,
+        }),
+      });
+      const data = await parseAdminResponse(response);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Unable to save bulk updates.');
+      }
+
+      setBulkMessage(data.message || 'Bulk update completed successfully.');
+      setBulkEditMode(false);
+      await loadAdminData();
+    } catch (error) {
+      setBulkMessage(error instanceof Error ? error.message : 'Unable to save bulk updates.');
+    } finally {
+      setBulkSaving(false);
+    }
+  };
+
+  const saveNewStaffRecord = async () => {
+    setAddMessage('');
+    const nameKey = addableColumns.find((column) => {
+      return column.key.toLowerCase() === 'name' || column.label.trim().toLowerCase() === 'name';
+    })?.key;
+
+    if (!addPassword.trim()) {
+      setAddMessage('Admin password is required to add a new record.');
+      return;
+    }
+
+    if (nameKey && !String(addFormData[nameKey] ?? '').trim()) {
+      setAddMessage('Name is required.');
+      return;
+    }
+
+    try {
+      setAddingRecord(true);
+      const response = await fetch('/api/staff-records/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: addPassword,
+          data: addFormData,
+          newColumns: addNewCols
+            .filter((col) => col.label.trim())
+            .map((col) => ({ label: col.label.trim(), value: col.value })),
+        }),
+      });
+      const data = await parseAdminResponse(response);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Unable to add new staff record.');
+      }
+
+      setAddDialogOpen(false);
+      setActionMessage(data.message || 'New staff record added successfully.');
+      await loadAdminData();
+    } catch (error) {
+      setAddMessage(error instanceof Error ? error.message : 'Unable to add new staff record.');
+    } finally {
+      setAddingRecord(false);
+    }
+  };
+
+  const openAddColDialog = () => {
+    setAddColLabel('');
+    setAddColPassword('');
+    setShowAddColPassword(false);
+    setAddColMessage('');
+    setAddColDialogOpen(true);
+  };
+
+  const closeAddColDialog = () => {
+    if (addColSaving) return;
+    setAddColDialogOpen(false);
+    setAddColLabel('');
+    setAddColPassword('');
+    setShowAddColPassword(false);
+    setAddColMessage('');
+  };
+
+  const saveNewColumn = async () => {
+    setAddColMessage('');
+    if (!addColLabel.trim()) {
+      setAddColMessage('Column name is required.');
+      return;
+    }
+    if (!addColPassword.trim()) {
+      setAddColMessage('Admin password is required.');
+      return;
+    }
+    try {
+      setAddColSaving(true);
+      const response = await fetch('/api/staff-records/admin', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: addColPassword, columnLabel: addColLabel }),
+      });
+      const data = await parseAdminResponse(response);
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Unable to add column.');
+      }
+      setAddColDialogOpen(false);
+      setActionMessage(data.message || `Column "${addColLabel}" added successfully.`);
+      await loadAdminData();
+    } catch (error) {
+      setAddColMessage(error instanceof Error ? error.message : 'Unable to add column.');
+    } finally {
+      setAddColSaving(false);
+    }
+  };
+
+  const openEditDialogFromTable = (record: AdminRecord) => {
+    setSelectedRowId(record.rowId);
+    setDeleteDialogOpen(false);
+    setDeleteMessage('');
+    setEditMessage('');
+    setActionMessage('');
+    setShowEditPassword(false);
+    setEditPassword('');
+    setEditMode(false);
+    setFormData(createFormSnapshot(record));
     setEditDialogOpen(true);
   };
 
@@ -917,7 +1368,7 @@ export default function GgssAdminPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">
-                GGSS Admin Dashboard
+                GGSS NISHTAR ROAD (Admin Dashboard)
               </p>
               <h1 className="mt-4 text-3xl font-black text-slate-900 sm:text-4xl">Staff Sheet Control Center</h1>
               <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
@@ -943,17 +1394,6 @@ export default function GgssAdminPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-              <span className="font-semibold text-slate-900">Active Sheet:</span> {sourceLabel || 'Load on demand'}
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-              <span className="font-semibold text-slate-900">Total Staff Rows:</span> {hasLoadedData ? records.length : 'Not loaded'}
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-              <span className="font-semibold text-slate-900">Selected Export Columns:</span> {hasLoadedData ? exportableColumns.length : 'Not loaded'}
-            </div>
-          </div>
         </section>
 
         {dataError ? <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{dataError}</p> : null}
@@ -963,7 +1403,7 @@ export default function GgssAdminPage() {
           <div className="flex flex-col gap-3">
             <h2 className="text-xl font-bold text-slate-900">Admin Actions</h2>
             <p className="text-sm text-slate-600">
-              Jo kaam chahiye sirf usi button par click karein. Data panels default par hidden rahenge.
+              Use the action buttons below to open only the panel you need. All data panels remain hidden by default for a cleaner workspace.
             </p>
 
             <div className="grid gap-3 md:grid-cols-3">
@@ -982,7 +1422,7 @@ export default function GgssAdminPage() {
                 className={`rounded-2xl border px-5 py-4 text-left transition ${activeView === 'table' ? 'border-cyan-500 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-cyan-300'}`}
               >
                 <p className="text-sm font-bold">View Full Staff Table</p>
-                <p className="mt-1 text-xs text-slate-500">Open the complete Google Sheet style table</p>
+                <p className="mt-1 text-xs text-slate-500">Open the complete spreadsheet table with compact view</p>
               </button>
 
               <button
@@ -1002,6 +1442,24 @@ export default function GgssAdminPage() {
                 <p className="text-sm font-bold">Staff Picture Upload</p>
                 <p className="mt-1 text-xs text-slate-500">Upload or change staff member photo</p>
               </button>
+
+              <button
+                type="button"
+                onClick={openAddDialog}
+                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left text-slate-800 transition hover:border-cyan-300"
+              >
+                <p className="text-sm font-bold">Add New Data</p>
+                <p className="mt-1 text-xs text-slate-500">Create a new staff row directly from admin panel</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={openAddColDialog}
+                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left text-slate-800 transition hover:border-purple-300"
+              >
+                <p className="text-sm font-bold">Add New Column</p>
+                <p className="mt-1 text-xs text-slate-500">Append a new column (e.g. DDO Code, Semiscode) to the sheet</p>
+              </button>
             </div>
 
             {activeView ? (
@@ -1019,7 +1477,7 @@ export default function GgssAdminPage() {
         </section>
 
         {activeView === 'individual' ? (
-          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section id="admin-panel-individual" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex-1">
                 <h2 className="text-xl font-bold text-slate-900">Individual Staff View</h2>
@@ -1241,6 +1699,250 @@ export default function GgssAdminPage() {
           </div>
         ) : null}
 
+        {addDialogOpen ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="max-h-[90vh] w-full max-w-3xl space-y-4 overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Add New Staff Data</h3>
+                  <p className="mt-1 text-sm text-slate-600">Fill fields and submit to create a new staff row.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeAddDialog}
+                  className="text-slate-400 transition hover:text-slate-600"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {addableColumns.map((column) => {
+                  const fieldId = `add-field-${column.key}`;
+                  return (
+                    <div key={column.key}>
+                      <label htmlFor={fieldId} className="block text-xs font-semibold uppercase text-slate-600">
+                        {column.label}
+                      </label>
+                      <input
+                        id={fieldId}
+                        type="text"
+                        value={String(addFormData[column.key] ?? '')}
+                        onChange={(event) => handleAddFieldChange(column.key, event.target.value)}
+                        className="mt-1.5 min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-cyan-500"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* ── Add New Column section ── */}
+              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm font-semibold text-slate-700">Add New Column (Optional)</p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setAddNewCols((current) => [
+                        ...current,
+                        { id: Date.now(), label: '', value: '' },
+                      ])
+                    }
+                    className="rounded-lg bg-cyan-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-cyan-700"
+                  >
+                    + Add Column
+                  </button>
+                </div>
+                {addNewCols.length === 0 && (
+                  <p className="text-xs text-slate-400">
+                    Use this to add a new column (e.g. DDO Code, Semiscode) that does not exist in the sheet yet.
+                  </p>
+                )}
+                {addNewCols.length > 0 && (
+                  <div className="space-y-2">
+                    {addNewCols.map((col) => (
+                      <div key={col.id} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={col.label}
+                          onChange={(event) =>
+                            setAddNewCols((current) =>
+                              current.map((c) =>
+                                c.id === col.id ? { ...c, label: event.target.value } : c,
+                              ),
+                            )
+                          }
+                          placeholder="Column name (e.g. DDO Code)"
+                          aria-label="New column name"
+                          className="min-h-[36px] w-1/2 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none transition focus:border-cyan-500"
+                        />
+                        <input
+                          type="text"
+                          value={col.value}
+                          onChange={(event) =>
+                            setAddNewCols((current) =>
+                              current.map((c) =>
+                                c.id === col.id ? { ...c, value: event.target.value } : c,
+                              ),
+                            )
+                          }
+                          placeholder="Value"
+                          aria-label="New column value"
+                          className="min-h-[36px] flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none transition focus:border-cyan-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setAddNewCols((current) => current.filter((c) => c.id !== col.id))
+                          }
+                          className="shrink-0 rounded-lg border border-red-200 px-2 py-1.5 text-xs text-red-500 transition hover:bg-red-50"
+                          aria-label="Remove column"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="add-admin-password" className="block text-sm font-medium text-slate-700">
+                  Admin Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="add-admin-password"
+                    type={showAddPassword ? 'text' : 'password'}
+                    value={addPassword}
+                    onChange={(event) => setAddPassword(event.target.value)}
+                    placeholder="Enter admin password"
+                    className="min-h-[44px] w-full rounded-lg border border-slate-300 px-4 py-2 pr-12 text-sm outline-none transition focus:border-cyan-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAddPassword((current) => !current)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
+                    aria-label={showAddPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showAddPassword ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {addMessage ? (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{addMessage}</p>
+              ) : null}
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={saveNewStaffRecord}
+                  disabled={addingRecord}
+                  className="flex-1 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {addingRecord ? 'Adding...' : 'Add Data'}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeAddDialog}
+                  disabled={addingRecord}
+                  className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {addColDialogOpen ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md space-y-5 rounded-3xl bg-white p-6 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Add New Column</h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Adds a new column to the sheet for all staff (existing rows will have it empty).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeAddColDialog}
+                  className="text-slate-400 transition hover:text-slate-600"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div>
+                <label htmlFor="add-col-label" className="block text-xs font-semibold uppercase text-slate-600">
+                  Column Name
+                </label>
+                <input
+                  id="add-col-label"
+                  type="text"
+                  value={addColLabel}
+                  onChange={(event) => setAddColLabel(event.target.value)}
+                  placeholder="e.g. DDO Code, Semiscode, CNIC"
+                  className="mt-1.5 min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="add-col-password" className="block text-sm font-medium text-slate-700">
+                  Admin Password
+                </label>
+                <div className="relative mt-1.5">
+                  <input
+                    id="add-col-password"
+                    type={showAddColPassword ? 'text' : 'password'}
+                    value={addColPassword}
+                    onChange={(event) => setAddColPassword(event.target.value)}
+                    placeholder="Enter admin password"
+                    className="min-h-[44px] w-full rounded-lg border border-slate-300 px-4 py-2 pr-12 text-sm outline-none transition focus:border-purple-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAddColPassword((current) => !current)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
+                    aria-label={showAddColPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showAddColPassword ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {addColMessage ? (
+                <p className={`rounded-xl px-3 py-2 text-sm font-medium ${addColMessage.toLowerCase().includes('success') ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                  {addColMessage}
+                </p>
+              ) : null}
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={saveNewColumn}
+                  disabled={addColSaving}
+                  className="flex-1 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {addColSaving ? 'Adding Column...' : 'Add Column'}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeAddColDialog}
+                  disabled={addColSaving}
+                  className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {deleteDialogOpen ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
             <div className="w-full max-w-md space-y-4 rounded-3xl bg-white p-6 shadow-2xl">
@@ -1330,7 +2032,7 @@ export default function GgssAdminPage() {
         ) : null}
 
         {activeView === 'export' ? (
-          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section id="admin-panel-export" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-xl font-bold text-slate-900">Excel Export</h2>
@@ -1338,13 +2040,43 @@ export default function GgssAdminPage() {
                   Select only the columns you want to export. The downloaded file will include all staff rows.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={exportSelectedColumns}
-                className="rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-              >
-                Export Selected Columns
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={selectAllColumns}
+                  className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
+                >
+                  Select All
+                </button>
+                <button
+                  type="button"
+                  onClick={deselectAllColumns}
+                  className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
+                >
+                  Deselect All
+                </button>
+                <button
+                  type="button"
+                  onClick={exportSelectedColumns}
+                  className="rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                >
+                  Export Excel
+                </button>
+                <button
+                  type="button"
+                  onClick={exportSelectedColumnsPdf}
+                  className="rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700"
+                >
+                  Export PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={printSelectedColumns}
+                  className="rounded-2xl bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+                >
+                  Print
+                </button>
+              </div>
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -1366,29 +2098,133 @@ export default function GgssAdminPage() {
         ) : null}
 
         {activeView === 'table' ? (
-          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section id="admin-panel-table" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-xl font-bold text-slate-900">All Staff Data</h2>
-              <p className="text-sm text-slate-500">Google Sheet style full table view</p>
+              <p className="text-sm text-slate-500">Compact spreadsheet view with horizontal and vertical scrolling</p>
             </div>
 
-            <div className="mt-4 overflow-auto rounded-2xl border border-slate-200">
-              <table className="min-w-full border-collapse text-sm">
-                <thead className="bg-slate-100 text-left text-slate-700">
+            <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBulkEditMode((current) => {
+                        const next = !current;
+                        if (!next) {
+                          setBulkEdits({});
+                          setBulkPassword('');
+                          setShowBulkPassword(false);
+                          setBulkMessage('Bulk edit mode closed.');
+                        } else {
+                          setBulkMessage('Bulk edit mode enabled. Edit multiple cells, then save all changes.');
+                        }
+                        return next;
+                      });
+                    }}
+                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${bulkEditMode ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-slate-900 text-white hover:bg-slate-700'}`}
+                  >
+                    {bulkEditMode ? 'Exit Bulk Edit' : 'Enable Bulk Edit'}
+                  </button>
+                  <span className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700">
+                    Changed Rows: {bulkEditedRowCount}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={openAddColDialog}
+                    className="rounded-xl border border-purple-300 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-700 transition hover:bg-purple-100"
+                  >
+                    + Add New Column
+                  </button>
+                </div>
+
+                {bulkEditMode ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative">
+                      <input
+                        type={showBulkPassword ? 'text' : 'password'}
+                        value={bulkPassword}
+                        onChange={(event) => setBulkPassword(event.target.value)}
+                        placeholder="Admin password"
+                        className="min-h-[40px] rounded-xl border border-slate-300 bg-white px-3 py-2 pr-10 text-sm outline-none transition focus:border-cyan-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowBulkPassword((current) => !current)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
+                        aria-label={showBulkPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showBulkPassword ? <IoEyeOffOutline size={16} /> : <IoEyeOutline size={16} />}
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={saveAllBulkChanges}
+                      disabled={bulkSaving || !bulkEditedRowCount}
+                      className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {bulkSaving ? 'Saving All...' : 'Save All Changes'}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              {bulkMessage ? (
+                <p className={`mt-2 rounded-xl px-3 py-2 text-xs font-medium ${bulkMessage.toLowerCase().includes('success') || bulkMessage.toLowerCase().includes('updated') || bulkMessage.toLowerCase().includes('enabled') ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                  {bulkMessage}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="mt-4 h-[70vh] overflow-auto rounded-2xl border border-slate-200">
+              <table className="min-w-max border-collapse text-xs sm:text-sm">
+                <thead className="sticky top-0 z-10 bg-slate-100 text-left text-slate-700">
                   <tr>
+                    <th className="whitespace-nowrap border-b border-slate-200 px-2.5 py-2 font-semibold">
+                      Actions
+                    </th>
                     {columns.map((column) => (
-                      <th key={column.key} className="whitespace-nowrap border-b border-slate-200 px-4 py-3 font-semibold">
+                      <th key={column.key} className="whitespace-nowrap border-b border-slate-200 px-2.5 py-2 font-semibold">
                         {column.label}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {records.map((record, rowIndex) => (
+                  {nonEmptyRecords.map((record, rowIndex) => (
                     <tr key={`row-${rowIndex + 1}`} className="odd:bg-white even:bg-slate-50">
+                      <td className="whitespace-nowrap border-b border-slate-100 px-2.5 py-1.5 text-slate-700">
+                        <button
+                          type="button"
+                          onClick={() => openEditDialogFromTable(record)}
+                          className="rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-amber-600"
+                        >
+                          Edit
+                        </button>
+                      </td>
                       {columns.map((column) => (
-                        <td key={`${rowIndex + 1}-${column.key}`} className="whitespace-nowrap border-b border-slate-100 px-4 py-3 text-slate-700">
-                          {String(record[column.key] ?? '')}
+                        <td key={`${rowIndex + 1}-${column.key}`} className="whitespace-nowrap border-b border-slate-100 px-2.5 py-1.5 text-slate-700">
+                          {bulkEditMode && column.editable ? (
+                            <input
+                              type="text"
+                              value={
+                                bulkEdits[String(record.rowId)]?.[column.key] ??
+                                String(record[column.key] ?? '')
+                              }
+                              onChange={(event) => {
+                                const rowId = String(record.rowId);
+                                const originalValue = String(record[column.key] ?? '');
+                                handleBulkCellChange(rowId, column.key, event.target.value, originalValue);
+                              }}
+                              aria-label={`Edit ${column.label} for row ${record.rowId}`}
+                              placeholder={column.label}
+                              className="min-h-[30px] w-44 rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 outline-none transition focus:border-cyan-500"
+                            />
+                          ) : (
+                            String(record[column.key] ?? '')
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -1396,11 +2232,15 @@ export default function GgssAdminPage() {
                 </tbody>
               </table>
             </div>
+
+            {nonEmptyRecords.length === 0 ? (
+              <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600">No non-empty staff rows available to display.</p>
+            ) : null}
           </section>
         ) : null}
 
         {activeView === 'picture' ? (
-          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section id="admin-panel-picture" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-xl font-bold text-slate-900">Staff Picture Upload</h2>
             <p className="mt-1 text-sm text-slate-600">Select a staff member and upload their photo (JPG or PNG, max 500KB)</p>
 

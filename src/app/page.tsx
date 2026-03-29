@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSession, signIn } from 'next-auth/react';
 
 const quickCards = [
   {
@@ -94,14 +95,48 @@ const formatPinDate = (iso: string) => {
   });
 };
 
+type VisitorCountApiResponse = {
+  success: boolean;
+  count?: number;
+  message?: string;
+};
+
 export default function HomePage() {
   const HOME_PADLET_LIMIT = 4;
+  const { data: session } = useSession();
   const [pins, setPins] = useState<PadletPin[]>(defaultPins);
   const [ideaAuthor, setIdeaAuthor] = useState('');
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
   const [ideaText, setIdeaText] = useState('');
   const [ideaError, setIdeaError] = useState('');
   const [padletLoading, setPadletLoading] = useState(true);
   const [padletSaving, setPadletSaving] = useState(false);
+
+  useEffect(() => {
+    const countVisit = async () => {
+      try {
+        const alreadyCounted = sessionStorage.getItem('ms_visited');
+        if (!alreadyCounted) {
+          const response = await fetch('/api/visitor-count', { method: 'POST' });
+          const data = (await response.json()) as VisitorCountApiResponse;
+          if (data.success && typeof data.count === 'number') {
+            setVisitorCount(data.count);
+            sessionStorage.setItem('ms_visited', '1');
+          }
+        } else {
+          const response = await fetch('/api/visitor-count');
+          const data = (await response.json()) as VisitorCountApiResponse;
+          if (data.success && typeof data.count === 'number') {
+            setVisitorCount(data.count);
+          }
+        }
+      } catch {
+        // Visitor counter is non-critical
+      }
+    };
+
+    void countVisit();
+  }, []);
 
   useEffect(() => {
     const loadPadlet = async () => {
@@ -192,6 +227,18 @@ export default function HomePage() {
                 >
                   Open Teaching Tools
                 </Link>
+                {!session ? (
+                  <button
+                    onClick={() => signIn('google')}
+                    className="rounded-2xl border border-cyan-300 bg-cyan-50 px-5 py-3 text-sm font-semibold text-cyan-700 transition hover:-translate-y-0.5 hover:bg-cyan-100"
+                  >
+                    Sign in with Google
+                  </button>
+                ) : (
+                  <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700">
+                    Welcome, {session.user?.name || 'User'}!
+                  </div>
+                )}
               </div>
             </div>
 
@@ -203,6 +250,12 @@ export default function HomePage() {
                     <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500">{item.label}</p>
                   </div>
                 ))}
+              </div>
+              <div className="mt-3 flex items-center justify-between rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-cyan-700">Visitors</span>
+                <span className="text-xl font-black text-cyan-800">
+                  {visitorCount !== null ? visitorCount.toLocaleString() : '—'}
+                </span>
               </div>
             </div>
           </div>
@@ -241,7 +294,6 @@ export default function HomePage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Open For All ·{' '}
                 <span className="rounded-full border border-cyan-200 bg-cyan-100/80 px-2 py-1 text-cyan-800">
                   Public board: no login required
                 </span>

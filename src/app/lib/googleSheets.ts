@@ -227,6 +227,32 @@ export const deleteSheetRow = async (options: DeleteSheetRowOptions) => {
   });
 };
 
+type AppendSheetColumnOptions = {
+  spreadsheetId?: string;
+  sheetId: number;
+  count?: number;
+};
+
+export const appendSheetColumns = async (options: AppendSheetColumnOptions) => {
+  const spreadsheetId = resolveSpreadsheetId(options.spreadsheetId);
+  const sheets = getGoogleSheetsClient();
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          appendDimension: {
+            sheetId: options.sheetId,
+            dimension: 'COLUMNS',
+            length: options.count ?? 1,
+          },
+        },
+      ],
+    },
+  });
+};
+
 export type SheetUser = {
   username: string;
   password: string;
