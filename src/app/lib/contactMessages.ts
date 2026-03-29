@@ -23,6 +23,24 @@ export type ContactMessagePayload = {
   message: string;
 };
 
+const USERS_TAB = 'Users';
+
+export const saveUserLogin = async (name: string, email: string) => {
+  const spreadsheetId = normalizeSpreadsheetId(requiredContactSheetEnv());
+
+  await ensureSheetTabExists(
+    USERS_TAB,
+    ['timestamp', 'name', 'email'],
+    { spreadsheetId }
+  );
+
+  await appendQuizRowToSheet({
+    spreadsheetId,
+    range: `'${USERS_TAB}'!A:C`,
+    values: [new Date().toISOString(), name, email],
+  });
+};
+
 export const saveContactMessage = async (payload: ContactMessagePayload) => {
   const spreadsheetId = normalizeSpreadsheetId(requiredContactSheetEnv());
 

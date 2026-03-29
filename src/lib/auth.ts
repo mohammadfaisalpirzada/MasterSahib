@@ -1,7 +1,9 @@
 import NextAuth from 'next-auth/next';
+import type { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { saveUserLogin } from '@/app/lib/contactMessages';
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: 'jwt' as const,
@@ -16,6 +18,14 @@ export const authOptions = {
     signIn: '/auth/signin',
   },
   callbacks: {
+    async signIn({ user }) {
+      try {
+        await saveUserLogin(user.name || '', user.email || '');
+      } catch {
+        // non-blocking — login still succeeds even if sheet write fails
+      }
+      return true;
+    },
     async session({ session }) {
       return session;
     },

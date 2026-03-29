@@ -2,9 +2,9 @@
 
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
-export default function SignInPage() {
+function SignInPageContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
   const [isLoading, setIsLoading] = useState(false);
@@ -59,5 +59,23 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SignInFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 px-4">
+      <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center text-slate-600 shadow-2xl">
+        Loading sign in page...
+      </div>
+    </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<SignInFallback />}>
+      <SignInPageContent />
+    </Suspense>
   );
 }
