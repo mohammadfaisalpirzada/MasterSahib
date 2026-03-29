@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 
+type UsageRecord = {
+  dateKey: string;
+  count: number;
+};
+
 type MethodologyItem = {
   methodName: string;
   howToUse: string;
@@ -30,6 +35,16 @@ type LessonPlan = {
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/webp']);
+const DAILY_LIMIT = 3;
+const FRIENDLY_RETRY_MESSAGE =
+  'Please excuse us. The lesson plan service is unavailable right now. Please try again later.\nمعذرت، سبق پلان سروس اس وقت دستیاب نہیں۔ براہ کرم کچھ دیر بعد دوبارہ کوشش کریں۔';
+
+const globalUsageStore = globalThis as typeof globalThis & {
+  lessonPlanUsage?: Map<string, UsageRecord>;
+};
+
+const lessonPlanUsage = globalUsageStore.lessonPlanUsage ?? new Map<string, UsageRecord>();
+globalUsageStore.lessonPlanUsage = lessonPlanUsage;
 
 function sanitize(value: unknown) {
   return String(value ?? '').trim();
@@ -37,6 +52,43 @@ function sanitize(value: unknown) {
 
 function pickApiKey() {
   return process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY || '';
+}
+
+function getDateKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getClientKey(request: Request) {
+  const forwardedFor = request.headers.get('x-forwarded-for') || '';
+  const ip = forwardedFor.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'anonymous';
+  const userAgent = request.headers.get('user-agent') || 'unknown-agent';
+  return `${ip}::${userAgent}`;
+}
+
+function isDailyLimitReached(request: Request) {
+  const clientKey = getClientKey(request);
+  const dateKey = getDateKey();
+  const existing = lessonPlanUsage.get(clientKey);
+
+  if (!existing || existing.dateKey !== dateKey) {
+    lessonPlanUsage.set(clientKey, { dateKey, count: 0 });
+    return false;
+  }
+
+  return existing.count >= DAILY_LIMIT;
+}
+
+function incrementUsage(request: Request) {
+  const clientKey = getClientKey(request);
+  const dateKey = getDateKey();
+  const existing = lessonPlanUsage.get(clientKey);
+
+  if (!existing || existing.dateKey !== dateKey) {
+    lessonPlanUsage.set(clientKey, { dateKey, count: 1 });
+    return;
+  }
+
+  lessonPlanUsage.set(clientKey, { dateKey, count: existing.count + 1 });
 }
 
 function extractJson(text: string): LessonPlan | null {
@@ -114,7 +166,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Missing GOOGLE_AI_API_KEY or GEMINI_API_KEY in environment variables.',
+          message: FRIENDLY_RETRY_MESSAGE,
         },
         { status: 500 }
       );
@@ -136,6 +188,17 @@ export async function POST(request: Request) {
           message: 'Chapter/topic, class, and days are required.',
         },
         { status: 400 }
+      );
+    }
+
+    if (isDailyLimitReached(request)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'You have reached today\'s limit of 3 lesson plans. Please try again tomorrow.\nآپ آج کے 3 سبق پلان کی حد مکمل کر چکے ہیں۔ براہ کرم کل دوبارہ کوشش کریں۔',
+        },
+        { status: 429 }
       );
     }
 
@@ -175,6 +238,8 @@ export async function POST(request: Request) {
         },
       };
     }
+
+    incrementUsage(request);
 
     const prompt = `You are an expert school lesson planner.
 Create a practical lesson plan for a teacher in Pakistan.
@@ -246,11 +311,11 @@ Rules:
     );
 
     if (!response.ok) {
-      const errText = await response.text();
+      await response.text();
       return NextResponse.json(
         {
           success: false,
-          message: `Google AI request failed: ${errText}`,
+          message: FRIENDLY_RETRY_MESSAGE,
         },
         { status: 502 }
       );
@@ -269,8 +334,7 @@ Rules:
       return NextResponse.json(
         {
           success: false,
-          message: 'Could not parse AI response into lesson plan JSON.',
-          raw: rawText,
+          message: FRIENDLY_RETRY_MESSAGE,
         },
         { status: 502 }
       );
@@ -281,7 +345,7 @@ Rules:
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : 'Unexpected error while generating lesson plan.',
+        message: FRIENDLY_RETRY_MESSAGE,
       },
       { status: 500 }
     );

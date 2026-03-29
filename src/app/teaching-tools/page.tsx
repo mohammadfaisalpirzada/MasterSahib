@@ -16,8 +16,8 @@ const tools = [
     href: '/resume-builder',
   },
   {
-    title: 'Automatic Lesson Planner (Google AI)',
-    description: 'Upload book PDF/image or enter topic details to auto-generate a complete lesson plan.',
+    title: 'Lesson Plan Generator',
+    description: 'Upload a book PDF/image or enter topic details to create a complete lesson plan.',
     status: 'Ready',
     href: '/teaching-tools/automatic-lesson-plan',
   },

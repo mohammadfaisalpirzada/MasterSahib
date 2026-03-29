@@ -64,7 +64,7 @@ export default function AutomaticLessonPlanPage() {
   const [plan, setPlan] = useState<LessonPlan | null>(null);
 
   const heading = useMemo(() => {
-    if (!chapterOrTopic || !className) return 'Automatic Lesson Plan';
+    if (!chapterOrTopic || !className) return 'Lesson Plan';
     return `${toTitleCase(chapterOrTopic)} - ${className}`;
   }, [chapterOrTopic, className]);
 
@@ -91,14 +91,19 @@ export default function AutomaticLessonPlanPage() {
       const data = (await response.json()) as ApiResponse;
 
       if (!response.ok || !data.success) {
-        const message = 'message' in data ? data.message : 'Lesson plan generate nahi ho saka.';
-        setError(message || 'Lesson plan generate nahi ho saka.');
+        const message =
+          'message' in data
+            ? data.message
+            : 'Please excuse us. The lesson plan service is unavailable right now. Please try again later.\nمعذرت، سبق پلان سروس اس وقت دستیاب نہیں۔ براہ کرم کچھ دیر بعد دوبارہ کوشش کریں۔';
+        setError(message || 'Please excuse us. The lesson plan service is unavailable right now. Please try again later.');
         return;
       }
 
       setPlan(data.plan);
     } catch {
-      setError('Network error. Dobara try karein.');
+      setError(
+        'Please excuse us. We could not generate the lesson plan right now. Please try again later.\nمعذرت، اس وقت سبق پلان تیار نہیں ہو سکا۔ براہ کرم کچھ دیر بعد دوبارہ کوشش کریں۔'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -108,11 +113,18 @@ export default function AutomaticLessonPlanPage() {
     <main className="min-h-screen bg-[#f7fafc] px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">Google AI Tool</p>
-          <h1 className="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">Automatic Lesson Plan Generator</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">Lesson Planning Tool</p>
+          <h1 className="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">Lesson Plan Generator</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            Teacher topic, class, days aur optional PDF/image dega. Tool complete planning generate karega with objectives,
-            activities, methodology, classwork, homework aur reflection.
+            The teacher provides the topic, class, number of days, and an optional PDF or image. The tool prepares a
+            complete lesson plan with objectives, activities, methodology, classwork, homework, and reflection.
+          </p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base" dir="rtl">
+            استاد موضوع، جماعت، مطلوبہ دن، اور اختیاری پی ڈی ایف یا تصویر دے گا۔ یہ ٹول مقاصد، سرگرمیوں، طریقہ تدریس،
+            کلاس ورک، ہوم ورک، اور عکاسی کے ساتھ مکمل سبق پلان تیار کرے گا۔
+          </p>
+          <p className="mt-3 inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+            Daily limit: 3 lesson plans per user
           </p>
 
           <div className="mt-5 flex flex-wrap gap-3">
@@ -207,7 +219,9 @@ export default function AutomaticLessonPlanPage() {
             </div>
           </form>
 
-          {error ? <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">{error}</p> : null}
+          {error ? (
+            <p className="mt-4 whitespace-pre-line rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">{error}</p>
+          ) : null}
         </section>
 
         {plan ? (
