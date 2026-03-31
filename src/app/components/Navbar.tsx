@@ -9,6 +9,7 @@ const navItems = [
   { label: 'Quiz Program', href: '/peace-quiz' },
   { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },
   { label: 'Resume Builder', href: '/resume-builder' },
+  { label: 'Teaching Tools', href: '/teaching-tools' },
   { label: 'Contact', href: '/contact' },
 ];
 

@@ -37,7 +37,7 @@ const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(['application/pdf', 'image/png', 'image/jpeg', 'image/webp']);
 const DAILY_LIMIT = 3;
 const FRIENDLY_RETRY_MESSAGE =
-  'Please excuse us. The lesson plan service is unavailable right now. Please try again later.\nمعذرت، سبق پلان سروس اس وقت دستیاب نہیں۔ براہ کرم کچھ دیر بعد دوبارہ کوشش کریں۔';
+  'Please excuse us. We could not generate the lesson plan right now. Please try again later.\nمعذرت، اس وقت سبق پلان تیار نہیں ہو سکا۔ براہ کرم کچھ دیر بعد دوبارہ کوشش کریں۔';
 
 const globalUsageStore = globalThis as typeof globalThis & {
   lessonPlanUsage?: Map<string, UsageRecord>;
@@ -172,14 +172,57 @@ export async function POST(request: Request) {
       );
     }
 
-    const form = await request.formData();
+    const contentType = request.headers.get('content-type') || '';
+    const requestClone = request.clone();
 
-    const chapterOrTopic = sanitize(form.get('chapterOrTopic'));
-    const className = sanitize(form.get('className'));
-    const units = sanitize(form.get('units'));
-    const daysRequired = sanitize(form.get('daysRequired'));
-    const teacherNotes = sanitize(form.get('teacherNotes'));
-    const file = form.get('bookFile');
+    let chapterOrTopic = '';
+    let className = '';
+    let units = '';
+    let daysRequired = '';
+    let teacherNotes = '';
+    let file: FormDataEntryValue | null = null;
+
+    if (contentType.includes('application/json')) {
+      const json = (await request.json()) as Record<string, unknown>;
+      chapterOrTopic = sanitize(json.chapterOrTopic);
+      className = sanitize(json.className);
+      units = sanitize(json.units);
+      daysRequired = sanitize(json.daysRequired);
+      teacherNotes = sanitize(json.teacherNotes);
+    } else {
+      try {
+        const form = await request.formData();
+        chapterOrTopic = sanitize(form.get('chapterOrTopic'));
+        className = sanitize(form.get('className'));
+        units = sanitize(form.get('units'));
+        daysRequired = sanitize(form.get('daysRequired'));
+        teacherNotes = sanitize(form.get('teacherNotes'));
+        file = form.get('bookFile');
+      } catch (formError) {
+        console.error('Lesson plan payload parse error', {
+          contentType,
+          formError,
+        });
+
+        try {
+          const jsonFallback = (await requestClone.json()) as Record<string, unknown>;
+          chapterOrTopic = sanitize(jsonFallback.chapterOrTopic);
+          className = sanitize(jsonFallback.className);
+          units = sanitize(jsonFallback.units);
+          daysRequired = sanitize(jsonFallback.daysRequired);
+          teacherNotes = sanitize(jsonFallback.teacherNotes);
+        } catch {
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                'Invalid request payload. Please refresh the page and try again.\nدرخواست کا ڈیٹا درست نہیں۔ براہ کرم صفحہ ریفریش کر کے دوبارہ کوشش کریں۔',
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
 
     if (!chapterOrTopic || !className || !daysRequired) {
       return NextResponse.json(
@@ -311,7 +354,11 @@ Rules:
     );
 
     if (!response.ok) {
-      await response.text();
+      const upstreamBody = await response.text();
+      console.error('Lesson plan upstream API error', {
+        status: response.status,
+        bodyPreview: upstreamBody.slice(0, 500),
+      });
       return NextResponse.json(
         {
           success: false,
@@ -331,6 +378,9 @@ Rules:
 
     const parsed = normalizePlan(extractJson(rawText));
     if (!parsed) {
+      console.error('Lesson plan response parse failed', {
+        rawPreview: rawText.slice(0, 500),
+      });
       return NextResponse.json(
         {
           success: false,
@@ -342,6 +392,7 @@ Rules:
 
     return NextResponse.json({ success: true, plan: parsed });
   } catch (error) {
+    console.error('Lesson plan route exception', error);
     return NextResponse.json(
       {
         success: false,
