@@ -109,7 +109,7 @@ const buildFallbackNewsItems = (): EducationNewsItem[] => {
 
   return [
     {
-      title: 'Teaching tools are ready for your next class.',
+      title: 'Educational resources are ready for your next class.',
       date: 'Live update',
       link: new URL('/teaching-tools', SITE_URL).toString(),
       sourceName: 'themastersahib.com',

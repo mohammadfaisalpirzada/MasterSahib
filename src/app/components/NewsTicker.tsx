@@ -14,7 +14,7 @@ type EducationNewsApiResponse = {
 };
 
 const fallbackItems: EducationNewsItem[] = [
-  { title: 'Teaching tools are ready for your next class.', link: '/teaching-tools' },
+  { title: 'Educational resources are ready for your next class.', link: '/teaching-tools' },
   { title: 'Daily quiz practice is available for students right now.', link: '/peace-quiz' },
   { title: 'Resume builder and portfolio sections are active for learners.', link: '/resume-builder' },
   { title: 'Fresh education and tech headlines are syncing in the background.', link: '/' },

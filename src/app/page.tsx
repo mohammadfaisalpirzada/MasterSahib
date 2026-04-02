@@ -24,8 +24,8 @@ const quickCards = [
     accent: 'from-emerald-500 to-teal-600',
   },
   {
-    title: 'Teaching Tools',
-    description: 'Your daily-use teaching toolbox and classroom helpers.',
+    title: 'Educational Resources',
+    description: 'Open classroom utilities, lesson planning, and daily school helpers.',
     href: '/teaching-tools',
     accent: 'from-fuchsia-500 to-pink-600',
   },
@@ -225,7 +225,7 @@ export default function HomePage() {
                   href="/teaching-tools"
                   className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-400"
                 >
-                  Open Teaching Tools
+                  Open Educational Resources
                 </Link>
                 {!session ? (
                   <button
@@ -397,7 +397,7 @@ export default function HomePage() {
             <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
               <Link href="/peace-quiz" className="transition hover:text-slate-900">Quiz</Link>
               <Link href="/ggss-nishtar-road" className="transition hover:text-slate-900">GGSS</Link>
-              <Link href="/teaching-tools" className="transition hover:text-slate-900">Teaching Tools</Link>
+              <Link href="/teaching-tools" className="transition hover:text-slate-900">Educational Resources</Link>
               <Link href="/contact" className="transition hover:text-slate-900">Contact</Link>
             </div>
           </div>

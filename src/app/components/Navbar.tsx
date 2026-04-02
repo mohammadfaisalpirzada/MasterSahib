@@ -1,24 +1,46 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';import { useSession, signIn, signOut } from 'next-auth/react';import { HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
+import { usePathname } from 'next/navigation';
+import { signIn, signOut, useSession } from 'next-auth/react';
+import { HiChevronDown, HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
 
-const navItems = [
+import { educationalResourceNavLinks } from '@/app/lib/educationalResources';
+
+type NavItem = {
+  label: string;
+  href: string;
+  children?: Array<{
+    label: string;
+    href: string;
+    description: string;
+  }>;
+};
+
+const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Quiz Program', href: '/peace-quiz' },
   { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },
   { label: 'Resume Builder', href: '/resume-builder' },
-  { label: 'Teaching Tools', href: '/teaching-tools' },
+  {
+    label: 'Educational Resources',
+    href: '/teaching-tools',
+    children: educationalResourceNavLinks,
+  },
   { label: 'Contact', href: '/contact' },
 ];
 
 const secondaryNavItem = { label: 'Portfolio', href: '/portfolio' };
 
-const Navbar: React.FC = () => {
+export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [openDesktopDropdown, setOpenDesktopDropdown] = useState<string | null>(null);
+  const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const headerRef = useRef<HTMLElement | null>(null);
 
   const isActiveRoute = (href: string) => {
     if (href === '/') {
@@ -26,6 +48,14 @@ const Navbar: React.FC = () => {
     }
 
     return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  const isItemActive = (item: NavItem) => {
+    if (isActiveRoute(item.href)) {
+      return true;
+    }
+
+    return item.children?.some((child) => isActiveRoute(child.href)) ?? false;
   };
 
   useEffect(() => {
@@ -36,8 +66,28 @@ const Navbar: React.FC = () => {
     };
   }, [isMobileOpen]);
 
+  useEffect(() => {
+    setIsMobileOpen(false);
+    setOpenDesktopDropdown(null);
+    setOpenMobileDropdown(null);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setOpenDesktopDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-indigo-300/40 bg-gradient-to-r from-indigo-700 via-indigo-600 to-cyan-600 text-white shadow-lg">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-40 w-full border-b border-indigo-300/40 bg-gradient-to-r from-indigo-700 via-indigo-600 to-cyan-600 text-white shadow-lg"
+    >
       <nav className="mx-auto flex w-full max-w-[1700px] items-center justify-between gap-4 px-3 py-3 sm:px-6 lg:px-10">
         <Link
           href="/"
@@ -58,20 +108,77 @@ const Navbar: React.FC = () => {
         </Link>
 
         <ul className="hidden items-center gap-1 lg:flex">
-          {navItems.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                  isActiveRoute(item.href)
-                    ? 'bg-white text-indigo-700 shadow-sm'
-                    : 'text-indigo-50 hover:bg-white/15 hover:text-white'
-                }`}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
+          {navItems.map((item) => {
+            const isOpen = openDesktopDropdown === item.href;
+            const isActive = isItemActive(item);
+
+            if (item.children) {
+              return (
+                <li
+                  key={item.href}
+                  className="relative"
+                  onMouseEnter={() => setOpenDesktopDropdown(item.href)}
+                  onMouseLeave={() => setOpenDesktopDropdown((current) => (current === item.href ? null : current))}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenDesktopDropdown((current) => (current === item.href ? null : item.href))}
+                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                      isActive
+                        ? 'bg-white text-indigo-700 shadow-sm'
+                        : 'text-indigo-50 hover:bg-white/15 hover:text-white'
+                    }`}
+                  >
+                    {item.label}
+                    <HiChevronDown className={`h-4 w-4 transition ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  <div
+                    className={`absolute left-0 top-full z-50 mt-2 w-80 rounded-2xl border border-slate-200 bg-white p-2 text-slate-900 shadow-xl transition-all duration-200 ${
+                      isOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
+                    }`}
+                  >
+                    <Link
+                      href={item.href}
+                      className="block rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                    >
+                      Open All Educational Resources
+                    </Link>
+
+                    <div className="mt-2 grid gap-1">
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className={`rounded-xl px-3 py-2.5 transition hover:bg-indigo-50 ${
+                            isActiveRoute(child.href) ? 'bg-indigo-50' : ''
+                          }`}
+                        >
+                          <span className="block text-sm font-semibold text-slate-900">{child.label}</span>
+                          <span className="mt-0.5 block text-xs leading-5 text-slate-600">{child.description}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </li>
+              );
+            }
+
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                    isActive
+                      ? 'bg-white text-indigo-700 shadow-sm'
+                      : 'text-indigo-50 hover:bg-white/15 hover:text-white'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="hidden items-center gap-3 lg:flex">
@@ -104,12 +211,10 @@ const Navbar: React.FC = () => {
                 </div>
               )}
               <div className="flex flex-col">
-                <p className="text-xs font-semibold text-white">
-                  {session.user?.name || 'User'}
-                </p>
+                <p className="text-xs font-semibold text-white">{session.user?.name || 'User'}</p>
                 <button
                   onClick={() => signOut()}
-                  className="text-xs text-indigo-100 hover:text-white transition"
+                  className="text-xs text-indigo-100 transition hover:text-white"
                 >
                   Sign out
                 </button>
@@ -152,21 +257,64 @@ const Navbar: React.FC = () => {
             </div>
 
             <ul className="space-y-3">
-              {navItems.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`block rounded-xl border px-4 py-3 text-base font-semibold transition ${
-                      isActiveRoute(item.href)
-                        ? 'border-white/70 bg-white text-indigo-700'
-                        : 'border-white/20 bg-white/10 text-white hover:bg-white/20'
-                    }`}
-                    onClick={() => setIsMobileOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+              {navItems.map((item) => {
+                if (item.children) {
+                  const isOpen = openMobileDropdown === item.href;
+
+                  return (
+                    <li key={item.href} className="rounded-xl border border-white/20 bg-white/10">
+                      <button
+                        type="button"
+                        onClick={() => setOpenMobileDropdown((current) => (current === item.href ? null : item.href))}
+                        className="flex w-full items-center justify-between px-4 py-3 text-left text-base font-semibold text-white"
+                      >
+                        <span>{item.label}</span>
+                        <HiChevronDown className={`h-5 w-5 transition ${isOpen ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      {isOpen ? (
+                        <div className="space-y-2 px-3 pb-3">
+                          <Link
+                            href={item.href}
+                            className="block rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20"
+                            onClick={() => setIsMobileOpen(false)}
+                          >
+                            Open All Educational Resources
+                          </Link>
+
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              className="block rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 transition hover:bg-white/10"
+                              onClick={() => setIsMobileOpen(false)}
+                            >
+                              <span className="block text-sm font-semibold text-white">{child.label}</span>
+                              <span className="mt-1 block text-xs leading-5 text-indigo-100">{child.description}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      ) : null}
+                    </li>
+                  );
+                }
+
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`block rounded-xl border px-4 py-3 text-base font-semibold transition ${
+                        isActiveRoute(item.href)
+                          ? 'border-white/70 bg-white text-indigo-700'
+                          : 'border-white/20 bg-white/10 text-white hover:bg-white/20'
+                      }`}
+                      onClick={() => setIsMobileOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
 
             <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4">
@@ -200,9 +348,7 @@ const Navbar: React.FC = () => {
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-white">
-                        {session.user?.name || 'User'}
-                      </p>
+                      <p className="text-sm font-semibold text-white">{session.user?.name || 'User'}</p>
                       <p className="text-xs text-indigo-100">{session.user?.email}</p>
                     </div>
                   </div>
@@ -235,6 +381,4 @@ const Navbar: React.FC = () => {
       ) : null}
     </header>
   );
-};
-
-export default Navbar;
+}

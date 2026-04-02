@@ -2,42 +2,7 @@
 
 import Link from 'next/link';
 
-const tools = [
-  {
-    title: 'Students Age Calculator',
-    description: 'Tool of the Day: calculate exact student age and get recommended class as per age.',
-    status: 'Ready',
-    href: '/teaching-tools/students-age-calculator',
-  },
-  {
-    title: 'Resume Builder',
-    description: 'Create teacher CV/resume quickly for applications and profile updates.',
-    status: 'Ready',
-    href: '/resume-builder',
-  },
-  {
-    title: 'Lesson Plan Generator',
-    description: 'Upload a book PDF/image or enter topic details to create a complete lesson plan.',
-    status: 'Ready',
-    href: '/teaching-tools/automatic-lesson-plan',
-  },
-  {
-    title: 'Attendance Tracker',
-    description: 'Simple attendance workflow for class-wise management.',
-    status: 'Ready',
-    href: '#',
-  },
-  {
-    title: 'Worksheet Builder',
-    description: 'Create practice sheets and print-ready activities.',
-    status: 'Coming Soon',
-  },
-  {
-    title: 'Class Routine Board',
-    description: 'Keep your daily timetable and activity timeline in one place.',
-    status: 'Coming Soon',
-  },
-];
+import { educationalResourceItems } from '@/app/lib/educationalResources';
 
 export default function TeachingToolsPage() {
   return (
@@ -45,9 +10,9 @@ export default function TeachingToolsPage() {
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">New Workspace</p>
-          <h1 className="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">Teaching Tools</h1>
+          <h1 className="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">Educational Resources</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            Use this space to manage and expand your daily teaching tools. Each card can be connected to your custom utility pages.
+            Use this space to manage and expand your daily educational resources. Every tool added here can also appear automatically inside the navbar dropdown.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-3">
@@ -61,13 +26,13 @@ export default function TeachingToolsPage() {
               href="/contact"
               className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
             >
-              Request New Tool
+              Request New Resource
             </Link>
           </div>
         </div>
 
         <section className="grid gap-4 sm:grid-cols-2">
-          {tools.map((tool) => (
+          {educationalResourceItems.map((tool) => (
             <article
               key={tool.title}
               className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -91,7 +56,7 @@ export default function TeachingToolsPage() {
                     href={tool.href}
                     className="inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
                   >
-                    Open Tool
+                    Open Resource
                   </Link>
                 ) : (
                   <span className="inline-flex rounded-xl border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-500">
