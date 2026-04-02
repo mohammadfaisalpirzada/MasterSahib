@@ -102,3 +102,49 @@ svg {
 .animation-delay-900 {
   animation-delay: 900ms;
 }
+
+@keyframes news-ticker-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.news-ticker {
+  display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.news-ticker-track {
+  display: flex;
+  width: max-content;
+  min-width: max-content;
+  align-items: center;
+  animation: news-ticker-scroll 60s linear infinite;
+  will-change: transform;
+}
+
+.news-ticker:hover .news-ticker-track {
+  animation-play-state: paused;
+}
+
+.news-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.news-ticker-item::after {
+  content: '';
+  display: inline-block;
+  height: 0.35rem;
+  width: 0.35rem;
+  border-radius: 9999px;
+  background: #67e8f9;
+}

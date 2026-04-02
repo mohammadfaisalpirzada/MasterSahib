@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HiArrowLeft } from 'react-icons/hi';
 import Navbar from './Navbar';
+import NewsTicker from './NewsTicker';
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -16,7 +17,12 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <>
-      {!isPeaceQuizRoute ? <Navbar /> : null}
+      {!isPeaceQuizRoute ? (
+        <>
+          <Navbar />
+          <NewsTicker />
+        </>
+      ) : null}
       {children}
       {showBackToGlobal ? (
         <Link
