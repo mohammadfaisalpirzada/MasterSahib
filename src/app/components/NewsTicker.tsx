@@ -13,11 +13,15 @@ type EducationNewsApiResponse = {
   item?: EducationNewsItem | null;
 };
 
-const fallbackHeadline = 'Latest Pakistani education updates will appear here shortly.';
+const fallbackItems: EducationNewsItem[] = [
+  { title: 'Teaching tools are ready for your next class.', link: '/teaching-tools' },
+  { title: 'Daily quiz practice is available for students right now.', link: '/peace-quiz' },
+  { title: 'Resume builder and portfolio sections are active for learners.', link: '/resume-builder' },
+  { title: 'Fresh education and tech headlines are syncing in the background.', link: '/' },
+];
 
 export default function NewsTicker() {
-  const [items, setItems] = useState<EducationNewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<EducationNewsItem[]>(fallbackItems);
 
   useEffect(() => {
     let isMounted = true;
@@ -37,14 +41,10 @@ export default function NewsTicker() {
             ? [data.item]
             : [];
 
-        setItems(nextItems.slice(0, 8));
+        setItems(nextItems.length > 0 ? nextItems.slice(0, 8) : fallbackItems);
       } catch {
         if (isMounted) {
-          setItems([]);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
+          setItems(fallbackItems);
         }
       }
     };
@@ -57,17 +57,9 @@ export default function NewsTicker() {
   }, []);
 
   const tickerItems = useMemo(() => {
-    if (items.length > 0) {
-      return [...items, ...items];
-    }
-
-    const message = loading ? 'Loading latest Pakistani education updates...' : fallbackHeadline;
-    return [
-      { title: message, link: '' },
-      { title: message, link: '' },
-      { title: message, link: '' },
-    ];
-  }, [items, loading]);
+    const activeItems = items.length > 0 ? items : fallbackItems;
+    return [...activeItems, ...activeItems];
+  }, [items]);
 
   return (
     <div className="w-full overflow-hidden border-b border-slate-700/80 bg-slate-900 text-white">

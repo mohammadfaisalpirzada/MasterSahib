@@ -123,7 +123,7 @@ svg {
   width: max-content;
   min-width: max-content;
   align-items: center;
-  animation: news-ticker-scroll 60s linear infinite;
+  animation: news-ticker-scroll 125s linear infinite;
   will-change: transform;
 }
 

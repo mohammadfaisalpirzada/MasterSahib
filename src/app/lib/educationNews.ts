@@ -24,6 +24,7 @@ const NEWS_STORE_PATH = path.join(process.cwd(), 'src', 'data', 'education-news.
 const MAX_CACHE_HOURS = Number(process.env.EDUCATION_NEWS_CACHE_HOURS ?? '18');
 const REQUEST_TIMEOUT_MS = Math.max(Number(process.env.EDUCATION_NEWS_TIMEOUT_MS ?? '15000'), 5000);
 const MAX_ITEMS = Math.max(Number(process.env.EDUCATION_NEWS_MAX_ITEMS ?? '8'), 1);
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://themastersahib.com';
 const SOURCE_URLS = (
   process.env.EDUCATION_NEWS_SOURCE_URLS?.split(',').map((item) => item.trim()).filter(Boolean) ?? [
     'https://parhopakistan.com/category/education/',
@@ -70,6 +71,77 @@ const BROWSER_HEADERS: HeadersInit = {
 };
 
 const cleanText = (value: string) => value.replace(/\s+/g, ' ').trim();
+
+const isUsefulHeadline = (title: string, link: string, sourceUrl: string) => {
+  const normalizedTitle = cleanText(title).toLowerCase();
+
+  if (!normalizedTitle || normalizedTitle.length < 12) {
+    return false;
+  }
+
+  if (['more', 'menu', 'home', 'read more'].includes(normalizedTitle)) {
+    return false;
+  }
+
+  try {
+    const resolvedLink = new URL(link, sourceUrl).toString();
+    const rootUrl = new URL('/', sourceUrl).toString();
+
+    if (resolvedLink === sourceUrl || resolvedLink === rootUrl || resolvedLink.endsWith('/#')) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+
+  const words = normalizedTitle.split(/\s+/).filter(Boolean);
+  const uniqueWords = new Set(words);
+
+  if (words.length >= 4 && uniqueWords.size <= Math.ceil(words.length / 3)) {
+    return false;
+  }
+
+  return true;
+};
+
+const buildFallbackNewsItems = (): EducationNewsItem[] => {
+  const scrapedAt = new Date().toISOString();
+
+  return [
+    {
+      title: 'Teaching tools are ready for your next class.',
+      date: 'Live update',
+      link: new URL('/teaching-tools', SITE_URL).toString(),
+      sourceName: 'themastersahib.com',
+      sourceUrl: SITE_URL,
+      scrapedAt,
+    },
+    {
+      title: 'Daily quiz practice is available for students right now.',
+      date: 'Live update',
+      link: new URL('/peace-quiz', SITE_URL).toString(),
+      sourceName: 'themastersahib.com',
+      sourceUrl: SITE_URL,
+      scrapedAt,
+    },
+    {
+      title: 'Resume builder and portfolio sections are active for learners.',
+      date: 'Live update',
+      link: new URL('/resume-builder', SITE_URL).toString(),
+      sourceName: 'themastersahib.com',
+      sourceUrl: SITE_URL,
+      scrapedAt,
+    },
+    {
+      title: 'Fresh education and tech headlines are syncing in the background.',
+      date: 'Live update',
+      link: new URL('/', SITE_URL).toString(),
+      sourceName: 'themastersahib.com',
+      sourceUrl: SITE_URL,
+      scrapedAt,
+    },
+  ].slice(0, MAX_ITEMS);
+};
 
 const getSourceName = (sourceUrl: string) => {
   try {
@@ -161,7 +233,7 @@ export const parseEducationNewsItems = (html: string, sourceUrl: string): Educat
 
       const date = cleanText(container.find(SELECTORS.date).first().text()) || 'Education update';
 
-      if (!title || !rawLink) {
+      if (!title || !rawLink || !isUsefulHeadline(title, rawLink, sourceUrl)) {
         return null;
       }
 
@@ -275,15 +347,40 @@ export const getEducationNews = async (): Promise<EducationNewsStore> => {
       const message =
         error instanceof Error ? error.message : 'Unable to refresh education news right now.';
 
-      if (store.item) {
+      if (store.items.length > 0 || store.item) {
         return {
-          ...store,
+          item: store.item ?? store.items[0] ?? null,
+          items: store.items.length > 0 ? store.items : store.item ? [store.item] : [],
+          updatedAt: store.updatedAt,
           lastError: message,
         };
       }
 
-      throw new Error(message);
+      const fallbackItems = buildFallbackNewsItems();
+      return {
+        item: fallbackItems[0] ?? null,
+        items: fallbackItems,
+        updatedAt: fallbackItems[0]?.scrapedAt ?? new Date().toISOString(),
+        lastError: null,
+      };
     }
+  }
+
+  if (store.items.length === 0 && store.item) {
+    return {
+      ...store,
+      items: [store.item],
+    };
+  }
+
+  if (store.items.length === 0) {
+    const fallbackItems = buildFallbackNewsItems();
+    return {
+      item: fallbackItems[0] ?? null,
+      items: fallbackItems,
+      updatedAt: fallbackItems[0]?.scrapedAt ?? new Date().toISOString(),
+      lastError: null,
+    };
   }
 
   return store;
