@@ -12,6 +12,7 @@ import { educationalResourceNavLinks } from '@/app/lib/educationalResources';
 type NavItem = {
   label: string;
   href: string;
+  desktopLabel?: string;
   children?: Array<{
     label: string;
     href: string;
@@ -23,9 +24,9 @@ const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'Quiz Program', href: '/peace-quiz' },
   { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },
-  { label: 'Resume Builder', href: '/resume-builder' },
   {
     label: 'Educational Resources',
+    desktopLabel: 'Edu Resources',
     href: '/teaching-tools',
     children: educationalResourceNavLinks,
   },
@@ -116,48 +117,60 @@ export default function Navbar() {
               return (
                 <li
                   key={item.href}
-                  className="relative"
+                  className="relative pb-2 -mb-2"
                   onMouseEnter={() => setOpenDesktopDropdown(item.href)}
                   onMouseLeave={() => setOpenDesktopDropdown((current) => (current === item.href ? null : current))}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setOpenDesktopDropdown((current) => (current === item.href ? null : item.href))}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  <div
+                    className={`inline-flex shrink-0 items-center whitespace-nowrap overflow-hidden rounded-lg text-sm font-semibold transition ${
                       isActive
                         ? 'bg-white text-indigo-700 shadow-sm'
                         : 'text-indigo-50 hover:bg-white/15 hover:text-white'
                     }`}
                   >
-                    {item.label}
-                    <HiChevronDown className={`h-4 w-4 transition ${isOpen ? 'rotate-180' : ''}`} />
-                  </button>
+                    <Link
+                      href={item.href}
+                      className="px-3 py-2"
+                    >
+                      {item.desktopLabel ?? item.label}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setOpenDesktopDropdown((current) => (current === item.href ? null : item.href))}
+                      className="border-l border-current/15 px-2.5 py-2"
+                      aria-label={`Open ${item.label} menu`}
+                    >
+                      <HiChevronDown className={`h-4 w-4 transition ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
 
                   <div
-                    className={`absolute left-0 top-full z-50 mt-2 w-80 rounded-2xl border border-slate-200 bg-white p-2 text-slate-900 shadow-xl transition-all duration-200 ${
+                    className={`absolute left-0 top-full z-50 w-[22rem] pt-2 text-slate-900 transition-all duration-200 ${
                       isOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
                     }`}
                   >
-                    <Link
-                      href={item.href}
-                      className="block rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
-                    >
-                      Open All Educational Resources
-                    </Link>
+                    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                      <Link
+                        href={item.href}
+                        className="block rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                      >
+                        Open All Educational Resources
+                      </Link>
 
-                    <div className="mt-2 grid gap-1">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className={`rounded-xl px-3 py-2.5 transition hover:bg-indigo-50 ${
-                            isActiveRoute(child.href) ? 'bg-indigo-50' : ''
-                          }`}
-                        >
-                          <span className="block text-sm font-semibold text-slate-900">{child.label}</span>
-                          <span className="mt-0.5 block text-xs leading-5 text-slate-600">{child.description}</span>
-                        </Link>
-                      ))}
+                      <div className="mt-2 grid gap-1">
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className={`rounded-xl px-3 py-2.5 transition hover:bg-indigo-50 ${
+                              isActiveRoute(child.href) ? 'bg-indigo-50' : ''
+                            }`}
+                          >
+                            <span className="block text-sm font-semibold text-slate-900">{child.label}</span>
+                            <span className="mt-0.5 block text-xs leading-5 text-slate-600">{child.description}</span>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </li>

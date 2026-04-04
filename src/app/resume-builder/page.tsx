@@ -1,86 +1,38 @@
-import ResumeForm from "../components/resumeForm";
-import React from "react";
+import ResumeForm from '../components/resumeForm';
 
-export default function resume(){
-
-return(
-  <div>
-  
-<div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 mb-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-blue-600 mb-6">Create Your Professional Resume</h1>
-          
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold text-blue-600 mb-4">Why Create a Resume with Us?</h2>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  <span>Professional templates designed by career experts</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  <span>ATS-friendly formats to pass applicant tracking systems</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  <span>Easy-to-use builder with real-time preview</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  <span>Export options in multiple formats (PDF, Print)</span>
-                </li>
-              </ul>
+export default function ResumePage() {
+  return (
+    <main className="min-h-screen bg-[#f7fafc] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <section className="resume-page-hero overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-r from-slate-900 via-blue-900 to-cyan-700 p-6 text-white shadow-sm sm:p-8">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100">Career Studio</p>
+              <h1 className="mt-2 text-3xl font-black sm:text-4xl">Build a Beautiful Professional Resume</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-100 sm:text-base">
+                Enter your details once, refine your wording, and instantly preview a clean, attractive, job-ready CV for teaching and professional roles.
+              </p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold text-blue-600 mb-4">Resume Writing Tips</h2>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  <span>Use action verbs and quantifiable achievements</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  <span>Keep your content clear, concise, and relevant</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  <span>Customize for each job application</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  <span>Include keywords from the job description</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold text-blue-600 mb-4">Getting Started</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-500 mb-2">1</div>
-                <p className="text-gray-600">Fill in your personal and professional details in the form below</p>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur">
+                <p className="text-xl font-black">1</p>
+                <p className="mt-1 text-sm text-slate-100">Enter personal, education, and experience details.</p>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-500 mb-2">2</div>
-                <p className="text-gray-600">Preview your resume and make any necessary adjustments</p>
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur">
+                <p className="text-xl font-black">2</p>
+                <p className="mt-1 text-sm text-slate-100">Strengthen your summary and bullet points.</p>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-500 mb-2">3</div>
-                <p className="text-gray-600">Download your professionally formatted resume as PDF</p>
+              <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur">
+                <p className="text-xl font-black">3</p>
+                <p className="mt-1 text-sm text-slate-100">Preview, print, or save as PDF in a polished format.</p>
               </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        <ResumeForm />
       </div>
-
-      <ResumeForm />
-
-
-</div> 
-)
-
-
+    </main>
+  );
 }

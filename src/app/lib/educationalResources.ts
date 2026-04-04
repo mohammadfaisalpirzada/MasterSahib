@@ -14,10 +14,22 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     href: '/teaching-tools/students-age-calculator',
   },
   {
-    title: 'Automatic Lesson Plan',
+    title: 'Lesson Plan',
     description: 'Generate a complete lesson plan from a topic, PDF, or image.',
     status: 'Ready',
     href: '/teaching-tools/automatic-lesson-plan',
+  },
+  {
+    title: 'Academic Calendar Generator',
+    description: 'Generate a yearly school calendar with holidays, vacation periods, and working-day totals.',
+    status: 'Ready',
+    href: '/teaching-tools/academic-calendar',
+  },
+  {
+    title: 'Timetable Generator',
+    description: 'Create a balanced weekly school timetable with manual swap, PDF, and print support.',
+    status: 'Ready',
+    href: '/teaching-tools/timetable-generator',
   },
   {
     title: 'Resume Builder',
