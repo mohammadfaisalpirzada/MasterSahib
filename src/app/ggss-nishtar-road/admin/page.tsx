@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { IoEyeOffOutline, IoEyeOutline } from 'react-icons/io5';
 import jsPDF from 'jspdf';
@@ -43,6 +43,114 @@ const parseAdminResponse = async (response: Response) => {
   }
 
   return (await response.json()) as AdminApiResponse;
+};
+
+const MAX_PICTURE_BASE64_LENGTH = 48_000;
+const PICTURE_TARGET_WIDTH = 360;
+const PICTURE_TARGET_HEIGHT = 450;
+const MIN_PICTURE_WIDTH = 220;
+const MIN_PICTURE_HEIGHT = 275;
+const MIN_PICTURE_QUALITY = 0.45;
+
+const extractBase64Payload = (dataUrl: string) => {
+  const [, payload = ''] = dataUrl.split(',');
+  return payload;
+};
+
+const loadImageElement = (file: File) => {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Selected image could not be opened.'));
+    };
+
+    image.src = objectUrl;
+  });
+};
+
+const drawCenteredCrop = (
+  context: CanvasRenderingContext2D,
+  source: CanvasImageSource,
+  sourceWidth: number,
+  sourceHeight: number,
+  targetWidth: number,
+  targetHeight: number
+) => {
+  const sourceRatio = sourceWidth / sourceHeight;
+  const targetRatio = targetWidth / targetHeight;
+
+  let cropWidth = sourceWidth;
+  let cropHeight = sourceHeight;
+
+  if (sourceRatio > targetRatio) {
+    cropWidth = sourceHeight * targetRatio;
+  } else {
+    cropHeight = sourceWidth / targetRatio;
+  }
+
+  const offsetX = Math.max(0, (sourceWidth - cropWidth) / 2);
+  const offsetY = Math.max(0, (sourceHeight - cropHeight) / 2);
+
+  context.drawImage(source, offsetX, offsetY, cropWidth, cropHeight, 0, 0, targetWidth, targetHeight);
+};
+
+const compressCanvasToJpegBase64 = (sourceCanvas: HTMLCanvasElement) => {
+  let width = sourceCanvas.width;
+  let height = sourceCanvas.height;
+  let quality = 0.9;
+  let attempts = 0;
+
+  const exportCanvas = document.createElement('canvas');
+  const exportContext = exportCanvas.getContext('2d');
+
+  if (!exportContext) {
+    throw new Error('Image processing is not supported in this browser.');
+  }
+
+  while (attempts < 12) {
+    exportCanvas.width = width;
+    exportCanvas.height = height;
+    exportContext.clearRect(0, 0, width, height);
+    exportContext.drawImage(sourceCanvas, 0, 0, sourceCanvas.width, sourceCanvas.height, 0, 0, width, height);
+
+    const dataUrl = exportCanvas.toDataURL('image/jpeg', quality);
+    const base64 = extractBase64Payload(dataUrl);
+
+    if (
+      base64.length <= MAX_PICTURE_BASE64_LENGTH ||
+      (quality <= MIN_PICTURE_QUALITY && width <= MIN_PICTURE_WIDTH && height <= MIN_PICTURE_HEIGHT)
+    ) {
+      return base64;
+    }
+
+    if (quality > 0.6) {
+      quality -= 0.1;
+    } else if (quality > MIN_PICTURE_QUALITY) {
+      quality -= 0.05;
+    } else {
+      width = Math.max(MIN_PICTURE_WIDTH, Math.round(width * 0.88));
+      height = Math.max(MIN_PICTURE_HEIGHT, Math.round(height * 0.88));
+    }
+
+    attempts += 1;
+  }
+
+  const fallbackDataUrl = exportCanvas.toDataURL('image/jpeg', MIN_PICTURE_QUALITY);
+  const fallbackBase64 = extractBase64Payload(fallbackDataUrl);
+
+  if (fallbackBase64.length > MAX_PICTURE_BASE64_LENGTH) {
+    throw new Error('Image is still too large after compression. Please move closer and retake the photo.');
+  }
+
+  return fallbackBase64;
 };
 
 export default function GgssAdminPage() {
@@ -101,7 +209,14 @@ export default function GgssAdminPage() {
   const [actionMessage, setActionMessage] = useState('');
   const [pictureUploadMessage, setPictureUploadMessage] = useState('');
   const [pictureSaving, setPictureSaving] = useState(false);
+  const [pictureProcessing, setPictureProcessing] = useState(false);
   const [picturePreview, setPicturePreview] = useState<string>('');
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraStarting, setCameraStarting] = useState(false);
+  const [cameraError, setCameraError] = useState('');
+  const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
+  const cameraCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
 
   const nameColumnKey = useMemo(() => {
     const byKey = columns.find((column) => column.key.toLowerCase() === 'name');
@@ -277,6 +392,32 @@ export default function GgssAdminPage() {
       setFormData({});
     }
   }, [selectedRecord, editMode, columns]);
+
+  const stopCameraStream = (keepOpenState = false) => {
+    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    cameraStreamRef.current = null;
+
+    if (cameraVideoRef.current) {
+      cameraVideoRef.current.srcObject = null;
+    }
+
+    if (!keepOpenState) {
+      setCameraOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      stopCameraStream(true);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (activeView !== 'picture' || !selectedRecord) {
+      stopCameraStream();
+      setCameraError('');
+    }
+  }, [activeView, selectedRecord]);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -1229,28 +1370,120 @@ export default function GgssAdminPage() {
     if (!file) return;
 
     try {
-      setPictureUploadMessage('Processing image...');
-      const formData = new FormData();
-      formData.append('file', file);
+      setPictureProcessing(true);
+      setCameraError('');
+      setPictureUploadMessage('Processing image and compressing size...');
 
-      const response = await fetch('/api/staff-records/picture', {
-        method: 'POST',
-        body: formData,
-      });
+      const image = await loadImageElement(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = PICTURE_TARGET_WIDTH;
+      canvas.height = PICTURE_TARGET_HEIGHT;
+      const context = canvas.getContext('2d');
 
-      const data = (await response.json()) as { success: boolean; data?: string; message?: string };
-
-      if (!response.ok || !data.success) {
-        setPictureUploadMessage(data.message || 'Unable to process image.');
-        return;
+      if (!context) {
+        throw new Error('Image processing is not supported in this browser.');
       }
 
-      if (data.data) {
-        setPicturePreview(data.data);
-        setPictureUploadMessage('Image ready. Click "Save Picture" to update.');
-      }
+      drawCenteredCrop(
+        context,
+        image,
+        image.naturalWidth || image.width,
+        image.naturalHeight || image.height,
+        PICTURE_TARGET_WIDTH,
+        PICTURE_TARGET_HEIGHT
+      );
+
+      const compressedBase64 = compressCanvasToJpegBase64(canvas);
+      setPicturePreview(compressedBase64);
+      setPictureUploadMessage('Image ready. Auto-compressed and centered. Click "Save Picture" to update.');
     } catch (error) {
       setPictureUploadMessage(error instanceof Error ? error.message : 'Unable to process image.');
+    } finally {
+      setPictureProcessing(false);
+      event.target.value = '';
+    }
+  };
+
+  const startCameraCapture = async () => {
+    if (!selectedRecord) {
+      setCameraError('Please select a staff member first.');
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError('Camera is not supported in this browser.');
+      return;
+    }
+
+    try {
+      setCameraStarting(true);
+      setCameraError('');
+      setPictureUploadMessage('Starting camera...');
+
+      stopCameraStream(true);
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1080 },
+          height: { ideal: 1350 },
+        },
+        audio: false,
+      });
+
+      cameraStreamRef.current = stream;
+      setCameraOpen(true);
+
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream;
+        await cameraVideoRef.current.play();
+      }
+
+      setPictureUploadMessage('Camera ready. Keep face centered inside the frame, then capture.');
+    } catch (error) {
+      stopCameraStream();
+      const message = error instanceof Error ? error.message : 'Unable to access camera.';
+      setCameraError(message);
+      setPictureUploadMessage(message);
+    } finally {
+      setCameraStarting(false);
+    }
+  };
+
+  const capturePhotoFromCamera = async () => {
+    if (!cameraVideoRef.current || !cameraCanvasRef.current) {
+      setCameraError('Camera preview is not ready yet.');
+      return;
+    }
+
+    const video = cameraVideoRef.current;
+    const canvas = cameraCanvasRef.current;
+    const context = canvas.getContext('2d');
+
+    if (!context || video.videoWidth === 0 || video.videoHeight === 0) {
+      setCameraError('Camera preview is not ready yet.');
+      return;
+    }
+
+    try {
+      setPictureProcessing(true);
+      setCameraError('');
+      setPictureUploadMessage('Capturing and compressing photo...');
+
+      canvas.width = PICTURE_TARGET_WIDTH;
+      canvas.height = PICTURE_TARGET_HEIGHT;
+      drawCenteredCrop(context, video, video.videoWidth, video.videoHeight, PICTURE_TARGET_WIDTH, PICTURE_TARGET_HEIGHT);
+
+      const compressedBase64 = compressCanvasToJpegBase64(canvas);
+      setPicturePreview(compressedBase64);
+      setPictureUploadMessage('Camera photo ready. Auto-compressed and centered. Click "Save Picture" to update.');
+      stopCameraStream();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to capture photo.';
+      setCameraError(message);
+      setPictureUploadMessage(message);
+    } finally {
+      setPictureProcessing(false);
     }
   };
 
@@ -1298,6 +1531,7 @@ export default function GgssAdminPage() {
   const removePicturePreview = () => {
     setPicturePreview('');
     setPictureUploadMessage('');
+    setCameraError('');
   };
 
   if (authLoading) {
@@ -2242,7 +2476,7 @@ export default function GgssAdminPage() {
         {activeView === 'picture' ? (
           <section id="admin-panel-picture" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-xl font-bold text-slate-900">Staff Picture Upload</h2>
-            <p className="mt-1 text-sm text-slate-600">Select a staff member and upload their photo (JPG or PNG, max 500KB)</p>
+            <p className="mt-1 text-sm text-slate-600">Select a staff member and upload their photo. System khud auto-compress karke centered JPEG save karega.</p>
 
             <div className="mt-4 max-w-2xl">
               <label htmlFor="picture-staff-select" className="mb-2 block text-sm font-medium text-slate-700">Select Staff Member</label>
@@ -2276,25 +2510,99 @@ export default function GgssAdminPage() {
                   <p className="mt-1 text-xs text-slate-500">Row ID: {selectedRecord.rowId}</p>
 
                   <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6">
-                    <label htmlFor="picture-file-input" className="cursor-pointer">
-                      <div className="text-center">
-                        <p className="text-sm font-medium text-slate-700">Click to upload photo</p>
-                        <p className="mt-1 text-xs text-slate-500">JPG or PNG, max 500KB</p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label htmlFor="picture-file-input" className="cursor-pointer rounded-2xl border border-slate-200 bg-white px-4 py-4 text-center shadow-sm transition hover:border-cyan-300">
+                        <p className="text-sm font-medium text-slate-700">Upload from file</p>
+                        <p className="mt-1 text-xs text-slate-500">Auto-compress and center crop</p>
+                        <input
+                          id="picture-file-input"
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePictureFileChange}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <label htmlFor="picture-camera-input" className="cursor-pointer rounded-2xl border border-slate-200 bg-white px-4 py-4 text-center shadow-sm transition hover:border-cyan-300">
+                        <p className="text-sm font-medium text-slate-700">Quick mobile upload</p>
+                        <p className="mt-1 text-xs text-slate-500">Photo ya phone se selected image</p>
+                        <input
+                          id="picture-camera-input"
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePictureFileChange}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Live camera</p>
+                          <p className="mt-1 text-xs text-slate-500">Face ko beech ke frame me rakh kar capture karein</p>
+                        </div>
+                        <div className="flex gap-2">
+                          {cameraOpen ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={capturePhotoFromCamera}
+                                disabled={pictureProcessing}
+                                className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
+                              >
+                                {pictureProcessing ? 'Processing...' : 'Capture Photo'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => stopCameraStream()}
+                                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
+                              >
+                                Close Camera
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => void startCameraCapture()}
+                              disabled={cameraStarting || pictureProcessing}
+                              className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                              {cameraStarting ? 'Opening...' : 'Open Camera'}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <input
-                        id="picture-file-input"
-                        type="file"
-                        accept="image/jpeg,image/png"
-                        onChange={handlePictureFileChange}
-                        className="hidden"
-                      />
-                    </label>
+
+                      {cameraOpen ? (
+                        <div className="mt-4">
+                          <div className="relative mx-auto aspect-[4/5] w-full max-w-[320px] overflow-hidden rounded-[28px] border-4 border-cyan-200 bg-slate-900 shadow-lg">
+                            <video
+                              ref={cameraVideoRef}
+                              autoPlay
+                              playsInline
+                              muted
+                              className="h-full w-full object-cover"
+                            />
+                            <div className="pointer-events-none absolute inset-0 border-[10px] border-black/15" />
+                            <div className="pointer-events-none absolute inset-x-6 inset-y-8 rounded-[24px] border-2 border-dashed border-white/90 shadow-[0_0_0_9999px_rgba(15,23,42,0.28)]" />
+                          </div>
+                          <p className="mt-3 text-center text-xs text-slate-500">Camera khulte hi portrait frame beech me rakha gaya hai taa ke face centered aaye.</p>
+                        </div>
+                      ) : null}
+
+                      <canvas ref={cameraCanvasRef} className="hidden" />
+                    </div>
                   </div>
 
                   {pictureUploadMessage ? (
-                    <p className={`mt-4 rounded-lg px-3 py-2 text-sm ${pictureUploadMessage.includes('successfully') || pictureUploadMessage.includes('ready') ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                    <p className={`mt-4 rounded-lg px-3 py-2 text-sm ${pictureUploadMessage.includes('successfully') || pictureUploadMessage.includes('ready') ? 'bg-emerald-50 text-emerald-700' : pictureUploadMessage.toLowerCase().includes('processing') || pictureUploadMessage.toLowerCase().includes('starting') || pictureUploadMessage.toLowerCase().includes('camera ready') ? 'bg-cyan-50 text-cyan-700' : 'bg-rose-50 text-rose-700'}`}>
                       {pictureUploadMessage}
                     </p>
+                  ) : null}
+
+                  {cameraError ? (
+                    <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{cameraError}</p>
                   ) : null}
 
                   {picturePreview && (
@@ -2338,17 +2646,20 @@ export default function GgssAdminPage() {
                   <p className="text-sm font-semibold text-slate-700">Preview</p>
                   <div className="mt-4 flex items-center justify-center rounded-lg border border-slate-200 bg-white p-4">
                     {picturePreview ? (
-                      <img
-                        src={`data:image/jpeg;base64,${picturePreview}`}
-                        alt="Preview"
-                        className="max-h-64 max-w-full rounded-lg object-contain"
-                      />
+                      <div className="aspect-[4/5] w-full max-w-[320px] overflow-hidden rounded-[28px] border border-slate-200 bg-slate-100 shadow-inner">
+                        <img
+                          src={`data:image/jpeg;base64,${picturePreview}`}
+                          alt="Preview"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
                     ) : (
                       <div className="flex h-64 items-center justify-center text-slate-500">
                         <p className="text-sm">No photo selected</p>
                       </div>
                     )}
                   </div>
+                  <p className="mt-3 text-xs text-slate-500">Photo JPEG me save hogi aur agar badi hui to system khud compress kar dega.</p>
                 </div>
               </div>
             )}
