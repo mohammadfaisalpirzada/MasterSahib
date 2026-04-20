@@ -8,7 +8,7 @@ declare global {
   var __educationNewsCronStarted: boolean | undefined;
 }
 
-const schedule = process.env.EDUCATION_NEWS_CRON_SCHEDULE?.trim() || '0 7 * * *';
+const schedule = process.env.EDUCATION_NEWS_CRON_SCHEDULE?.trim() || '0 */6 * * *';
 const timezone = process.env.EDUCATION_NEWS_CRON_TZ?.trim() || 'Asia/Karachi';
 
 export const startEducationNewsCron = () => {

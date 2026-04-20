@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/education-news/refresh",
-      "schedule": "0 7 * * *"
+      "schedule": "0 */6 * * *"
     }
   ]
 }

@@ -21,7 +21,7 @@ export type EducationNewsStore = {
 };
 
 const NEWS_STORE_PATH = path.join(process.cwd(), 'src', 'data', 'education-news.json');
-const MAX_CACHE_HOURS = Number(process.env.EDUCATION_NEWS_CACHE_HOURS ?? '18');
+const MAX_CACHE_HOURS = Number(process.env.EDUCATION_NEWS_CACHE_HOURS ?? '6');
 const REQUEST_TIMEOUT_MS = Math.max(Number(process.env.EDUCATION_NEWS_TIMEOUT_MS ?? '15000'), 5000);
 const MAX_ITEMS = Math.max(Number(process.env.EDUCATION_NEWS_MAX_ITEMS ?? '8'), 1);
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://themastersahib.com';
@@ -29,6 +29,9 @@ const SOURCE_URLS = (
   process.env.EDUCATION_NEWS_SOURCE_URLS?.split(',').map((item) => item.trim()).filter(Boolean) ?? [
     'https://parhopakistan.com/category/education/',
     'https://propakistani.pk/category/technology/',
+    'https://www.dawn.com/feeds/home',
+    'https://tribune.com.pk/feed/latest',
+    'https://www.geo.tv/rss/1/1',
   ]
 );
 
@@ -71,6 +74,11 @@ const BROWSER_HEADERS: HeadersInit = {
 };
 
 const cleanText = (value: string) => value.replace(/\s+/g, ' ').trim();
+
+const seemsRssOrAtom = (payload: string) => {
+  const head = payload.slice(0, 400).toLowerCase();
+  return head.includes('<rss') || head.includes('<feed') || head.includes('<rdf:rdf');
+};
 
 const isUsefulHeadline = (title: string, link: string, sourceUrl: string) => {
   const normalizedTitle = cleanText(title).toLowerCase();
@@ -209,6 +217,49 @@ const isStale = (updatedAt: string | null) => {
 };
 
 export const parseEducationNewsItems = (html: string, sourceUrl: string): EducationNewsItem[] => {
+  if (seemsRssOrAtom(html)) {
+    const $xml = load(html, { xmlMode: true });
+
+    const rssItems = $xml('item, entry')
+      .toArray()
+      .map((element) => {
+        const node = $xml(element);
+        const title = cleanText(node.find('title').first().text());
+        const rawLink =
+          node.find('link').first().text().trim() ||
+          node.find('link').first().attr('href') ||
+          node.find('guid').first().text().trim();
+        const date =
+          cleanText(node.find('pubDate').first().text()) ||
+          cleanText(node.find('updated').first().text()) ||
+          cleanText(node.find('published').first().text()) ||
+          'Pakistan latest update';
+
+        if (!title || !rawLink || !isUsefulHeadline(title, rawLink, sourceUrl)) {
+          return null;
+        }
+
+        return {
+          title,
+          date,
+          link: new URL(rawLink, sourceUrl).toString(),
+          sourceName: getSourceName(sourceUrl),
+          sourceUrl,
+          scrapedAt: new Date().toISOString(),
+        };
+      })
+      .filter((item): item is EducationNewsItem => Boolean(item))
+      .filter(
+        (item, index, array) =>
+          index === array.findIndex((entry) => entry.title === item.title || entry.link === item.link),
+      )
+      .slice(0, MAX_ITEMS);
+
+    if (rssItems.length > 0) {
+      return rssItems;
+    }
+  }
+
   const $ = load(html);
   const candidates = $(SELECTORS.article).toArray();
   const elements = candidates.length > 0 ? candidates : $('a[href]').slice(0, MAX_ITEMS * 3).toArray();

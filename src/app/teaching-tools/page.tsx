@@ -2,7 +2,12 @@
 
 import Link from 'next/link';
 
-import { educationalResourceItems } from '@/app/lib/educationalResources';
+import {
+  latestEducationalResourceTitles,
+  sortedEducationalResourceItems,
+} from '@/app/lib/educationalResources';
+
+const latestToolSet = new Set(latestEducationalResourceTitles);
 
 export default function TeachingToolsPage() {
   return (
@@ -32,13 +37,20 @@ export default function TeachingToolsPage() {
         </div>
 
         <section className="grid gap-4 sm:grid-cols-2">
-          {educationalResourceItems.map((tool) => (
+          {sortedEducationalResourceItems.map((tool) => (
             <article
               key={tool.title}
               className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="mb-3 flex items-center justify-between gap-3">
-                <h2 className="text-lg font-bold text-slate-900">{tool.title}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-slate-900">{tool.title}</h2>
+                  {latestToolSet.has(tool.title) ? (
+                    <span className="inline-flex animate-pulse items-center rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-red-600">
+                      New
+                    </span>
+                  ) : null}
+                </div>
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
                     tool.status === 'Ready'

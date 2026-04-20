@@ -25,10 +25,11 @@ export default function NewsTicker() {
 
   useEffect(() => {
     let isMounted = true;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     const loadNews = async () => {
       try {
-        const response = await fetch('/api/education-news', { cache: 'no-store' });
+        const response = await fetch(`/api/education-news?ts=${Date.now()}`, { cache: 'no-store' });
         const data = (await response.json()) as EducationNewsApiResponse;
 
         if (!isMounted) {
@@ -50,9 +51,15 @@ export default function NewsTicker() {
     };
 
     void loadNews();
+    intervalId = setInterval(() => {
+      void loadNews();
+    }, 30 * 60 * 1000);
 
     return () => {
       isMounted = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     };
   }, []);
 
