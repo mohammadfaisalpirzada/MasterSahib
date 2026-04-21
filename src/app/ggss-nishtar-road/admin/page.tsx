@@ -153,6 +153,23 @@ const compressCanvasToJpegBase64 = (sourceCanvas: HTMLCanvasElement) => {
   return fallbackBase64;
 };
 
+const toFileSlug = (value: string) => {
+  const slug = value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || 'staff-record';
+};
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 export default function GgssAdminPage() {
   const [authLoading, setAuthLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
@@ -168,7 +185,7 @@ export default function GgssAdminPage() {
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState('');
   const [hasLoadedData, setHasLoadedData] = useState(false);
-  const [activeView, setActiveView] = useState<'individual' | 'export' | 'table' | 'picture' | null>(null);
+  const [activeView, setActiveView] = useState<'individual' | 'service-card' | 'export' | 'table' | 'picture' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRowId, setSelectedRowId] = useState('');
   const [selectedColumnKeys, setSelectedColumnKeys] = useState<string[]>([]);
@@ -207,6 +224,7 @@ export default function GgssAdminPage() {
   const [addColSaving, setAddColSaving] = useState(false);
   const [addColMessage, setAddColMessage] = useState('');
   const [actionMessage, setActionMessage] = useState('');
+  const [serviceCardSelectedRowIds, setServiceCardSelectedRowIds] = useState<string[]>([]);
   const [pictureUploadMessage, setPictureUploadMessage] = useState('');
   const [pictureSaving, setPictureSaving] = useState(false);
   const [pictureProcessing, setPictureProcessing] = useState(false);
@@ -289,6 +307,10 @@ export default function GgssAdminPage() {
       setColumns(data.columns);
       setRecords(data.records);
       setItems(data.items);
+      setServiceCardSelectedRowIds((current) => {
+        const allowed = new Set((data.items || []).map((item) => item.rowId));
+        return current.filter((rowId) => allowed.has(rowId));
+      });
       setSourceLabel(data.source?.sheetName || 'GGSS staff sheet');
       setSelectedColumnKeys(data.columns.map((column) => column.key));
       setBulkEdits({});
@@ -366,6 +388,10 @@ export default function GgssAdminPage() {
     return items.find((item) => item.rowId === selectedRowId) || null;
   }, [items, selectedRowId]);
 
+  const itemNameByRowId = useMemo(() => {
+    return new Map(items.map((item) => [item.rowId, item.name]));
+  }, [items]);
+
   const exportableColumns = useMemo(() => {
     return columns.filter((column) => selectedColumnKeys.includes(column.key));
   }, [columns, selectedColumnKeys]);
@@ -392,6 +418,19 @@ export default function GgssAdminPage() {
       setFormData({});
     }
   }, [selectedRecord, editMode, columns]);
+
+  useEffect(() => {
+    if (!selectedRowId) {
+      return;
+    }
+
+    setServiceCardSelectedRowIds((current) => {
+      if (current.includes(selectedRowId)) {
+        return current;
+      }
+      return [...current, selectedRowId];
+    });
+  }, [selectedRowId]);
 
   const stopCameraStream = (keepOpenState = false) => {
     cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -466,7 +505,7 @@ export default function GgssAdminPage() {
     resetAdminActionState();
   };
 
-  const openView = async (view: 'individual' | 'export' | 'table' | 'picture') => {
+  const openView = async (view: 'individual' | 'service-card' | 'export' | 'table' | 'picture') => {
     setActiveView(view);
     setExportMessage('');
     setPictureUploadMessage('');
@@ -605,7 +644,15 @@ export default function GgssAdminPage() {
     });
 
     const dateKey = new Date().toISOString().slice(0, 10);
-    doc.save(`ggss-staff-export-${dateKey}.pdf`);
+    const nameValues = nameColumnKey
+      ? nonEmptyRecords
+          .map((record) => String(record[nameColumnKey] ?? '').trim())
+          .filter((value) => value !== '')
+      : [];
+    const uniqueNames = Array.from(new Set(nameValues));
+    const fileLabel = uniqueNames.length === 1 ? toFileSlug(uniqueNames[0]) : 'staff-export';
+
+    doc.save(`ggss-${fileLabel}-${dateKey}.pdf`);
     setExportMessage(`PDF export ready with ${exportableColumns.length} selected columns.`);
   };
 
@@ -1365,6 +1412,218 @@ export default function GgssAdminPage() {
     printWindow.print();
   };
 
+  const toggleServiceCardSelection = (rowId: string) => {
+    setServiceCardSelectedRowIds((current) => {
+      if (current.includes(rowId)) {
+        return current.filter((id) => id !== rowId);
+      }
+      return [...current, rowId];
+    });
+  };
+
+  const selectAllFilteredServiceCards = () => {
+    setServiceCardSelectedRowIds((current) => {
+      const ids = new Set(current);
+      filteredItems.forEach((item) => ids.add(item.rowId));
+      return Array.from(ids);
+    });
+  };
+
+  const clearServiceCardSelection = () => {
+    setServiceCardSelectedRowIds([]);
+  };
+
+  const printServiceCards = (targetRecords: AdminRecord[]) => {
+    if (!targetRecords.length) {
+      setActionMessage('No staff records available for service card print.');
+      return;
+    }
+
+    const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    const getRecordValue = (record: AdminRecord, aliases: string[]) => {
+      for (const alias of aliases) {
+        const directValue = String(record[alias] ?? '').trim();
+        if (directValue) {
+          return directValue;
+        }
+
+        const normalizedAlias = normalize(alias);
+        const matchedKey = Object.keys(record).find((key) => normalize(key) === normalizedAlias);
+        if (matchedKey) {
+          const matchedValue = String(record[matchedKey] ?? '').trim();
+          if (matchedValue) {
+            return matchedValue;
+          }
+        }
+
+        const matchedColumn = columns.find(
+          (column) => normalize(column.label) === normalizedAlias || normalize(column.key) === normalizedAlias
+        );
+        if (matchedColumn) {
+          const columnValue = String(record[matchedColumn.key] ?? '').trim();
+          if (columnValue) {
+            return columnValue;
+          }
+        }
+      }
+
+      return '';
+    };
+
+    const pagesHtml = targetRecords
+      .map((record) => {
+        const fallbackName = String(record.name ?? '').trim();
+        const name =
+          itemNameByRowId.get(record.rowId)?.trim() ||
+          getRecordValue(record, ['name', 'staffname', 'employeename']) ||
+          fallbackName ||
+          'Staff Member';
+        const fatherName = getRecordValue(record, ['father_name', 'fathername', 'fathersname', 'father name', 'sodowd']) || '-';
+        const designation =
+          getRecordValue(record, ['designation', 'designaton', 'desgination', 'post']) ||
+          'PRIMARY SCHOOL TEACHER';
+        const cnic = getRecordValue(record, ['cnic', 'nic', 'nationalid']) || '-';
+        const dateOfBirth = getRecordValue(record, ['dateofbirth', 'dob', 'birthdate', 'date_of_birth']) || '-';
+        const dateOfApp = getRecordValue(record, ['dateofapp', 'dateofappt', 'dateofappointment', 'doa', 'appointmentdate']) || '-';
+        const personalNo = getRecordValue(record, ['personalno', 'personal_no', 'personalnumber', 'employeeid', 'empno']) || '-';
+        const placeOfPosting = getRecordValue(record, ['placeofposting', 'posting', 'place_of_posting', 'school']) || 'G.G.S.S NISHTAR ROAD KHI.';
+        const residentialAddress =
+          getRecordValue(record, ['residentialaddress', 'address', 'residenceaddress', 'homeaddress']) || '-';
+        const mobileNo = getRecordValue(record, ['mobileno', 'mobile', 'phone', 'contactno', 'contact']) || '-';
+
+        const photoHtml = record.picture
+          ? `<img src="data:image/jpeg;base64,${record.picture}" alt="${escapeHtml(name)}" class="photo" />`
+          : '<div class="photo placeholder">PHOTO</div>';
+
+        return `
+          <section class="page">
+            <div class="sheet">
+              <section class="card front">
+                <div class="front-main">
+                  <div class="front-header">
+                    <img src="/images/Logo_Government_of_Sindh_Pakistan.png" alt="Government of Sindh" class="logo" />
+                  </div>
+
+                  <div class="line"><span class="label">NAME</span><span class="value underlined">: ${escapeHtml(name)}</span></div>
+                  <div class="line"><span class="label">FATHER NAME</span><span class="value underlined">: ${escapeHtml(fatherName)}</span></div>
+                  <div class="line"><span class="label">DESIGNATION</span><span class="value underlined">: ${escapeHtml(designation)}</span></div>
+                  <div class="line"><span class="label">CNIC</span><span class="value underlined">: ${escapeHtml(cnic)}</span></div>
+                  <div class="line"><span class="label">DATE OF BIRTH</span><span class="value underlined">: ${escapeHtml(dateOfBirth)}</span></div>
+                  <div class="line"><span class="label">DATE OF APPT.</span><span class="value underlined">: ${escapeHtml(dateOfApp)}</span></div>
+                </div>
+
+                <div class="front-side">
+                  <div class="gov-strip">
+                    <span>GOVERNMENT OF SINDH</span>
+                    <span>EDUCATION DEPARTMENT</span>
+                  </div>
+                  <div class="personal">Personal No. ${escapeHtml(personalNo)}</div>
+                  ${photoHtml}
+                  <div class="sign">Signature of Officer</div>
+                </div>
+              </section>
+
+              <section class="card back">
+                <div class="line back-line"><span class="label">PLACE OF POSTING</span><span class="value underlined">: ${escapeHtml(placeOfPosting)}</span></div>
+                <div class="line back-line"><span class="label">RESIDENTIAL ADDRESS</span><span class="value">:</span></div>
+                <div class="addr">${escapeHtml(residentialAddress)}</div>
+                <div class="line back-line" style="margin-top: 2.1mm;"><span class="label">MOBILE NO.</span><span class="value underlined">: ${escapeHtml(mobileNo)}</span></div>
+              </section>
+            </div>
+          </section>
+        `;
+      })
+      .join('');
+
+    const leadName =
+      itemNameByRowId.get(targetRecords[0].rowId)?.trim() ||
+      String(targetRecords[0].name ?? '').trim() ||
+      'staff';
+    const fileSuffix = targetRecords.length === 1 ? toFileSlug(leadName) : `${targetRecords.length}-records`;
+
+    const printWindow = window.open('', '_blank', 'width=1280,height=800');
+    if (!printWindow) {
+      setActionMessage('Unable to open print preview. Please allow pop-ups.');
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>${escapeHtml(`ggss-service-card-${fileSuffix}`)}</title>
+          <style>
+            @page { size: A4 landscape; margin: 8mm; }
+            * { box-sizing: border-box; }
+            body { margin: 0; font-family: 'Times New Roman', serif; background: #f1f5f9; color: #0f172a; }
+            .page { min-height: calc(210mm - 16mm); display: flex; align-items: center; justify-content: center; page-break-after: always; }
+            .page:last-child { page-break-after: auto; }
+            .sheet { display: flex; align-items: center; justify-content: center; gap: 8mm; padding: 4mm; }
+            .card { width: 85.6mm; height: 54mm; background: #f2ecfb; border: 0.3mm solid #cbbbe6; border-radius: 3.2mm; overflow: hidden; box-shadow: 0 1.2mm 2.2mm rgba(15, 23, 42, 0.12); }
+            .front { display: grid; grid-template-columns: 1fr 24.5mm; }
+            .front-main { padding: 2.1mm 2.4mm 2.2mm; position: relative; }
+            .front-header { display: block; margin-bottom: 0.8mm; }
+            .logo { width: 11.2mm; height: 11.2mm; object-fit: contain; }
+            .line { display: grid; grid-template-columns: 16.1mm 1fr; gap: 0.95mm; margin-bottom: 0.7mm; font-size: 2.8mm; line-height: 1.12; }
+            .label { font-weight: 700; color: #111827; letter-spacing: 0.03mm; }
+            .value { font-weight: 700; color: #0f172a; text-transform: uppercase; }
+            .front-side { border-left: 0.3mm solid #7ba4c6; background: #edf2fb; padding: 0; display: flex; flex-direction: column; align-items: stretch; }
+            .gov-strip { display: grid; grid-template-rows: 1fr 1fr; height: 17.8mm; text-align: center; font-weight: 700; letter-spacing: 0.04mm; color: #ffffff; text-transform: uppercase; }
+            .gov-strip span { display: flex; align-items: center; justify-content: center; font-size: 2.05mm; line-height: 1.08; padding: 0 0.8mm; }
+            .gov-strip span:first-child { background: #188a47; }
+            .gov-strip span:last-child { background: #1d4ed8; }
+            .personal { margin: 1.1mm 0.8mm 0.9mm; border: 0.22mm solid #6b7280; border-radius: 0.8mm; background: #ffffff; font-size: 2.05mm; font-weight: 700; color: #111827; letter-spacing: 0.03mm; text-align: center; padding: 0.65mm 0.5mm; white-space: nowrap; }
+            .photo { width: 18.8mm; height: 22.6mm; border-radius: 0.95mm; border: 0.24mm solid #8798b7; object-fit: cover; background: #fff; margin: 0 auto; }
+            .photo.placeholder { display: flex; align-items: center; justify-content: center; color: #475569; font-size: 2.05mm; font-weight: 700; letter-spacing: 0.11mm; }
+            .sign { text-align: center; font-size: 1.8mm; color: #111827; margin: 0.8mm 0.8mm 0; width: auto; }
+            .sign::before { content: ''; display: block; border-top: 0.22mm solid #1f2937; margin-bottom: 0.45mm; }
+            .back { padding: 3.2mm 3.1mm 2.5mm; display: flex; flex-direction: column; justify-content: flex-start; }
+            .line.back-line { grid-template-columns: 25.2mm 1fr; margin-bottom: 1.45mm; }
+            .addr { min-height: 14.8mm; border-bottom: 0.22mm solid #1f2937; font-size: 2.48mm; line-height: 1.2; font-weight: 700; text-transform: uppercase; background: transparent; margin-top: 0.2mm; padding: 0 0 0.45mm; }
+            .underlined { border-bottom: 0.22mm solid #1f2937; padding-bottom: 0.35mm; min-height: 3.1mm; }
+            @media print { body { background: #fff; } .card { box-shadow: none; } }
+          </style>
+        </head>
+        <body>
+          ${pagesHtml}
+          <script>
+            window.onload = function () { window.print(); };
+          </script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setActionMessage(`Opened print preview for ${targetRecords.length} service card(s).`);
+  };
+
+  const printServiceCard = () => {
+    if (!selectedRecord) {
+      setActionMessage('Select a staff member first.');
+      return;
+    }
+
+    printServiceCards([selectedRecord]);
+  };
+
+  const printSelectedServiceCards = () => {
+    const selectedRecords = nonEmptyRecords.filter((record) => serviceCardSelectedRowIds.includes(record.rowId));
+    if (!selectedRecords.length) {
+      setActionMessage('Select one or more staff members for bulk service card print.');
+      return;
+    }
+
+    printServiceCards(selectedRecords);
+  };
+
+  const printAllServiceCards = () => {
+    printServiceCards(nonEmptyRecords);
+  };
+
   const handlePictureFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -1679,6 +1938,15 @@ export default function GgssAdminPage() {
 
               <button
                 type="button"
+                onClick={() => void openView('service-card')}
+                className={`rounded-2xl border px-5 py-4 text-left transition ${activeView === 'service-card' ? 'border-cyan-500 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-cyan-300'}`}
+              >
+                <p className="text-sm font-bold">Service Card (Front/Back)</p>
+                <p className="mt-1 text-xs text-slate-500">Open service card panel for single, selected, or all print</p>
+              </button>
+
+              <button
+                type="button"
                 onClick={openAddDialog}
                 className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left text-slate-800 transition hover:border-cyan-300"
               >
@@ -1769,6 +2037,14 @@ export default function GgssAdminPage() {
                       </button>
                       <button
                         type="button"
+                        onClick={() => void openView('service-card')}
+                        disabled={!selectedRecord}
+                        className="rounded-xl bg-cyan-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Service Card Panel
+                      </button>
+                      <button
+                        type="button"
                         onClick={openEditDialog}
                         className="rounded-xl bg-amber-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-amber-600"
                       >
@@ -1804,6 +2080,134 @@ export default function GgssAdminPage() {
                 ) : null}
               </>
             )}
+          </section>
+        ) : null}
+
+        {activeView === 'service-card' ? (
+          <section id="admin-panel-service-card" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-slate-900">Service Card Print Panel</h2>
+                <p className="mt-1 text-sm text-slate-600">Select one, multiple, or all staff records and print front/back on the same page.</p>
+              </div>
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search name or S.No"
+                  className="min-h-[46px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 sm:w-56"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 max-w-2xl">
+              <label htmlFor="service-card-staff-select" className="mb-2 block text-sm font-medium text-slate-700">Select Staff Member</label>
+              <select
+                id="service-card-staff-select"
+                value={selectedRowId}
+                onChange={(event) => handleSelectedStaffChange(event.target.value)}
+                className="min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500"
+              >
+                <option value="">Choose staff member...</option>
+                {filteredItems.map((item) => (
+                  <option key={item.rowId} value={item.rowId}>
+                    {item.sno ? `${item.sno} - ` : ''}{item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">Current Selection</p>
+                  <h3 className="mt-2 text-lg font-bold text-slate-900">{selectedItem?.name || 'No staff selected'}</h3>
+                  {selectedRecord ? (
+                    <p className="mt-1 text-xs text-slate-500">Row ID: {selectedRecord.rowId}{selectedItem?.sno ? ` | S.No: ${selectedItem.sno}` : ''}</p>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={printServiceCard}
+                    disabled={!selectedRecord}
+                    className="rounded-xl bg-cyan-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Print Selected Staff
+                  </button>
+                  <button
+                    type="button"
+                    onClick={printSelectedServiceCards}
+                    disabled={!serviceCardSelectedRowIds.length}
+                    className="rounded-xl bg-indigo-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Print Multiple ({serviceCardSelectedRowIds.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={printAllServiceCards}
+                    disabled={!nonEmptyRecords.length}
+                    className="rounded-xl bg-emerald-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Print All ({nonEmptyRecords.length})
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Bulk Selection</p>
+                  <p className="mt-1 text-xs text-slate-500">Mark teachers below and click Print Multiple.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAllFilteredServiceCards}
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
+                  >
+                    Select All (Filtered)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearServiceCardSelection}
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-700"
+                  >
+                    Clear Selection
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-3 max-h-52 overflow-y-auto rounded-xl border border-slate-200 p-2">
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredItems.map((item) => {
+                    const checked = serviceCardSelectedRowIds.includes(item.rowId);
+                    return (
+                      <label
+                        key={`service-card-panel-${item.rowId}`}
+                        className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-2.5 py-2 text-xs text-slate-700 hover:border-cyan-300"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleServiceCardSelection(item.rowId)}
+                          className="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
+                        />
+                        <span className="truncate">{item.sno ? `${item.sno} - ` : ''}{item.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {actionMessage ? (
+              <p className={`mt-4 rounded-xl px-4 py-3 text-sm font-medium ${actionMessage.toLowerCase().includes('opened') || actionMessage.toLowerCase().includes('print preview') ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                {actionMessage}
+              </p>
+            ) : null}
           </section>
         ) : null}
 

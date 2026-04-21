@@ -100,6 +100,15 @@ const compressImageForSheet = async (file: File): Promise<string> => {
   throw new Error('Image is still too large for Google Sheet cell. Use a smaller photo.');
 };
 
+const toFileSlug = (value: string) => {
+  const slug = value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || 'staff-record';
+};
+
 export default function StaffRecordPage() {
   const [directoryItems, setDirectoryItems] = useState<DirectoryItem[]>([]);
   const [columns, setColumns] = useState<ColumnMeta[]>([]);
@@ -395,6 +404,7 @@ export default function StaffRecordPage() {
 
     const headingBase = [titlePrefix, displayName].filter(Boolean).join(' ');
     const headingText = designation ? `${headingBase} (${designation})` : headingBase;
+    const pdfTitle = `ggss-${toFileSlug(displayName)}-profile`;
     const websiteLink = `${window.location.origin}/ggss-nishtar-road`;
     const printedAt = new Date().toLocaleString();
 
@@ -422,7 +432,7 @@ export default function StaffRecordPage() {
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title></title>
+          <title>${pdfTitle}</title>
           <style>
             @page { size: A4; margin: 12mm; }
             * { box-sizing: border-box; }
