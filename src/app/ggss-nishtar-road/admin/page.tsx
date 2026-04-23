@@ -388,6 +388,61 @@ export default function GgssAdminPage() {
     return items.find((item) => item.rowId === selectedRowId) || null;
   }, [items, selectedRowId]);
 
+  const selectedServiceCardPreview = useMemo(() => {
+    if (!selectedRecord) {
+      return null;
+    }
+
+    const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const isPlaceholder = (value: string) => {
+      const normalized = value.trim().toLowerCase();
+      return normalized === '' || normalized === '-' || normalized === '--' || normalized === 'n/a' || normalized === 'na';
+    };
+
+    const getValue = (aliases: string[]) => {
+      for (const alias of aliases) {
+        const directValue = String(selectedRecord[alias] ?? '').trim();
+        if (!isPlaceholder(directValue)) {
+          return directValue;
+        }
+
+        const normalizedAlias = normalize(alias);
+        const matchedKey = Object.keys(selectedRecord).find((key) => normalize(key) === normalizedAlias);
+        if (matchedKey) {
+          const matchedValue = String(selectedRecord[matchedKey] ?? '').trim();
+          if (!isPlaceholder(matchedValue)) {
+            return matchedValue;
+          }
+        }
+
+        const matchedColumn = columns.find(
+          (column) => normalize(column.label) === normalizedAlias || normalize(column.key) === normalizedAlias
+        );
+        if (matchedColumn) {
+          const columnValue = String(selectedRecord[matchedColumn.key] ?? '').trim();
+          if (!isPlaceholder(columnValue)) {
+            return columnValue;
+          }
+        }
+      }
+
+      return '';
+    };
+
+    return {
+      name: selectedItem?.name?.trim() || getValue(['name', 'staffname', 'employeename']) || 'Staff Member',
+      designation:
+        getValue(['designation', 'designaton', 'desgination', 'post']) ||
+        'PRIMARY SCHOOL TEACHER',
+      personalNo:
+        getValue(['personalno', 'personal_no', 'personalnumber', 'employeeid', 'empno', 'pid', 'pno', 'p_no']) ||
+        '-',
+      mobileNo: getValue(['mobileno', 'mobile', 'phone', 'contactno', 'contact']) || '-',
+      pictureBase64:
+        getValue(['picture', 'photo', 'staffphoto', 'staff_photo', 'staffpicture', 'image']) || '',
+    };
+  }, [selectedRecord, selectedItem, columns]);
+
   const itemNameByRowId = useMemo(() => {
     return new Map(items.map((item) => [item.rowId, item.name]));
   }, [items]);
@@ -1440,11 +1495,15 @@ export default function GgssAdminPage() {
     }
 
     const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const isPlaceholderValue = (value: string) => {
+      const normalized = value.trim().toLowerCase();
+      return normalized === '' || normalized === '-' || normalized === '--' || normalized === 'n/a' || normalized === 'na';
+    };
 
     const getRecordValue = (record: AdminRecord, aliases: string[]) => {
       for (const alias of aliases) {
         const directValue = String(record[alias] ?? '').trim();
-        if (directValue) {
+        if (!isPlaceholderValue(directValue)) {
           return directValue;
         }
 
@@ -1452,7 +1511,7 @@ export default function GgssAdminPage() {
         const matchedKey = Object.keys(record).find((key) => normalize(key) === normalizedAlias);
         if (matchedKey) {
           const matchedValue = String(record[matchedKey] ?? '').trim();
-          if (matchedValue) {
+          if (!isPlaceholderValue(matchedValue)) {
             return matchedValue;
           }
         }
@@ -1462,7 +1521,7 @@ export default function GgssAdminPage() {
         );
         if (matchedColumn) {
           const columnValue = String(record[matchedColumn.key] ?? '').trim();
-          if (columnValue) {
+          if (!isPlaceholderValue(columnValue)) {
             return columnValue;
           }
         }
@@ -1486,14 +1545,27 @@ export default function GgssAdminPage() {
         const cnic = getRecordValue(record, ['cnic', 'nic', 'nationalid']) || '-';
         const dateOfBirth = getRecordValue(record, ['dateofbirth', 'dob', 'birthdate', 'date_of_birth']) || '-';
         const dateOfApp = getRecordValue(record, ['dateofapp', 'dateofappt', 'dateofappointment', 'doa', 'appointmentdate']) || '-';
-        const personalNo = getRecordValue(record, ['personalno', 'personal_no', 'personalnumber', 'employeeid', 'empno']) || '-';
+        const personalNo =
+          getRecordValue(record, ['personalno', 'personal_no', 'personalnumber', 'employeeid', 'empno', 'pid', 'pno', 'p_no']) || '-';
         const placeOfPosting = getRecordValue(record, ['placeofposting', 'posting', 'place_of_posting', 'school']) || 'G.G.S.S NISHTAR ROAD KHI.';
         const residentialAddress =
-          getRecordValue(record, ['residentialaddress', 'address', 'residenceaddress', 'homeaddress']) || '-';
+          getRecordValue(record, [
+            'residentialaddress',
+            'residential_address',
+            'address',
+            'residenceaddress',
+            'homeaddress',
+            'currentaddress',
+            'current_address',
+            'permanentaddress',
+            'permanent_address',
+          ]) || '-';
         const mobileNo = getRecordValue(record, ['mobileno', 'mobile', 'phone', 'contactno', 'contact']) || '-';
+        const pictureBase64 =
+          getRecordValue(record, ['picture', 'photo', 'staffphoto', 'staff_photo', 'staffpicture', 'image']) || '';
 
-        const photoHtml = record.picture
-          ? `<img src="data:image/jpeg;base64,${record.picture}" alt="${escapeHtml(name)}" class="photo" />`
+        const photoHtml = pictureBase64
+          ? `<img src="data:image/jpeg;base64,${pictureBase64}" alt="${escapeHtml(name)}" class="photo" />`
           : '<div class="photo placeholder">PHOTO</div>';
 
         return `
@@ -1567,7 +1639,7 @@ export default function GgssAdminPage() {
             .front-main { padding: 2.1mm 2.4mm 2.2mm; position: relative; }
             .front-header { display: block; margin-bottom: 0.8mm; }
             .logo { width: 11.2mm; height: 11.2mm; object-fit: contain; }
-            .line { display: grid; grid-template-columns: 16.1mm 1fr; gap: 0.95mm; margin-bottom: 0.7mm; font-size: 2.8mm; line-height: 1.12; }
+            .line { display: grid; grid-template-columns: 16.1mm 1fr; gap: 0.95mm; margin-bottom: 0.7mm; font-size: 2.45mm; line-height: 1.1; }
             .label { font-weight: 700; color: #111827; letter-spacing: 0.03mm; }
             .value { font-weight: 700; color: #0f172a; text-transform: uppercase; }
             .front-side { border-left: 0.3mm solid #7ba4c6; background: #edf2fb; padding: 0; display: flex; flex-direction: column; align-items: stretch; }
@@ -1575,14 +1647,14 @@ export default function GgssAdminPage() {
             .gov-strip span { display: flex; align-items: center; justify-content: center; font-size: 2.05mm; line-height: 1.08; padding: 0 0.8mm; }
             .gov-strip span:first-child { background: #188a47; }
             .gov-strip span:last-child { background: #1d4ed8; }
-            .personal { margin: 1.1mm 0.8mm 0.9mm; border: 0.22mm solid #6b7280; border-radius: 0.8mm; background: #ffffff; font-size: 2.05mm; font-weight: 700; color: #111827; letter-spacing: 0.03mm; text-align: center; padding: 0.65mm 0.5mm; white-space: nowrap; }
+            .personal { margin: 1.1mm 0.8mm 0.9mm; border: 0.22mm solid #6b7280; border-radius: 0.8mm; background: #ffffff; font-size: 1.85mm; font-weight: 700; color: #111827; letter-spacing: 0.03mm; text-align: center; padding: 0.65mm 0.5mm; white-space: nowrap; }
             .photo { width: 18.8mm; height: 22.6mm; border-radius: 0.95mm; border: 0.24mm solid #8798b7; object-fit: cover; background: #fff; margin: 0 auto; }
-            .photo.placeholder { display: flex; align-items: center; justify-content: center; color: #475569; font-size: 2.05mm; font-weight: 700; letter-spacing: 0.11mm; }
-            .sign { text-align: center; font-size: 1.8mm; color: #111827; margin: 0.8mm 0.8mm 0; width: auto; }
+            .photo.placeholder { display: flex; align-items: center; justify-content: center; color: #475569; font-size: 1.8mm; font-weight: 700; letter-spacing: 0.11mm; }
+            .sign { text-align: center; font-size: 1.6mm; color: #111827; margin: 0.8mm 0.8mm 0; width: auto; }
             .sign::before { content: ''; display: block; border-top: 0.22mm solid #1f2937; margin-bottom: 0.45mm; }
             .back { padding: 3.2mm 3.1mm 2.5mm; display: flex; flex-direction: column; justify-content: flex-start; }
             .line.back-line { grid-template-columns: 25.2mm 1fr; margin-bottom: 1.45mm; }
-            .addr { min-height: 14.8mm; border-bottom: 0.22mm solid #1f2937; font-size: 2.48mm; line-height: 1.2; font-weight: 700; text-transform: uppercase; background: transparent; margin-top: 0.2mm; padding: 0 0 0.45mm; }
+            .addr { min-height: 14.8mm; border-bottom: 0.22mm solid #1f2937; font-size: 2.2mm; line-height: 1.2; font-weight: 700; text-transform: uppercase; background: transparent; margin-top: 0.2mm; padding: 0 0 0.45mm; }
             .underlined { border-bottom: 0.22mm solid #1f2937; padding-bottom: 0.35mm; min-height: 3.1mm; }
             @media print { body { background: #fff; } .card { box-shadow: none; } }
           </style>
@@ -2119,7 +2191,7 @@ export default function GgssAdminPage() {
             </div>
 
             <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="grid gap-4 xl:grid-cols-[minmax(220px,1fr)_minmax(300px,1.2fr)_auto] xl:items-center">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">Current Selection</p>
                   <h3 className="mt-2 text-lg font-bold text-slate-900">{selectedItem?.name || 'No staff selected'}</h3>
@@ -2127,7 +2199,35 @@ export default function GgssAdminPage() {
                     <p className="mt-1 text-xs text-slate-500">Row ID: {selectedRecord.rowId}{selectedItem?.sno ? ` | S.No: ${selectedItem.sno}` : ''}</p>
                   ) : null}
                 </div>
-                <div className="flex flex-wrap gap-2">
+
+                <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                  {selectedServiceCardPreview ? (
+                    <div className="flex items-center gap-3">
+                      <div className="h-16 w-12 overflow-hidden rounded-md border border-slate-300 bg-slate-100">
+                        {selectedServiceCardPreview.pictureBase64 ? (
+                          <img
+                            src={`data:image/jpeg;base64,${selectedServiceCardPreview.pictureBase64}`}
+                            alt={selectedServiceCardPreview.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[10px] font-semibold text-slate-500">PHOTO</div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[11px] font-bold uppercase tracking-wide text-slate-700">Service Card Preview</p>
+                        <p className="truncate text-sm font-bold text-slate-900">{selectedServiceCardPreview.name}</p>
+                        <p className="truncate text-[11px] font-semibold uppercase text-slate-600">{selectedServiceCardPreview.designation}</p>
+                        <p className="mt-1 text-[11px] text-slate-600">Personal No: <span className="font-semibold text-slate-800">{selectedServiceCardPreview.personalNo}</span></p>
+                        <p className="text-[11px] text-slate-600">Mobile: <span className="font-semibold text-slate-800">{selectedServiceCardPreview.mobileNo}</span></p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex h-16 items-center justify-center text-xs text-slate-500">Select a staff member to preview card details.</div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2 xl:justify-end">
                   <button
                     type="button"
                     onClick={printServiceCard}
