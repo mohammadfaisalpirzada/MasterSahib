@@ -207,6 +207,9 @@ export default function GgssNishtarRoadStipendPage() {
   const [editData, setEditData] = useState<Record<string, string>>({});
   const [savingEdit, setSavingEdit] = useState(false);
   const [addingRecord, setAddingRecord] = useState(false);
+  const [deleteRowId, setDeleteRowId] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deletingRecord, setDeletingRecord] = useState(false);
   const hasHydratedDraftRef = useRef(false);
 
   const classColumnKey = useMemo(() => {
@@ -368,6 +371,8 @@ export default function GgssNishtarRoadStipendPage() {
     setFormData({});
     setEditRowId('');
     setEditData({});
+    setDeleteRowId('');
+    setDeletePassword('');
     setShowPassword(false);
     setMessage('Logged out.');
     setDraftStatus('');
@@ -462,19 +467,59 @@ export default function GgssNishtarRoadStipendPage() {
     }
   };
 
-  const deleteRecord = async (rowId: string) => {
+  const requestDelete = (rowId: string) => {
     const confirmed = window.confirm('Are you sure you want to delete this student stipend record?');
     if (!confirmed) {
       return;
     }
 
+    setDeleteRowId(rowId);
+    setDeletePassword('');
+    setError('');
+    setMessage('');
+  };
+
+  const cancelDelete = () => {
+    setDeleteRowId('');
+    setDeletePassword('');
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteRowId) {
+      return;
+    }
+
+    const trimmedPassword = deletePassword.trim();
+    if (!trimmedPassword) {
+      setError('Please enter password to delete this record.');
+      return;
+    }
+
+    const activeUsername = (username || className).trim();
+    if (!activeUsername) {
+      setError('Unable to verify user session. Please login again.');
+      return;
+    }
+
     try {
+      setDeletingRecord(true);
       setError('');
       setMessage('');
+
+      const verifyResponse = await fetch('/api/ggss-stipend/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: activeUsername, password: trimmedPassword }),
+      });
+      const verifyData = await parseResponse(verifyResponse);
+      if (!verifyResponse.ok || !verifyData.success) {
+        throw new Error('Password is incorrect. Record not deleted.');
+      }
+
       const response = await fetch('/api/ggss-stipend', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rowId }),
+        body: JSON.stringify({ rowId: deleteRowId }),
       });
       const data = await parseResponse(response);
       if (!response.ok || !data.success) {
@@ -482,12 +527,15 @@ export default function GgssNishtarRoadStipendPage() {
       }
 
       setMessage(data.message || 'Record deleted successfully.');
-      if (editRowId === rowId) {
+      if (editRowId === deleteRowId) {
         cancelEdit();
       }
+      cancelDelete();
       await loadRecords();
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : 'Unable to delete record.');
+    } finally {
+      setDeletingRecord(false);
     }
   };
 
@@ -748,7 +796,7 @@ export default function GgssNishtarRoadStipendPage() {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => void deleteRecord(record.rowId)}
+                                onClick={() => requestDelete(record.rowId)}
                                 className="rounded-lg border border-rose-300 px-2.5 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
                               >
                                 Delete
@@ -850,6 +898,45 @@ export default function GgssNishtarRoadStipendPage() {
                   type="button"
                   onClick={cancelEdit}
                   disabled={savingEdit}
+                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {deleteRowId ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl">
+              <h3 className="text-lg font-bold text-slate-900">Confirm Delete</h3>
+              <p className="mt-1 text-sm text-slate-600">Enter your password to delete this record.</p>
+
+              <div className="mt-4">
+                <label htmlFor="delete-password" className="mb-1 block text-xs font-semibold uppercase text-slate-600">Password</label>
+                <input
+                  id="delete-password"
+                  type="password"
+                  value={deletePassword}
+                  onChange={(event) => setDeletePassword(event.target.value)}
+                  className="min-h-[42px] w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-cyan-500"
+                />
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void confirmDelete()}
+                  disabled={deletingRecord}
+                  className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {deletingRecord ? 'Deleting...' : 'Delete Record'}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelDelete}
+                  disabled={deletingRecord}
                   className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancel
