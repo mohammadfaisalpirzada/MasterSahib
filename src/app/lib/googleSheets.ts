@@ -344,16 +344,24 @@ export const ensureSheetTabExists = async (
     metaResponse.data.sheets?.map((s) => s.properties?.title?.trim() ?? '') ?? [];
 
   if (!existingTabs.includes(tabName)) {
-    await sheets.spreadsheets.batchUpdate({
-      spreadsheetId,
-      requestBody: { requests: [{ addSheet: { properties: { title: tabName } } }] },
-    });
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: `${toQuotedSheetName(tabName)}!A1`,
-      valueInputOption: 'RAW',
-      requestBody: { values: [headerRow] },
-    });
+    try {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: { requests: [{ addSheet: { properties: { title: tabName } } }] },
+      });
+
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `${toQuotedSheetName(tabName)}!A1`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [headerRow] },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message.toLowerCase() : '';
+      if (!message.includes('already exists')) {
+        throw error;
+      }
+    }
   }
 };
 

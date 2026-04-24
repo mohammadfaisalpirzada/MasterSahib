@@ -12,24 +12,16 @@ export default function GgssNishtarRoadLandingPage() {
 
           <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
             GGSS Nishtar Road
-            <span className="block text-cyan-700">Staff Data Center</span>
+            <span className="block text-cyan-700">Staff Management Portal</span>
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-            From here, you can verify, update, and manage GGSS Nishtar Road staff records. Data is loaded from the dedicated
-            Google Sheet and saved back to the same source after secure verification.
+            Manage staff records in one place. View profiles, update entries, and maintain stipend records with controlled access.
           </p>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Live Source</p>
-              <p className="mt-1 text-sm font-bold text-slate-800">Google Sheet: GGSS Staff Register</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Security</p>
-              <p className="mt-1 text-sm font-bold text-slate-800">Server-side PID verification before edit</p>
-            </div>
-          </div>
+          <p className="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+            Centralized records for GGSS Nishtar Road
+          </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
@@ -43,6 +35,12 @@ export default function GgssNishtarRoadLandingPage() {
               className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-400 hover:text-cyan-700"
             >
               Admin Dashboard
+            </Link>
+            <Link
+              href="/ggss-nishtar-road/stipend"
+              className="inline-flex items-center justify-center rounded-2xl border border-emerald-300 bg-emerald-50 px-6 py-3 text-sm font-bold text-emerald-800 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-emerald-100"
+            >
+              Students Stipend Record
             </Link>
             <span className="text-xs font-medium text-slate-500">Semis Code: 408070227</span>
           </div>
