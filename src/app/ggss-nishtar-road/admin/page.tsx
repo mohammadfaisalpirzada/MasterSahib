@@ -2034,6 +2034,14 @@ export default function GgssAdminPage() {
                 <p className="text-sm font-bold">Add New Column</p>
                 <p className="mt-1 text-xs text-slate-500">Append a new column (e.g. DDO Code, Semiscode) to the sheet</p>
               </button>
+
+              <Link
+                href="/ggss-nishtar-road/admin/takeover"
+                className="rounded-2xl border border-teal-200 bg-teal-50 px-5 py-4 text-left text-teal-800 transition hover:border-teal-400 hover:bg-teal-100"
+              >
+                <p className="text-sm font-bold">School Takeover Inventory</p>
+                <p className="mt-1 text-xs text-teal-600">Create, preview, and download handover item list as PDF</p>
+              </Link>
             </div>
 
             {activeView ? (
