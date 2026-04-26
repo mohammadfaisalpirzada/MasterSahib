@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
 
@@ -28,6 +28,7 @@ type TakeoverMeta = {
 
 type AddObjectInput = {
   object: string;
+  customObject: string;
   quantity: number | '';
   status: WorkingStatus;
   comments: string;
@@ -41,6 +42,77 @@ const STATUS_COLORS: Record<WorkingStatus, string> = {
   'Needs Repair': 'bg-amber-50 text-amber-700 border-amber-200',
 };
 
+type TwoWayCategoryKey = 'desks' | 'lights' | 'fans' | 'chairs' | 'tables' | 'cupboards';
+
+const TWO_WAY_COLUMNS: Array<{ key: TwoWayCategoryKey; label: string }> = [
+  { key: 'desks', label: 'Desks' },
+  { key: 'lights', label: 'Lights' },
+  { key: 'fans', label: 'Fans' },
+  { key: 'chairs', label: 'Chairs' },
+  { key: 'tables', label: 'Tables' },
+  { key: 'cupboards', label: 'Cupboard / Lockers' },
+];
+
+const INVENTORY_USAGE_STORAGE_KEY = 'ggss-takeover-inventory-object-usage-v1';
+const OTHER_OBJECT_OPTION = '__other__';
+
+const DEFAULT_INVENTORY_OBJECTS = [
+  'Desk',
+  'Chair',
+  'Table',
+  'Fan',
+  'Light',
+  'Cupboard',
+  'Locker',
+  'Whiteboard',
+  'Blackboard',
+  'Projector',
+  'Computer',
+  'Printer',
+  'Water Cooler',
+  'Generator',
+  'UPS',
+  'AC',
+  'Curtain',
+  'Switch Board',
+  'Bench',
+  'Lab Stool',
+];
+
+type InventoryUsageEntry = {
+  label: string;
+  count: number;
+};
+
+type InventoryUsageMap = Record<string, InventoryUsageEntry>;
+
+const EMPTY_TWO_WAY_COUNTS = (): Record<TwoWayCategoryKey, number> => ({
+  desks: 0,
+  lights: 0,
+  fans: 0,
+  chairs: 0,
+  tables: 0,
+  cupboards: 0,
+});
+
+const normalizeObjectName = (value: string) => value.toLowerCase().replace(/[^a-z]/g, '');
+const normalizeInventoryLabel = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+const cleanInventoryLabel = (value: string) => value.trim().replace(/\s+/g, ' ');
+
+const detectTwoWayCategory = (objectName: string): TwoWayCategoryKey | null => {
+  const normalized = normalizeObjectName(objectName);
+  if (!normalized) return null;
+
+  if (normalized.includes('desk') || normalized.includes('bench')) return 'desks';
+  if (normalized.includes('light') || normalized.includes('bulb') || normalized.includes('tube') || normalized.includes('led')) return 'lights';
+  if (normalized.includes('fan')) return 'fans';
+  if (normalized.includes('chair') || normalized.includes('stool')) return 'chairs';
+  if (normalized.includes('table')) return 'tables';
+  if (normalized.includes('cupboard') || normalized.includes('locker') || normalized.includes('almirah') || normalized.includes('cabinet')) return 'cupboards';
+
+  return null;
+};
+
 const EMPTY_ITEM = (): Omit<TakeoverItem, 'id' | 'serialNo'> => ({
   area: '',
   object: '',
@@ -51,6 +123,7 @@ const EMPTY_ITEM = (): Omit<TakeoverItem, 'id' | 'serialNo'> => ({
 
 const EMPTY_OBJECT_INPUT = (): AddObjectInput => ({
   object: '',
+  customObject: '',
   quantity: '',
   status: 'Working',
   comments: '',
@@ -90,6 +163,8 @@ export default function TakeoverPage() {
   ]);
   const [areaInput, setAreaInput] = useState('');
   const [objectInputs, setObjectInputs] = useState<AddObjectInput[]>([EMPTY_OBJECT_INPUT()]);
+  const [pendingObjectFocusIndex, setPendingObjectFocusIndex] = useState<number | null>(null);
+  const [pendingCustomObjectFocusIndex, setPendingCustomObjectFocusIndex] = useState<number | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Omit<TakeoverItem, 'id' | 'serialNo'>>(EMPTY_ITEM());
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -101,8 +176,92 @@ export default function TakeoverPage() {
   const [sessionsOpen, setSessionsOpen] = useState(false);
   const [savingSession, setSavingSession] = useState(false);
   const [sessionMessage, setSessionMessage] = useState('');
+  const [inventoryUsage, setInventoryUsage] = useState<InventoryUsageMap>({});
+  const objectEntryRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const objectSelectRefs = useRef<Array<HTMLSelectElement | null>>([]);
+  const objectCustomInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const printRef = useRef<HTMLDivElement>(null);
+
+  const inventoryObjectOptions = useMemo(() => {
+    const merged = new Map<string, InventoryUsageEntry>();
+
+    for (const label of DEFAULT_INVENTORY_OBJECTS) {
+      const key = normalizeInventoryLabel(label);
+      merged.set(key, {
+        label,
+        count: inventoryUsage[key]?.count ?? 0,
+      });
+    }
+
+    Object.entries(inventoryUsage).forEach(([key, entry]) => {
+      const existing = merged.get(key);
+      if (existing) {
+        merged.set(key, {
+          label: existing.label,
+          count: Math.max(existing.count, entry.count),
+        });
+      } else {
+        merged.set(key, {
+          label: entry.label,
+          count: entry.count,
+        });
+      }
+    });
+
+    return Array.from(merged.values())
+      .sort((a, b) => {
+        if (b.count !== a.count) return b.count - a.count;
+        return a.label.localeCompare(b.label);
+      })
+      .map((entry) => entry.label);
+  }, [inventoryUsage]);
+
+  const twoWayRows = useMemo(() => {
+    const grouped = new Map<string, {
+      area: string;
+      counts: Record<TwoWayCategoryKey, number>;
+      total: number;
+      remarks: Set<string>;
+    }>();
+
+    for (const item of items) {
+      const areaName = item.area.trim() || 'Unspecified Area';
+      if (!grouped.has(areaName)) {
+        grouped.set(areaName, {
+          area: areaName,
+          counts: EMPTY_TWO_WAY_COUNTS(),
+          total: 0,
+          remarks: new Set<string>(),
+        });
+      }
+
+      const group = grouped.get(areaName);
+      if (!group) continue;
+
+      const quantity = typeof item.quantity === 'number' && Number.isFinite(item.quantity)
+        ? Math.max(0, item.quantity)
+        : 0;
+
+      group.total += quantity;
+
+      const category = detectTwoWayCategory(item.object);
+      if (category) {
+        group.counts[category] += quantity;
+      } else if (item.object.trim()) {
+        group.remarks.add(`${item.object.trim()}${quantity > 0 ? ` (${quantity})` : ''}`);
+      }
+
+      if (item.comments.trim()) {
+        group.remarks.add(item.comments.trim());
+      }
+    }
+
+    return Array.from(grouped.values()).map((entry) => ({
+      ...entry,
+      remarks: Array.from(entry.remarks).join(' | ') || '—',
+    }));
+  }, [items]);
 
   const fetchSessions = async () => {
     try {
@@ -224,6 +383,35 @@ export default function TakeoverPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const raw = window.localStorage.getItem(INVENTORY_USAGE_STORAGE_KEY);
+    if (!raw) return;
+
+    try {
+      const parsed = JSON.parse(raw) as InventoryUsageMap;
+      const sanitized = Object.fromEntries(
+        Object.entries(parsed)
+          .filter(([, value]) => value && typeof value.label === 'string')
+          .map(([key, value]) => [
+            key,
+            {
+              label: cleanInventoryLabel(value.label),
+              count: Number.isFinite(value.count) ? Math.max(0, Number(value.count)) : 0,
+            },
+          ])
+      );
+      setInventoryUsage(sanitized);
+    } catch {
+      // Ignore invalid localStorage value.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(INVENTORY_USAGE_STORAGE_KEY, JSON.stringify(inventoryUsage));
+  }, [inventoryUsage]);
+
   // Sync day when date changes
   useEffect(() => {
     if (!meta.date) return;
@@ -284,14 +472,59 @@ export default function TakeoverPage() {
         if (key === 'status') {
           return { ...entry, status: value as WorkingStatus };
         }
+        if (key === 'object') {
+          if (value === OTHER_OBJECT_OPTION) {
+            setPendingCustomObjectFocusIndex(index);
+          } else {
+            setPendingCustomObjectFocusIndex(null);
+          }
+          return {
+            ...entry,
+            object: value,
+            customObject: value === OTHER_OBJECT_OPTION ? entry.customObject : '',
+          };
+        }
         return { ...entry, [key]: value };
       })
     );
   };
 
   const addMoreObjectInput = () => {
+    const nextIndex = objectInputs.length;
     setObjectInputs((current) => [...current, EMPTY_OBJECT_INPUT()]);
+    setPendingObjectFocusIndex(nextIndex);
   };
+
+  useEffect(() => {
+    if (pendingObjectFocusIndex === null) return;
+
+    const container = objectEntryRefs.current[pendingObjectFocusIndex];
+    const targetField = objectSelectRefs.current[pendingObjectFocusIndex];
+
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    if (targetField) {
+      window.setTimeout(() => {
+        targetField.focus();
+      }, 160);
+    }
+
+    setPendingObjectFocusIndex(null);
+  }, [objectInputs.length, pendingObjectFocusIndex]);
+
+  useEffect(() => {
+    if (pendingCustomObjectFocusIndex === null) return;
+
+    const targetInput = objectCustomInputRefs.current[pendingCustomObjectFocusIndex];
+    if (targetInput) {
+      window.setTimeout(() => {
+        targetInput.focus();
+      }, 80);
+      setPendingCustomObjectFocusIndex(null);
+    }
+  }, [objectInputs, pendingCustomObjectFocusIndex]);
 
   const addItem = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -299,10 +532,26 @@ export default function TakeoverPage() {
       setMessage('Area is required.');
       return;
     }
-    const validObjectEntries = objectInputs.filter((entry) => entry.object.trim());
+    const hasMissingOtherObject = objectInputs.some(
+      (entry) => entry.object === OTHER_OBJECT_OPTION && !entry.customObject.trim()
+    );
+
+    if (hasMissingOtherObject) {
+      setMessage('Please write object name for Other.');
+      return;
+    }
+
+    const validObjectEntries = objectInputs
+      .map((entry) => {
+        const selectedObject = entry.object === OTHER_OBJECT_OPTION
+          ? cleanInventoryLabel(entry.customObject)
+          : cleanInventoryLabel(entry.object);
+        return { ...entry, selectedObject };
+      })
+      .filter((entry) => entry.selectedObject);
 
     if (validObjectEntries.length === 0) {
-      setMessage('Please enter at least one object.');
+      setMessage('Please select at least one object.');
       return;
     }
 
@@ -314,12 +563,27 @@ export default function TakeoverPage() {
         id: generateId(),
         serialNo: nextSerial + index,
         area: areaInput.trim(),
-        object: entry.object.trim(),
+        object: entry.selectedObject,
         quantity: entry.quantity,
         status: entry.status,
         comments: entry.comments,
       })),
     ]);
+
+    setInventoryUsage((current) => {
+      const updated: InventoryUsageMap = { ...current };
+      validObjectEntries.forEach((entry) => {
+        const key = normalizeInventoryLabel(entry.selectedObject);
+        if (!key) return;
+        const existing = updated[key];
+        updated[key] = {
+          label: existing?.label || entry.selectedObject,
+          count: (existing?.count ?? 0) + 1,
+        };
+      });
+      return updated;
+    });
+
     setAreaInput('');
     setObjectInputs([EMPTY_OBJECT_INPUT()]);
     setMessage('');
@@ -349,10 +613,14 @@ export default function TakeoverPage() {
   const downloadPDF = () => {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const marginLeft = 14;
     const marginRight = 14;
     const contentWidth = pageWidth - marginLeft - marginRight;
-    let y = 14;
+    const topMargin = 14;
+    const bottomMargin = 18;
+    const bodyBottom = pageHeight - bottomMargin;
+    let y = topMargin;
 
     // Title
     doc.setFontSize(14);
@@ -375,68 +643,107 @@ export default function TakeoverPage() {
     }
     y += 3;
 
-    // Table column config: [label, widthFraction]
-    const cols: [string, number][] = [
-      ['S#', 0.06],
-      ['Area', 0.18],
-      ['Object', 0.22],
-      ['Qty', 0.07],
-      ['Status', 0.16],
-      ['Comments', 0.31],
+    // Two-way grouped table config.
+    const cols: Array<{ label: string; width: number; align?: 'left' | 'center' }> = [
+      { label: 'Area', width: 0.2, align: 'left' },
+      ...TWO_WAY_COLUMNS.map((column) => ({ label: column.label, width: 0.08, align: 'center' as const })),
+      { label: 'Total', width: 0.08, align: 'center' },
+      { label: 'Remarks / Comments', width: 0.24, align: 'left' },
     ];
-    const colWidths = cols.map(([, fraction]) => fraction * contentWidth);
-    const rowHeight = 7;
+    const colWidths = cols.map((column) => column.width * contentWidth);
     const headerHeight = 8;
 
-    // Draw header
-    doc.setFillColor(15, 118, 110);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(8.5);
-    doc.setFont('helvetica', 'bold');
-    let x = marginLeft;
-    cols.forEach(([label], idx) => {
-      doc.rect(x, y, colWidths[idx], headerHeight, 'F');
-      doc.text(label, x + 2, y + 5.5);
-      x += colWidths[idx];
-    });
-    y += headerHeight;
-
-    // Draw rows
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    items.forEach((item, rowIndex) => {
-      const isEven = rowIndex % 2 === 0;
-      doc.setFillColor(isEven ? 255 : 245, isEven ? 255 : 245, isEven ? 255 : 245);
-      doc.setTextColor(30, 30, 30);
-      x = marginLeft;
-      const cells = [
-        String(item.serialNo),
-        item.area,
-        item.object,
-        item.quantity === '' ? '—' : String(item.quantity),
-        item.status,
-        item.comments || '—',
-      ];
-      cells.forEach((cell, idx) => {
-        doc.rect(x, y, colWidths[idx], rowHeight, 'F');
-        doc.setDrawColor(200, 200, 200);
-        doc.rect(x, y, colWidths[idx], rowHeight, 'S');
-        const maxChars = Math.floor(colWidths[idx] / 2);
-        const truncated = cell.length > maxChars ? cell.slice(0, maxChars - 1) + '…' : cell;
-        doc.text(truncated, x + 2, y + 4.8);
+    const drawHeader = () => {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(15, 23, 42);
+      let x = marginLeft;
+      cols.forEach((col, idx) => {
+        doc.setDrawColor(100, 100, 100);
+        doc.rect(x, y, colWidths[idx], headerHeight, 'S');
+        if (col.align === 'center') {
+          doc.text(col.label, x + colWidths[idx] / 2, y + 5.3, { align: 'center' });
+        } else {
+          doc.text(col.label, x + 1.5, y + 5.3);
+        }
         x += colWidths[idx];
       });
-      y += rowHeight;
+      y += headerHeight;
+    };
 
-      // New page if needed
-      if (y > 265 && rowIndex < items.length - 1) {
+    const drawRow = (cells: string[], isBold = false) => {
+      const wrappedCells = cells.map((cell, idx) => {
+        const text = cell || '';
+        const width = Math.max(6, colWidths[idx] - 3);
+        return doc.splitTextToSize(text, width) as string[];
+      });
+
+      const maxLines = Math.max(...wrappedCells.map((lines) => Math.max(lines.length, 1)));
+      const rowHeight = Math.max(6, maxLines * 4 + 2);
+
+      if (y + rowHeight > bodyBottom) {
         doc.addPage();
-        y = 14;
+        y = topMargin;
+        drawHeader();
       }
-    });
+
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(30, 30, 30);
+
+      let x = marginLeft;
+      cells.forEach((cell, idx) => {
+        const align = cols[idx]?.align ?? 'left';
+        doc.setDrawColor(140, 140, 140);
+        doc.rect(x, y, colWidths[idx], rowHeight, 'S');
+        const lines = wrappedCells[idx];
+        if (align === 'center') {
+          lines.forEach((line, lineIndex) => {
+            doc.text(line, x + colWidths[idx] / 2, y + 4 + lineIndex * 4, { align: 'center' });
+          });
+        } else {
+          lines.forEach((line, lineIndex) => {
+            doc.text(line, x + 1.5, y + 4 + lineIndex * 4);
+          });
+        }
+        x += colWidths[idx];
+      });
+
+      y += rowHeight;
+    };
+
+    drawHeader();
+
+    if (twoWayRows.length === 0) {
+      drawRow(['No items added.', '', '', '', '', '', '', '', '']);
+    } else {
+      twoWayRows.forEach((row) => {
+        drawRow([
+          row.area,
+          ...TWO_WAY_COLUMNS.map((column) => (row.counts[column.key] > 0 ? String(row.counts[column.key]) : '')),
+          String(row.total),
+          row.remarks,
+        ]);
+      });
+
+      const totalsByColumn = TWO_WAY_COLUMNS.map((column) =>
+        twoWayRows.reduce((sum, row) => sum + row.counts[column.key], 0)
+      );
+      const grandTotal = twoWayRows.reduce((sum, row) => sum + row.total, 0);
+      drawRow([
+        'Total',
+        ...totalsByColumn.map((value) => String(value)),
+        String(grandTotal),
+        '',
+      ], true);
+    }
 
     // Signature row
     y += 16;
+    if (y + 14 > pageHeight - 8) {
+      doc.addPage();
+      y = topMargin + 10;
+    }
     doc.setTextColor(30, 30, 30);
     doc.setFontSize(9);
     doc.line(marginLeft, y, marginLeft + 60, y);
@@ -708,19 +1015,39 @@ export default function TakeoverPage() {
                   placeholder="e.g. Classroom 5A, Library..." className="min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500" />
               </div>
               {objectInputs.map((entry, index) => (
-                <div key={`object-entry-${index}`} className="rounded-2xl border border-slate-200 p-4">
+                <div
+                  key={`object-entry-${index}`}
+                  ref={(element) => { objectEntryRefs.current[index] = element; }}
+                  className="rounded-2xl border border-slate-200 p-4"
+                >
                   <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Object Entry {index + 1}</p>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                       <label htmlFor={`add-object-${index}`} className="mb-1 block text-xs font-semibold uppercase text-slate-600">Object <span className="text-rose-500">*</span></label>
-                      <input
+                      <select
                         id={`add-object-${index}`}
-                        type="text"
+                        ref={(element) => { objectSelectRefs.current[index] = element; }}
                         value={entry.object}
                         onChange={(e) => handleObjectInputChange(index, 'object', e.target.value)}
-                        placeholder="e.g. Desk, Fan, Projector"
                         className="min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500"
-                      />
+                      >
+                        <option value="">Select object</option>
+                        {inventoryObjectOptions.map((objectName) => (
+                          <option key={`inventory-object-${objectName}`} value={objectName}>{objectName}</option>
+                        ))}
+                        <option value={OTHER_OBJECT_OPTION}>Other</option>
+                      </select>
+                      {entry.object === OTHER_OBJECT_OPTION ? (
+                        <input
+                          id={`add-object-other-${index}`}
+                          ref={(element) => { objectCustomInputRefs.current[index] = element; }}
+                          type="text"
+                          value={entry.customObject}
+                          onChange={(e) => handleObjectInputChange(index, 'customObject', e.target.value)}
+                          placeholder="Write custom object"
+                          className="mt-2 min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-500"
+                        />
+                      ) : null}
                     </div>
                     <div>
                       <label htmlFor={`add-qty-${index}`} className="mb-1 block text-xs font-semibold uppercase text-slate-600">Quantity</label>
@@ -847,6 +1174,62 @@ export default function TakeoverPage() {
                         </tr>
                       ))
                     )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="hidden print:block">
+                <table className="w-full border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-slate-200 text-slate-900">
+                      <th className="border border-slate-500 px-2 py-1.5 text-left font-bold">Area</th>
+                      {TWO_WAY_COLUMNS.map((column) => (
+                        <th key={column.key} className="border border-slate-500 px-2 py-1.5 text-center font-bold">
+                          {column.label}
+                        </th>
+                      ))}
+                      <th className="border border-slate-500 px-2 py-1.5 text-center font-bold">Total</th>
+                      <th className="border border-slate-500 px-2 py-1.5 text-left font-bold">Remarks / Comments</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {twoWayRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={TWO_WAY_COLUMNS.length + 3} className="border border-slate-500 px-2 py-4 text-center text-slate-500">
+                          No items added.
+                        </td>
+                      </tr>
+                    ) : (
+                      twoWayRows.map((row, rowIndex) => (
+                        <tr key={`print-area-${row.area}-${rowIndex}`}>
+                          <td className="border border-slate-500 px-2 py-1.5 font-semibold">{row.area}</td>
+                          {TWO_WAY_COLUMNS.map((column) => (
+                            <td key={`${row.area}-${column.key}`} className="border border-slate-500 px-2 py-1.5 text-center">
+                              {row.counts[column.key] > 0 ? row.counts[column.key] : ''}
+                            </td>
+                          ))}
+                          <td className="border border-slate-500 px-2 py-1.5 text-center font-semibold">{row.total}</td>
+                          <td className="border border-slate-500 px-2 py-1.5">{row.remarks}</td>
+                        </tr>
+                      ))
+                    )}
+                    {twoWayRows.length > 0 ? (
+                      <tr className="bg-slate-100 font-bold">
+                        <td className="border border-slate-500 px-2 py-1.5">Total</td>
+                        {TWO_WAY_COLUMNS.map((column) => {
+                          const columnTotal = twoWayRows.reduce((sum, row) => sum + row.counts[column.key], 0);
+                          return (
+                            <td key={`print-total-${column.key}`} className="border border-slate-500 px-2 py-1.5 text-center">
+                              {columnTotal}
+                            </td>
+                          );
+                        })}
+                        <td className="border border-slate-500 px-2 py-1.5 text-center">
+                          {twoWayRows.reduce((sum, row) => sum + row.total, 0)}
+                        </td>
+                        <td className="border border-slate-500 px-2 py-1.5">&nbsp;</td>
+                      </tr>
+                    ) : null}
                   </tbody>
                 </table>
               </div>
@@ -994,28 +1377,47 @@ export default function TakeoverPage() {
                 </div>
                 <table className="w-full border-collapse text-xs">
                   <thead>
-                    <tr className="bg-teal-700 text-white">
-                      {['S#', 'Area', 'Object', 'Qty', 'Status', 'Comments'].map((h) => (
-                        <th key={h} className="border border-teal-600 px-2 py-1.5 text-left font-bold">{h}</th>
+                    <tr className="bg-slate-200 text-slate-900">
+                      <th className="border border-slate-500 px-2 py-1.5 text-left font-bold">Area</th>
+                      {TWO_WAY_COLUMNS.map((column) => (
+                        <th key={`preview-head-${column.key}`} className="border border-slate-500 px-2 py-1.5 text-center font-bold">
+                          {column.label}
+                        </th>
                       ))}
+                      <th className="border border-slate-500 px-2 py-1.5 text-center font-bold">Total</th>
+                      <th className="border border-slate-500 px-2 py-1.5 text-left font-bold">Remarks / Comments</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((item, index) => (
-                      <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                        <td className="border border-slate-200 px-2 py-1 font-bold">{item.serialNo}</td>
-                        <td className="border border-slate-200 px-2 py-1">{item.area}</td>
-                        <td className="border border-slate-200 px-2 py-1">{item.object}</td>
-                        <td className="border border-slate-200 px-2 py-1">{item.quantity === '' ? '—' : item.quantity}</td>
-                        <td className="border border-slate-200 px-2 py-1">{item.status}</td>
-                        <td className="border border-slate-200 px-2 py-1">{item.comments || '—'}</td>
+                    {twoWayRows.map((row, index) => (
+                      <tr key={`preview-row-${row.area}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                        <td className="border border-slate-300 px-2 py-1.5 font-semibold">{row.area}</td>
+                        {TWO_WAY_COLUMNS.map((column) => (
+                          <td key={`preview-${row.area}-${column.key}`} className="border border-slate-300 px-2 py-1.5 text-center">
+                            {row.counts[column.key] > 0 ? row.counts[column.key] : ''}
+                          </td>
+                        ))}
+                        <td className="border border-slate-300 px-2 py-1.5 text-center font-semibold">{row.total}</td>
+                        <td className="border border-slate-300 px-2 py-1.5">{row.remarks}</td>
                       </tr>
                     ))}
-                    {items.length === 0 ? (
+                    {twoWayRows.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="border border-slate-200 px-2 py-4 text-center text-slate-400">No items added.</td>
+                        <td colSpan={TWO_WAY_COLUMNS.length + 3} className="border border-slate-300 px-2 py-4 text-center text-slate-400">No items added.</td>
                       </tr>
-                    ) : null}
+                    ) : (
+                      <tr className="bg-slate-100 font-bold">
+                        <td className="border border-slate-300 px-2 py-1.5">Total</td>
+                        {TWO_WAY_COLUMNS.map((column) => {
+                          const columnTotal = twoWayRows.reduce((sum, row) => sum + row.counts[column.key], 0);
+                          return (
+                            <td key={`preview-total-${column.key}`} className="border border-slate-300 px-2 py-1.5 text-center">{columnTotal}</td>
+                          );
+                        })}
+                        <td className="border border-slate-300 px-2 py-1.5 text-center">{twoWayRows.reduce((sum, row) => sum + row.total, 0)}</td>
+                        <td className="border border-slate-300 px-2 py-1.5">&nbsp;</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
                 <div className="mt-16 flex justify-between">
