@@ -35,15 +35,14 @@ const tagColorMap: Record<string, string> = {
 
 const cardColors = ['#1a3a6b', '#2356a4', '#166534', '#7c2d12', '#713f12', '#3b0764', '#0c4a6e', '#831843'];
 
-const getOptionalEnv = (name: string) => {
-  const value = process.env[name]?.trim();
-  return value || '';
+const extractSpreadsheetId = (raw: string) => {
+  return raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)?.[1] || raw;
 };
 
-const getSpreadsheetId = () => {
-  const raw = getOptionalEnv('GGSS_WEBSITE_SHEET_ID');
+const resolveSpreadsheetId = () => {
+  const raw = process.env.GGSS_STAFF_SPREADSHEET_ID?.trim() || process.env.GGSS_WEBSITE_SHEET_ID?.trim() || '';
   if (!raw) return '';
-  return raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)?.[1] || raw;
+  return extractSpreadsheetId(raw);
 };
 
 const normalizeHeader = (value: string) => value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
@@ -83,9 +82,8 @@ const parseSheetRows = (values: string[][]) => {
 };
 
 const loadAnnouncements = async () => {
-  const rawId = process.env.GGSS_STAFF_SPREADSHEET_ID?.trim();
-  if (!rawId) return [] as NoticeItem[];
-  const spreadsheetId = rawId.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)?.[1] || rawId;
+  const spreadsheetId = resolveSpreadsheetId();
+  if (!spreadsheetId) return [] as NoticeItem[];
   const sheetName = process.env.GGSS_ANNOUNCEMENTS_SHEET_NAME?.trim() || 'Announcements 2026';
   const sheets = getGoogleSheetsClient();
 
@@ -125,10 +123,9 @@ const loadAnnouncements = async () => {
 };
 
 const loadTeachers = async () => {
-  const rawId = process.env.GGSS_STAFF_SPREADSHEET_ID?.trim();
-  if (!rawId) return [] as FacultyItem[];
-  const spreadsheetId = rawId.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)?.[1] || rawId;
-  const sheetName = process.env.GGSS_TEACHERS_SHEET_NAME?.trim() || 'data 2026';
+  const spreadsheetId = resolveSpreadsheetId();
+  if (!spreadsheetId) return [] as FacultyItem[];
+  const sheetName = process.env.GGSS_TEACHERS_SHEET_NAME?.trim() || 'Teachers 2026';
   const sheets = getGoogleSheetsClient();
 
   let rows: Record<string, string>[] = [];
