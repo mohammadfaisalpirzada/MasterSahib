@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import Link from 'next/link';
 import { IoEyeOffOutline, IoEyeOutline, IoShieldCheckmarkOutline } from 'react-icons/io5';
 import jsPDF from 'jspdf';
@@ -1881,7 +1881,7 @@ export default function GgssAdminPage() {
         <div style={{ background: 'linear-gradient(135deg, #1a3a6b 0%, #0f2347 100%)', borderBottom: '4px solid #c8a96e' }}>
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-4">
             <div className="flex items-center gap-3">
-              <Image src="/images/ggssnishtar_mastersahib.png" alt="GGSS Logo" width={52} height={52} className="object-contain" style={{ width: '52px', height: '52px' }} />
+              <NextImage src="/images/ggssnishtar_mastersahib.png" alt="GGSS Logo" width={52} height={52} className="object-contain" style={{ width: '52px', height: '52px' }} />
               <div>
                 <p style={{ color: '#c8a96e', fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em' }} className="uppercase">GGSS Nishtar Road, Hyderabad</p>
                 <p style={{ color: '#fff', fontWeight: 800, fontSize: '18px', lineHeight: 1.2 }}>Admin Panel</p>
@@ -1942,7 +1942,7 @@ export default function GgssAdminPage() {
       <div style={{ background: 'linear-gradient(135deg, #1a3a6b 0%, #0f2347 100%)', borderBottom: '4px solid #c8a96e', marginLeft: '-16px', marginRight: '-16px' }} className="sm:-mx-6 lg:-mx-10 mb-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
           <div className="flex items-center gap-3">
-            <Image src="/images/ggssnishtar_mastersahib.png" alt="GGSS Logo" width={52} height={52} className="object-contain" style={{ width: '52px', height: '52px' }} />
+            <NextImage src="/images/ggssnishtar_mastersahib.png" alt="GGSS Logo" width={52} height={52} className="object-contain" style={{ width: '52px', height: '52px' }} />
             <div>
               <p style={{ color: '#c8a96e', fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em' }} className="uppercase">GGSS Nishtar Road, Hyderabad</p>
               <p style={{ color: '#fff', fontWeight: 800, fontSize: '18px', lineHeight: 1.2 }}>Admin Panel</p>
