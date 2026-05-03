@@ -4,10 +4,26 @@ import { addPadletIdea, getPadletIdeas } from '@/app/lib/padletIdeas';
 
 const sanitize = (value: unknown) => String(value ?? '').trim();
 
+const ensureUniqueIds = (items: Array<{ id: string }>) => {
+  const seenIds = new Map<string, number>();
+  return items.map((item) => {
+    const count = seenIds.get(item.id) || 0;
+    seenIds.set(item.id, count + 1);
+    if (count === 0) {
+      return item;
+    }
+    return {
+      ...item,
+      id: `${item.id}-${count}`,
+    };
+  });
+};
+
 export async function GET() {
   try {
     const items = await getPadletIdeas();
-    return NextResponse.json({ success: true, items });
+    const uniqueItems = ensureUniqueIds(items);
+    return NextResponse.json({ success: true, items: uniqueItems });
   } catch (error) {
     return NextResponse.json(
       {

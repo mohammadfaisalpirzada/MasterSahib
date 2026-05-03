@@ -12,8 +12,9 @@ type AppShellProps = {
 
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const isPeaceQuizRoute = pathname.startsWith('/peace-quiz');
-  const showBackToGlobal = pathname !== '/';
+  const safePathname = pathname || '/';
+  const isPeaceQuizRoute = safePathname.startsWith('/peace-quiz');
+  const showBackToGlobal = safePathname !== '/';
 
   return (
     <>

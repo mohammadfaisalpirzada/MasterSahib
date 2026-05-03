@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { GGSS_STIPEND_SESSION_COOKIE, verifyGgssStipendSessionToken } from '@/app/lib/ggssStipendAuth';
+import { GGSS_STIPEND_SESSION_COOKIE, isGgssStipendAdminUser, verifyGgssStipendSessionToken } from '@/app/lib/ggssStipendAuth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,5 +15,6 @@ export async function GET() {
     authenticated: Boolean(session),
     username: session?.username || '',
     className: session?.className || '',
+    isAdmin: session ? isGgssStipendAdminUser(session.username) : false,
   });
 }

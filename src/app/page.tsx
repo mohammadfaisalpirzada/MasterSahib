@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSession, signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
 
 const quickCards = [
   {
@@ -89,9 +90,24 @@ const formatPinDate = (iso: string) => {
     return 'Just now';
   }
 
-  return date.toLocaleDateString(undefined, {
-    day: '2-digit',
-    month: 'short',
+  // Use explicit locale and manual formatting to avoid hydration mismatch
+  const day = date.getUTCDate().toString().padStart(2, '0');
+  const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+  return `${day} ${month}`;
+};
+
+const ensureUniquePadletPins = (items: PadletPin[]): PadletPin[] => {
+  const seenIds = new Map<string, number>();
+  return items.map((item) => {
+    const count = seenIds.get(item.id) || 0;
+    seenIds.set(item.id, count + 1);
+    if (count === 0) {
+      return item;
+    }
+    return {
+      ...item,
+      id: `${item.id}-${count}`,
+    };
   });
 };
 
@@ -103,6 +119,7 @@ type VisitorCountApiResponse = {
 
 export default function HomePage() {
   const HOME_PADLET_LIMIT = 4;
+  const router = useRouter();
   const { data: session } = useSession();
   const [pins, setPins] = useState<PadletPin[]>(defaultPins);
   const [ideaAuthor, setIdeaAuthor] = useState('');
@@ -149,7 +166,7 @@ export default function HomePage() {
           throw new Error(data.message || 'Unable to load ideas.');
         }
 
-        setPins(data.items);
+        setPins(ensureUniquePadletPins(data.items));
       } catch (error) {
         setIdeaError(error instanceof Error ? error.message : 'Unable to load ideas.');
       } finally {
@@ -184,7 +201,7 @@ export default function HomePage() {
         throw new Error(data.message || 'Unable to save idea.');
       }
 
-      setPins((current) => [data.item as PadletPin, ...current]);
+      setPins((current) => ensureUniquePadletPins([data.item as PadletPin, ...current]));
       setIdeaText('');
       setIdeaAuthor('');
     } catch (error) {
@@ -192,6 +209,18 @@ export default function HomePage() {
     } finally {
       setPadletSaving(false);
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    const hostname = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
+    const isGgssDomain = hostname === 'ggssnishtarroad.themastersahib.com' || hostname.startsWith('ggssnishtarroad.');
+
+    if (isGgssDomain) {
+      router.push('/auth/signin?callbackUrl=%2Fggss-nishtar-road');
+      return;
+    }
+
+    void signIn('google');
   };
 
   return (
@@ -229,7 +258,7 @@ export default function HomePage() {
                 </Link>
                 {!session ? (
                   <button
-                    onClick={() => signIn('google')}
+                    onClick={handleGoogleSignIn}
                     className="rounded-2xl border border-cyan-300 bg-cyan-50 px-5 py-3 text-sm font-semibold text-cyan-700 transition hover:-translate-y-0.5 hover:bg-cyan-100"
                   >
                     Sign in with Google
@@ -350,9 +379,9 @@ export default function HomePage() {
                 </div>
               ) : null}
 
-              {pins.slice(0, HOME_PADLET_LIMIT).map((pin) => (
+              {pins.slice(0, HOME_PADLET_LIMIT).map((pin, index) => (
                 <article
-                  key={pin.id}
+                  key={`${pin.id}-${pin.createdAt}-${index}`}
                   className={`relative rounded-2xl border p-4 shadow-sm transition hover:-translate-y-0.5 ${padletStyles[pin.styleIndex % padletStyles.length]}`}
                 >
                   <span className="absolute -top-2 left-6 inline-flex h-4 w-4 rounded-full border border-white bg-slate-700 shadow" />

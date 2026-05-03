@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import {
+  GGSS_STIPEND_ALLOWED_USERS,
   GGSS_STIPEND_CLASS_USERS,
   GGSS_STIPEND_SESSION_COOKIE,
   createGgssStipendSessionToken,
+  isGgssStipendAdminUser,
   verifyGgssStipendCredentials,
 } from '@/app/lib/ggssStipendAuth';
 
@@ -26,15 +28,22 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Invalid class username or password.',
-          allowedUsers: GGSS_STIPEND_CLASS_USERS,
+          message: 'Invalid username or password.',
+          allowedUsers: GGSS_STIPEND_ALLOWED_USERS,
         },
         { status: 401 }
       );
     }
 
+    const isAdmin = isGgssStipendAdminUser(username);
     const token = createGgssStipendSessionToken(username);
-    const response = NextResponse.json({ success: true, username, className: username });
+    const response = NextResponse.json({
+      success: true,
+      username,
+      className: isAdmin ? 'All Classes' : username,
+      isAdmin,
+      allowedUsers: GGSS_STIPEND_CLASS_USERS,
+    });
     response.cookies.set(GGSS_STIPEND_SESSION_COOKIE, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

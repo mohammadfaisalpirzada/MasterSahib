@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { GGSS_STIPEND_SESSION_COOKIE, verifyGgssStipendSessionToken } from '@/app/lib/ggssStipendAuth';
+import { GGSS_STIPEND_SESSION_COOKIE, isGgssStipendAdminUser, verifyGgssStipendSessionToken } from '@/app/lib/ggssStipendAuth';
 import {
   addGgssStipendRow,
   deleteGgssStipendRow,
@@ -48,10 +48,15 @@ export async function GET() {
     const { context, rows } = await getGgssStipendSheetRows();
     const { columns, records } = ggssStipendRowsToRecords(rows);
     const classKey = resolveClassKey(columns.map((column) => column.key));
+    const isAdmin = isGgssStipendAdminUser(session.username);
 
-    const visibleRecords = classKey
+    const visibleRecords = !isAdmin && classKey
       ? records.filter((record) => isSameClass(String(record[classKey] ?? ''), session.className))
       : records;
+
+    const availableClasses = classKey
+      ? Array.from(new Set(records.map((record) => String(record[classKey] ?? '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b))
+      : [];
 
     return NextResponse.json({
       success: true,
@@ -65,6 +70,8 @@ export async function GET() {
       },
       className: session.className,
       username: session.username,
+      isAdmin,
+      availableClasses,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to load stipend records.';
@@ -78,6 +85,7 @@ export async function POST(request: Request) {
     if (error || !session) {
       return error;
     }
+    const isAdmin = isGgssStipendAdminUser(session.username);
 
     const body = (await request.json()) as { data?: Record<string, string> };
     const { rows } = await getGgssStipendSheetRows();
@@ -97,7 +105,14 @@ export async function POST(request: Request) {
       const requestedValue = body.data?.[column.key];
       nextValues[column.key] = typeof requestedValue === 'string' ? requestedValue.trim() : '';
     });
-    nextValues[classKey] = session.className;
+
+    if (isAdmin) {
+      if (!nextValues[classKey]) {
+        return NextResponse.json({ success: false, message: 'Class value is required for admin entries.' }, { status: 400 });
+      }
+    } else {
+      nextValues[classKey] = session.className;
+    }
 
     const studentNameKey = columns.find((column) => normalize(column.label) === 'studentname')?.key;
     if (studentNameKey && !nextValues[studentNameKey]) {
@@ -119,6 +134,7 @@ export async function PATCH(request: Request) {
     if (error || !session) {
       return error;
     }
+    const isAdmin = isGgssStipendAdminUser(session.username);
 
     const body = (await request.json()) as { rowId?: string; data?: Record<string, string> };
     const rowNumber = Number(body.rowId || 0);
@@ -135,7 +151,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: false, message: 'Stipend record not found.' }, { status: 404 });
     }
 
-    if (classKey && !isSameClass(String(target[classKey] ?? ''), session.className)) {
+    if (!isAdmin && classKey && !isSameClass(String(target[classKey] ?? ''), session.className)) {
       return NextResponse.json({ success: false, message: 'You can only edit your class records.' }, { status: 403 });
     }
 
@@ -146,8 +162,12 @@ export async function PATCH(request: Request) {
         typeof requestedValue === 'string' ? requestedValue.trim() : String(target[column.key] ?? '').trim();
     });
 
-    if (classKey) {
+    if (!isAdmin && classKey) {
       nextValues[classKey] = session.className;
+    }
+
+    if (isAdmin && classKey && !String(nextValues[classKey] ?? '').trim()) {
+      return NextResponse.json({ success: false, message: 'Class value is required for admin updates.' }, { status: 400 });
     }
 
     await saveGgssStipendRow(rowNumber, nextValues, columns);
@@ -172,6 +192,7 @@ export async function DELETE(request: Request) {
     if (error || !session) {
       return error;
     }
+    const isAdmin = isGgssStipendAdminUser(session.username);
 
     const body = (await request.json()) as { rowId?: string };
     const rowNumber = Number(body.rowId || 0);
@@ -188,7 +209,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, message: 'Stipend record not found.' }, { status: 404 });
     }
 
-    if (classKey && !isSameClass(String(target[classKey] ?? ''), session.className)) {
+    if (!isAdmin && classKey && !isSameClass(String(target[classKey] ?? ''), session.className)) {
       return NextResponse.json({ success: false, message: 'You can only delete your class records.' }, { status: 403 });
     }
 

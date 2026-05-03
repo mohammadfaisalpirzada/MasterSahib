@@ -5,9 +5,11 @@ export const GGSS_STIPEND_SESSION_COOKIE = 'ggss_stipend_session';
 const GGSS_STIPEND_SESSION_TTL_SECONDS = 60 * 60 * 8;
 
 export const GGSS_STIPEND_CLASS_USERS = ['Class VIG', 'Class IXG', 'Class XG'] as const;
+export const GGSS_STIPEND_ADMIN_USER = 'Admin' as const;
+export const GGSS_STIPEND_ALLOWED_USERS = [...GGSS_STIPEND_CLASS_USERS, GGSS_STIPEND_ADMIN_USER] as const;
 
 type GgssStipendSessionPayload = {
-  role: 'ggss-stipend-teacher';
+  role: 'ggss-stipend-teacher' | 'ggss-stipend-admin';
   username: string;
   className: string;
   iat: number;
@@ -25,6 +27,7 @@ const requiredEnv = (key: string) => {
 
 const getSessionSecret = () => requiredEnv('AUTH_SESSION_SECRET');
 const getTeacherPassword = () => process.env.GGSS_STIPEND_PASSWORD?.trim() || 'ggssnishtarroad';
+const getAdminPassword = () => process.env.GGSS_STIPEND_ADMIN_PASSWORD?.trim() || 'adminadmin321';
 
 const encode = (value: string) => Buffer.from(value, 'utf8').toString('base64url');
 const decode = (value: string) => Buffer.from(value, 'base64url').toString('utf8');
@@ -33,8 +36,10 @@ const sign = (payloadPart: string) => {
   return createHmac('sha256', getSessionSecret()).update(payloadPart).digest('base64url');
 };
 
+export const isGgssStipendAdminUser = (username: string) => username === GGSS_STIPEND_ADMIN_USER;
+
 const isAllowedUsername = (username: string) => {
-  return GGSS_STIPEND_CLASS_USERS.includes(username as (typeof GGSS_STIPEND_CLASS_USERS)[number]);
+  return GGSS_STIPEND_ALLOWED_USERS.includes(username as (typeof GGSS_STIPEND_ALLOWED_USERS)[number]);
 };
 
 export const verifyGgssStipendCredentials = (username: string, password: string) => {
@@ -42,7 +47,8 @@ export const verifyGgssStipendCredentials = (username: string, password: string)
     return false;
   }
 
-  const expected = Buffer.from(getTeacherPassword());
+  const expectedPassword = isGgssStipendAdminUser(username) ? getAdminPassword() : getTeacherPassword();
+  const expected = Buffer.from(expectedPassword);
   const provided = Buffer.from(password);
 
   if (expected.length !== provided.length) {
@@ -57,11 +63,12 @@ export const createGgssStipendSessionToken = (username: string) => {
     throw new Error('Invalid stipend username.');
   }
 
+  const isAdmin = isGgssStipendAdminUser(username);
   const now = Math.floor(Date.now() / 1000);
   const payload: GgssStipendSessionPayload = {
-    role: 'ggss-stipend-teacher',
+    role: isAdmin ? 'ggss-stipend-admin' : 'ggss-stipend-teacher',
     username,
-    className: username,
+    className: isAdmin ? 'All Classes' : username,
     iat: now,
     exp: now + GGSS_STIPEND_SESSION_TTL_SECONDS,
   };
@@ -86,7 +93,7 @@ export const verifyGgssStipendSessionToken = (token: string): GgssStipendSession
     }
 
     const payload = JSON.parse(decode(payloadPart)) as GgssStipendSessionPayload;
-    if (payload.role !== 'ggss-stipend-teacher' || !isAllowedUsername(payload.username)) {
+    if ((payload.role !== 'ggss-stipend-teacher' && payload.role !== 'ggss-stipend-admin') || !isAllowedUsername(payload.username)) {
       return null;
     }
 

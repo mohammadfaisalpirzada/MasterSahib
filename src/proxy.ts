@@ -16,7 +16,8 @@ export default withAuth(
 export const config = {
   matcher: [
     '/peace-quiz/:path*',
-    '/ggss-nishtar-road/:path*',
+    '/ggss-nishtar-road/admin/:path*',
+    '/ggss-nishtar-road/stipend/:path*',
     '/resume-builder/:path*',
     '/teaching-tools/:path*',
     '/portfolio/:path*',

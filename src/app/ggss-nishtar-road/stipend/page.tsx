@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import jsPDF from 'jspdf';
+import * as XLSX from 'xlsx';
 
 type ColumnMeta = {
   key: string;
@@ -17,16 +19,19 @@ type StipendApiResponse = {
   authenticated?: boolean;
   username?: string;
   className?: string;
+  isAdmin?: boolean;
   columns?: ColumnMeta[];
   records?: StipendRecord[];
   record?: StipendRecord;
+  availableClasses?: string[];
   source?: {
     sheetName: string;
   };
   message?: string;
 };
 
-const CLASS_USERNAMES = ['Class VIG', 'Class IXG', 'Class XG'];
+const ADMIN_USERNAME = 'Admin';
+const CLASS_USERNAMES = ['Class VIG', 'Class IXG', 'Class XG', ADMIN_USERNAME];
 const DRAFT_SAVE_DELAY_MS = 450;
 
 const parseResponse = async (response: Response) => {
@@ -194,6 +199,11 @@ export default function GgssNishtarRoadStipendPage() {
 
   const [sourceLabel, setSourceLabel] = useState('');
   const [className, setClassName] = useState('');
+  const [isAdminSession, setIsAdminSession] = useState(false);
+  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const [recordClassFilter, setRecordClassFilter] = useState('ALL_CLASSES');
+  const [classSortOrder, setClassSortOrder] = useState<'az' | 'za' | 'priority'>('az');
+  const [priorityClass, setPriorityClass] = useState('');
   const [columns, setColumns] = useState<ColumnMeta[]>([]);
   const [records, setRecords] = useState<StipendRecord[]>([]);
   const [formData, setFormData] = useState<Record<string, string>>({});
@@ -216,6 +226,16 @@ export default function GgssNishtarRoadStipendPage() {
     return columns.find((column) => normalize(column.label) === 'class' || normalize(column.key) === 'class')?.key || '';
   }, [columns]);
 
+  const classOptions = useMemo(() => {
+    if (!classColumnKey) {
+      return availableClasses;
+    }
+
+    const fromRecords = Array.from(new Set(records.map((record) => String(record[classColumnKey] ?? '').trim()).filter(Boolean)));
+    const fromApi = availableClasses.filter(Boolean);
+    return Array.from(new Set([...fromApi, ...fromRecords])).sort((a, b) => a.localeCompare(b));
+  }, [availableClasses, classColumnKey, records]);
+
   const { mainColumns, attendanceColumns } = useMemo(() => {
     const main: ColumnMeta[] = [];
     const attendance: ColumnMeta[] = [];
@@ -229,13 +249,54 @@ export default function GgssNishtarRoadStipendPage() {
     return { mainColumns: main, attendanceColumns: attendance };
   }, [columns]);
 
-  const resetFormForClass = (nextClassName: string, cols: ColumnMeta[]) => {
-    const blankValues = Object.fromEntries(cols.map((column) => [column.key, '']));
-    if (classColumnKey) {
-      blankValues[classColumnKey] = nextClassName;
+  const filteredAndSortedRecords = useMemo(() => {
+    const filtered = isAdminSession && classColumnKey && recordClassFilter !== 'ALL_CLASSES'
+      ? records.filter((record) => String(record[classColumnKey] ?? '').trim() === recordClassFilter)
+      : records;
+
+    if (!classColumnKey || !isAdminSession) {
+      return filtered;
     }
-    setFormData(blankValues);
-  };
+
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+      const classA = String(a[classColumnKey] ?? '').trim();
+      const classB = String(b[classColumnKey] ?? '').trim();
+
+      if (classSortOrder === 'priority' && priorityClass) {
+        if (classA === priorityClass && classB !== priorityClass) return -1;
+        if (classB === priorityClass && classA !== priorityClass) return 1;
+      }
+
+      const classCompare = classA.localeCompare(classB);
+      if (classCompare !== 0) {
+        return classSortOrder === 'za' ? -classCompare : classCompare;
+      }
+
+      return Number(a.rowId) - Number(b.rowId);
+    });
+
+    return sorted;
+  }, [classColumnKey, classSortOrder, isAdminSession, priorityClass, recordClassFilter, records]);
+
+  const showDualSerial = isAdminSession && recordClassFilter === 'ALL_CLASSES' && Boolean(classColumnKey);
+  const serialColumnCount = showDualSerial ? 2 : 1;
+
+  const serialIndexByRowId = useMemo(() => {
+    const indexMap: Record<string, { overall: number; classWise: number }> = {};
+    const classCounts: Record<string, number> = {};
+
+    filteredAndSortedRecords.forEach((record, index) => {
+      const classValue = classColumnKey ? String(record[classColumnKey] ?? '').trim() : 'default';
+      classCounts[classValue] = (classCounts[classValue] || 0) + 1;
+      indexMap[record.rowId] = {
+        overall: index + 1,
+        classWise: classCounts[classValue],
+      };
+    });
+
+    return indexMap;
+  }, [classColumnKey, filteredAndSortedRecords]);
 
   const loadRecords = async () => {
     try {
@@ -252,16 +313,25 @@ export default function GgssNishtarRoadStipendPage() {
       setRecords(data.records);
       setSourceLabel(data.source?.sheetName || 'Students Stipend Record');
       setClassName(data.className || '');
+      setIsAdminSession(Boolean(data.isAdmin));
+      setAvailableClasses(data.availableClasses || []);
+      setRecordClassFilter('ALL_CLASSES');
+      setClassSortOrder('az');
+      setPriorityClass('');
 
       const blankValues = Object.fromEntries(data.columns.map((column) => [column.key, '']));
       const classKey = data.columns.find(
         (column) => normalize(column.label) === 'class' || normalize(column.key) === 'class'
       )?.key;
       if (classKey) {
-        blankValues[classKey] = data.className || '';
+        blankValues[classKey] = data.isAdmin ? '' : (data.className || '');
       }
-      const savedDraft = loadDraftFromStorage(data.className || username);
-      setFormData(savedDraft ? { ...blankValues, ...savedDraft, ...(classKey ? { [classKey]: data.className || '' } : {}) } : blankValues);
+      const draftClassKey = data.className || username;
+      const savedDraft = loadDraftFromStorage(draftClassKey);
+      const withSaved = savedDraft
+        ? { ...blankValues, ...savedDraft, ...(classKey && !Boolean(data.isAdmin) ? { [classKey]: data.className || '' } : {}) }
+        : blankValues;
+      setFormData(withSaved);
       hasHydratedDraftRef.current = true;
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Unable to load stipend records.');
@@ -281,6 +351,7 @@ export default function GgssNishtarRoadStipendPage() {
         if (isAuthed && data.username) {
           setUsername(data.username);
         }
+        setIsAdminSession(Boolean(data.isAdmin));
       } catch {
         setAuthenticated(false);
       } finally {
@@ -353,7 +424,8 @@ export default function GgssNishtarRoadStipendPage() {
 
       setAuthenticated(true);
       setPassword('');
-      setMessage('Login successful. You can now add stipend records.');
+      setIsAdminSession(Boolean(data.isAdmin));
+      setMessage(data.isAdmin ? 'Admin login successful. You can manage all classes.' : 'Login successful. You can now add stipend records.');
       await loadRecords();
     } catch (loginErr) {
       setLoginError(loginErr instanceof Error ? loginErr.message : 'Unable to login.');
@@ -363,20 +435,30 @@ export default function GgssNishtarRoadStipendPage() {
   };
 
   const handleLogout = async () => {
-    await fetch('/api/ggss-stipend/auth/logout', { method: 'POST' });
-    setAuthenticated(false);
-    setClassName('');
-    setColumns([]);
-    setRecords([]);
-    setFormData({});
-    setEditRowId('');
-    setEditData({});
-    setDeleteRowId('');
-    setDeletePassword('');
-    setShowPassword(false);
-    setMessage('Logged out.');
-    setDraftStatus('');
-    hasHydratedDraftRef.current = false;
+    try {
+      await fetch('/api/ggss-stipend/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      setAuthenticated(false);
+      setClassName('');
+      setIsAdminSession(false);
+      setAvailableClasses([]);
+      setRecordClassFilter('ALL_CLASSES');
+      setClassSortOrder('az');
+      setPriorityClass('');
+      setColumns([]);
+      setRecords([]);
+      setFormData({});
+      setEditRowId('');
+      setEditData({});
+      setDeleteRowId('');
+      setDeletePassword('');
+      setShowPassword(false);
+      setMessage('Logged out.');
+      setDraftStatus('');
+      hasHydratedDraftRef.current = false;
+    }
   };
 
   const handleFormChange = (key: string, value: string) => {
@@ -495,7 +577,7 @@ export default function GgssNishtarRoadStipendPage() {
       return;
     }
 
-    const activeUsername = (username || className).trim();
+    const activeUsername = username.trim();
     if (!activeUsername) {
       setError('Unable to verify user session. Please login again.');
       return;
@@ -539,6 +621,115 @@ export default function GgssNishtarRoadStipendPage() {
     }
   };
 
+  const buildExportRows = (input: StipendRecord[]) => {
+    return input.map((record) => {
+      const row: Record<string, string> = {};
+      columns.forEach((column) => {
+        row[column.label] = String(record[column.key] ?? '');
+      });
+      return row;
+    });
+  };
+
+  const escapeHtml = (value: string) => value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+  const getScopeRows = (scope: 'all' | 'current') => (scope === 'all' ? records : filteredAndSortedRecords);
+
+  const handleExportExcel = (scope: 'all' | 'current') => {
+    const rows = getScopeRows(scope);
+    if (!rows.length) {
+      setError('No records available for Excel export.');
+      return;
+    }
+
+    const exportRows = buildExportRows(rows);
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(exportRows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Stipend');
+
+    const dateKey = new Date().toISOString().slice(0, 10);
+    const fileTag = scope === 'all' ? 'all-classes' : 'filtered';
+    XLSX.writeFile(workbook, `ggss-stipend-${fileTag}-${dateKey}.xlsx`);
+  };
+
+  const handleExportPdf = (scope: 'all' | 'current') => {
+    const rows = getScopeRows(scope);
+    if (!rows.length) {
+      setError('No records available for PDF export.');
+      return;
+    }
+
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    const title = scope === 'all' ? 'GGSS Stipend - All Classes' : 'GGSS Stipend - Current View';
+    const now = new Date().toLocaleString();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    doc.setFontSize(14);
+    doc.text(title, 36, 36);
+    doc.setFontSize(10);
+    doc.text(`Generated: ${now}`, 36, 54);
+
+    let y = 76;
+    doc.setFontSize(8);
+    doc.text(columns.map((column) => column.label).join(' | ').slice(0, 230), 36, y);
+    y += 14;
+
+    rows.forEach((record) => {
+      const line = columns.map((column) => String(record[column.key] ?? '')).join(' | ').slice(0, 230);
+      if (y > pageHeight - 26) {
+        doc.addPage();
+        y = 28;
+      }
+      doc.text(line, 36, y);
+      y += 12;
+    });
+
+    const dateKey = new Date().toISOString().slice(0, 10);
+    const fileTag = scope === 'all' ? 'all-classes' : 'filtered';
+    doc.save(`ggss-stipend-${fileTag}-${dateKey}.pdf`);
+  };
+
+  const handlePrint = (scope: 'all' | 'current') => {
+    const rows = getScopeRows(scope);
+    if (!rows.length) {
+      setError('No records available for print.');
+      return;
+    }
+
+    const popup = window.open('', '_blank', 'noopener,noreferrer,width=1200,height=800');
+    if (!popup) {
+      setError('Pop-up blocked. Please allow pop-ups to print records.');
+      return;
+    }
+
+    const title = scope === 'all' ? 'GGSS Stipend - All Classes' : 'GGSS Stipend - Current View';
+    const headerCells = columns.map((column) => `<th>${escapeHtml(column.label)}</th>`).join('');
+    const bodyRows = rows.map((record) => {
+      const cells = columns.map((column) => `<td>${escapeHtml(String(record[column.key] ?? '')) || '&mdash;'}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+
+    popup.document.write(`<!doctype html><html><head><title>${escapeHtml(title)}</title><style>
+      body { font-family: Arial, sans-serif; margin: 20px; color: #0f172a; }
+      h1 { margin: 0 0 8px; font-size: 20px; }
+      p { margin: 0 0 16px; font-size: 12px; color: #475569; }
+      table { width: 100%; border-collapse: collapse; font-size: 11px; }
+      th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; white-space: nowrap; }
+      thead { background: #f1f5f9; }
+    </style></head><body>
+      <h1>${escapeHtml(title)}</h1>
+      <p>Generated: ${escapeHtml(new Date().toLocaleString())}</p>
+      <table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>
+      <script>window.onload = function () { window.print(); };</script>
+    </body></html>`);
+    popup.document.close();
+  };
+
   if (authLoading) {
     return (
       <main className="min-h-screen bg-slate-100 px-4 py-8 sm:px-6 lg:px-8">
@@ -574,8 +765,8 @@ export default function GgssNishtarRoadStipendPage() {
 
         {!authenticated ? (
           <section className="mx-auto w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">Teacher Login</h2>
-            <p className="mt-1 text-sm text-slate-600">Select your class username and enter password.</p>
+            <h2 className="text-xl font-bold text-slate-900">Stipend Login</h2>
+            <p className="mt-1 text-sm text-slate-600">Select class or admin username and enter password.</p>
 
             <form onSubmit={handleLogin} className="mt-5 space-y-4">
               <div>
@@ -648,7 +839,9 @@ export default function GgssNishtarRoadStipendPage() {
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">Active Class Session</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+                    {isAdminSession ? 'Active Admin Session' : 'Active Class Session'}
+                  </p>
                   <h2 className="mt-1 text-xl font-bold text-slate-900">{className || username}</h2>
                   <p className="mt-1 text-xs text-slate-500">Sheet Tab: {sourceLabel || 'Students Stipend Record'}</p>
                 </div>
@@ -664,7 +857,11 @@ export default function GgssNishtarRoadStipendPage() {
 
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900">Add Student Record</h3>
-              <p className="mt-1 text-sm text-slate-600">Fill student stipend details and save to your class sheet rows.</p>
+              <p className="mt-1 text-sm text-slate-600">
+                {isAdminSession
+                  ? 'Admin can add records for any class by filling the class field.'
+                  : 'Fill student stipend details and save to your class sheet rows.'}
+              </p>
               {isOffline ? (
                 <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium">
                   <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-800">
@@ -679,7 +876,7 @@ export default function GgssNishtarRoadStipendPage() {
               <form onSubmit={handleAddRecord} className="mt-4 space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {mainColumns.map((column) => {
-                    const isClassField = column.key === classColumnKey;
+                    const isClassField = column.key === classColumnKey && !isAdminSession;
                     const fieldType = getFieldType(column.key, column.label, classColumnKey);
                     const attrs = getFieldAttrs(fieldType, column.key, column.label);
                     const fieldId = `add-${column.key}`;
@@ -747,15 +944,85 @@ export default function GgssNishtarRoadStipendPage() {
             </section>
 
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-slate-900">Class Records</h3>
-                <p className="text-xs font-semibold text-slate-500">Total: {records.length}</p>
+                <p className="text-xs font-semibold text-slate-500">Total: {filteredAndSortedRecords.length}</p>
               </div>
+
+              {isAdminSession ? (
+                <div className="mt-4 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 lg:grid-cols-3">
+                  <div>
+                    <label htmlFor="admin-class-filter" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">
+                      View Class
+                    </label>
+                    <select
+                      id="admin-class-filter"
+                      value={recordClassFilter}
+                      onChange={(event) => setRecordClassFilter(event.target.value)}
+                      className="min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-cyan-500"
+                    >
+                      <option value="ALL_CLASSES">All Classes (Merged)</option>
+                      {classOptions.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="admin-class-sort" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">
+                      Sort Classes
+                    </label>
+                    <select
+                      id="admin-class-sort"
+                      value={classSortOrder}
+                      onChange={(event) => setClassSortOrder(event.target.value as 'az' | 'za' | 'priority')}
+                      className="min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-cyan-500"
+                    >
+                      <option value="az">Class A to Z</option>
+                      <option value="za">Class Z to A</option>
+                      <option value="priority">Priority Class First</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="admin-class-priority" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">
+                      Priority Class
+                    </label>
+                    <select
+                      id="admin-class-priority"
+                      value={priorityClass}
+                      onChange={(event) => setPriorityClass(event.target.value)}
+                      disabled={classSortOrder !== 'priority'}
+                      className="min-h-[40px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-cyan-500 disabled:cursor-not-allowed disabled:bg-slate-100"
+                    >
+                      <option value="">Choose Class</option>
+                      {classOptions.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="lg:col-span-3">
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => handlePrint('all')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700">Print All</button>
+                      <button type="button" onClick={() => handlePrint('current')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700">Print Current</button>
+                      <button type="button" onClick={() => handleExportPdf('all')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700">PDF All</button>
+                      <button type="button" onClick={() => handleExportPdf('current')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700">PDF Current</button>
+                      <button type="button" onClick={() => handleExportExcel('all')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700">Excel All</button>
+                      <button type="button" onClick={() => handleExportExcel('current')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700">Excel Current</button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
                 <table className="min-w-full border-collapse text-left text-sm">
                   <thead className="bg-slate-100">
                     <tr>
+                      <th className="whitespace-nowrap border-b border-slate-200 px-3 py-2 text-xs font-bold uppercase text-slate-600">#</th>
+                      {showDualSerial ? (
+                        <th className="whitespace-nowrap border-b border-slate-200 px-3 py-2 text-xs font-bold uppercase text-slate-600">Class #</th>
+                      ) : null}
                       {columns.map((column) => (
                         <th key={column.key} className="whitespace-nowrap border-b border-slate-200 px-3 py-2 text-xs font-bold uppercase text-slate-600">
                           {column.label}
@@ -767,19 +1034,25 @@ export default function GgssNishtarRoadStipendPage() {
                   <tbody>
                     {loadingRecords ? (
                       <tr>
-                        <td colSpan={columns.length + 1} className="px-3 py-4 text-center text-slate-500">
+                        <td colSpan={columns.length + serialColumnCount + 1} className="px-3 py-4 text-center text-slate-500">
                           Loading class records...
                         </td>
                       </tr>
-                    ) : records.length === 0 ? (
+                    ) : filteredAndSortedRecords.length === 0 ? (
                       <tr>
-                        <td colSpan={columns.length + 1} className="px-3 py-4 text-center text-slate-500">
+                        <td colSpan={columns.length + serialColumnCount + 1} className="px-3 py-4 text-center text-slate-500">
                           No stipend records yet.
                         </td>
                       </tr>
                     ) : (
-                      records.map((record) => (
+                      filteredAndSortedRecords.map((record) => {
+                        const serialInfo = serialIndexByRowId[record.rowId] || { overall: 0, classWise: 0 };
+                        return (
                         <tr key={record.rowId} className="border-b border-slate-100">
+                          <td className="whitespace-nowrap px-3 py-2 text-slate-700">{serialInfo.overall}</td>
+                          {showDualSerial ? (
+                            <td className="whitespace-nowrap px-3 py-2 text-slate-700">{serialInfo.classWise}</td>
+                          ) : null}
                           {columns.map((column) => (
                             <td key={`${record.rowId}-${column.key}`} className="whitespace-nowrap px-3 py-2 text-slate-700">
                               {String(record[column.key] ?? '') || '—'}
@@ -804,7 +1077,8 @@ export default function GgssNishtarRoadStipendPage() {
                             </div>
                           </td>
                         </tr>
-                      ))
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -830,7 +1104,7 @@ export default function GgssNishtarRoadStipendPage() {
               <div className="mt-4 space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {mainColumns.map((column) => {
-                    const isClassField = column.key === classColumnKey;
+                    const isClassField = column.key === classColumnKey && !isAdminSession;
                     const fieldType = getFieldType(column.key, column.label, classColumnKey);
                     const attrs = getFieldAttrs(fieldType, column.key, column.label);
                     const fieldId = `edit-${column.key}`;

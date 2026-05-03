@@ -1,13 +1,92 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 function SignInPageContent() {
+  const router = useRouter();
+  const { status } = useSession();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const hostname = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
+  const isGgssDomain = hostname === 'ggssnishtarroad.themastersahib.com' || hostname.startsWith('ggssnishtarroad.');
+  const requestedCallback = searchParams?.get('callbackUrl') || '';
+
+  const toSafeSameHostPath = (input: string) => {
+    if (!input) {
+      return '/';
+    }
+
+    if (input.startsWith('/')) {
+      return input;
+    }
+
+    try {
+      const parsed = new URL(input);
+      if (parsed.hostname.toLowerCase() !== hostname) {
+        return '/';
+      }
+
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    } catch {
+      return '/';
+    }
+  };
+
+  const isUnsafeAuthPath = (path: string) => path.startsWith('/auth/signin') || path.startsWith('/api/auth');
+
+  const callbackUrl = (() => {
+    if (!requestedCallback) {
+      return isGgssDomain ? '/ggss-nishtar-road' : '/';
+    }
+
+    if (!isGgssDomain) {
+      const sameHostPath = toSafeSameHostPath(requestedCallback);
+      if (isUnsafeAuthPath(sameHostPath)) {
+        return '/';
+      }
+      return sameHostPath;
+    }
+
+    // Prevent cross-host callback loops on GGSS subdomain.
+    if (requestedCallback.startsWith('/ggss-nishtar-road')) {
+      return requestedCallback;
+    }
+
+    if (isUnsafeAuthPath(requestedCallback)) {
+      return '/ggss-nishtar-road';
+    }
+
+    const sameHostPath = toSafeSameHostPath(requestedCallback);
+    if (isUnsafeAuthPath(sameHostPath)) {
+      return '/ggss-nishtar-road';
+    }
+
+    if (sameHostPath.startsWith('/ggss-nishtar-road')) {
+      return sameHostPath;
+    }
+
+    return '/ggss-nishtar-road';
+  })();
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace(callbackUrl);
+    }
+  }, [status, router, callbackUrl]);
+
+  if (status === 'authenticated') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 px-4">
+        <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center text-slate-600 shadow-2xl">
+          Redirecting...
+        </div>
+      </div>
+    );
+  }
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);

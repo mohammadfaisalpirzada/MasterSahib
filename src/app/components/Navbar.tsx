@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { HiChevronDown, HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
 
@@ -40,15 +40,18 @@ export default function Navbar() {
   const [openDesktopDropdown, setOpenDesktopDropdown] = useState<string | null>(null);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
   const pathname = usePathname();
+  const safePathname = pathname || '/';
+  const router = useRouter();
+  const signInHref = `/auth/signin?callbackUrl=${encodeURIComponent(safePathname)}`;
   const { data: session, status } = useSession();
   const headerRef = useRef<HTMLElement | null>(null);
 
   const isActiveRoute = (href: string) => {
     if (href === '/') {
-      return pathname === '/';
+      return safePathname === '/';
     }
 
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return safePathname === href || safePathname.startsWith(`${href}/`);
   };
 
   const isItemActive = (item: NavItem) => {
@@ -71,7 +74,7 @@ export default function Navbar() {
     setIsMobileOpen(false);
     setOpenDesktopDropdown(null);
     setOpenMobileDropdown(null);
-  }, [pathname]);
+  }, [safePathname]);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -83,6 +86,18 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
+
+  const handleNavbarSignIn = () => {
+    const hostname = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
+    const isGgssDomain = hostname === 'ggssnishtarroad.themastersahib.com' || hostname.startsWith('ggssnishtarroad.');
+
+    if (isGgssDomain) {
+      router.push(signInHref);
+      return;
+    }
+
+    void signIn('google');
+  };
 
   return (
     <header
@@ -235,7 +250,7 @@ export default function Navbar() {
             </div>
           ) : (
             <button
-              onClick={() => signIn('google')}
+              onClick={handleNavbarSignIn}
               className="rounded-full border border-white bg-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/30"
             >
               Sign in
@@ -378,7 +393,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => {
-                    signIn('google');
+                    handleNavbarSignIn();
                     setIsMobileOpen(false);
                   }}
                   className="mt-3 w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20"

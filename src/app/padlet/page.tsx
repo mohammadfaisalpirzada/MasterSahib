@@ -30,11 +30,26 @@ const formatPinDate = (iso: string) => {
     return 'Just now';
   }
 
-  return date.toLocaleString(undefined, {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
+  // Use explicit locale and manual formatting to avoid hydration mismatch
+  const day = date.getUTCDate().toString().padStart(2, '0');
+  const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+  const hour = date.getUTCHours().toString().padStart(2, '0');
+  const minute = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${day} ${month} ${hour}:${minute}`;
+};
+
+const ensureUniquePadletPins = (items: PadletPin[]): PadletPin[] => {
+  const seenIds = new Map<string, number>();
+  return items.map((item) => {
+    const count = seenIds.get(item.id) || 0;
+    seenIds.set(item.id, count + 1);
+    if (count === 0) {
+      return item;
+    }
+    return {
+      ...item,
+      id: `${item.id}-${count}`,
+    };
   });
 };
 
@@ -58,7 +73,7 @@ export default function PadletPage() {
           throw new Error(data.message || 'Unable to load padlet ideas.');
         }
 
-        setPins(data.items);
+        setPins(ensureUniquePadletPins(data.items));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unable to load padlet ideas.');
       } finally {
@@ -116,9 +131,9 @@ export default function PadletPage() {
 
         {!loading && !error ? (
           <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredPins.slice(0, visibleCount).map((pin) => (
+            {filteredPins.slice(0, visibleCount).map((pin, index) => (
               <article
-                key={pin.id}
+                key={`${pin.id}-${pin.createdAt}-${index}`}
                 className={`relative rounded-2xl border p-4 shadow-sm transition hover:-translate-y-0.5 ${padletStyles[pin.styleIndex % padletStyles.length]}`}
               >
                 <span className="absolute -top-2 left-6 inline-flex h-4 w-4 rounded-full border border-white bg-slate-700 shadow" />
