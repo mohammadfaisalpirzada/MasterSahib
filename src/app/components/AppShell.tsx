@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { HiArrowLeft } from 'react-icons/hi';
 import Navbar from './Navbar';
 import NewsTicker from './NewsTicker';
@@ -14,11 +15,19 @@ export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const safePathname = pathname || '/';
   const isPeaceQuizRoute = safePathname.startsWith('/peace-quiz');
-  const showBackToGlobal = safePathname !== '/';
+  const isAuthSignInRoute = safePathname.startsWith('/auth/signin');
+
+  const [isGgssDomain, setIsGgssDomain] = useState(false);
+  useEffect(() => {
+    setIsGgssDomain(window.location.hostname.toLowerCase().includes('ggssnishtarroad'));
+  }, []);
+
+  const isGgssRoute = safePathname.startsWith('/ggss-nishtar-road') || safePathname.startsWith('/teachers-data') || safePathname.startsWith('/staff-data') || isGgssDomain;
+  const showBackToGlobal = safePathname !== '/' && !isGgssDomain && !isAuthSignInRoute;
 
   return (
     <>
-      {!isPeaceQuizRoute ? (
+      {!isPeaceQuizRoute && !isGgssRoute && !isAuthSignInRoute ? (
         <>
           <Navbar />
           <NewsTicker />

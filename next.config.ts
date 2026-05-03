@@ -10,38 +10,60 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    return [
-      {
-        source: '/',
-        has: [
-          {
-            type: 'host',
-            value: 'ggssnishtarroad.mastersahib.com',
-          },
-        ],
-        destination: '/ggss-root',
-      },
-      {
-        source: '/',
-        has: [
-          {
-            type: 'host',
-            value: 'ggssnishtarroad.themastersahib.com',
-          },
-        ],
-        destination: '/ggss-root',
-      },
-      {
-        source: '/',
-        has: [
-          {
-            type: 'host',
-            value: 'ggssnishtarroad.localhost',
-          },
-        ],
-        destination: '/ggss-root',
-      },
-    ];
+    return {
+      beforeFiles: [
+        {
+          source: '/',
+          has: [
+            {
+              type: 'host',
+              value: 'ggssnishtarroad.mastersahib.com',
+            },
+          ],
+          destination: '/ggss-nishtar-road',
+        },
+        {
+          source: '/',
+          has: [
+            {
+              type: 'host',
+              value: 'ggssnishtarroad.themastersahib.com',
+            },
+          ],
+          destination: '/ggss-nishtar-road',
+        },
+        {
+          source: '/',
+          has: [
+            {
+              type: 'host',
+              value: 'ggssnishtarroad.localhost',
+            },
+          ],
+          destination: '/ggss-nishtar-road',
+        },
+        {
+          source: '/',
+          has: [
+            {
+              type: 'host',
+              value: 'ggssnishtarroad.localhost:3000',
+            },
+          ],
+          destination: '/ggss-nishtar-road',
+        },
+        {
+          source: '/',
+          has: [
+            {
+              type: 'host',
+              value: 'ggssnishtarroad.localhost:3001',
+            },
+          ],
+          destination: '/ggss-nishtar-road',
+        },
+      ],
+    };
   },
 };
 

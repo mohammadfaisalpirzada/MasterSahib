@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import NextImage from 'next/image';
 import { IoEyeOffOutline, IoEyeOutline } from 'react-icons/io5';
 
 type ColumnMeta = {
@@ -30,6 +31,7 @@ type StaffApiResponse = {
 const MAX_PICTURE_UPLOAD_BYTES = 1024 * 1024; // 1MB
 const MAX_PICTURE_CELL_CHARS = 49000; // Keep below Google Sheets single-cell limit.
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const QUICK_LOGIN_KEY = 'ggss_staff_quick_login';
 
 const parseJsonResponse = async (response: Response) => {
   const contentType = response.headers.get('content-type') || '';
@@ -135,6 +137,9 @@ export default function StaffRecordPage() {
   const [pendingPicture, setPendingPicture] = useState<string | null>(null);
   const [pendingPictureMessage, setPendingPictureMessage] = useState('');
   const [pictureInputKey, setPictureInputKey] = useState(0);
+  const [quickLoginApplied, setQuickLoginApplied] = useState(false);
+  const quickLoginRunRef = useRef(false);
+  const [fromStaffPortal, setFromStaffPortal] = useState(false);
 
   const selectedDirectoryItem = useMemo(
     () => directoryItems.find((item) => item.rowId === selectedRowId) || null,
@@ -199,8 +204,10 @@ export default function StaffRecordPage() {
     setEditPidInput('');
   };
 
-  const verifyRecord = async (pid: string, enableEdit = false) => {
-    if (!selectedRowId) {
+  const verifyRecord = async (pid: string, enableEdit = false, rowIdOverride?: string) => {
+    const targetRowId = rowIdOverride || selectedRowId;
+
+    if (!targetRowId) {
       const errorMessage = 'Please select a staff member first.';
       if (enableEdit) {
         setEditMessage(errorMessage);
@@ -223,7 +230,7 @@ export default function StaffRecordPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          rowId: selectedRowId,
+          rowId: targetRowId,
           pid,
         }),
       });
@@ -380,6 +387,47 @@ export default function StaffRecordPage() {
     setPendingPictureMessage('');
     setPictureInputKey((k) => k + 1);
   };
+
+  const forceStaffLogout = useCallback((feedback?: string) => {
+    setVerified(false);
+    setSelectedRowId('');
+    resetRecordState();
+    setPendingPicture(null);
+    setPendingPictureMessage('');
+    setPictureInputKey((k) => k + 1);
+    if (feedback) {
+      setMessage(feedback);
+    }
+  }, []);
+
+  useEffect(() => {
+    const markSessionClosed = () => {
+      try {
+        sessionStorage.setItem('ggss_staff_portal_left_page', '1');
+      } catch {
+        // Ignore storage issues; state reset still occurs on pageshow if supported.
+      }
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // When page is restored from browser cache, clear previous verified state.
+      if (!event.persisted) {
+        return;
+      }
+
+      forceStaffLogout('Session ended. Please verify again.');
+    };
+
+    window.addEventListener('beforeunload', markSessionClosed);
+    window.addEventListener('pagehide', markSessionClosed);
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      window.removeEventListener('beforeunload', markSessionClosed);
+      window.removeEventListener('pagehide', markSessionClosed);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [forceStaffLogout]);
 
   const handlePrintRecord = () => {
     if (!verified || !columns.length) {
@@ -565,8 +613,80 @@ export default function StaffRecordPage() {
     printWindow.print();
   };
 
+  useEffect(() => {
+    if (quickLoginApplied || loading || verified || directoryItems.length === 0 || quickLoginRunRef.current) {
+      return;
+    }
+
+    quickLoginRunRef.current = true;
+
+    let preferredName = '';
+    let pidFromQuickLogin = '';
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      preferredName = (params.get('name') || '').trim();
+
+      const quickRaw = sessionStorage.getItem(QUICK_LOGIN_KEY);
+      if (quickRaw) {
+        const parsed = JSON.parse(quickRaw) as { name?: string; pid?: string; issuedAt?: number };
+        const isFresh = typeof parsed.issuedAt === 'number' && Date.now() - parsed.issuedAt < 2 * 60 * 1000;
+        if (isFresh && parsed.name && parsed.pid) {
+          preferredName = String(parsed.name).trim() || preferredName;
+          pidFromQuickLogin = String(parsed.pid).trim();
+        }
+        sessionStorage.removeItem(QUICK_LOGIN_KEY);
+      }
+    } catch {
+      // Ignore malformed storage/query and continue with manual flow.
+    }
+
+    const params2 = new URLSearchParams(window.location.search);
+    if (params2.get('from') === 'staff-portal') setFromStaffPortal(true);
+
+    if (!preferredName) {
+      setQuickLoginApplied(true);
+      return;
+    }
+
+    const matchedItem = directoryItems.find(
+      (item) => item.name.trim().toLowerCase() === preferredName.toLowerCase(),
+    );
+
+    if (!matchedItem) {
+      setQuickLoginApplied(true);
+      return;
+    }
+
+    setSelectedRowId(matchedItem.rowId);
+
+    if (pidFromQuickLogin) {
+      setPidInput(pidFromQuickLogin);
+      void verifyRecord(pidFromQuickLogin, false, matchedItem.rowId);
+    }
+
+    setQuickLoginApplied(true);
+  }, [directoryItems, loading, quickLoginApplied, verified]);
+
   return (
-    <div className="min-h-screen bg-slate-50 px-3 py-4 text-slate-900 sm:px-4 sm:py-6 lg:px-6 lg:py-10">
+    <div style={{ minHeight: '100vh', background: '#f0f4f8' }} className="text-slate-900">
+      {/* ── GGSS Header ── */}
+      <div style={{ background: 'linear-gradient(135deg, #1a3a6b 0%, #0f2347 100%)', borderBottom: '4px solid #c8a96e' }}>
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3">
+            <NextImage src="/images/ggssnishtar_mastersahib.png" alt="GGSS Logo" width={44} height={44} className="object-contain" style={{ width: '44px', height: '44px' }} />
+            <div>
+              <p style={{ color: '#c8a96e', fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em' }} className="uppercase">GGSS Nishtar Road, Hyderabad</p>
+              <p style={{ color: '#fff', fontWeight: 800, fontSize: '16px', lineHeight: 1.2 }}>Staff Data Portal</p>
+            </div>
+          </div>
+          {fromStaffPortal ? (
+            <a href="/ggss-nishtar-road/staff-portal" style={{ color: 'rgba(200,169,110,0.8)', fontSize: '12px', fontWeight: 600 }} className="transition hover:text-[#c8a96e]">← Back to Portal</a>
+          ) : null}
+        </div>
+      </div>
+
+      {/* ── Toast ── */}
       <div
         className={`pointer-events-none fixed right-4 top-4 z-50 transition-all duration-500 ease-out ${
           saveToastVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
@@ -582,22 +702,23 @@ export default function StaffRecordPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-3xl space-y-4 sm:space-y-6">
-        {/* Header */}
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6 md:p-8">
+      <div className="mx-auto max-w-3xl space-y-4 px-3 py-4 sm:space-y-6 sm:px-4 sm:py-6 lg:px-6 lg:py-8">
+        {/* Header card */}
+        <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dce3ec', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="p-4 sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">Staff Management Portal</p>
-              <h1 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">GGSS Nishtar Road Staff Data</h1>
+              <p style={{ color: '#1a3a6b', fontSize: '11px', fontWeight: 700, letterSpacing: '0.2em' }} className="uppercase">Staff Management Portal</p>
+              <h1 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl md:text-3xl" style={{ color: '#0f172a' }}>GGSS Nishtar Road Staff Data</h1>
               <p className="mt-1 text-xs text-slate-500">408070227</p>
             </div>
             {verified ? (
               <button
                 type="button"
-                onClick={handleBackToSearch}
-                className="shrink-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                onClick={fromStaffPortal ? () => { window.location.href = '/ggss-nishtar-road/staff-portal'; } : handleBackToSearch}
+                style={{ border: '1px solid #dce3ec', color: '#1a3a6b', borderRadius: '10px', padding: '6px 14px', fontSize: '12px', fontWeight: 600, background: '#fff', whiteSpace: 'nowrap' }}
+                className="shrink-0 transition hover:bg-slate-50"
               >
-                ← Change Staff
+                {fromStaffPortal ? '← Back to Portal' : '← Change Staff'}
               </button>
             ) : null}
           </div>
@@ -610,6 +731,11 @@ export default function StaffRecordPage() {
           <>
             {/* ── BEFORE VERIFICATION: Search panel ── */}
             {!verified ? (
+              fromStaffPortal && !quickLoginApplied ? (
+                <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200 text-center text-sm text-slate-500">
+                  Authenticating, please wait...
+                </div>
+              ) : (
               <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:rounded-3xl sm:p-6">
                 <h2 className="text-lg font-semibold sm:text-xl">Find Staff Record</h2>
                 <div className="mt-4 space-y-4 sm:mt-5">
@@ -682,6 +808,7 @@ export default function StaffRecordPage() {
                   ) : null}
                 </div>
               </section>
+              )
             ) : null}
 
             {/* ── AFTER VERIFICATION: Full staff record ── */}
@@ -883,6 +1010,11 @@ export default function StaffRecordPage() {
             ) : null}
           </>
         ) : null}
+      </div>
+
+      {/* ── Footer ── */}
+      <div style={{ borderTop: '1px solid #dce3ec', marginTop: '32px', padding: '20px 24px', textAlign: 'center' }}>
+        <p style={{ color: '#94a3b8', fontSize: '12px' }}>SEMIS Code: 408070227 · GGSS Nishtar Road, Hyderabad</p>
       </div>
     </div>
   );

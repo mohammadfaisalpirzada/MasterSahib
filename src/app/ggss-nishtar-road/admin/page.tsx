@@ -1,8 +1,9 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { IoEyeOffOutline, IoEyeOutline } from 'react-icons/io5';
+import { IoEyeOffOutline, IoEyeOutline, IoShieldCheckmarkOutline } from 'react-icons/io5';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 
@@ -1866,107 +1867,102 @@ export default function GgssAdminPage() {
   };
 
   if (authLoading) {
-    return <main className="min-h-screen bg-slate-50 px-4 py-10 text-slate-700">Checking admin session...</main>;
+    return (
+      <div style={{ background: '#f0f4f8', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#1a3a6b', fontSize: '15px', fontWeight: 600 }}>Checking admin session...</p>
+      </div>
+    );
   }
 
   if (!authenticated) {
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#cffafe_0%,#f8fafc_45%,#ecfeff_100%)] px-4 py-10 sm:px-6 lg:px-10">
-        <section className="mx-auto w-full max-w-xl rounded-3xl border border-cyan-100 bg-white/95 p-8 shadow-xl shadow-cyan-100/80">
-          <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">
-            GGSS Admin Access
-          </p>
-          <h1 className="mt-4 text-3xl font-black text-slate-900">Secure Admin Login</h1>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600">
-            Access the full Google Sheet, inspect individual staff records, and export selected columns to Excel.
-          </p>
+      <div style={{ background: '#f0f4f8', minHeight: '100vh' }}>
+        {/* Header */}
+        <div style={{ background: 'linear-gradient(135deg, #1a3a6b 0%, #0f2347 100%)', borderBottom: '4px solid #c8a96e' }}>
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <Image src="/images/ggssnishtar_mastersahib.png" alt="GGSS Logo" width={52} height={52} className="object-contain" style={{ width: '52px', height: '52px' }} />
+              <div>
+                <p style={{ color: '#c8a96e', fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em' }} className="uppercase">GGSS Nishtar Road, Hyderabad</p>
+                <p style={{ color: '#fff', fontWeight: 800, fontSize: '18px', lineHeight: 1.2 }}>Admin Panel</p>
+              </div>
+            </div>
+            <Link href="/ggss-nishtar-road" style={{ color: 'rgba(200,169,110,0.7)', fontSize: '13px', fontWeight: 500 }} className="transition hover:text-[#c8a96e]">← Back to School Website</Link>
+          </div>
+        </div>
 
-          <form onSubmit={handleLogin} className="mt-6 space-y-4">
-            <div>
-              <label htmlFor="ggss-admin-password" className="mb-2 block text-sm font-medium text-slate-700">
-                Admin Password
-              </label>
-              <div className="relative">
-                <input
-                  id="ggss-admin-password"
-                  type={showLoginPassword ? 'text' : 'password'}
-                  value={loginPassword}
-                  onChange={(event) => setLoginPassword(event.target.value)}
-                  placeholder="Enter admin password"
-                  className="min-h-[50px] w-full rounded-2xl border border-slate-300 px-4 py-3 pr-12 text-sm outline-none transition focus:border-cyan-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowLoginPassword((current) => !current)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-slate-300 p-1.5 text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
-                  aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showLoginPassword ? <IoEyeOffOutline size={16} /> : <IoEyeOutline size={16} />}
-                </button>
+        <div className="mx-auto flex max-w-md flex-col items-center px-4 py-12">
+          <div style={{ background: '#fff', borderRadius: '18px', boxShadow: '0 8px 40px rgba(26,58,107,0.12)', border: '1px solid #dce3ec', overflow: 'hidden', width: '100%' }}>
+            <div style={{ background: 'linear-gradient(135deg, #1a3a6b, #2356a4)', padding: '24px 28px 20px' }}>
+              <div className="flex items-center gap-3">
+                <div style={{ width: '42px', height: '42px', background: 'rgba(200,169,110,0.2)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IoShieldCheckmarkOutline size={22} color="#c8a96e" />
+                </div>
+                <div>
+                  <p style={{ color: '#c8a96e', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em' }} className="uppercase">Secure Access</p>
+                  <h1 style={{ color: '#fff', fontWeight: 800, fontSize: '20px' }}>Admin Login</h1>
+                </div>
               </div>
             </div>
 
-            {loginError ? <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{loginError}</p> : null}
+            <form onSubmit={handleLogin} className="flex flex-col gap-5 p-7">
+              <div>
+                <label htmlFor="ggss-admin-password" style={{ display: 'block', fontWeight: 600, color: '#1a3a6b', fontSize: '13px', marginBottom: '6px' }}>Admin Password</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="ggss-admin-password"
+                    type={showLoginPassword ? 'text' : 'password'}
+                    value={loginPassword}
+                    onChange={(event) => setLoginPassword(event.target.value)}
+                    placeholder="Enter admin password"
+                    style={{ width: '100%', border: '1.5px solid #dce3ec', borderRadius: '10px', padding: '11px 44px 11px 14px', fontSize: '14px', color: '#1a3a6b', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                  <button type="button" onClick={() => setShowLoginPassword((c) => !c)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }} tabIndex={-1} aria-label={showLoginPassword ? 'Hide password' : 'Show password'}>
+                    {showLoginPassword ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
+                  </button>
+                </div>
+              </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="submit"
-                disabled={isLoggingIn}
-                className="inline-flex min-h-[48px] items-center justify-center rounded-2xl bg-cyan-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-200 transition hover:-translate-y-0.5 hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
-              >
+              {loginError ? <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '13px', fontWeight: 500 }}>{loginError}</div> : null}
+
+              <button type="submit" disabled={isLoggingIn} style={{ background: isLoggingIn ? '#94a3b8' : 'linear-gradient(135deg, #1a3a6b, #2356a4)', color: '#fff', fontWeight: 700, borderRadius: '10px', padding: '13px', fontSize: '15px', border: 'none', cursor: isLoggingIn ? 'not-allowed' : 'pointer', boxShadow: '0 4px 14px rgba(26,58,107,0.25)' }}>
                 {isLoggingIn ? 'Logging in...' : 'Login as Admin'}
               </button>
-              <Link href="/ggss-nishtar-road" className="text-sm font-semibold text-slate-600 underline-offset-4 hover:text-cyan-700 hover:underline">
-                Back to portal
-              </Link>
-            </div>
-          </form>
-        </section>
-      </main>
+            </form>
+          </div>
+          <p style={{ color: '#94a3b8', fontSize: '12px', marginTop: '20px', textAlign: 'center' }}>SEMIS Code: 408070227 · GGSS Nishtar Road, Hyderabad</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 sm:px-6 lg:px-10">
-      <div className="mx-auto w-full max-w-7xl space-y-6">
-        <section className="rounded-3xl border border-cyan-100 bg-white p-6 shadow-xl shadow-cyan-100/60">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <main style={{ minHeight: '100vh', background: '#f0f4f8' }} className="px-4 pb-10 text-slate-900 sm:px-6 lg:px-10">
+      {/* ── Top Header Bar ── */}
+      <div style={{ background: 'linear-gradient(135deg, #1a3a6b 0%, #0f2347 100%)', borderBottom: '4px solid #c8a96e', marginLeft: '-16px', marginRight: '-16px' }} className="sm:-mx-6 lg:-mx-10 mb-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <Image src="/images/ggssnishtar_mastersahib.png" alt="GGSS Logo" width={52} height={52} className="object-contain" style={{ width: '52px', height: '52px' }} />
             <div>
-              <p className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">
-                GGSS NISHTAR ROAD (Admin Dashboard)
-              </p>
-              <h1 className="mt-4 text-3xl font-black text-slate-900 sm:text-4xl">Staff Sheet Control Center</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
-                View the complete staff sheet in table format, inspect any individual record, and export selected columns to Excel.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => void loadAdminData()}
-                className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
-              >
-                Refresh Data
-              </button>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
-              >
-                Logout
-              </button>
+              <p style={{ color: '#c8a96e', fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em' }} className="uppercase">GGSS Nishtar Road, Hyderabad</p>
+              <p style={{ color: '#fff', fontWeight: 800, fontSize: '18px', lineHeight: 1.2 }}>Admin Panel</p>
             </div>
           </div>
+          <div className="flex gap-3 flex-wrap">
+            <button type="button" onClick={() => void loadAdminData()} style={{ border: '1px solid rgba(200,169,110,0.5)', color: '#c8a96e', borderRadius: '8px', padding: '6px 14px', fontSize: '13px', fontWeight: 600, background: 'rgba(200,169,110,0.08)' }} className="transition hover:bg-[rgba(200,169,110,0.18)]">Refresh Data</button>
+            <button type="button" onClick={handleLogout} style={{ border: '1px solid rgba(200,169,110,0.5)', color: '#c8a96e', borderRadius: '8px', padding: '6px 14px', fontSize: '13px', fontWeight: 600, background: 'rgba(200,169,110,0.08)' }} className="transition hover:bg-[rgba(200,169,110,0.18)]">Logout</button>
+          </div>
+        </div>
+      </div>
 
-        </section>
+      <div className="mx-auto w-full max-w-7xl space-y-6">
 
         {dataError ? <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{dataError}</p> : null}
         {dataLoading ? <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">Loading admin data...</p> : null}
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dce3ec', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="p-5">
           <div className="flex flex-col gap-3">
-            <h2 className="text-xl font-bold text-slate-900">Admin Actions</h2>
+            <h2 style={{ color: '#1a3a6b', fontWeight: 800, fontSize: '20px' }}>Admin Actions</h2>
             <p className="text-sm text-slate-600">
               Use the action buttons below to open only the panel you need. All data panels remain hidden by default for a cleaner workspace.
             </p>
@@ -1975,7 +1971,8 @@ export default function GgssAdminPage() {
               <button
                 type="button"
                 onClick={() => void openView('individual')}
-                className={`rounded-2xl border px-5 py-4 text-left transition ${activeView === 'individual' ? 'border-cyan-500 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-cyan-300'}`}
+                style={activeView === 'individual' ? { border: '1.5px solid #1a3a6b', background: 'rgba(26,58,107,0.06)', color: '#1a3a6b' } : { border: '1px solid #dce3ec', background: '#f8fafc', color: '#1e293b' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:border-[#1a3a6b]/40"
               >
                 <p className="text-sm font-bold">Individual Staff View</p>
                 <p className="mt-1 text-xs text-slate-500">Search and inspect one staff record</p>
@@ -1984,7 +1981,8 @@ export default function GgssAdminPage() {
               <button
                 type="button"
                 onClick={() => void openView('table')}
-                className={`rounded-2xl border px-5 py-4 text-left transition ${activeView === 'table' ? 'border-cyan-500 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-cyan-300'}`}
+                style={activeView === 'table' ? { border: '1.5px solid #1a3a6b', background: 'rgba(26,58,107,0.06)', color: '#1a3a6b' } : { border: '1px solid #dce3ec', background: '#f8fafc', color: '#1e293b' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:border-[#1a3a6b]/40"
               >
                 <p className="text-sm font-bold">View Full Staff Table</p>
                 <p className="mt-1 text-xs text-slate-500">Open the complete spreadsheet table with compact view</p>
@@ -1993,7 +1991,8 @@ export default function GgssAdminPage() {
               <button
                 type="button"
                 onClick={() => void openView('export')}
-                className={`rounded-2xl border px-5 py-4 text-left transition ${activeView === 'export' ? 'border-cyan-500 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-cyan-300'}`}
+                style={activeView === 'export' ? { border: '1.5px solid #1a3a6b', background: 'rgba(26,58,107,0.06)', color: '#1a3a6b' } : { border: '1px solid #dce3ec', background: '#f8fafc', color: '#1e293b' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:border-[#1a3a6b]/40"
               >
                 <p className="text-sm font-bold">Export Selected Columns</p>
                 <p className="mt-1 text-xs text-slate-500">Choose only needed columns and download Excel</p>
@@ -2002,7 +2001,8 @@ export default function GgssAdminPage() {
               <button
                 type="button"
                 onClick={() => void openView('picture')}
-                className={`rounded-2xl border px-5 py-4 text-left transition ${activeView === 'picture' ? 'border-cyan-500 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-cyan-300'}`}
+                style={activeView === 'picture' ? { border: '1.5px solid #1a3a6b', background: 'rgba(26,58,107,0.06)', color: '#1a3a6b' } : { border: '1px solid #dce3ec', background: '#f8fafc', color: '#1e293b' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:border-[#1a3a6b]/40"
               >
                 <p className="text-sm font-bold">Staff Picture Upload</p>
                 <p className="mt-1 text-xs text-slate-500">Upload or change staff member photo</p>
@@ -2011,7 +2011,8 @@ export default function GgssAdminPage() {
               <button
                 type="button"
                 onClick={() => void openView('service-card')}
-                className={`rounded-2xl border px-5 py-4 text-left transition ${activeView === 'service-card' ? 'border-cyan-500 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-800 hover:border-cyan-300'}`}
+                style={activeView === 'service-card' ? { border: '1.5px solid #1a3a6b', background: 'rgba(26,58,107,0.06)', color: '#1a3a6b' } : { border: '1px solid #dce3ec', background: '#f8fafc', color: '#1e293b' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:border-[#1a3a6b]/40"
               >
                 <p className="text-sm font-bold">Service Card (Front/Back)</p>
                 <p className="mt-1 text-xs text-slate-500">Open service card panel for single, selected, or all print</p>
@@ -2020,7 +2021,8 @@ export default function GgssAdminPage() {
               <button
                 type="button"
                 onClick={openAddDialog}
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left text-slate-800 transition hover:border-cyan-300"
+                style={{ border: '1px solid #dce3ec', background: '#f8fafc', color: '#1e293b' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:border-[#1a3a6b]/40"
               >
                 <p className="text-sm font-bold">Add New Data</p>
                 <p className="mt-1 text-xs text-slate-500">Create a new staff row directly from admin panel</p>
@@ -2029,7 +2031,8 @@ export default function GgssAdminPage() {
               <button
                 type="button"
                 onClick={openAddColDialog}
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left text-slate-800 transition hover:border-purple-300"
+                style={{ border: '1px solid #dce3ec', background: '#f8fafc', color: '#1e293b' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:border-purple-300"
               >
                 <p className="text-sm font-bold">Add New Column</p>
                 <p className="mt-1 text-xs text-slate-500">Append a new column (e.g. DDO Code, Semiscode) to the sheet</p>
@@ -2037,10 +2040,11 @@ export default function GgssAdminPage() {
 
               <Link
                 href="/ggss-nishtar-road/admin/takeover"
-                className="rounded-2xl border border-teal-200 bg-teal-50 px-5 py-4 text-left text-teal-800 transition hover:border-teal-400 hover:bg-teal-100"
+                style={{ border: '1px solid #c8a96e', background: 'rgba(200,169,110,0.06)', color: '#1a3a6b' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:bg-[rgba(200,169,110,0.12)]"
               >
                 <p className="text-sm font-bold">School Takeover Inventory</p>
-                <p className="mt-1 text-xs text-teal-600">Create, preview, and download handover item list as PDF</p>
+                <p className="mt-1 text-xs" style={{ color: '#c8a96e' }}>Create, preview, and download handover item list as PDF</p>
               </Link>
             </div>
 
@@ -2049,7 +2053,8 @@ export default function GgssAdminPage() {
                 <button
                   type="button"
                   onClick={() => setActiveView(null)}
-                  className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
+                  style={{ border: '1px solid #dce3ec', color: '#1a3a6b', borderRadius: '10px', padding: '6px 16px', fontSize: '13px', fontWeight: 600, background: '#fff' }}
+                  className="transition hover:bg-slate-50"
                 >
                   Close Current Panel
                 </button>
@@ -2059,10 +2064,10 @@ export default function GgssAdminPage() {
         </section>
 
         {activeView === 'individual' ? (
-          <section id="admin-panel-individual" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section id="admin-panel-individual" style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dce3ec', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-slate-900">Individual Staff View</h2>
+                <h2 style={{ color: '#1a3a6b', fontWeight: 800, fontSize: '20px' }}>Individual Staff View</h2>
                 <p className="mt-1 text-sm text-slate-600">Select a staff member to view and manage details</p>
               </div>
               <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
@@ -2071,7 +2076,8 @@ export default function GgssAdminPage() {
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="Search name or S.No"
-                  className="min-h-[46px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 sm:w-56"
+                  style={{ border: '1.5px solid #dce3ec', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', outline: 'none', color: '#1a3a6b' }}
+                  className="min-h-[46px] w-full sm:w-56"
                 />
               </div>
             </div>
@@ -2082,7 +2088,8 @@ export default function GgssAdminPage() {
                 id="admin-staff-select"
                 value={selectedRowId}
                 onChange={(event) => handleSelectedStaffChange(event.target.value)}
-                className="min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500"
+                style={{ border: '1.5px solid #dce3ec', borderRadius: '10px', padding: '11px 14px', fontSize: '14px', outline: 'none', color: '#1a3a6b', background: '#fff', width: '100%' }}
+                className="min-h-[48px]"
               >
                 <option value="">Choose staff member...</option>
                 {filteredItems.map((item) => (
@@ -2102,7 +2109,7 @@ export default function GgssAdminPage() {
                 <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">Staff Name</p>
+                      <p style={{ color: '#1a3a6b', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em' }} className="uppercase">Staff Name</p>
                       <h3 className="mt-2 text-lg font-bold text-slate-900">{selectedItem?.name || 'Unknown'}</h3>
                       <p className="mt-1 text-xs text-slate-500">Row ID: {selectedRecord.rowId}{selectedItem?.sno ? ` | S.No: ${selectedItem.sno}` : ''}</p>
                     </div>
@@ -2119,7 +2126,8 @@ export default function GgssAdminPage() {
                         type="button"
                         onClick={() => void openView('service-card')}
                         disabled={!selectedRecord}
-                        className="rounded-xl bg-cyan-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+                        style={{ background: 'linear-gradient(135deg, #1a3a6b, #2356a4)' }}
+                        className="rounded-xl px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         Service Card Panel
                       </button>
@@ -2164,10 +2172,10 @@ export default function GgssAdminPage() {
         ) : null}
 
         {activeView === 'service-card' ? (
-          <section id="admin-panel-service-card" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section id="admin-panel-service-card" style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dce3ec', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-slate-900">Service Card Print Panel</h2>
+                <h2 style={{ color: '#1a3a6b', fontWeight: 800, fontSize: '20px' }}>Service Card Print Panel</h2>
                 <p className="mt-1 text-sm text-slate-600">Select one, multiple, or all staff records and print front/back on the same page.</p>
               </div>
               <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
@@ -2176,7 +2184,8 @@ export default function GgssAdminPage() {
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="Search name or S.No"
-                  className="min-h-[46px] w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 sm:w-56"
+                  style={{ border: '1.5px solid #dce3ec', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', outline: 'none', color: '#1a3a6b' }}
+                  className="min-h-[46px] w-full sm:w-56"
                 />
               </div>
             </div>
@@ -2187,7 +2196,8 @@ export default function GgssAdminPage() {
                 id="service-card-staff-select"
                 value={selectedRowId}
                 onChange={(event) => handleSelectedStaffChange(event.target.value)}
-                className="min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500"
+                style={{ border: '1.5px solid #dce3ec', borderRadius: '10px', padding: '11px 14px', fontSize: '14px', outline: 'none', color: '#1a3a6b', background: '#fff', width: '100%' }}
+                className="min-h-[48px]"
               >
                 <option value="">Choose staff member...</option>
                 {filteredItems.map((item) => (
@@ -2202,7 +2212,7 @@ export default function GgssAdminPage() {
               <div className="grid gap-4 xl:grid-cols-[minmax(220px,1fr)_minmax(300px,1.2fr)_auto] xl:items-center">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-slate-600">Current Selection</p>
-                  <h3 className="mt-2 text-lg font-bold text-slate-900">{selectedItem?.name || 'No staff selected'}</h3>
+                  <h3 style={{ color: '#1a3a6b' }} className="mt-2 text-lg font-bold">{selectedItem?.name || 'No staff selected'}</h3>
                   {selectedRecord ? (
                     <p className="mt-1 text-xs text-slate-500">Row ID: {selectedRecord.rowId}{selectedItem?.sno ? ` | S.No: ${selectedItem.sno}` : ''}</p>
                   ) : null}
@@ -2240,7 +2250,8 @@ export default function GgssAdminPage() {
                     type="button"
                     onClick={printServiceCard}
                     disabled={!selectedRecord}
-                    className="rounded-xl bg-cyan-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{ background: 'linear-gradient(135deg, #1a3a6b, #2356a4)' }}
+                    className="rounded-xl px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Print Selected Staff
                   </button>
@@ -2274,7 +2285,8 @@ export default function GgssAdminPage() {
                   <button
                     type="button"
                     onClick={selectAllFilteredServiceCards}
-                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
+                    style={{ border: '1px solid #dce3ec', color: '#1a3a6b' }}
+                    className="rounded-lg px-3 py-1.5 text-xs font-semibold transition hover:bg-slate-50"
                   >
                     Select All (Filtered)
                   </button>
@@ -2295,13 +2307,13 @@ export default function GgssAdminPage() {
                     return (
                       <label
                         key={`service-card-panel-${item.rowId}`}
-                        className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-2.5 py-2 text-xs text-slate-700 hover:border-cyan-300"
+                        className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-2.5 py-2 text-xs text-slate-700 hover:border-[#1a3a6b]/30"
                       >
                         <input
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleServiceCardSelection(item.rowId)}
-                          className="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
+                          className="h-4 w-4 rounded border-slate-300"
                         />
                         <span className="truncate">{item.sno ? `${item.sno} - ` : ''}{item.name}</span>
                       </label>
@@ -2495,7 +2507,8 @@ export default function GgssAdminPage() {
                         { id: Date.now(), label: '', value: '' },
                       ])
                     }
-                    className="rounded-lg bg-cyan-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-cyan-700"
+                    className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90"
+                    style={{ background: 'linear-gradient(135deg, #1a3a6b, #2356a4)' }}
                   >
                     + Add Column
                   </button>
@@ -2521,7 +2534,7 @@ export default function GgssAdminPage() {
                           }
                           placeholder="Column name (e.g. DDO Code)"
                           aria-label="New column name"
-                          className="min-h-[36px] w-1/2 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none transition focus:border-cyan-500"
+                  className="min-h-[36px] w-1/2 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none transition"
                         />
                         <input
                           type="text"
@@ -2535,7 +2548,7 @@ export default function GgssAdminPage() {
                           }
                           placeholder="Value"
                           aria-label="New column value"
-                          className="min-h-[36px] flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none transition focus:border-cyan-500"
+                  className="min-h-[36px] flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none transition"
                         />
                         <button
                           type="button"
@@ -2564,7 +2577,7 @@ export default function GgssAdminPage() {
                     value={addPassword}
                     onChange={(event) => setAddPassword(event.target.value)}
                     placeholder="Enter admin password"
-                    className="min-h-[44px] w-full rounded-lg border border-slate-300 px-4 py-2 pr-12 text-sm outline-none transition focus:border-cyan-500"
+                className="min-h-[44px] w-full rounded-lg border border-slate-300 px-4 py-2 pr-12 text-sm outline-none transition"
                   />
                   <button
                     type="button"
@@ -2586,7 +2599,8 @@ export default function GgssAdminPage() {
                   type="button"
                   onClick={saveNewStaffRecord}
                   disabled={addingRecord}
-                  className="flex-1 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  style={{ background: 'linear-gradient(135deg, #1a3a6b, #2356a4)' }}
+                  className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {addingRecord ? 'Adding...' : 'Add Data'}
                 </button>
@@ -2778,61 +2792,31 @@ export default function GgssAdminPage() {
         ) : null}
 
         {activeView === 'export' ? (
-          <section id="admin-panel-export" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section id="admin-panel-export" style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dce3ec', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Excel Export</h2>
+                <h2 style={{ color: '#1a3a6b', fontWeight: 800, fontSize: '20px' }}>Excel Export</h2>
                 <p className="mt-1 text-sm text-slate-600">
                   Select only the columns you want to export. The downloaded file will include all staff rows.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={selectAllColumns}
-                  className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
-                >
-                  Select All
-                </button>
-                <button
-                  type="button"
-                  onClick={deselectAllColumns}
-                  className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-700"
-                >
-                  Deselect All
-                </button>
-                <button
-                  type="button"
-                  onClick={exportSelectedColumns}
-                  className="rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                >
-                  Export Excel
-                </button>
-                <button
-                  type="button"
-                  onClick={exportSelectedColumnsPdf}
-                  className="rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700"
-                >
-                  Export PDF
-                </button>
-                <button
-                  type="button"
-                  onClick={printSelectedColumns}
-                  className="rounded-2xl bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
-                >
-                  Print
-                </button>
+                <button type="button" onClick={selectAllColumns} style={{ border: '1px solid #dce3ec', color: '#1a3a6b', borderRadius: '10px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: '#fff' }} className="transition hover:bg-slate-50">Select All</button>
+                <button type="button" onClick={deselectAllColumns} style={{ border: '1px solid #dce3ec', color: '#1a3a6b', borderRadius: '10px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: '#fff' }} className="transition hover:bg-slate-50">Deselect All</button>
+                <button type="button" onClick={exportSelectedColumns} className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">Export Excel</button>
+                <button type="button" onClick={exportSelectedColumnsPdf} className="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">Export PDF</button>
+                <button type="button" onClick={printSelectedColumns} className="rounded-xl bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">Print</button>
               </div>
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {columns.map((column) => (
-                <label key={column.key} className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
+                <label key={column.key} style={{ border: '1px solid #dce3ec', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', fontSize: '13px', color: '#1a3a6b' }}>
                   <input
                     type="checkbox"
                     checked={selectedColumnKeys.includes(column.key)}
                     onChange={() => toggleColumn(column.key)}
-                    className="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
+                    className="h-4 w-4 rounded border-slate-300"
                   />
                   <span>{column.label}</span>
                 </label>
@@ -2844,9 +2828,9 @@ export default function GgssAdminPage() {
         ) : null}
 
         {activeView === 'table' ? (
-          <section id="admin-panel-table" className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section id="admin-panel-table" style={{ background: '#fff', borderRadius: '16px', border: '1px solid #dce3ec', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="p-5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-xl font-bold text-slate-900">All Staff Data</h2>
+              <h2 style={{ color: '#1a3a6b', fontWeight: 800, fontSize: '20px' }}>All Staff Data</h2>
               <p className="text-sm text-slate-500">Compact spreadsheet view with horizontal and vertical scrolling</p>
             </div>
 

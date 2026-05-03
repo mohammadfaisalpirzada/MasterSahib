@@ -1,10 +1,10 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
+import { signIn, signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 function SignInPageContent() {
   const router = useRouter();
@@ -13,6 +13,8 @@ function SignInPageContent() {
   const hostname = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
   const isGgssDomain = hostname === 'ggssnishtarroad.themastersahib.com' || hostname.startsWith('ggssnishtarroad.');
   const requestedCallback = searchParams?.get('callbackUrl') || '';
+  const globalSignout = searchParams?.get('globalSignout') === '1';
+  const requestedReturnTo = searchParams?.get('returnTo') || '';
 
   const toSafeSameHostPath = (input: string) => {
     if (!input) {
@@ -71,12 +73,57 @@ function SignInPageContent() {
     return '/ggss-nishtar-road';
   })();
   const [isLoading, setIsLoading] = useState(false);
+  const globalSignOutStartedRef = useRef(false);
+  const isGgssCallback = callbackUrl.startsWith('/ggss-nishtar-road');
+
+  const returnToAfterGlobalSignout = (() => {
+    if (!requestedReturnTo) {
+      return '/';
+    }
+
+    if (requestedReturnTo.startsWith('/')) {
+      return requestedReturnTo;
+    }
+
+    try {
+      const parsed = new URL(requestedReturnTo);
+      const safeHost = parsed.hostname.toLowerCase();
+      const isAllowedHost =
+        safeHost === 'themastersahib.com' ||
+        safeHost === 'www.themastersahib.com' ||
+        safeHost === 'ggssnishtarroad.themastersahib.com' ||
+        safeHost.endsWith('.themastersahib.com') ||
+        safeHost === 'localhost' ||
+        safeHost === '127.0.0.1';
+
+      if (!isAllowedHost) {
+        return '/';
+      }
+
+      return parsed.toString();
+    } catch {
+      return '/';
+    }
+  })();
 
   useEffect(() => {
     if (status === 'authenticated') {
       router.replace(callbackUrl);
     }
   }, [status, router, callbackUrl]);
+
+  useEffect(() => {
+    if (!globalSignout || globalSignOutStartedRef.current) {
+      return;
+    }
+
+    globalSignOutStartedRef.current = true;
+    setIsLoading(true);
+
+    void signOut({ redirect: false }).finally(() => {
+      window.location.href = returnToAfterGlobalSignout;
+    });
+  }, [globalSignout, returnToAfterGlobalSignout]);
 
   if (status === 'authenticated') {
     return (
@@ -91,7 +138,7 @@ function SignInPageContent() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn('google', { callbackUrl });
+      await signIn('google', { callbackUrl }, { prompt: 'select_account' });
     } finally {
       setIsLoading(false);
     }
@@ -101,14 +148,22 @@ function SignInPageContent() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 px-4">
       <div className="w-full max-w-md space-y-8 rounded-3xl bg-white p-8 shadow-2xl">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-900">The Master Sahib</h1>
-          <p className="mt-2 text-sm text-slate-600">Sign in to your account to continue</p>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {globalSignout ? 'Signing You Out' : isGgssCallback ? 'GGSS Nishtar Road' : 'The Master Sahib'}
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            {globalSignout
+              ? 'Please wait while we clear your main account session.'
+              : isGgssCallback
+                ? 'Secure Google sign-in required for staff portal access'
+                : 'Sign in to your account to continue'}
+          </p>
         </div>
 
         <div className="space-y-4">
           <button
             onClick={handleGoogleSignIn}
-            disabled={isLoading}
+            disabled={isLoading || globalSignout}
             className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-slate-200 bg-white px-4 py-3 font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -129,7 +184,7 @@ function SignInPageContent() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            {isLoading ? 'Signing in...' : 'Sign in with Google'}
+            {globalSignout ? 'Signing out...' : isLoading ? 'Signing in...' : 'Sign in with Google'}
           </button>
         </div>
 
