@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
             value: 'ggssnishtarroad.mastersahib.com',
           },
         ],
-        destination: '/ggss-subdomain-landing',
+        destination: '/ggss-root',
       },
       {
         source: '/',
@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
             value: 'ggssnishtarroad.themastersahib.com',
           },
         ],
-        destination: '/ggss-subdomain-landing',
+        destination: '/ggss-root',
       },
       {
         source: '/',
@@ -39,7 +39,7 @@ const nextConfig: NextConfig = {
             value: 'ggssnishtarroad.localhost',
           },
         ],
-        destination: '/ggss-subdomain-landing',
+        destination: '/ggss-root',
       },
     ];
   },
