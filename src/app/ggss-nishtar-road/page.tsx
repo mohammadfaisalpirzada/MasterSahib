@@ -27,10 +27,11 @@ type FacultyItem = {
 const fallbackSlides = ['/images/nishtarroad_hero_section_image.jpg'];
 
 const eligibility = [
-  { icon: '📋', title: 'Admission Classes',      desc: 'Admissions are open from ECE to IX only. School runs from ECE to X.' },
-  { icon: '📄', title: 'Required Documents',  desc: 'B-Form / CNIC copy, last class result card, vaccination certificate, 2 passport photos.' },
-  { icon: '🏫', title: 'Admission Process',   desc: 'Visit the school office on any working day. Office hours: 8:00 AM - 1:00 PM.' },
-  { icon: '✅', title: 'Eligibility',          desc: 'Only female students. Residence in Karachi preferred. Priority to local area residents.' },
+  { icon: '🌅', title: 'School Shifts',        desc: 'Morning Shift: Girls (ECE–X) | Afternoon Shift: Boys (ECE–X)' },
+  { icon: '📋', title: 'Admission Classes',    desc: 'Admissions are open from ECE to IX only. School runs from ECE to X.' },
+  { icon: '📄', title: 'Required Documents',   desc: 'B-Form / CNIC copy, last class result card, vaccination certificate, 2 passport photos.' },
+  { icon: '🏫', title: 'Admission Process',    desc: 'Visit the school office on any working day. Office hours: 8:00 AM - 1:00 PM.' },
+  { icon: '✅', title: 'Eligibility',           desc: 'Open to both boys and girls. Residence in Karachi preferred. Priority to local area residents.' },
 ];
 
 const navLinks = [
@@ -381,7 +382,7 @@ export default function GgssNishtarRoadLandingPage() {
           <div className="mb-8 text-center">
             <p style={{ color: '#c8a96e', fontSize: '12px', letterSpacing: '0.2em', fontWeight: 600 }} className="uppercase mb-2">Enroll Today</p>
             <h2 style={{ color: '#fff', fontWeight: 900, fontSize: '28px' }}>Admissions Information</h2>
-            <p style={{ color: '#a8c4e0', fontSize: '14px', marginTop: '8px' }}>No admission fee, no tuition fee, and no exam fee - Session 2026-27</p>
+            <p style={{ color: '#a8c4e0', fontSize: '14px', marginTop: '8px' }}>Free government education for boys &amp; girls — Morning Shift (Girls) | Afternoon Shift (Boys) — Session 2026-27</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {eligibility.map((e) => (
