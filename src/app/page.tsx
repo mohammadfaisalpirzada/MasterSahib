@@ -5,7 +5,22 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 
-const quickCards = [
+type QuickCard = {
+  title: string;
+  description: string;
+  href: string;
+  accent: string;
+  newUntil?: string;
+};
+
+const quickCards: QuickCard[] = [
+  {
+    title: 'Upgraded Salary Calculator',
+    description: 'Calculate upgraded salary details with a dedicated school utility.',
+    href: '/upgraded-salary-calculator',
+    accent: 'from-violet-500 to-purple-600',
+    newUntil: '2026-06-24T23:59:59+05:00',
+  },
   {
     title: 'Quiz',
     description: 'Attempt quiz modules, check progress, and practice daily.',
@@ -128,6 +143,11 @@ export default function HomePage() {
   const [ideaError, setIdeaError] = useState('');
   const [padletLoading, setPadletLoading] = useState(true);
   const [padletSaving, setPadletSaving] = useState(false);
+  const [currentTime, setCurrentTime] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentTime(Date.now());
+  }, []);
 
   useEffect(() => {
     const countVisit = async () => {
@@ -299,22 +319,31 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {quickCards.map((card) => (
-            <Link
-              key={card.title}
-              href={card.href}
-              className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-            >
-              <div className={`mb-4 h-1.5 w-16 rounded-full bg-gradient-to-r ${card.accent}`} />
-              <h3 className="text-xl font-bold text-slate-900">{card.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{card.description}</p>
-              <div className="mt-5 inline-flex items-center text-sm font-semibold text-slate-900">
-                Open
-                <span className="ml-2 transition group-hover:translate-x-1">→</span>
-              </div>
-            </Link>
-          ))}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {quickCards.map((card) => {
+            const showNewBadge = currentTime !== null && card.newUntil && currentTime <= new Date(card.newUntil).getTime();
+
+            return (
+              <Link
+                key={card.title}
+                href={card.href}
+                className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+              >
+                {showNewBadge ? (
+                  <span className="absolute right-4 top-4 rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-sm animate-pulse">
+                    New
+                  </span>
+                ) : null}
+                <div className={`mb-4 h-1.5 w-16 rounded-full bg-gradient-to-r ${card.accent}`} />
+                <h3 className="pr-12 text-xl font-bold text-slate-900">{card.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{card.description}</p>
+                <div className="mt-5 inline-flex items-center text-sm font-semibold text-slate-900">
+                  Open
+                  <span className="ml-2 transition group-hover:translate-x-1">→</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
