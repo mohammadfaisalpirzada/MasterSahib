@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         {
+          source: '/portal',
+          destination: '/ggss-nishtar-road/staff-portal',
+        },
+        {
           source: '/',
           has: [
             {

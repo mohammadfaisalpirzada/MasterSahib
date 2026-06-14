@@ -168,9 +168,6 @@ export default function GgssNishtarRoadLandingPage() {
           <p style={{ color: '#c8a96e', fontSize: '11px' }} className="font-semibold sm:hidden">
             Govt of Sindh · Education Dept
           </p>
-          <Link href="/ggss-nishtar-road/staff-portal" style={{ background: 'linear-gradient(135deg, #c8a96e, #e8c98e)', color: '#1a3a6b', fontWeight: 700, borderRadius: '8px', padding: '5px 14px', fontSize: '12px', whiteSpace: 'nowrap' }} className="transition hover:opacity-90">
-            Staff Portal
-          </Link>
         </div>
       </div>
 

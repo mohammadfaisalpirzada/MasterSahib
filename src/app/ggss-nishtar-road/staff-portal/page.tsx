@@ -15,6 +15,11 @@ const DASHBOARD_ITEMS = [
     variant: 'primary' as const,
   },
   {
+    title: 'Students Record 26-27',
+    href: '/ggss-nishtar-road/staff-portal/student-record',
+    variant: 'secondary' as const,
+  },
+  {
     title: 'Admin Dashboard',
     href: '/ggss-nishtar-road/admin',
     variant: 'secondary' as const,
@@ -166,49 +171,48 @@ export default function StaffPortalPage() {
         </div>
       </div>
 
-      <section className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 py-8 md:grid-cols-2 md:py-10">
-        <div className="rounded-3xl border p-5 sm:p-7" style={{ background: '#fff', borderColor: '#dce3ec', boxShadow: '0 8px 30px rgba(26,58,107,0.08)' }}>
+      <section className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 py-8 md:grid-cols-[1.9fr_1fr] md:py-10">
+        <div className="rounded-[2rem] border p-6 sm:p-8" style={{ background: '#ffffffee', borderColor: '#e2e8f0', boxShadow: '0 20px 60px rgba(15, 23, 42, 0.08)' }}>
           <p className="inline-flex rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.2em]" style={{ color: '#0d7494', borderColor: '#9ed8ea', background: '#e6f7fc' }}>
             School Staff Portal
           </p>
 
-          <h1 className="mt-4 text-4xl font-extrabold leading-[1.03]" style={{ color: '#0f1737' }}>
-            GGSS Nishtar Road
-            <br />
-            <span style={{ color: '#167896' }}>Staff Management Portal</span>
-          </h1>
+          <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
+                GGSS Nishtar Road
+                <br />
+                <span className="text-sky-600">Staff Management Portal</span>
+              </h1>
+              <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
+                Manage staff records in one place. View profiles, update entries, and maintain stipend records with secure access.
+              </p>
+            </div>
 
-          <p className="mt-5 max-w-xl text-[20px] leading-relaxed" style={{ color: '#475569' }}>
-            Manage staff records in one place. View profiles, update entries, and maintain stipend records with controlled access.
-          </p>
+            <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+              Signed in as <span className="font-bold text-slate-900">{firstName}</span>
+            </div>
+          </div>
 
-          <p className="mt-5 text-xs font-bold uppercase tracking-[0.12em]" style={{ color: '#64748b' }}>
-            Centralized records for GGSS Nishtar Road
-          </p>
-
-          <p className="mt-2 text-xs" style={{ color: '#64748b' }}>
-            Logged in as {firstName}
-          </p>
-
-          <div className="mt-6 flex flex-wrap items-center gap-3">
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {DASHBOARD_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-2xl border px-6 py-3 text-base font-bold transition"
+                className="group rounded-3xl border px-5 py-4 text-sm font-semibold transition"
                 style={
                   item.variant === 'primary'
                     ? {
                         color: '#fff',
                         borderColor: '#0c8fb0',
                         background: 'linear-gradient(135deg, #0a9cc0, #0d7ca3)',
-                        boxShadow: '0 8px 18px rgba(13,124,163,0.24)',
+                        boxShadow: '0 16px 32px rgba(13,124,163,0.18)',
                       }
                     : item.variant === 'secondary'
                       ? {
-                          color: '#1e293b',
+                          color: '#0f172a',
                           borderColor: '#cbd5e1',
-                          background: '#fff',
+                          background: '#ffffff',
                         }
                       : {
                           color: '#065f46',
@@ -217,17 +221,19 @@ export default function StaffPortalPage() {
                         }
                 }
               >
-                {item.title}
+                <span className="block text-xs uppercase tracking-[0.18em] opacity-80">Open</span>
+                <span className="mt-2 block text-base leading-tight">{item.title}</span>
               </Link>
             ))}
           </div>
 
-          <p className="mt-6 text-sm font-semibold" style={{ color: '#64748b' }}>
-            Semis Code: 408070227
-          </p>
+          <div className="mt-8 flex flex-wrap gap-3 text-sm text-slate-500">
+            <span className="rounded-full border border-slate-200 px-4 py-2 bg-slate-50">Centralized records for GGSS Nishtar Road</span>
+            <span className="rounded-full border border-slate-200 px-4 py-2 bg-slate-50">Semis Code: 408070227</span>
+          </div>
         </div>
 
-        <div className="rounded-3xl border p-3 sm:p-4" style={{ background: '#fff', borderColor: '#dce3ec', boxShadow: '0 8px 30px rgba(26,58,107,0.08)' }}>
+        <div className="rounded-[2rem] border p-5 sm:p-6" style={{ background: '#ffffff', borderColor: '#e2e8f0', boxShadow: '0 20px 60px rgba(15, 23, 42, 0.08)' }}>
           <div
             className="relative h-[280px] overflow-hidden rounded-3xl sm:h-[360px]"
             style={{ background: 'linear-gradient(135deg, #0f2347 2%, #1e3a8a 42%, #0ea5a5 100%)' }}

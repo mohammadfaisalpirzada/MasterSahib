@@ -88,13 +88,13 @@ export default function UpgradedSalaryCalculatorPage() {
     const adhoc2025TenPercent = (adhoc2025Amount / 12) * 10;
     const effectiveAdhoc = adhoc2025TenPercent + adhoc2022Fixed;
     const basicSevenPercent = oldBasic * 0.07;
-    const methodOneIncrement = basicSevenPercent + effectiveAdhoc;
-    const methodOneUpgradedBasic = oldBasic + methodOneIncrement;
+    const methodOneIncrement = basicSevenPercent;
+    const methodOneUpgradedBasic = oldBasic + methodOneIncrement + effectiveAdhoc;
 
     const basicWithAdhoc = oldBasic + effectiveAdhoc;
     const basicWithAdhocSevenPercent = basicWithAdhoc * 0.07;
-    const methodTwoIncrement = basicWithAdhocSevenPercent + effectiveAdhoc;
-    const methodTwoUpgradedBasic = oldBasic + methodTwoIncrement;
+    const methodTwoIncrement = basicWithAdhocSevenPercent;
+    const methodTwoUpgradedBasic = basicWithAdhoc + methodTwoIncrement;
 
     const conveyanceIncrease = oldConveyance * 0.5;
     const upgradedConveyance = oldConveyance + conveyanceIncrease;
@@ -134,7 +134,7 @@ export default function UpgradedSalaryCalculatorPage() {
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-violet-600">Salary Utility</p>
           <h1 className="mt-3 text-3xl font-black text-slate-950 sm:text-4xl">
-            Master Sahib Upgraded Salary Calculator 2026
+            Master Sahib Upgraded Salary Calculator 2026 (estimated)
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             January 2026 se June 2026 tak kisi bhi month ki basic pay enter karein. Calculator dono methods ka
@@ -152,6 +152,13 @@ export default function UpgradedSalaryCalculatorPage() {
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="mb-5 rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3">
+            <p className="text-sm font-bold text-violet-950">Add your current salary data</p>
+            <p className="mt-1 text-sm leading-6 text-violet-800">
+              Apni current basic pay, Adhoc Relief 2025, Adhoc 2022 fixed amount, aur conveyance allowance enter karein.
+            </p>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <label className="space-y-2">
               <span className="text-sm font-bold text-slate-800">Salary Month</span>
@@ -206,7 +213,7 @@ export default function UpgradedSalaryCalculatorPage() {
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-violet-600">
                   Method 1
                 </p>
-                <h2 className="mt-2 text-2xl font-black text-slate-950">Basic 7% + Effective Adhoc</h2>
+                <h2 className="mt-2 text-2xl font-black text-slate-950">Basic 7% Before Adhoc</h2>
               </div>
               <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-black text-violet-700">
                 {salaryMonth}
@@ -218,12 +225,12 @@ export default function UpgradedSalaryCalculatorPage() {
               <ResultRow label="7% of Basic Pay" value={result.basicSevenPercent} />
               <ResultRow label="Converted Adhoc 10% (2025)" value={result.adhoc2025TenPercent} />
               <ResultRow label="Adhoc 15% Fixed (2022)" value={result.adhoc2022Fixed} />
-              <ResultRow label="Effective Adhoc Added" value={result.effectiveAdhoc} />
+              <ResultRow label="Effective Adhoc Reference" value={result.effectiveAdhoc} />
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-violet-700">Basic Increment</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-violet-700">7% Increment</p>
                 <p className="mt-1 text-2xl font-black text-violet-950">
                   Rs. {formatCurrency(result.methodOneIncrement)}
                 </p>
@@ -269,7 +276,7 @@ export default function UpgradedSalaryCalculatorPage() {
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Basic Increment</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">7% Increment</p>
                 <p className="mt-1 text-2xl font-black text-indigo-950">
                   Rs. {formatCurrency(result.methodTwoIncrement)}
                 </p>
