@@ -24,11 +24,12 @@ export default function AppShell({ children }: AppShellProps) {
   }, []);
 
   const isGgssRoute = safePathname.startsWith('/ggss-nishtar-road') || safePathname.startsWith('/teachers-data') || safePathname.startsWith('/staff-data') || isGgssDomain;
-  const showBackToGlobal = safePathname !== '/' && !isGgssDomain && !isAuthSignInRoute;
+  const isKidsLearningRoute = ['/teaching-tools/fun-learning'].some((p) => safePathname === p);
+  const showBackToGlobal = safePathname !== '/' && !isGgssDomain && !isAuthSignInRoute && !isKidsLearningRoute;
 
   return (
     <>
-      {!isPeaceQuizRoute && !isGgssRoute && !isAuthSignInRoute ? (
+      {!isPeaceQuizRoute && !isGgssRoute && !isAuthSignInRoute && !isKidsLearningRoute ? (
         <>
           <Navbar />
           <NewsTicker />

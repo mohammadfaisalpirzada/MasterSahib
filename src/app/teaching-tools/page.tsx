@@ -6,7 +6,6 @@ import { HiOutlineSearch, HiOutlineChatAlt2 } from 'react-icons/hi';
 
 import {
   latestEducationalResourceTitles,
-  sortedEducationalResourceItems,
   educationalResourceItems,
 } from '@/app/lib/educationalResources';
 
@@ -27,32 +26,35 @@ const ageLabels: Record<string, string> = {
   parents: 'Parents',
 };
 
-const shuffle = <T,>(arr: T[]): T[] => {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-};
+type SortMode = 'newest' | 'oldest' | 'az' | 'za';
 
 const recentlyAddedTitles = new Set(latestEducationalResourceTitles);
+
+function sortItems(items: typeof educationalResourceItems, mode: SortMode) {
+  const copy = [...items];
+  switch (mode) {
+    case 'newest': return copy.sort((a, b) => (b.addedOn || '').localeCompare(a.addedOn || ''));
+    case 'oldest': return copy.sort((a, b) => (a.addedOn || '').localeCompare(b.addedOn || ''));
+    case 'az': return copy.sort((a, b) => a.title.localeCompare(b.title));
+    case 'za': return copy.sort((a, b) => b.title.localeCompare(a.title));
+  }
+}
 
 export default function TeachingToolsPage() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
-  const [shuffled, setShuffled] = useState(() => shuffle(sortedEducationalResourceItems));
+  const [sortMode, setSortMode] = useState<SortMode>('newest');
 
-  const handleShuffle = () => setShuffled(shuffle(sortedEducationalResourceItems));
+  const sorted = useMemo(() => sortItems(educationalResourceItems, sortMode), [sortMode]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    return shuffled.filter((tool) => {
+    return sorted.filter((tool) => {
       const matchSearch = !q || tool.title.toLowerCase().includes(q) || tool.description.toLowerCase().includes(q);
       const matchCat = category === 'all' || tool.category === category;
       return matchSearch && matchCat;
     });
-  }, [search, category, shuffled]);
+  }, [search, category, sorted]);
 
   const catCounts = useMemo(() => {
     const counts: Record<string, number> = { all: educationalResourceItems.length };
@@ -74,13 +76,20 @@ export default function TeachingToolsPage() {
 
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/" className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">← Back to Home</Link>
-            <button type="button" onClick={handleShuffle} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">🔀 Shuffle</button>
           </div>
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
               <HiOutlineSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search resources..." className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-indigo-500" />
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {([{ v: 'newest', l: '🆕 Newest' }, { v: 'oldest', l: '📅 Oldest' }, { v: 'az', l: 'A-Z' }, { v: 'za', l: 'Z-A' }] as const).map(({ v, l }) => (
+                <button key={v} onClick={() => setSortMode(v)}
+                  className={`rounded-xl px-3 py-2 text-xs font-bold transition ${sortMode === v ? 'bg-indigo-700 text-white shadow-sm' : 'border border-slate-300 bg-white text-slate-600 hover:bg-slate-50'}`}>
+                  {l}
+                </button>
+              ))}
             </div>
           </div>
 
