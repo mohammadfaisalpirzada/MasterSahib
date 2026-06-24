@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { HiArrowLeft } from 'react-icons/hi';
 import Navbar from './Navbar';
 import NewsTicker from './NewsTicker';
+import WelcomeBanner from './WelcomeBanner';
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -31,6 +32,7 @@ export default function AppShell({ children }: AppShellProps) {
         <>
           <Navbar />
           <NewsTicker />
+          <WelcomeBanner />
         </>
       ) : null}
       {children}

@@ -5,6 +5,8 @@ export type EducationalResourceItem = {
   href?: string;
   showInNavbar?: boolean;
   addedOn?: string;
+  ageGroup?: '3-6' | '7-12' | '13-16' | 'general' | 'parents';
+  category?: 'kids' | 'teachers' | 'parents';
 };
 
 export const educationalResourceItems: EducationalResourceItem[] = [
@@ -14,6 +16,8 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     status: 'Ready',
     href: '/teaching-tools/students-age-calculator',
     addedOn: '2025-12-15',
+    ageGroup: 'general',
+    category: 'teachers',
   },
   {
     title: 'Lesson Plan',
@@ -21,6 +25,8 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     status: 'Ready',
     href: '/teaching-tools/automatic-lesson-plan',
     addedOn: '2026-01-10',
+    ageGroup: 'general',
+    category: 'teachers',
   },
   {
     title: 'Academic Calendar Generator',
@@ -28,6 +34,8 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     status: 'Ready',
     href: '/teaching-tools/academic-calendar',
     addedOn: '2026-02-12',
+    ageGroup: 'general',
+    category: 'teachers',
   },
   {
     title: 'Timetable Generator',
@@ -35,6 +43,8 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     status: 'Ready',
     href: '/teaching-tools/timetable-generator',
     addedOn: '2026-03-18',
+    ageGroup: 'general',
+    category: 'teachers',
   },
   {
     title: 'O Level Career Selection Helper',
@@ -42,6 +52,8 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     status: 'Ready',
     href: '/teaching-tools/o-level-career-selection',
     addedOn: '2026-04-20',
+    ageGroup: '13-16',
+    category: 'kids',
   },
   {
     title: 'Resume Builder',
@@ -49,6 +61,8 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     status: 'Ready',
     href: '/resume-builder',
     addedOn: '2026-02-01',
+    ageGroup: 'general',
+    category: 'teachers',
   },
   {
     title: 'Attendance Tracker',
@@ -57,6 +71,8 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     href: '#',
     showInNavbar: false,
     addedOn: '2025-11-20',
+    ageGroup: 'general',
+    category: 'teachers',
   },
   {
     title: 'Worksheet Builder',
@@ -64,6 +80,8 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     status: 'Coming Soon',
     showInNavbar: false,
     addedOn: '2025-11-01',
+    ageGroup: 'general',
+    category: 'teachers',
   },
   {
     title: 'Class Routine Board',
@@ -71,6 +89,158 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     status: 'Coming Soon',
     showInNavbar: false,
     addedOn: '2025-10-15',
+    ageGroup: 'general',
+    category: 'teachers',
+  },
+  {
+    title: 'Daily Exit Ticket',
+    description: 'Students write one thing they learned before leaving class. Builds reflection habit.',
+    status: 'Ready',
+    href: '/teaching-tools/exit-ticket',
+    addedOn: '2026-06-23',
+    ageGroup: '7-12',
+    category: 'teachers',
+  },
+  {
+    title: 'Typing Practice Tutor',
+    description: 'Improve typing speed & accuracy across multiple levels with streaks, WPM tracking, and history.',
+    status: 'Ready',
+    href: '/teaching-tools/typing-tutor',
+    addedOn: '2026-06-23',
+    ageGroup: '7-12',
+    category: 'kids',
+  },
+  {
+    title: 'Art Gallery Wall',
+    description: 'Showcase student drawings and creative work in a beautiful gallery wall with likes.',
+    status: 'Ready',
+    href: '/teaching-tools/art-gallery',
+    addedOn: '2026-06-23',
+    ageGroup: '3-6',
+    category: 'kids',
+  },
+  {
+    title: 'Weekly Assembly Plan Maker',
+    description: 'Create A4-printable assembly plans with topics, speakers, duties, and customizable school details.',
+    status: 'Ready',
+    href: '/teaching-tools/assembly-planner',
+    addedOn: '2026-06-23',
+    ageGroup: 'general',
+    category: 'teachers',
+  },
+  {
+    title: 'ABC Alphabet Learning',
+    description: 'Interactive alphabet tracing and phonics for early learners. Fun animations and sounds.',
+    status: 'Ready',
+    href: '#',
+    addedOn: '2026-06-24',
+    ageGroup: '3-6',
+    category: 'kids',
+  },
+  {
+    title: 'Number Fun (1-100)',
+    description: 'Learn numbers 1 to 100 with colorful counting games and simple math activities.',
+    status: 'Ready',
+    href: '#',
+    addedOn: '2026-06-24',
+    ageGroup: '3-6',
+    category: 'kids',
+  },
+  {
+    title: 'Science Experiments (Ages 7-12)',
+    description: 'Simple hands-on science experiments using household items. Learn while doing.',
+    status: 'Ready',
+    href: '#',
+    addedOn: '2026-06-24',
+    ageGroup: '7-12',
+    category: 'kids',
+  },
+  {
+    title: 'Creative Writing Prompts',
+    description: 'Fun story starters and writing challenges for young writers to explore their imagination.',
+    status: 'Ready',
+    href: '#',
+    addedOn: '2026-06-24',
+    ageGroup: '7-12',
+    category: 'kids',
+  },
+  {
+    title: 'English Grammar Basics',
+    description: 'Parts of speech, tenses, and sentence structure explained simply with examples.',
+    status: 'Ready',
+    href: '#',
+    addedOn: '2026-06-24',
+    ageGroup: '13-16',
+    category: 'kids',
+  },
+  {
+    title: 'Mathematics Practice (Secondary)',
+    description: 'Algebra, geometry, and trigonometry practice sets with step-by-step solutions.',
+    status: 'Ready',
+    href: '#',
+    addedOn: '2026-06-24',
+    ageGroup: '13-16',
+    category: 'kids',
+  },
+  {
+    title: 'Urdu Reading for Kids',
+    description: 'Simple Urdu stories and poems for early readers with audio pronunciation guide.',
+    status: 'Ready',
+    href: '#',
+    addedOn: '2026-06-24',
+    ageGroup: '3-6',
+    category: 'kids',
+  },
+  {
+    title: 'Shape Learning Fun',
+    description: 'Learn shapes like circle, heart, star, triangle, cone, oval, rectangle, square with colors and sounds. Ages 3-4.',
+    status: 'Ready',
+    href: '/teaching-tools/shape-learning',
+    addedOn: '2026-06-24',
+    ageGroup: '3-6',
+    category: 'kids',
+  },
+  {
+    title: 'Spelling Bee Fun',
+    description: 'Listen to the word, type the spelling. Includes vocal pronunciation for early learners.',
+    status: 'Ready',
+    href: '/teaching-tools/spelling-bee',
+    addedOn: '2026-06-24',
+    ageGroup: '3-6',
+    category: 'kids',
+  },
+  {
+    title: 'Fill in the Blanks',
+    description: 'Complete sentences by filling missing words. Fun way to learn vocabulary and grammar.',
+    status: 'Ready',
+    href: '/teaching-tools/fill-blanks',
+    addedOn: '2026-06-24',
+    ageGroup: '3-6',
+    category: 'kids',
+  },
+  {
+    title: 'Parent Dashboard',
+    description: 'Track your child\'s progress across all learning activities and see daily reports.',
+    status: 'Coming Soon',
+    addedOn: '2026-06-24',
+    ageGroup: 'parents',
+    category: 'parents',
+  },
+  {
+    title: 'Activity Suggestions (Ages 3-6)',
+    description: 'Fun home activities for parents to do with their young children. No screens needed.',
+    status: 'Coming Soon',
+    addedOn: '2026-06-24',
+    ageGroup: 'parents',
+    category: 'parents',
+  },
+  {
+    title: 'Progress Report Generator',
+    description: 'Generate a personalized progress report for your child across all subjects.',
+    status: 'Coming Soon',
+    addedOn: '2026-06-24',
+    ageGroup: 'parents',
+    category: 'parents',
   },
 ];
 
@@ -81,7 +251,6 @@ const getAddedTimestamp = (item: EducationalResourceItem, index: number) => {
       return parsed;
     }
   }
-
   return index;
 };
 

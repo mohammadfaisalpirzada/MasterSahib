@@ -249,9 +249,9 @@ export default function HomePage() {
         <div className="absolute -left-20 top-[-120px] h-64 w-64 rounded-full bg-cyan-200/50 blur-3xl" />
         <div className="absolute right-[-90px] top-14 h-72 w-72 rounded-full bg-orange-200/45 blur-3xl" />
 
-        <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-16 sm:px-6 lg:px-8 lg:pt-20">
+        <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-10 sm:px-6 lg:px-8 lg:pt-14">
           <div className="grid gap-8 lg:grid-cols-[1.15fr,0.85fr] lg:items-end">
-            <div className="space-y-6">
+            <div className="space-y-5 text-center sm:text-left">
               <p className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
                 Master Sahib Workspace
               </p>
@@ -263,7 +263,7 @@ export default function HomePage() {
                 </span>
               </h1>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
                 <Link
                   href="/peace-quiz"
                   className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-700"
@@ -276,18 +276,12 @@ export default function HomePage() {
                 >
                   Open Educational Resources
                 </Link>
-                {!session ? (
-                  <button
-                    onClick={handleGoogleSignIn}
-                    className="rounded-2xl border border-cyan-300 bg-cyan-50 px-5 py-3 text-sm font-semibold text-cyan-700 transition hover:-translate-y-0.5 hover:bg-cyan-100"
-                  >
-                    Sign in with Google
-                  </button>
-                ) : (
-                  <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700">
-                    Welcome, {session.user?.name || 'User'}!
-                  </div>
-                )}
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="rounded-2xl border border-cyan-300 bg-cyan-50 px-5 py-3 text-sm font-semibold text-cyan-700 transition hover:-translate-y-0.5 hover:bg-cyan-100"
+                >
+                  Sign in with Google
+                </button>
               </div>
             </div>
 
