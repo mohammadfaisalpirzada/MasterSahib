@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { HiLockClosed } from 'react-icons/hi';
 
 type ShapeDef = { id: string; label: string; color: string; bg: string; render: (size: number) => React.ReactNode };
@@ -56,8 +56,9 @@ const shapes: ShapeDef[] = [
   { id: 'square', label: 'Square', color: '#10b981', bg: '#ecfdf5', render: (s: number) => <div className="rounded-md bg-emerald-400" style={{ width: s, height: s }} /> },
 ];
 
-const COLORS = ['Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Pink', 'Brown'];
-const colorHex: Record<string, string> = { Red: '#ef4444', Blue: '#3b82f6', Green: '#22c55e', Yellow: '#eab308', Orange: '#f97316', Purple: '#a855f7', Pink: '#ec4899', Brown: '#a16207' };
+const COLORS = ['Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Pink', 'White', 'Black', 'Brown', 'Purple'];
+const colors = COLORS.map((c) => ({ name: c }));
+const colorHex: Record<string, string> = { Red: '#ef4444', Blue: '#3b82f6', Green: '#22c55e', Yellow: '#eab308', Orange: '#f97316', Pink: '#ec4899', White: '#f8fafc', Black: '#1e293b', Brown: '#a16207', Purple: '#a855f7' };
 
 const shape3dList: Shape3DDef[] = [
   { id: 'cube', label: 'Cube', color: '#f97316', bg: '#fff7ed', render: (s: number) => <svg width={s} height={s} viewBox="0 0 100 100" fill="none"><polygon points="50,10 90,30 50,50 10,30" fill="#fb923c" stroke="#9a3412" strokeWidth="1.5"/><polygon points="50,50 90,30 90,70 50,90" fill="#f97316" stroke="#9a3412" strokeWidth="1.5"/><polygon points="10,30 50,50 50,90 10,70" fill="#fdba74" stroke="#9a3412" strokeWidth="1.5"/></svg> },
@@ -109,6 +110,54 @@ const TY_WORDS: NumWord[] = [
   { num: 60, word: 'sixty' }, { num: 70, word: 'seventy' }, { num: 80, word: 'eighty' }, { num: 90, word: 'ninety' },
 ];
 
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+type WordItem = { name: string; emoji: string };
+const VEGETABLES: WordItem[] = [
+  { name: 'Potato', emoji: '🥔' }, { name: 'Tomato', emoji: '🍅' }, { name: 'Cabbage', emoji: '🥬' },
+  { name: 'Radish', emoji: '🥕' }, { name: 'Carrot', emoji: '🥕' }, { name: 'Ladyfinger', emoji: '🥒' },
+  { name: 'Peas', emoji: '🫛' }, { name: 'Onion', emoji: '🧅' }, { name: 'Brinjal', emoji: '🍆' },
+  { name: 'Cucumber', emoji: '🥒' },
+];
+const GARDEN: WordItem[] = [
+  { name: 'Grass', emoji: '🌿' }, { name: 'Flower', emoji: '🌸' }, { name: 'Tree', emoji: '🌳' },
+  { name: 'Bench', emoji: '🪑' }, { name: 'Butterfly', emoji: '🦋' }, { name: 'Bird', emoji: '🐦' },
+  { name: 'Swing', emoji: '🎠' }, { name: 'Stone', emoji: '🪨' }, { name: 'Fence', emoji: '🪵' },
+  { name: 'Fountain', emoji: '⛲' },
+];
+const KITCHEN: WordItem[] = [
+  { name: 'Stove', emoji: '🔥' }, { name: 'Oven', emoji: '🔥' }, { name: 'Plate', emoji: '🍽️' },
+  { name: 'Pan', emoji: '🍳' }, { name: 'Bowl', emoji: '🥣' }, { name: 'Glass', emoji: '🥛' },
+  { name: 'Jug', emoji: '🏺' }, { name: 'Spoon', emoji: '🥄' }, { name: 'Fork', emoji: '🍴' },
+  { name: 'Kettle', emoji: '🫖' },
+];
+
+const OCCUPATIONS: WordItem[] = [
+  { name: 'Doctor', emoji: '👨‍⚕️' }, { name: 'Teacher', emoji: '👩‍🏫' }, { name: 'Pilot', emoji: '👨‍✈️' },
+  { name: 'Carpenter', emoji: '🪚' }, { name: 'Farmer', emoji: '👨‍🌾' }, { name: 'Tailor', emoji: '🧵' },
+  { name: 'Barber', emoji: '💈' }, { name: 'Butcher', emoji: '🥩' }, { name: 'Cobbler', emoji: '👞' },
+  { name: 'Policeman', emoji: '👮' },
+];
+
+const BIRDS: WordItem[] = [
+  { name: 'Parrot', emoji: '🦜' }, { name: 'Peacock', emoji: '🦚' }, { name: 'Sparrow', emoji: '🐦' },
+  { name: 'Ostrich', emoji: '🦩' }, { name: 'Robin', emoji: '🐦' }, { name: 'Crow', emoji: '🐦‍⬛' },
+  { name: 'Penguin', emoji: '🐧' }, { name: 'Eagle', emoji: '🦅' }, { name: 'Pigeon', emoji: '🕊️' },
+  { name: 'Owl', emoji: '🦉' },
+];
+
+const ANIMALS: WordItem[] = [
+  { name: 'Cat', emoji: '🐱' }, { name: 'Dog', emoji: '🐶' }, { name: 'Lion', emoji: '🦁' },
+  { name: 'Tiger', emoji: '🐯' }, { name: 'Fox', emoji: '🦊' }, { name: 'Monkey', emoji: '🐵' },
+  { name: 'Horse', emoji: '🐴' }, { name: 'Donkey', emoji: '🫏' }, { name: 'Leopard', emoji: '🐆' },
+  { name: 'Markhor', emoji: '🐐' }, { name: 'Elephant', emoji: '🐘' }, { name: 'Kangaroo', emoji: '🦘' },
+  { name: 'Rabbit', emoji: '🐰' }, { name: 'Giraffe', emoji: '🦒' }, { name: 'Zebra', emoji: '🦓' },
+  { name: 'Cow', emoji: '🐄' }, { name: 'Sheep', emoji: '🐑' }, { name: 'Goat', emoji: '🐐' },
+  { name: 'Crocodile', emoji: '🐊' }, { name: 'Camel', emoji: '🐪' },
+];
+
+const MONTHS_LIST = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
 function getQuizOptions(list: NumWord[], correctIdx: number): NumWord[] {
   const opts = [list[correctIdx]];
   const pool = list.filter((_, i) => i !== correctIdx);
@@ -120,10 +169,27 @@ function getQuizOptions(list: NumWord[], correctIdx: number): NumWord[] {
 
 const quizDelay = (label: string) => 800 + label.length * 860 + 1000 + 1500;
 
-type Tab = 'shapes' | 'colors' | 'sight' | 'd3' | 'spell' | 'blanks' | 'teen' | 'ty';
+type Tab = 'shapes' | 'colors' | 'sight' | 'd3' | 'spell' | 'blanks' | 'teen' | 'ty' | 'days' | 'veg' | 'garden' | 'kitchen' | 'occupation' | 'birds' | 'animals' | 'months';
 
 export default function FunLearningPage() {
   const [tab, setTab] = useState<Tab>('shapes');
+  const [showAllTabs, setShowAllTabs] = useState(false);
+  const [mobileTabs, setMobileTabs] = useState<Tab[]>([]);
+
+  useEffect(() => {
+    const others = tabs.filter(t => t.key !== tab).map(t => t.key);
+    const shuffled = others.sort(() => Math.random() - 0.5);
+    const pick = [tab, ...shuffled.slice(0, 2)];
+    setMobileTabs(pick.sort(() => Math.random() - 0.5));
+  }, [tab]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get('tab') as Tab | null;
+    if (t && ['shapes','colors','sight','d3','teen','ty','spell','blanks','days','veg','garden','kitchen','occupation','birds','animals','months'].includes(t)) {
+      setTab(t);
+    }
+  }, []);
 
   // Parent lock state
   const [parentLocked, setParentLocked] = useState(false);
@@ -133,6 +199,7 @@ export default function FunLearningPage() {
   const [mathNum2, setMathNum2] = useState(0);
   const [mathOp, setMathOp] = useState<'plus' | 'minus'>('plus');
   const [mathAnswer, setMathAnswer] = useState(0);
+  const lockedAtRef = useRef(0);
 
   const generateMathProblem = useCallback(() => {
     const a = Math.floor(Math.random() * 10) + 2;
@@ -143,6 +210,7 @@ export default function FunLearningPage() {
   }, []);
 
   const handleParentLock = useCallback(() => {
+    lockedAtRef.current = Date.now();
     generateMathProblem();
     setParentLocked(true);
     setParentUnlockInput('');
@@ -151,6 +219,7 @@ export default function FunLearningPage() {
   }, [generateMathProblem]);
 
   const handleParentUnlock = useCallback(() => {
+    if (Date.now() - lockedAtRef.current < 500) return;
     if (parentUnlockInput === String(mathAnswer)) {
       setParentLocked(false);
       setParentUnlockInput('');
@@ -174,12 +243,6 @@ export default function FunLearningPage() {
     return () => window.removeEventListener('popstate', handler);
   }, [parentLocked]);
 
-  useEffect(() => {
-    let wakeLock: any = null;
-    (async () => { try { if ('wakeLock' in navigator) wakeLock = await (navigator as any).wakeLock.request('screen'); } catch {} })();
-    return () => { wakeLock?.release(); };
-  }, []);
-
   // 2D Shapes state
   const [shapeSub, setShapeSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
   const [shapeIdx, setShapeIdx] = useState(() => Math.floor(Math.random() * shapes.length));
@@ -195,8 +258,10 @@ export default function FunLearningPage() {
   const [sMemoIdx, setSMemoIdx] = useState(0);
   const [sMemoRunning, setSMemoRunning] = useState(false);
   const [sMemoLocked, setSMemoLocked] = useState(false);
+  const [sMemoPaused, setSMemoPaused] = useState(false);
 
   // Colors state
+  const [colorSub, setColorSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
   const [colorIdx, setColorIdx] = useState(0);
   const [colorQuiz, setColorQuiz] = useState(false);
   const [currentColor, setCurrentColor] = useState('');
@@ -204,6 +269,15 @@ export default function FunLearningPage() {
   const [colorTotal, setColorTotal] = useState(0);
   const [colorAnswered, setColorAnswered] = useState(false);
   const [colorCorrect, setColorCorrect] = useState(false);
+  const [colorFibResult, setColorFibResult] = useState<'correct' | 'wrong' | null>(null);
+  const [colorFibInput, setColorFibInput] = useState('');
+  const [colorMemoRunning, setColorMemoRunning] = useState(false);
+  const [colorMemoLocked, setColorMemoLocked] = useState(false);
+  const [colorMemoPaused, setColorMemoPaused] = useState(false);
+  const [colorMemoRepeat, setColorMemoRepeat] = useState(3);
+  const [colorMemoLoop, setColorMemoLoop] = useState(true);
+  const [colorMemoCount, setColorMemoCount] = useState(0);
+  const [colorMemoIdx, setColorMemoIdx] = useState(0);
 
   // Sight Words state
   const [sightIdx, setSightIdx] = useState(() => Math.floor(Math.random() * SIGHT_WORDS.length));
@@ -229,6 +303,7 @@ export default function FunLearningPage() {
   const [d3MemoIdx, setD3MemoIdx] = useState(0);
   const [d3MemoRunning, setD3MemoRunning] = useState(false);
   const [d3MemoLocked, setD3MemoLocked] = useState(false);
+  const [d3MemoPaused, setD3MemoPaused] = useState(false);
 
   // Spelling Bee state
   const [spellIdx, setSpellIdx] = useState(() => Math.floor(Math.random() * SPELL_WORDS.length));
@@ -264,6 +339,7 @@ export default function FunLearningPage() {
   const [teenMemoIdx, setTeenMemoIdx] = useState(0);
   const [teenMemoRunning, setTeenMemoRunning] = useState(false);
   const [teenMemoLocked, setTeenMemoLocked] = useState(false);
+  const [teenMemoPaused, setTeenMemoPaused] = useState(false);
 
   // Ty Words state
   const [tyMode, setTyMode] = useState<'quiz' | 'learn' | 'fib'>('quiz');
@@ -281,8 +357,173 @@ export default function FunLearningPage() {
   const [tyMemoIdx, setTyMemoIdx] = useState(0);
   const [tyMemoRunning, setTyMemoRunning] = useState(false);
   const [tyMemoLocked, setTyMemoLocked] = useState(false);
+  const [tyMemoPaused, setTyMemoPaused] = useState(false);
+
+  // Days state
+  const [daysSub, setDaysSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [daysIdx, setDaysIdx] = useState(0);
+  const [daysQuiz, setDaysQuiz] = useState(false);
+  const [daysAnswered, setDaysAnswered] = useState(false);
+  const [daysCorrect, setDaysCorrect] = useState(false);
+  const [daysScore, setDaysScore] = useState(0);
+  const [daysTotal, setDaysTotal] = useState(0);
+  const [dMemoRunning, setDMemoRunning] = useState(false);
+  const [dMemoLocked, setDMemoLocked] = useState(false);
+  const [dMemoPaused, setDMemoPaused] = useState(false);
+  const [dMemoCount, setDMemoCount] = useState(0);
+  const [dMemoRepeat, setDMemoRepeat] = useState(1);
+  const [dMemoLoop, setDMemoLoop] = useState(false);
+  const [dMemoIdx, setDMemoIdx] = useState(0);
+  const [dIntroDone, setDIntroDone] = useState(false);
+  const [daysFibResult, setDaysFibResult] = useState<'correct' | 'wrong' | null>(null);
+  const [daysFibInput, setDaysFibInput] = useState('');
+
+  // Vegetables state
+  const [vegSub, setVegSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [vegIdx, setVegIdx] = useState(0);
+  const [vegQuiz, setVegQuiz] = useState(false);
+  const [vegAnswered, setVegAnswered] = useState(false);
+  const [vegCorrect, setVegCorrect] = useState(false);
+  const [vegScore, setVegScore] = useState(0);
+  const [vegTotal, setVegTotal] = useState(0);
+  const [vMemoRunning, setVMemoRunning] = useState(false);
+  const [vMemoLocked, setVMemoLocked] = useState(false);
+  const [vMemoPaused, setVMemoPaused] = useState(false);
+  const [vMemoCount, setVMemoCount] = useState(0);
+  const [vMemoRepeat, setVMemoRepeat] = useState(1);
+  const [vMemoLoop, setVMemoLoop] = useState(false);
+  const [vMemoIdx, setVMemoIdx] = useState(0);
+  const [vegFibResult, setVegFibResult] = useState<'correct' | 'wrong' | null>(null);
+  const [vegFibInput, setVegFibInput] = useState('');
+
+  // Garden state
+  const [gardenSub, setGardenSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [gardenIdx, setGardenIdx] = useState(0);
+  const [gardenQuiz, setGardenQuiz] = useState(false);
+  const [gardenAnswered, setGardenAnswered] = useState(false);
+  const [gardenCorrect, setGardenCorrect] = useState(false);
+  const [gardenScore, setGardenScore] = useState(0);
+  const [gardenTotal, setGardenTotal] = useState(0);
+  const [gMemoRunning, setGMemoRunning] = useState(false);
+  const [gMemoLocked, setGMemoLocked] = useState(false);
+  const [gMemoPaused, setGMemoPaused] = useState(false);
+  const [gMemoCount, setGMemoCount] = useState(0);
+  const [gMemoRepeat, setGMemoRepeat] = useState(1);
+  const [gMemoLoop, setGMemoLoop] = useState(false);
+  const [gMemoIdx, setGMemoIdx] = useState(0);
+  const [gardenFibResult, setGardenFibResult] = useState<'correct' | 'wrong' | null>(null);
+  const [gardenFibInput, setGardenFibInput] = useState('');
+
+  // Kitchen state
+  const [kitchenSub, setKitchenSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [kitchenIdx, setKitchenIdx] = useState(0);
+  const [kitchenQuiz, setKitchenQuiz] = useState(false);
+  const [kitchenAnswered, setKitchenAnswered] = useState(false);
+  const [kitchenCorrect, setKitchenCorrect] = useState(false);
+  const [kitchenScore, setKitchenScore] = useState(0);
+  const [kitchenTotal, setKitchenTotal] = useState(0);
+  const [kMemoRunning, setKMemoRunning] = useState(false);
+  const [kMemoLocked, setKMemoLocked] = useState(false);
+  const [kMemoPaused, setKMemoPaused] = useState(false);
+  const [kMemoCount, setKMemoCount] = useState(0);
+  const [kMemoRepeat, setKMemoRepeat] = useState(1);
+  const [kMemoLoop, setKMemoLoop] = useState(false);
+  const [kMemoIdx, setKMemoIdx] = useState(0);
+  const [kitchenFibResult, setKitchenFibResult] = useState<'correct' | 'wrong' | null>(null);
+  const [kitchenFibInput, setKitchenFibInput] = useState('');
+
+  // Occupations state
+  const [occSub, setOccSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [occIdx, setOccIdx] = useState(0);
+  const [occQuiz, setOccQuiz] = useState(false);
+  const [occAnswered, setOccAnswered] = useState(false);
+  const [occCorrect, setOccCorrect] = useState(false);
+  const [occScore, setOccScore] = useState(0);
+  const [occTotal, setOccTotal] = useState(0);
+  const [occFibResult, setOccFibResult] = useState<'correct' | 'wrong' | null>(null);
+  const [occFibInput, setOccFibInput] = useState('');
+  const [occMemoRunning, setOccMemoRunning] = useState(false);
+  const [occMemoLocked, setOccMemoLocked] = useState(false);
+  const [occMemoPaused, setOccMemoPaused] = useState(false);
+  const [occMemoCount, setOccMemoCount] = useState(0);
+  const [occMemoRepeat, setOccMemoRepeat] = useState(1);
+  const [occMemoLoop, setOccMemoLoop] = useState(false);
+  const [occMemoIdx, setOccMemoIdx] = useState(0);
+
+  // Birds state
+  const [birdSub, setBirdSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [birdIdx, setBirdIdx] = useState(0);
+  const [birdQuiz, setBirdQuiz] = useState(false);
+  const [birdAnswered, setBirdAnswered] = useState(false);
+  const [birdCorrect, setBirdCorrect] = useState(false);
+  const [birdScore, setBirdScore] = useState(0);
+  const [birdTotal, setBirdTotal] = useState(0);
+  const [birdFibResult, setBirdFibResult] = useState<'correct' | 'wrong' | null>(null);
+  const [birdFibInput, setBirdFibInput] = useState('');
+  const [birdMemoRunning, setBirdMemoRunning] = useState(false);
+  const [birdMemoLocked, setBirdMemoLocked] = useState(false);
+  const [birdMemoPaused, setBirdMemoPaused] = useState(false);
+  const [birdMemoCount, setBirdMemoCount] = useState(0);
+  const [birdMemoRepeat, setBirdMemoRepeat] = useState(1);
+  const [birdMemoLoop, setBirdMemoLoop] = useState(false);
+  const [birdMemoIdx, setBirdMemoIdx] = useState(0);
+
+  // Animals state
+  const [animalSub, setAnimalSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [animalIdx, setAnimalIdx] = useState(0);
+  const [animalQuiz, setAnimalQuiz] = useState(false);
+  const [animalAnswered, setAnimalAnswered] = useState(false);
+  const [animalCorrect, setAnimalCorrect] = useState(false);
+  const [animalScore, setAnimalScore] = useState(0);
+  const [animalTotal, setAnimalTotal] = useState(0);
+  const [animalFibResult, setAnimalFibResult] = useState<'correct' | 'wrong' | null>(null);
+  const [animalFibInput, setAnimalFibInput] = useState('');
+  const [animalMemoRunning, setAnimalMemoRunning] = useState(false);
+  const [animalMemoLocked, setAnimalMemoLocked] = useState(false);
+  const [animalMemoPaused, setAnimalMemoPaused] = useState(false);
+  const [animalMemoCount, setAnimalMemoCount] = useState(0);
+  const [animalMemoRepeat, setAnimalMemoRepeat] = useState(1);
+  const [animalMemoLoop, setAnimalMemoLoop] = useState(false);
+  const [animalMemoIdx, setAnimalMemoIdx] = useState(0);
+
+  // Months state
+  const [monthSub, setMonthSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [monthIdx, setMonthIdx] = useState(0);
+  const [monthQuiz, setMonthQuiz] = useState(false);
+  const [monthAnswered, setMonthAnswered] = useState(false);
+  const [monthCorrect, setMonthCorrect] = useState(false);
+  const [monthScore, setMonthScore] = useState(0);
+  const [monthTotal, setMonthTotal] = useState(0);
+  const [monthFibResult, setMonthFibResult] = useState<'correct' | 'wrong' | null>(null);
+  const [monthFibInput, setMonthFibInput] = useState('');
+  const [monthMemoRunning, setMonthMemoRunning] = useState(false);
+  const [monthMemoLocked, setMonthMemoLocked] = useState(false);
+  const [monthMemoPaused, setMonthMemoPaused] = useState(false);
+  const [monthMemoCount, setMonthMemoCount] = useState(0);
+  const [monthMemoRepeat, setMonthMemoRepeat] = useState(1);
+  const [monthMemoLoop, setMonthMemoLoop] = useState(false);
+  const [monthMemoIdx, setMonthMemoIdx] = useState(0);
+  const [monthIntroDone, setMonthIntroDone] = useState(false);
 
   const s2 = 80;
+
+  const anyMemoRunning = (sMemoRunning && !sMemoPaused) || (colorMemoRunning && !colorMemoPaused) || (d3MemoRunning && !d3MemoPaused) || (teenMemoRunning && !teenMemoPaused) || (tyMemoRunning && !tyMemoPaused) || (dMemoRunning && !dMemoPaused) || (vMemoRunning && !vMemoPaused) || (gMemoRunning && !gMemoPaused) || (kMemoRunning && !kMemoPaused) || (occMemoRunning && !occMemoPaused) || (birdMemoRunning && !birdMemoPaused) || (animalMemoRunning && !animalMemoPaused) || (monthMemoRunning && !monthMemoPaused);
+
+  useEffect(() => {
+    let wakeLock: any = null;
+    if (anyMemoRunning) {
+      (async () => { try { if ('wakeLock' in navigator) wakeLock = await (navigator as any).wakeLock.request('screen'); } catch {} })();
+    }
+    return () => { if (wakeLock) { (wakeLock as any).release().catch(() => {}); } };
+  }, [anyMemoRunning]);
+
+  useEffect(() => {
+    const handleVis = () => {
+      if (document.hidden) { window.speechSynthesis.cancel(); }
+    };
+    document.addEventListener('visibilitychange', handleVis);
+    return () => document.removeEventListener('visibilitychange', handleVis);
+  }, []);
 
   // Effects for shape quiz auto-advance (wait for spell + name + pause)
   useEffect(() => {
@@ -300,7 +541,7 @@ export default function FunLearningPage() {
 
   // Effects for shape memo auto-play
   useEffect(() => {
-    if (!sMemoRunning) return;
+    if (!sMemoRunning || sMemoPaused) return;
     const shape = shapes[sMemoIdx];
     const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
     const spellTimer = setTimeout(() => spellWord(shape.label), 300);
@@ -316,7 +557,7 @@ export default function FunLearningPage() {
       });
     }, 300 + shape.label.length * letterTime + finalNameTime + pauseAfter);
     return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
-  }, [sMemoRunning, sMemoIdx, sMemoCount, sMemoRepeat, sMemoLoop, sMemoLocked]);
+  }, [sMemoRunning, sMemoPaused, sMemoIdx, sMemoCount, sMemoRepeat, sMemoLoop, sMemoLocked]);
 
   // Effects for 3D shapes quiz auto-advance
   useEffect(() => {
@@ -334,7 +575,7 @@ export default function FunLearningPage() {
 
   // Effects for 3D memo auto-play
   useEffect(() => {
-    if (!d3MemoRunning) return;
+    if (!d3MemoRunning || d3MemoPaused) return;
     const shape = shape3dList[d3MemoIdx];
     const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
     const spellTimer = setTimeout(() => spellWord(shape.label), 300);
@@ -350,7 +591,7 @@ export default function FunLearningPage() {
       });
     }, 300 + shape.label.length * letterTime + finalNameTime + pauseAfter);
     return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
-  }, [d3MemoRunning, d3MemoIdx, d3MemoCount, d3MemoRepeat, d3MemoLoop, d3MemoLocked]);
+  }, [d3MemoRunning, d3MemoPaused, d3MemoIdx, d3MemoCount, d3MemoRepeat, d3MemoLoop, d3MemoLocked]);
 
   // Effects for sight words shuffle
   useEffect(() => {
@@ -416,7 +657,7 @@ export default function FunLearningPage() {
   }, [teenAnswered, teenMode, teenIdx, tab]);
 
   useEffect(() => {
-    if (!teenMemoRunning) return;
+    if (!teenMemoRunning || teenMemoPaused) return;
     const item = TEEN_WORDS[teenMemoIdx];
     const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
     const spellTimer = setTimeout(() => spellWord(item.word), 300);
@@ -432,7 +673,7 @@ export default function FunLearningPage() {
       });
     }, 300 + item.word.length * letterTime + finalNameTime + pauseAfter);
     return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
-  }, [teenMemoRunning, teenMemoIdx, teenMemoCount, teenMemoRepeat, teenMemoLoop, teenMemoLocked]);
+  }, [teenMemoRunning, teenMemoPaused, teenMemoIdx, teenMemoCount, teenMemoRepeat, teenMemoLoop, teenMemoLocked]);
 
   // Effects for ty words
   useEffect(() => {
@@ -453,7 +694,7 @@ export default function FunLearningPage() {
   }, [tyAnswered, tyMode, tyIdx, tab]);
 
   useEffect(() => {
-    if (!tyMemoRunning) return;
+    if (!tyMemoRunning || tyMemoPaused) return;
     const item = TY_WORDS[tyMemoIdx];
     const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
     const spellTimer = setTimeout(() => spellWord(item.word), 300);
@@ -469,7 +710,174 @@ export default function FunLearningPage() {
       });
     }, 300 + item.word.length * letterTime + finalNameTime + pauseAfter);
     return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
-  }, [tyMemoRunning, tyMemoIdx, tyMemoCount, tyMemoRepeat, tyMemoLoop, tyMemoLocked]);
+  }, [tyMemoRunning, tyMemoPaused, tyMemoIdx, tyMemoCount, tyMemoRepeat, tyMemoLoop, tyMemoLocked]);
+
+  // Days memo effect
+  useEffect(() => {
+    if (!dMemoRunning || dMemoPaused) return;
+    const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
+    if (!dIntroDone) {
+      speak('There are seven days in a week.');
+      const t = setTimeout(() => { setDIntroDone(true); }, 3000);
+      return () => clearTimeout(t);
+    }
+    const item = DAYS[dMemoIdx];
+    const spellTimer = setTimeout(() => spellWord(item), 300);
+    const advanceTimer = setTimeout(() => {
+      setDMemoCount((c) => {
+        const next = c + 1;
+        if (next >= dMemoRepeat) {
+          const nextIdx = (dMemoIdx + 1) % DAYS.length;
+          if (nextIdx === 0 && !dMemoLoop) { setDMemoRunning(false); return 0; }
+          setDMemoIdx(nextIdx); return 0;
+        }
+        return next;
+      });
+    }, 300 + item.length * letterTime + finalNameTime + pauseAfter);
+    return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
+  }, [dMemoRunning, dMemoPaused, dMemoLocked, dMemoIdx, dMemoCount, dMemoRepeat, dMemoLoop, dIntroDone]);
+  // Veg memo effect
+  useEffect(() => {
+    if (!vMemoRunning || vMemoPaused) return;
+    const item = VEGETABLES[vMemoIdx].name;
+    const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
+    const spellTimer = setTimeout(() => spellWord(item), 300);
+    const advanceTimer = setTimeout(() => {
+      setVMemoCount((c) => {
+        const next = c + 1;
+        if (next >= vMemoRepeat) {
+          const nextIdx = (vMemoIdx + 1) % VEGETABLES.length;
+          if (nextIdx === 0 && !vMemoLoop) { setVMemoRunning(false); return 0; }
+          setVMemoIdx(nextIdx); return 0;
+        }
+        return next;
+      });
+    }, 300 + item.length * letterTime + finalNameTime + pauseAfter);
+    return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
+  }, [vMemoRunning, vMemoPaused, vMemoLocked, vMemoIdx, vMemoCount, vMemoRepeat, vMemoLoop]);
+  // Garden memo effect
+  useEffect(() => {
+    if (!gMemoRunning || gMemoPaused) return;
+    const item = GARDEN[gMemoIdx].name;
+    const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
+    const spellTimer = setTimeout(() => spellWord(item), 300);
+    const advanceTimer = setTimeout(() => {
+      setGMemoCount((c) => {
+        const next = c + 1;
+        if (next >= gMemoRepeat) {
+          const nextIdx = (gMemoIdx + 1) % GARDEN.length;
+          if (nextIdx === 0 && !gMemoLoop) { setGMemoRunning(false); return 0; }
+          setGMemoIdx(nextIdx); return 0;
+        }
+        return next;
+      });
+    }, 300 + item.length * letterTime + finalNameTime + pauseAfter);
+    return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
+  }, [gMemoRunning, gMemoPaused, gMemoLocked, gMemoIdx, gMemoCount, gMemoRepeat, gMemoLoop]);
+  // Kitchen memo effect
+  useEffect(() => {
+    if (!kMemoRunning || kMemoPaused) return;
+    const item = KITCHEN[kMemoIdx].name;
+    const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
+    const spellTimer = setTimeout(() => spellWord(item), 300);
+    const advanceTimer = setTimeout(() => {
+      setKMemoCount((c) => {
+        const next = c + 1;
+        if (next >= kMemoRepeat) {
+          const nextIdx = (kMemoIdx + 1) % KITCHEN.length;
+          if (nextIdx === 0 && !kMemoLoop) { setKMemoRunning(false); return 0; }
+          setKMemoIdx(nextIdx); return 0;
+        }
+        return next;
+      });
+    }, 300 + item.length * letterTime + finalNameTime + pauseAfter);
+    return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
+  }, [kMemoRunning, kMemoPaused, kMemoLocked, kMemoIdx, kMemoCount, kMemoRepeat, kMemoLoop]);
+
+  // Occupations memo effect
+  useEffect(() => {
+    if (!occMemoRunning || occMemoPaused) return;
+    const item = OCCUPATIONS[occMemoIdx].name;
+    const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
+    const spellTimer = setTimeout(() => spellWord(item), 300);
+    const advanceTimer = setTimeout(() => {
+      setOccMemoCount((c) => {
+        const next = c + 1;
+        if (next >= occMemoRepeat) {
+          const nextIdx = (occMemoIdx + 1) % OCCUPATIONS.length;
+          if (nextIdx === 0 && !occMemoLoop) { setOccMemoRunning(false); return 0; }
+          setOccMemoIdx(nextIdx); return 0;
+        }
+        return next;
+      });
+    }, 300 + item.length * letterTime + finalNameTime + pauseAfter);
+    return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
+  }, [occMemoRunning, occMemoPaused, occMemoLocked, occMemoIdx, occMemoCount, occMemoRepeat, occMemoLoop]);
+
+  // Birds memo effect
+  useEffect(() => {
+    if (!birdMemoRunning || birdMemoPaused) return;
+    const item = BIRDS[birdMemoIdx].name;
+    const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
+    const spellTimer = setTimeout(() => spellWord(item), 300);
+    const advanceTimer = setTimeout(() => {
+      setBirdMemoCount((c) => {
+        const next = c + 1;
+        if (next >= birdMemoRepeat) {
+          const nextIdx = (birdMemoIdx + 1) % BIRDS.length;
+          if (nextIdx === 0 && !birdMemoLoop) { setBirdMemoRunning(false); return 0; }
+          setBirdMemoIdx(nextIdx); return 0;
+        }
+        return next;
+      });
+    }, 300 + item.length * letterTime + finalNameTime + pauseAfter);
+    return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
+  }, [birdMemoRunning, birdMemoPaused, birdMemoLocked, birdMemoIdx, birdMemoCount, birdMemoRepeat, birdMemoLoop]);
+
+  // Animals memo effect
+  useEffect(() => {
+    if (!animalMemoRunning || animalMemoPaused) return;
+    const item = ANIMALS[animalMemoIdx].name;
+    const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
+    const spellTimer = setTimeout(() => spellWord(item), 300);
+    const advanceTimer = setTimeout(() => {
+      setAnimalMemoCount((c) => {
+        const next = c + 1;
+        if (next >= animalMemoRepeat) {
+          const nextIdx = (animalMemoIdx + 1) % ANIMALS.length;
+          if (nextIdx === 0 && !animalMemoLoop) { setAnimalMemoRunning(false); return 0; }
+          setAnimalMemoIdx(nextIdx); return 0;
+        }
+        return next;
+      });
+    }, 300 + item.length * letterTime + finalNameTime + pauseAfter);
+    return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
+  }, [animalMemoRunning, animalMemoPaused, animalMemoLocked, animalMemoIdx, animalMemoCount, animalMemoRepeat, animalMemoLoop]);
+
+  // Months memo effect
+  useEffect(() => {
+    if (!monthMemoRunning || monthMemoPaused) return;
+    const letterTime = 680, finalNameTime = 1000, pauseAfter = 3000;
+    if (!monthIntroDone) {
+      speak('There are twelve months in a year.');
+      const t = setTimeout(() => { setMonthIntroDone(true); }, 3000);
+      return () => clearTimeout(t);
+    }
+    const item = MONTHS_LIST[monthMemoIdx];
+    const spellTimer = setTimeout(() => spellWord(item), 300);
+    const advanceTimer = setTimeout(() => {
+      setMonthMemoCount((c) => {
+        const next = c + 1;
+        if (next >= monthMemoRepeat) {
+          const nextIdx = (monthMemoIdx + 1) % MONTHS_LIST.length;
+          if (nextIdx === 0 && !monthMemoLoop) { setMonthMemoRunning(false); return 0; }
+          setMonthMemoIdx(nextIdx); return 0;
+        }
+        return next;
+      });
+    }, 300 + item.length * letterTime + finalNameTime + pauseAfter);
+    return () => { clearTimeout(spellTimer); clearTimeout(advanceTimer); };
+  }, [monthMemoRunning, monthMemoPaused, monthMemoLocked, monthMemoIdx, monthMemoCount, monthMemoRepeat, monthMemoLoop, monthIntroDone]);
 
   const handleShapeClick = useCallback((id: string) => {
     if (shapeAnswered) return;
@@ -491,6 +899,38 @@ export default function FunLearningPage() {
     if (c === currentColor) { setColorScore((p) => p + 1); setColorCorrect(true); speak(`Yes! ${c}`); }
     else { setColorCorrect(false); speak(`This is ${currentColor}`); }
   }, [colorAnswered, currentColor]);
+
+  const handleColorFibSubmit = useCallback(() => {
+    if (!colorFibInput.trim() || colorFibResult) return;
+    const match = colorFibInput.trim().toLowerCase() === colors[colorIdx].name.toLowerCase();
+    setColorFibResult(match ? 'correct' : 'wrong');
+    speak(match ? `Yes! ${colors[colorIdx].name}` : `The answer is ${colors[colorIdx].name}`);
+  }, [colorFibInput, colorFibResult, colorIdx]);
+
+  useEffect(() => {
+    if (!colorMemoRunning || colorMemoLocked || colorMemoPaused) return;
+    const idx = colorMemoIdx % colors.length;
+    const item = colors[idx];
+    const timer = setTimeout(() => {
+      setColorMemoLocked(true);
+      const spell = () => {
+        spellWord(item.name);
+        setTimeout(() => {
+          speak(item.name);
+          const nextCount = colorMemoCount + 1;
+          if (nextCount >= colorMemoRepeat) {
+            const nextIdx = colorMemoIdx + 1;
+            if (nextIdx >= colors.length && !colorMemoLoop) { setColorMemoRunning(false); return; }
+            setColorMemoIdx(nextIdx);
+            setColorMemoCount(0);
+          } else { setColorMemoCount(nextCount); }
+          setColorMemoLocked(false);
+        }, item.name.length * 680 + 1000);
+      };
+      spell();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [colorMemoRunning, colorMemoLocked, colorMemoPaused, colorMemoIdx, colorMemoCount, colorMemoRepeat, colorMemoLoop]);
 
   const handleSightSubmit = useCallback(() => {
     if (!sightInput.trim()) return;
@@ -551,6 +991,65 @@ export default function FunLearningPage() {
     else { setTyFibResult('wrong'); speak(`This is ${TY_WORDS[tyIdx].word}`); setTimeout(() => spellWord(TY_WORDS[tyIdx].word), 800); }
   }, [tyFibInput, tyIdx]);
 
+  const handleDaysClick = useCallback((c: string) => { if (daysAnswered) return; setDaysAnswered(true); setDaysTotal((p) => p + 1); if (c === DAYS[daysIdx]) { setDaysScore((p) => p + 1); setDaysCorrect(true); speak(`Yes! ${c}`); } else { setDaysCorrect(false); speak(`This is ${DAYS[daysIdx]}`); } }, [daysAnswered, daysIdx]);
+  const handleVegClick = useCallback((c: string) => { if (vegAnswered) return; setVegAnswered(true); setVegTotal((p) => p + 1); if (c === VEGETABLES[vegIdx].name) { setVegScore((p) => p + 1); setVegCorrect(true); speak(`Yes! ${c}`); } else { setVegCorrect(false); speak(`This is ${VEGETABLES[vegIdx].name}`); } }, [vegAnswered, vegIdx]);
+  const handleGardenClick = useCallback((c: string) => { if (gardenAnswered) return; setGardenAnswered(true); setGardenTotal((p) => p + 1); if (c === GARDEN[gardenIdx].name) { setGardenScore((p) => p + 1); setGardenCorrect(true); speak(`Yes! ${c}`); } else { setGardenCorrect(false); speak(`This is ${GARDEN[gardenIdx].name}`); } }, [gardenAnswered, gardenIdx]);
+  const handleKitchenClick = useCallback((c: string) => { if (kitchenAnswered) return; setKitchenAnswered(true); setKitchenTotal((p) => p + 1); if (c === KITCHEN[kitchenIdx].name) { setKitchenScore((p) => p + 1); setKitchenCorrect(true); speak(`Yes! ${c}`); } else { setKitchenCorrect(false); speak(`This is ${KITCHEN[kitchenIdx].name}`); } }, [kitchenAnswered, kitchenIdx]);
+  const handleDaysFib = useCallback(() => {
+    if (daysAnswered || !daysFibInput.trim()) return;
+    setDaysAnswered(true); setDaysTotal(p => p + 1);
+    if (daysFibInput.trim().toLowerCase() === DAYS[daysIdx].toLowerCase()) { setDaysScore(p => p + 1); setDaysCorrect(true); setDaysFibResult('correct'); speak(`Yes! ${DAYS[daysIdx]}`); }
+    else { setDaysFibResult('wrong'); setDaysCorrect(false); speak(`This is ${DAYS[daysIdx]}`); }
+  }, [daysAnswered, daysFibInput, daysIdx]);
+  const handleVegFib = useCallback(() => {
+    if (vegAnswered || !vegFibInput.trim()) return;
+    setVegAnswered(true); setVegTotal(p => p + 1);
+    if (vegFibInput.trim().toLowerCase() === VEGETABLES[vegIdx].name.toLowerCase()) { setVegScore(p => p + 1); setVegCorrect(true); setVegFibResult('correct'); speak(`Yes! ${VEGETABLES[vegIdx].name}`); }
+    else { setVegFibResult('wrong'); setVegCorrect(false); speak(`This is ${VEGETABLES[vegIdx].name}`); }
+  }, [vegAnswered, vegFibInput, vegIdx]);
+  const handleGardenFib = useCallback(() => {
+    if (gardenAnswered || !gardenFibInput.trim()) return;
+    setGardenAnswered(true); setGardenTotal(p => p + 1);
+    if (gardenFibInput.trim().toLowerCase() === GARDEN[gardenIdx].name.toLowerCase()) { setGardenScore(p => p + 1); setGardenCorrect(true); setGardenFibResult('correct'); speak(`Yes! ${GARDEN[gardenIdx].name}`); }
+    else { setGardenFibResult('wrong'); setGardenCorrect(false); speak(`This is ${GARDEN[gardenIdx].name}`); }
+  }, [gardenAnswered, gardenFibInput, gardenIdx]);
+  const handleKitchenFib = useCallback(() => {
+    if (kitchenAnswered || !kitchenFibInput.trim()) return;
+    setKitchenAnswered(true); setKitchenTotal(p => p + 1);
+    if (kitchenFibInput.trim().toLowerCase() === KITCHEN[kitchenIdx].name.toLowerCase()) { setKitchenScore(p => p + 1); setKitchenCorrect(true); setKitchenFibResult('correct'); speak(`Yes! ${KITCHEN[kitchenIdx].name}`); }
+    else { setKitchenFibResult('wrong'); setKitchenCorrect(false); speak(`This is ${KITCHEN[kitchenIdx].name}`); }
+  }, [kitchenAnswered, kitchenFibInput, kitchenIdx]);
+
+  const handleOccClick = useCallback((c: string) => { if (occAnswered) return; setOccAnswered(true); setOccTotal((p) => p + 1); if (c === OCCUPATIONS[occIdx].name) { setOccScore((p) => p + 1); setOccCorrect(true); speak(`Yes! ${c}`); } else { setOccCorrect(false); speak(`This is ${OCCUPATIONS[occIdx].name}`); } }, [occAnswered, occIdx]);
+  const handleBirdClick = useCallback((c: string) => { if (birdAnswered) return; setBirdAnswered(true); setBirdTotal((p) => p + 1); if (c === BIRDS[birdIdx].name) { setBirdScore((p) => p + 1); setBirdCorrect(true); speak(`Yes! ${c}`); } else { setBirdCorrect(false); speak(`This is ${BIRDS[birdIdx].name}`); } }, [birdAnswered, birdIdx]);
+  const handleAnimalClick = useCallback((c: string) => { if (animalAnswered) return; setAnimalAnswered(true); setAnimalTotal((p) => p + 1); if (c === ANIMALS[animalIdx].name) { setAnimalScore((p) => p + 1); setAnimalCorrect(true); speak(`Yes! ${c}`); } else { setAnimalCorrect(false); speak(`This is ${ANIMALS[animalIdx].name}`); } }, [animalAnswered, animalIdx]);
+  const handleMonthClick = useCallback((c: string) => { if (monthAnswered) return; setMonthAnswered(true); setMonthTotal((p) => p + 1); if (c === MONTHS_LIST[monthIdx]) { setMonthScore((p) => p + 1); setMonthCorrect(true); speak(`Yes! ${c}`); } else { setMonthCorrect(false); speak(`This is ${MONTHS_LIST[monthIdx]}`); } }, [monthAnswered, monthIdx]);
+
+  const handleOccFib = useCallback(() => {
+    if (occAnswered || !occFibInput.trim()) return;
+    setOccAnswered(true); setOccTotal(p => p + 1);
+    if (occFibInput.trim().toLowerCase() === OCCUPATIONS[occIdx].name.toLowerCase()) { setOccScore(p => p + 1); setOccCorrect(true); setOccFibResult('correct'); speak(`Yes! ${OCCUPATIONS[occIdx].name}`); }
+    else { setOccFibResult('wrong'); setOccCorrect(false); speak(`This is ${OCCUPATIONS[occIdx].name}`); }
+  }, [occAnswered, occFibInput, occIdx]);
+  const handleBirdFib = useCallback(() => {
+    if (birdAnswered || !birdFibInput.trim()) return;
+    setBirdAnswered(true); setBirdTotal(p => p + 1);
+    if (birdFibInput.trim().toLowerCase() === BIRDS[birdIdx].name.toLowerCase()) { setBirdScore(p => p + 1); setBirdCorrect(true); setBirdFibResult('correct'); speak(`Yes! ${BIRDS[birdIdx].name}`); }
+    else { setBirdFibResult('wrong'); setBirdCorrect(false); speak(`This is ${BIRDS[birdIdx].name}`); }
+  }, [birdAnswered, birdFibInput, birdIdx]);
+  const handleAnimalFib = useCallback(() => {
+    if (animalAnswered || !animalFibInput.trim()) return;
+    setAnimalAnswered(true); setAnimalTotal(p => p + 1);
+    if (animalFibInput.trim().toLowerCase() === ANIMALS[animalIdx].name.toLowerCase()) { setAnimalScore(p => p + 1); setAnimalCorrect(true); setAnimalFibResult('correct'); speak(`Yes! ${ANIMALS[animalIdx].name}`); }
+    else { setAnimalFibResult('wrong'); setAnimalCorrect(false); speak(`This is ${ANIMALS[animalIdx].name}`); }
+  }, [animalAnswered, animalFibInput, animalIdx]);
+  const handleMonthFib = useCallback(() => {
+    if (monthAnswered || !monthFibInput.trim()) return;
+    setMonthAnswered(true); setMonthTotal(p => p + 1);
+    if (monthFibInput.trim().toLowerCase() === MONTHS_LIST[monthIdx].toLowerCase()) { setMonthScore(p => p + 1); setMonthCorrect(true); setMonthFibResult('correct'); speak(`Yes! ${MONTHS_LIST[monthIdx]}`); }
+    else { setMonthFibResult('wrong'); setMonthCorrect(false); speak(`This is ${MONTHS_LIST[monthIdx]}`); }
+  }, [monthAnswered, monthFibInput, monthIdx]);
+
   const fb_q = QUESTIONS[fbQIdx];
   const fb_parts = fb_q.sentence.split('___');
 
@@ -563,6 +1062,14 @@ export default function FunLearningPage() {
     { key: 'ty', icon: '🔟', label: 'Ty Words' },
     { key: 'spell', icon: '🐝', label: 'Spelling' },
     { key: 'blanks', icon: '📝', label: 'Fill Blanks' },
+    { key: 'days', icon: '📅', label: 'Days' },
+    { key: 'veg', icon: '🥦', label: 'Vegetables' },
+    { key: 'garden', icon: '🌳', label: 'Garden' },
+    { key: 'kitchen', icon: '🍳', label: 'Kitchen' },
+    { key: 'occupation', icon: '💼', label: 'Occupations' },
+    { key: 'birds', icon: '🐦', label: 'Birds' },
+    { key: 'animals', icon: '🐾', label: 'Animals' },
+    { key: 'months', icon: '📅', label: 'Months' },
   ];
 
   const renderNumQuiz = (list: NumWord[], idx: number, opts: NumWord[], answered: boolean, correct: boolean, score: number, total: number, handleClick: (w: string) => void, fibMode: boolean, fibInput: string, setFibInput: (v: string) => void, fibResult: 'correct' | 'wrong' | null, handleFib: () => void, fibLabel: string) => (
@@ -628,6 +1135,25 @@ export default function FunLearningPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-pink-50 px-4 py-6 sm:px-6 lg:px-8 pb-32 md:pb-24">
+      {parentLocked && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-2xl">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
+              <HiLockClosed className="h-8 w-8 text-slate-600" />
+            </div>
+            <h2 className="mt-4 text-xl font-black text-slate-900">Parent Lock</h2>
+            <p className="mt-2 text-sm text-slate-500">Solve this to unlock the page</p>
+            <div className="mt-6 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 p-4">
+              <p className="text-2xl font-black text-slate-900">{mathNum1} {mathOp === 'plus' ? '+' : '−'} {mathNum2} = ?</p>
+            </div>
+            <div className="mt-4 flex flex-col items-center gap-3">
+              <input type="number" value={parentUnlockInput} onChange={(e) => { setParentUnlockInput(e.target.value); setParentUnlockError(false); }} onKeyDown={(e) => { if (e.key === 'Enter') handleParentUnlock(); }} placeholder="Type your answer" className="w-40 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200" />
+              <button type="button" onClick={handleParentUnlock} className="w-full rounded-xl bg-emerald-600 px-6 py-3 text-base font-bold text-white transition hover:bg-emerald-700">Unlock</button>
+              {parentUnlockError && <p className="text-sm font-bold text-rose-500">Wrong answer, try again!</p>}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="mx-auto max-w-4xl space-y-5">
         <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur sm:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-fuchsia-600">Ages 3-6 • Early Learning</p>
@@ -639,27 +1165,20 @@ export default function FunLearningPage() {
             ) : <div />}
             {!parentLocked ? (
               <button type="button" onClick={handleParentLock} className="inline-flex items-center gap-1.5 rounded-2xl bg-slate-800 px-4 py-2 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-4 w-4" /> Parent Lock</button>
-            ) : (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-slate-400">🔒 Locked</span>
-                <input type="number" value={parentUnlockInput} onChange={(e) => { setParentUnlockInput(e.target.value); setParentUnlockError(false); }} onKeyDown={(e) => { if (e.key === 'Enter') handleParentUnlock(); }} placeholder={`What is ${mathNum1} ${mathOp === 'plus' ? '+' : '−'} ${mathNum2}?`} className="w-28 rounded-xl border border-slate-300 px-3 py-1.5 text-center text-xs outline-none" />
-                <button type="button" onClick={handleParentUnlock} className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-700">Unlock</button>
-                {parentUnlockError && <span className="text-xs text-rose-500">Wrong!</span>}
-              </div>
-            )}
+            ) : <div />}
           </div>
-          <div className="mt-5 flex flex-wrap gap-2 border-b border-slate-200 pb-3">
-            {tabs.map((t) => (
+          <div className="hidden md:flex flex-wrap gap-1.5 border-b border-slate-200 pb-3">
+            {(showAllTabs ? tabs : tabs.slice(0, 8)).map((t) => (
               <button key={t.key} type="button" onClick={() => {
                 setTab(t.key);
-                setShapeAnswered(false); setShapeCorrect(false); setShapeScore(0); setShapeTotal(0); setSMemoRunning(false); setSMemoLocked(false);
-                setColorAnswered(false); setColorCorrect(false); setColorScore(0); setColorTotal(0); setColorQuiz(false);
+                setShapeAnswered(false); setShapeCorrect(false); setShapeScore(0); setShapeTotal(0); setSMemoRunning(false); setSMemoPaused(false); setSMemoLocked(false);
+                setColorAnswered(false); setColorCorrect(false); setColorScore(0); setColorTotal(0); setColorQuiz(false); setColorMemoRunning(false); setColorMemoPaused(false); setColorMemoLocked(false); setColorFibResult(null); setColorFibInput('');
                 setSightAnswered(false); setSightCorrect(false); setSightScore(0); setSightTotal(0);
-                setD3Answered(false); setD3Correct(false); setD3Score(0); setD3Total(0); setD3MemoRunning(false); setD3MemoLocked(false); setD3FibResult(null); setD3FibInput('');
+                setD3Answered(false); setD3Correct(false); setD3Score(0); setD3Total(0); setD3MemoRunning(false); setD3MemoPaused(false); setD3MemoLocked(false); setD3FibResult(null); setD3FibInput('');
                 setSpellAnswered(false); setSpellCorrect(false); setSpellScore(0); setSpellTotal(0);
                 setFbAnswered(false); setFbCorrect(false); setFbScore(0); setFbTotal(0); setFbSelected(null);
-                setTeenAnswered(false); setTeenCorrect(false); setTeenScore(0); setTeenTotal(0); setTeenMemoRunning(false); setTeenMemoLocked(false); setTeenFibResult(null); setTeenFibInput('');
-                setTyAnswered(false); setTyCorrect(false); setTyScore(0); setTyTotal(0); setTyMemoRunning(false); setTyMemoLocked(false); setTyFibResult(null); setTyFibInput('');
+                setTeenAnswered(false); setTeenCorrect(false); setTeenScore(0); setTeenTotal(0); setTeenMemoRunning(false); setTeenMemoPaused(false); setTeenMemoLocked(false); setTeenFibResult(null); setTeenFibInput('');
+                setTyAnswered(false); setTyCorrect(false); setTyScore(0); setTyTotal(0); setTyMemoRunning(false); setTyMemoPaused(false); setTyMemoLocked(false); setTyFibResult(null); setTyFibInput('');
                 if (t.key === 'shapes') setShapeIdx(Math.floor(Math.random() * shapes.length));
                 if (t.key === 'colors') setColorIdx(Math.floor(Math.random() * COLORS.length));
                 if (t.key === 'sight') setSightIdx(Math.floor(Math.random() * SIGHT_WORDS.length));
@@ -668,10 +1187,23 @@ export default function FunLearningPage() {
                 if (t.key === 'blanks') setFbQIdx(Math.floor(Math.random() * QUESTIONS.length));
                 if (t.key === 'teen') setTeenIdx(Math.floor(Math.random() * TEEN_WORDS.length));
                 if (t.key === 'ty') setTyIdx(Math.floor(Math.random() * TY_WORDS.length));
-              }} className={`rounded-full px-5 py-2 text-sm font-bold transition ${tab === t.key ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                if (t.key === 'days') { setDaysSub('quiz'); setDaysIdx(Math.floor(Math.random() * DAYS.length)); setDaysQuiz(false); setDaysAnswered(false); setDaysCorrect(false); setDaysScore(0); setDaysTotal(0); setDMemoRunning(false); setDMemoPaused(false); setDMemoLocked(false); setDaysFibResult(null); setDaysFibInput(''); }
+                if (t.key === 'veg') { setVegSub('quiz'); setVegIdx(Math.floor(Math.random() * VEGETABLES.length)); setVegQuiz(false); setVegAnswered(false); setVegCorrect(false); setVegScore(0); setVegTotal(0); setVMemoRunning(false); setVMemoPaused(false); setVMemoLocked(false); setVegFibResult(null); setVegFibInput(''); }
+                if (t.key === 'garden') { setGardenSub('quiz'); setGardenIdx(Math.floor(Math.random() * GARDEN.length)); setGardenQuiz(false); setGardenAnswered(false); setGardenCorrect(false); setGardenScore(0); setGardenTotal(0); setGMemoRunning(false); setGMemoPaused(false); setGMemoLocked(false); setGardenFibResult(null); setGardenFibInput(''); }
+                if (t.key === 'kitchen') { setKitchenSub('quiz'); setKitchenIdx(Math.floor(Math.random() * KITCHEN.length)); setKitchenQuiz(false); setKitchenAnswered(false); setKitchenCorrect(false); setKitchenScore(0); setKitchenTotal(0); setKMemoRunning(false); setKMemoPaused(false); setKMemoLocked(false); setKitchenFibResult(null); setKitchenFibInput(''); }
+                if (t.key === 'occupation') { setOccSub('quiz'); setOccIdx(Math.floor(Math.random() * OCCUPATIONS.length)); setOccQuiz(false); setOccAnswered(false); setOccCorrect(false); setOccScore(0); setOccTotal(0); setOccMemoRunning(false); setOccMemoPaused(false); setOccMemoLocked(false); setOccFibResult(null); setOccFibInput(''); }
+                if (t.key === 'birds') { setBirdSub('quiz'); setBirdIdx(Math.floor(Math.random() * BIRDS.length)); setBirdQuiz(false); setBirdAnswered(false); setBirdCorrect(false); setBirdScore(0); setBirdTotal(0); setBirdMemoRunning(false); setBirdMemoPaused(false); setBirdMemoLocked(false); setBirdFibResult(null); setBirdFibInput(''); }
+                if (t.key === 'animals') { setAnimalSub('quiz'); setAnimalIdx(Math.floor(Math.random() * ANIMALS.length)); setAnimalQuiz(false); setAnimalAnswered(false); setAnimalCorrect(false); setAnimalScore(0); setAnimalTotal(0); setAnimalMemoRunning(false); setAnimalMemoPaused(false); setAnimalMemoLocked(false); setAnimalFibResult(null); setAnimalFibInput(''); }
+                if (t.key === 'months') { setMonthSub('quiz'); setMonthIdx(Math.floor(Math.random() * MONTHS_LIST.length)); setMonthQuiz(false); setMonthAnswered(false); setMonthCorrect(false); setMonthScore(0); setMonthTotal(0); setMonthMemoRunning(false); setMonthMemoPaused(false); setMonthMemoLocked(false); setMonthFibResult(null); setMonthFibInput(''); setMonthIntroDone(false); }
+              }} className={`rounded-full px-3 py-1.5 text-xs font-bold whitespace-nowrap transition ${tab === t.key ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                 {t.icon} {t.label}
               </button>
             ))}
+            {!showAllTabs && tabs.length > 8 && (
+              <button type="button" onClick={() => setShowAllTabs(true)} className="rounded-full px-3 py-1.5 text-xs font-bold whitespace-nowrap bg-slate-200 text-slate-600 hover:bg-slate-300 transition">
+                +{tabs.length - 8} more
+              </button>
+            )}
           </div>
         </section>
 
@@ -686,7 +1218,7 @@ export default function FunLearningPage() {
                   </button>
                 ))}
               </div>
-              {shapeSub === 'learn' && sMemoRunning && !sMemoLocked && (
+              {shapeSub === 'learn' && sMemoRunning && !sMemoLocked && !sMemoPaused && (
                 <button type="button" onClick={() => setSMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
               )}
             </div>
@@ -754,7 +1286,10 @@ export default function FunLearningPage() {
                 <div className="flex justify-center"><div className={`rounded-3xl p-8 ${shapes[sMemoIdx].bg} border-2 border-transparent transition-all`}>{shapes[sMemoIdx].render(120)}</div></div>
                 <p className="text-2xl font-black text-slate-900">{shapes[sMemoIdx].label}</p>
                 <div className="flex justify-center gap-1">{Array.from({ length: sMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= sMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
-                <button type="button" onClick={() => setSMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setSMemoPaused(p => !p); if (!sMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${sMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{sMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setSMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
               </div>
             )}
           </section>
@@ -762,36 +1297,102 @@ export default function FunLearningPage() {
 
         {/* COLORS */}
         {tab === 'colors' && (
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm text-center">
-            {!colorQuiz ? (
-              <>
-                <h2 className="text-lg font-bold text-slate-900">Learn Colors</h2>
-                <p className="mt-2 text-sm text-slate-600">Click a color to hear its name, then take the quiz!</p>
-                <div className="mt-5 flex flex-wrap justify-center gap-3">
-                  {COLORS.map((c) => (
-                    <button key={c} type="button" onClick={() => speak(c)} className="flex flex-col items-center gap-1">
-                      <div className="h-16 w-16 rounded-2xl shadow-md transition hover:scale-110" style={{ backgroundColor: colorHex[c] }} />
-                      <span className="text-xs font-bold text-slate-700">{c}</span>
-                    </button>
-                  ))}
-                </div>
-                <button type="button" onClick={() => { const rand = COLORS[Math.floor(Math.random() * COLORS.length)]; setCurrentColor(rand); setColorQuiz(true); setColorAnswered(false); setColorCorrect(false); setColorScore(0); setColorTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Color Quiz</button>
-              </>
-            ) : (
-              <>
-                <h2 className="text-lg font-bold text-slate-900">What color is this?</h2>
-                <div className="mt-4 flex justify-center"><div className="h-24 w-24 rounded-3xl shadow-lg transition-all" style={{ backgroundColor: colorHex[currentColor] }} /></div>
-                {colorAnswered && (
-                  <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${colorCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{colorCorrect ? '✅ Correct!' : `❌ It's ${currentColor}`}</div>
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex gap-2">
+                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => { setColorSub(m); setColorAnswered(false); setColorCorrect(false); setColorMemoRunning(false); setColorMemoLocked(false); setColorFibResult(null); setColorFibInput(''); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${colorSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                  </button>
+                ))}
+              </div>
+              {colorSub === 'learn' && colorMemoRunning && !colorMemoLocked && !colorMemoPaused && (
+                <button type="button" onClick={() => setColorMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
+              )}
+            </div>
+            {colorSub === 'quiz' ? (
+              <div className="text-center">
+                {!colorQuiz ? (
+                  <>
+                    <h2 className="mt-5 text-lg font-bold text-slate-900">Learn Colors</h2>
+                    <p className="mt-2 text-sm text-slate-600">Click a color to hear its name, then take the quiz!</p>
+                    <div className="mt-5 flex flex-wrap justify-center gap-3">
+                      {COLORS.map((c) => (
+                        <button key={c} type="button" onClick={() => speak(c)} className="flex flex-col items-center gap-1">
+                          <div className="h-16 w-16 rounded-2xl shadow-md transition hover:scale-110" style={{ backgroundColor: colorHex[c] }} />
+                          <span className="text-xs font-bold text-slate-700">{c}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { const rand = COLORS[Math.floor(Math.random() * COLORS.length)]; setCurrentColor(rand); setColorQuiz(true); setColorAnswered(false); setColorCorrect(false); setColorScore(0); setColorTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Color Quiz</button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">What color is this?</h2>
+                    <div className="mt-4 flex justify-center"><div className="h-24 w-24 rounded-3xl shadow-lg transition-all" style={{ backgroundColor: colorHex[currentColor] }} /></div>
+                    {colorAnswered && (
+                      <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${colorCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{colorCorrect ? '✅ Correct!' : `❌ It's ${currentColor}`}</div>
+                    )}
+                    <div className="mt-5 flex flex-wrap justify-center gap-3">
+                      {[...COLORS].sort(() => Math.random() - 0.5).map((c) => (
+                        <button key={c} type="button" onClick={() => handleColorClick(c)} disabled={colorAnswered} className={`rounded-xl px-4 py-2 text-sm font-bold text-white transition ${colorAnswered ? 'opacity-50' : 'hover:scale-110'}`} style={{ backgroundColor: colorHex[c] }}>{c}</button>
+                      ))}
+                    </div>
+                    {colorAnswered && <button type="button" onClick={() => { setColorIdx((p) => (p + 1) % COLORS.length); setColorAnswered(false); setColorCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next Color →</button>}
+                    <div className="mt-4 text-sm text-slate-500">Score: {colorScore}/{colorTotal}</div>
+                  </>
                 )}
-                <div className="mt-5 flex flex-wrap justify-center gap-3">
-                  {[...COLORS].sort(() => Math.random() - 0.5).map((c) => (
-                    <button key={c} type="button" onClick={() => handleColorClick(c)} disabled={colorAnswered} className={`rounded-xl px-4 py-2 text-sm font-bold text-white transition ${colorAnswered ? 'opacity-50' : 'hover:scale-110'}`} style={{ backgroundColor: colorHex[c] }}>{c}</button>
-                  ))}
+              </div>
+            ) : colorSub === 'fib' ? (
+              <div className="text-center">
+                <h2 className="mt-5 text-lg font-bold text-slate-900">Type the Color Name</h2>
+                <div className="mt-4 flex justify-center"><div className="h-24 w-24 rounded-3xl shadow-lg" style={{ backgroundColor: colorHex[colors[colorIdx].name] }} /></div>
+                {colorFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
+                {colorFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {colors[colorIdx].name}</div>}
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <input type="text" value={colorFibInput} onChange={(e) => setColorFibInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !colorFibResult) handleColorFibSubmit(); }} placeholder="Type the color name..." disabled={!!colorFibResult} className="w-56 scroll-m-20 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200 disabled:opacity-50" />
+                  <div className="flex gap-2">
+                    {!colorFibResult ? <button type="button" onClick={handleColorFibSubmit} disabled={!colorFibInput.trim()} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700 disabled:opacity-50">Check</button>
+                    : <button type="button" onClick={() => { setColorIdx((p) => (p + 1) % COLORS.length); setColorFibResult(null); setColorFibInput(''); }} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                  </div>
                 </div>
-                {colorAnswered && <button type="button" onClick={() => { setColorIdx((p) => (p + 1) % COLORS.length); setColorAnswered(false); setColorCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next Color →</button>}
-                <div className="mt-4 text-sm text-slate-500">Score: {colorScore}/{colorTotal}</div>
-              </>
+              </div>
+            ) : colorMemoLocked ? (
+              <div className="mt-5 space-y-4 text-center">
+                <div className="flex justify-center"><div className="h-24 w-24 rounded-3xl shadow-lg" style={{ backgroundColor: colorHex[colors[colorMemoIdx % colors.length].name] }} /></div>
+                <p className="text-2xl font-black text-slate-900">{colors[colorMemoIdx % colors.length].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: colorMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= colorMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => setColorMemoLocked(false)} className="rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-500 hover:bg-slate-200"><HiLockClosed className="mx-auto h-5 w-5" /><span className="mt-1 block">Unlock</span></button>
+                </div>
+              </div>
+            ) : !colorMemoRunning ? (
+              <div className="mt-5 space-y-5 text-center">
+                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Colors</h2>
+                <p className="text-sm text-slate-600">Watch and listen as colors are shown, spelled, and named automatically.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-semibold text-slate-700">Repeat each color:</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setColorMemoRepeat((p) => Math.max(1, p - 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">−</button>
+                    <span className="w-8 text-center text-lg font-black text-fuchsia-700">{colorMemoRepeat}</span>
+                    <button type="button" onClick={() => setColorMemoRepeat((p) => Math.min(10, p + 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">+</button>
+                  </div>
+                  <span className="text-xs text-slate-400">times</span>
+                </div>
+                <label className="flex items-center justify-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={colorMemoLoop} onChange={(e) => setColorMemoLoop(e.target.checked)} className="h-4 w-4 rounded border-slate-300" /> Loop</label>
+                <button type="button" onClick={() => { setColorMemoRunning(true); setColorMemoCount(0); setColorMemoIdx(0); setColorMemoLocked(false); }} className="rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start</button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs text-slate-400"><span>Color {colorMemoIdx + 1}/{colors.length}</span><span>Repeat {colorMemoCount + 1}/{colorMemoRepeat}</span></div>
+                <div className="flex justify-center"><div className="h-24 w-24 rounded-3xl shadow-lg transition-all" style={{ backgroundColor: colorHex[colors[colorMemoIdx % colors.length].name] }} /></div>
+                <p className="text-2xl font-black text-slate-900">{colors[colorMemoIdx % colors.length].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: colorMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= colorMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setColorMemoPaused(p => !p); if (!colorMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${colorMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{colorMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setColorMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
+              </div>
             )}
           </section>
         )}
@@ -837,7 +1438,7 @@ export default function FunLearningPage() {
                   </button>
                 ))}
               </div>
-              {d3Mode === 'learn' && d3MemoRunning && !d3MemoLocked && (
+              {d3Mode === 'learn' && d3MemoRunning && !d3MemoLocked && !d3MemoPaused && (
                 <button type="button" onClick={() => setD3MemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
               )}
             </div>
@@ -905,7 +1506,10 @@ export default function FunLearningPage() {
                 <div className="flex justify-center"><div className={`rounded-3xl p-8 ${shape3dList[d3MemoIdx].bg} border-2 border-transparent transition-all`}>{shape3dList[d3MemoIdx].render(120)}</div></div>
                 <p className="text-2xl font-black text-slate-900">{shape3dList[d3MemoIdx].label}</p>
                 <div className="flex justify-center gap-1">{Array.from({ length: d3MemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= d3MemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
-                <button type="button" onClick={() => setD3MemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setD3MemoPaused(p => !p); if (!d3MemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${d3MemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{d3MemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setD3MemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
               </div>
             )}
           </section>
@@ -922,7 +1526,7 @@ export default function FunLearningPage() {
                   </button>
                 ))}
               </div>
-              {teenMode === 'learn' && teenMemoRunning && !teenMemoLocked && (
+              {teenMode === 'learn' && teenMemoRunning && !teenMemoLocked && !teenMemoPaused && (
                 <button type="button" onClick={() => setTeenMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
               )}
             </div>
@@ -965,7 +1569,10 @@ export default function FunLearningPage() {
                 <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-fuchsia-100 to-purple-100 text-4xl font-black text-fuchsia-700 shadow-inner">{TEEN_WORDS[teenMemoIdx].num}</div></div>
                 <p className="text-2xl font-black text-slate-900">{TEEN_WORDS[teenMemoIdx].word}</p>
                 <div className="flex justify-center gap-1">{Array.from({ length: teenMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= teenMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
-                <button type="button" onClick={() => setTeenMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setTeenMemoPaused(p => !p); if (!teenMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${teenMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{teenMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setTeenMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
               </div>
             )}
           </section>
@@ -982,7 +1589,7 @@ export default function FunLearningPage() {
                   </button>
                 ))}
               </div>
-              {tyMode === 'learn' && tyMemoRunning && !tyMemoLocked && (
+              {tyMode === 'learn' && tyMemoRunning && !tyMemoLocked && !tyMemoPaused && (
                 <button type="button" onClick={() => setTyMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
               )}
             </div>
@@ -1025,7 +1632,834 @@ export default function FunLearningPage() {
                 <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-fuchsia-100 to-purple-100 text-4xl font-black text-fuchsia-700 shadow-inner">{TY_WORDS[tyMemoIdx].num}</div></div>
                 <p className="text-2xl font-black text-slate-900">{TY_WORDS[tyMemoIdx].word}</p>
                 <div className="flex justify-center gap-1">{Array.from({ length: tyMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= tyMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
-                <button type="button" onClick={() => setTyMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setTyMemoPaused(p => !p); if (!tyMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${tyMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{tyMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setTyMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* DAYS OF WEEK */}
+        {tab === 'days' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex gap-2">
+                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => { setDaysSub(m); setDaysAnswered(false); setDaysCorrect(false); setDaysQuiz(false); setDMemoRunning(false); setDMemoLocked(false); setDaysFibResult(null); setDaysFibInput(''); if (m === 'fib') setDaysQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${daysSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                  </button>
+                ))}
+              </div>
+              {daysSub === 'learn' && dMemoRunning && !dMemoLocked && !dMemoPaused && (
+                <button type="button" onClick={() => setDMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
+              )}
+            </div>
+            {daysSub === 'quiz' ? (
+              <div className="text-center">
+                {!daysQuiz ? (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">📅 Days of the Week</h2>
+                    <p className="mt-1 text-sm font-semibold text-slate-500">There are seven days in a week.</p>
+                    <p className="mt-1 text-xs text-slate-400">Click a day to hear its name, then take the quiz!</p>
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {DAYS.map((d, i) => (
+                        <button key={d} type="button" onClick={() => speak(d)} className="rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 to-purple-50 px-5 py-3 text-base font-bold text-slate-800 shadow-sm transition hover:scale-105 hover:shadow-md">
+                          <span className="text-xs text-slate-400">Day {i+1}</span><br />{d}
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { const r = Math.floor(Math.random() * DAYS.length); setDaysIdx(r); setDaysQuiz(true); setDaysAnswered(false); setDaysCorrect(false); setDaysScore(0); setDaysTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Quiz</button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">Which day is this?</h2>
+                    <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-indigo-100 to-purple-100 text-4xl font-black text-indigo-700 shadow-inner">{DAYS[daysIdx].slice(0,2)}</div></div>
+                    {daysAnswered && (
+                      <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${daysCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{daysCorrect ? '✅ Correct!' : `❌ It's ${DAYS[daysIdx]}`}</div>
+                    )}
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {[...DAYS].sort(() => Math.random() - 0.5).map((d) => (
+                        <button key={d} type="button" onClick={() => handleDaysClick(d)} disabled={daysAnswered} className={`rounded-xl px-5 py-2.5 text-sm font-bold transition ${daysAnswered ? 'opacity-50' : 'hover:scale-105'} ${daysAnswered && d === DAYS[daysIdx] ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{d}</button>
+                      ))}
+                    </div>
+                    {daysAnswered && <button type="button" onClick={() => { setDaysIdx((p) => (p + 1) % DAYS.length); setDaysAnswered(false); setDaysCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next Day →</button>}
+                    <div className="mt-4 text-sm text-slate-500">Score: {daysScore}/{daysTotal}</div>
+                  </>
+                )}
+              </div>
+            ) : daysSub === 'fib' ? (
+              <div className="text-center">
+                <h2 className="text-lg font-bold text-slate-900">Type the Day Name</h2>
+                <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-indigo-100 to-purple-100 text-3xl font-black text-indigo-700 shadow-inner">{DAYS[daysIdx].slice(0,3)}</div></div>
+                {daysFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
+                {daysFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {DAYS[daysIdx]}</div>}
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <input type="text" value={daysFibInput} onChange={(e) => setDaysFibInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !daysAnswered) handleDaysFib(); }} placeholder="Type the day name..." disabled={daysAnswered} className="w-56 scroll-m-20 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200 disabled:opacity-50" />
+                  <div className="flex gap-2">
+                    {!daysAnswered ? <button type="button" onClick={handleDaysFib} disabled={!daysFibInput.trim()} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700 disabled:opacity-50">Check</button>
+                    : <button type="button" onClick={() => { setDaysIdx((p) => (p + 1) % DAYS.length); setDaysAnswered(false); setDaysFibResult(null); setDaysFibInput(''); }} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-500">Score: {daysScore}/{daysTotal}</div>
+              </div>
+            ) : dMemoLocked ? (
+              <div className="mt-5 space-y-4 text-center">
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-indigo-100 to-purple-100 text-4xl font-black text-indigo-700 shadow-inner">{DAYS[dMemoIdx].slice(0,2)}</div></div>
+                <p className="text-2xl font-black text-slate-900">{DAYS[dMemoIdx]}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: dMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= dMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => setDMemoLocked(false)} className="rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-500 hover:bg-slate-200"><HiLockClosed className="mx-auto h-5 w-5" /><span className="mt-1 block">Unlock</span></button>
+                </div>
+              </div>
+            ) : !dMemoRunning ? (
+              <div className="mt-5 space-y-5 text-center">
+                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Days</h2>
+                <p className="text-sm text-slate-600">Watch and listen as the days are shown, spelled, and named automatically.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setDMemoRepeat((p) => Math.max(1, p - 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">−</button>
+                    <span className="w-8 text-center text-lg font-black text-fuchsia-700">{dMemoRepeat}</span>
+                    <button type="button" onClick={() => setDMemoRepeat((p) => Math.min(10, p + 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">+</button>
+                  </div>
+                  <span className="text-xs text-slate-400">times</span>
+                </div>
+                <label className="flex items-center justify-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={dMemoLoop} onChange={(e) => setDMemoLoop(e.target.checked)} className="h-4 w-4 rounded border-slate-300" /> Loop</label>
+                <button type="button" onClick={() => { setDMemoRunning(true); setDMemoCount(0); setDMemoIdx(0); setDMemoLocked(false); setDIntroDone(false); }} className="rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start</button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs text-slate-400"><span>Day {dMemoIdx + 1}/{DAYS.length}</span><span>Repeat {dMemoCount + 1}/{dMemoRepeat}</span></div>
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-indigo-100 to-purple-100 text-4xl font-black text-indigo-700 shadow-inner">{DAYS[dMemoIdx].slice(0,2)}</div></div>
+                <p className="text-2xl font-black text-slate-900">{DAYS[dMemoIdx]}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: dMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= dMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setDMemoPaused(p => !p); if (!dMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${dMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{dMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setDMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* VEGETABLES */}
+        {tab === 'veg' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex gap-2">
+                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => { setVegSub(m); setVegAnswered(false); setVegCorrect(false); setVegQuiz(false); setVMemoRunning(false); setVMemoLocked(false); setVegFibResult(null); setVegFibInput(''); if (m === 'fib') setVegQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${vegSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                  </button>
+                ))}
+              </div>
+              {vegSub === 'learn' && vMemoRunning && !vMemoLocked && !vMemoPaused && (
+                <button type="button" onClick={() => setVMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
+              )}
+            </div>
+            {vegSub === 'quiz' ? (
+              <div className="text-center">
+                {!vegQuiz ? (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">🥦 Vegetables</h2>
+                    <p className="mt-2 text-sm text-slate-600">Click a vegetable to hear its name, then take the quiz!</p>
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {VEGETABLES.map((v) => (
+                        <button key={v.name} type="button" onClick={() => speak(v.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                          <span className="text-3xl">{v.emoji}</span>
+                          <span className="text-sm font-bold text-slate-700">{v.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { const r = Math.floor(Math.random() * VEGETABLES.length); setVegIdx(r); setVegQuiz(true); setVegAnswered(false); setVegCorrect(false); setVegScore(0); setVegTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Quiz</button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">Which vegetable is this?</h2>
+                    <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-emerald-100 text-5xl shadow-inner">{VEGETABLES[vegIdx].emoji}</div></div>
+                    {vegAnswered && (
+                      <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${vegCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{vegCorrect ? '✅ Correct!' : `❌ It's ${VEGETABLES[vegIdx].name}`}</div>
+                    )}
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {[...VEGETABLES].sort(() => Math.random() - 0.5).map((v) => (
+                        <button key={v.name} type="button" onClick={() => handleVegClick(v.name)} disabled={vegAnswered} className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition ${vegAnswered ? 'opacity-50' : 'hover:scale-105'} ${vegAnswered && v.name === VEGETABLES[vegIdx].name ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{v.emoji} {v.name}</button>
+                      ))}
+                    </div>
+                    {vegAnswered && <button type="button" onClick={() => { setVegIdx((p) => (p + 1) % VEGETABLES.length); setVegAnswered(false); setVegCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                    <div className="mt-4 text-sm text-slate-500">Score: {vegScore}/{vegTotal}</div>
+                  </>
+                )}
+              </div>
+            ) : vegSub === 'fib' ? (
+              <div className="text-center">
+                <h2 className="text-lg font-bold text-slate-900">Type the Vegetable Name</h2>
+                <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-emerald-100 text-5xl shadow-inner">{VEGETABLES[vegIdx].emoji}</div></div>
+                {vegFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
+                {vegFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {VEGETABLES[vegIdx].name}</div>}
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <input type="text" value={vegFibInput} onChange={(e) => setVegFibInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !vegAnswered) handleVegFib(); }} placeholder="Type the name..." disabled={vegAnswered} className="w-56 scroll-m-20 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200 disabled:opacity-50" />
+                  <div className="flex gap-2">
+                    {!vegAnswered ? <button type="button" onClick={handleVegFib} disabled={!vegFibInput.trim()} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700 disabled:opacity-50">Check</button>
+                    : <button type="button" onClick={() => { setVegIdx((p) => (p + 1) % VEGETABLES.length); setVegAnswered(false); setVegFibResult(null); setVegFibInput(''); }} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-500">Score: {vegScore}/{vegTotal}</div>
+              </div>
+            ) : vMemoLocked ? (
+              <div className="mt-5 space-y-4 text-center">
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-emerald-100 text-5xl shadow-inner">{VEGETABLES[vMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{VEGETABLES[vMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: vMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= vMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => setVMemoLocked(false)} className="rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-500 hover:bg-slate-200"><HiLockClosed className="mx-auto h-5 w-5" /><span className="mt-1 block">Unlock</span></button>
+                </div>
+              </div>
+            ) : !vMemoRunning ? (
+              <div className="mt-5 space-y-5 text-center">
+                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Vegetables</h2>
+                <p className="text-sm text-slate-600">Watch and listen as vegetables are shown, spelled, and named automatically.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setVMemoRepeat((p) => Math.max(1, p - 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">−</button>
+                    <span className="w-8 text-center text-lg font-black text-fuchsia-700">{vMemoRepeat}</span>
+                    <button type="button" onClick={() => setVMemoRepeat((p) => Math.min(10, p + 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">+</button>
+                  </div>
+                  <span className="text-xs text-slate-400">times</span>
+                </div>
+                <label className="flex items-center justify-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={vMemoLoop} onChange={(e) => setVMemoLoop(e.target.checked)} className="h-4 w-4 rounded border-slate-300" /> Loop</label>
+                <button type="button" onClick={() => { setVMemoRunning(true); setVMemoCount(0); setVMemoIdx(Math.floor(Math.random() * VEGETABLES.length)); setVMemoLocked(false); }} className="rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start</button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs text-slate-400"><span>Item {vMemoIdx + 1}/{VEGETABLES.length}</span><span>Repeat {vMemoCount + 1}/{vMemoRepeat}</span></div>
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-emerald-100 text-5xl shadow-inner">{VEGETABLES[vMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{VEGETABLES[vMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: vMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= vMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setVMemoPaused(p => !p); if (!vMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${vMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{vMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setVMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* GARDEN OBJECTS */}
+        {tab === 'garden' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex gap-2">
+                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => { setGardenSub(m); setGardenAnswered(false); setGardenCorrect(false); setGardenQuiz(false); setGMemoRunning(false); setGMemoLocked(false); setGardenFibResult(null); setGardenFibInput(''); if (m === 'fib') setGardenQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${gardenSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                  </button>
+                ))}
+              </div>
+              {gardenSub === 'learn' && gMemoRunning && !gMemoLocked && !gMemoPaused && (
+                <button type="button" onClick={() => setGMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
+              )}
+            </div>
+            {gardenSub === 'quiz' ? (
+              <div className="text-center">
+                {!gardenQuiz ? (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">🌳 Garden Objects</h2>
+                    <p className="mt-2 text-sm text-slate-600">Click an object to hear its name, then take the quiz!</p>
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {GARDEN.map((o) => (
+                        <button key={o.name} type="button" onClick={() => speak(o.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                          <span className="text-3xl">{o.emoji}</span>
+                          <span className="text-sm font-bold text-slate-700">{o.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { const r = Math.floor(Math.random() * GARDEN.length); setGardenIdx(r); setGardenQuiz(true); setGardenAnswered(false); setGardenCorrect(false); setGardenScore(0); setGardenTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Quiz</button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">What is this garden object?</h2>
+                    <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 to-yellow-100 text-5xl shadow-inner">{GARDEN[gardenIdx].emoji}</div></div>
+                    {gardenAnswered && (
+                      <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${gardenCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{gardenCorrect ? '✅ Correct!' : `❌ It's ${GARDEN[gardenIdx].name}`}</div>
+                    )}
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {[...GARDEN].sort(() => Math.random() - 0.5).map((o) => (
+                        <button key={o.name} type="button" onClick={() => handleGardenClick(o.name)} disabled={gardenAnswered} className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition ${gardenAnswered ? 'opacity-50' : 'hover:scale-105'} ${gardenAnswered && o.name === GARDEN[gardenIdx].name ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{o.emoji} {o.name}</button>
+                      ))}
+                    </div>
+                    {gardenAnswered && <button type="button" onClick={() => { setGardenIdx((p) => (p + 1) % GARDEN.length); setGardenAnswered(false); setGardenCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                    <div className="mt-4 text-sm text-slate-500">Score: {gardenScore}/{gardenTotal}</div>
+                  </>
+                )}
+              </div>
+            ) : gardenSub === 'fib' ? (
+              <div className="text-center">
+                <h2 className="text-lg font-bold text-slate-900">Type the Garden Object</h2>
+                <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 to-yellow-100 text-5xl shadow-inner">{GARDEN[gardenIdx].emoji}</div></div>
+                {gardenFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
+                {gardenFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {GARDEN[gardenIdx].name}</div>}
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <input type="text" value={gardenFibInput} onChange={(e) => setGardenFibInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !gardenAnswered) handleGardenFib(); }} placeholder="Type the name..." disabled={gardenAnswered} className="w-56 scroll-m-20 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200 disabled:opacity-50" />
+                  <div className="flex gap-2">
+                    {!gardenAnswered ? <button type="button" onClick={handleGardenFib} disabled={!gardenFibInput.trim()} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700 disabled:opacity-50">Check</button>
+                    : <button type="button" onClick={() => { setGardenIdx((p) => (p + 1) % GARDEN.length); setGardenAnswered(false); setGardenFibResult(null); setGardenFibInput(''); }} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-500">Score: {gardenScore}/{gardenTotal}</div>
+              </div>
+            ) : gMemoLocked ? (
+              <div className="mt-5 space-y-4 text-center">
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 to-yellow-100 text-5xl shadow-inner">{GARDEN[gMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{GARDEN[gMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: gMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= gMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => setGMemoLocked(false)} className="rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-500 hover:bg-slate-200"><HiLockClosed className="mx-auto h-5 w-5" /><span className="mt-1 block">Unlock</span></button>
+                </div>
+              </div>
+            ) : !gMemoRunning ? (
+              <div className="mt-5 space-y-5 text-center">
+                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Garden</h2>
+                <p className="text-sm text-slate-600">Watch and listen as garden objects are shown, spelled, and named automatically.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setGMemoRepeat((p) => Math.max(1, p - 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">−</button>
+                    <span className="w-8 text-center text-lg font-black text-fuchsia-700">{gMemoRepeat}</span>
+                    <button type="button" onClick={() => setGMemoRepeat((p) => Math.min(10, p + 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">+</button>
+                  </div>
+                  <span className="text-xs text-slate-400">times</span>
+                </div>
+                <label className="flex items-center justify-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={gMemoLoop} onChange={(e) => setGMemoLoop(e.target.checked)} className="h-4 w-4 rounded border-slate-300" /> Loop</label>
+                <button type="button" onClick={() => { setGMemoRunning(true); setGMemoCount(0); setGMemoIdx(Math.floor(Math.random() * GARDEN.length)); setGMemoLocked(false); }} className="rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start</button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs text-slate-400"><span>Item {gMemoIdx + 1}/{GARDEN.length}</span><span>Repeat {gMemoCount + 1}/{gMemoRepeat}</span></div>
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 to-yellow-100 text-5xl shadow-inner">{GARDEN[gMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{GARDEN[gMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: gMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= gMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setGMemoPaused(p => !p); if (!gMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${gMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{gMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setGMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* KITCHEN OBJECTS */}
+        {tab === 'kitchen' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex gap-2">
+                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => { setKitchenSub(m); setKitchenAnswered(false); setKitchenCorrect(false); setKitchenQuiz(false); setKMemoRunning(false); setKMemoLocked(false); setKitchenFibResult(null); setKitchenFibInput(''); if (m === 'fib') setKitchenQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${kitchenSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                  </button>
+                ))}
+              </div>
+              {kitchenSub === 'learn' && kMemoRunning && !kMemoLocked && !kMemoPaused && (
+                <button type="button" onClick={() => setKMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
+              )}
+            </div>
+            {kitchenSub === 'quiz' ? (
+              <div className="text-center">
+                {!kitchenQuiz ? (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">🍳 Kitchen Objects</h2>
+                    <p className="mt-2 text-sm text-slate-600">Click an object to hear its name, then take the quiz!</p>
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {KITCHEN.map((o) => (
+                        <button key={o.name} type="button" onClick={() => speak(o.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                          <span className="text-3xl">{o.emoji}</span>
+                          <span className="text-sm font-bold text-slate-700">{o.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { const r = Math.floor(Math.random() * KITCHEN.length); setKitchenIdx(r); setKitchenQuiz(true); setKitchenAnswered(false); setKitchenCorrect(false); setKitchenScore(0); setKitchenTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Quiz</button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">What is this kitchen object?</h2>
+                    <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-orange-100 to-red-100 text-5xl shadow-inner">{KITCHEN[kitchenIdx].emoji}</div></div>
+                    {kitchenAnswered && (
+                      <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${kitchenCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{kitchenCorrect ? '✅ Correct!' : `❌ It's ${KITCHEN[kitchenIdx].name}`}</div>
+                    )}
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {[...KITCHEN].sort(() => Math.random() - 0.5).map((o) => (
+                        <button key={o.name} type="button" onClick={() => handleKitchenClick(o.name)} disabled={kitchenAnswered} className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition ${kitchenAnswered ? 'opacity-50' : 'hover:scale-105'} ${kitchenAnswered && o.name === KITCHEN[kitchenIdx].name ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{o.emoji} {o.name}</button>
+                      ))}
+                    </div>
+                    {kitchenAnswered && <button type="button" onClick={() => { setKitchenIdx((p) => (p + 1) % KITCHEN.length); setKitchenAnswered(false); setKitchenCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                    <div className="mt-4 text-sm text-slate-500">Score: {kitchenScore}/{kitchenTotal}</div>
+                  </>
+                )}
+              </div>
+            ) : kitchenSub === 'fib' ? (
+              <div className="text-center">
+                <h2 className="text-lg font-bold text-slate-900">Type the Kitchen Object</h2>
+                <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-orange-100 to-red-100 text-5xl shadow-inner">{KITCHEN[kitchenIdx].emoji}</div></div>
+                {kitchenFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
+                {kitchenFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {KITCHEN[kitchenIdx].name}</div>}
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <input type="text" value={kitchenFibInput} onChange={(e) => setKitchenFibInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !kitchenAnswered) handleKitchenFib(); }} placeholder="Type the name..." disabled={kitchenAnswered} className="w-56 scroll-m-20 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200 disabled:opacity-50" />
+                  <div className="flex gap-2">
+                    {!kitchenAnswered ? <button type="button" onClick={handleKitchenFib} disabled={!kitchenFibInput.trim()} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700 disabled:opacity-50">Check</button>
+                    : <button type="button" onClick={() => { setKitchenIdx((p) => (p + 1) % KITCHEN.length); setKitchenAnswered(false); setKitchenFibResult(null); setKitchenFibInput(''); }} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-500">Score: {kitchenScore}/{kitchenTotal}</div>
+              </div>
+            ) : kMemoLocked ? (
+              <div className="mt-5 space-y-4 text-center">
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-orange-100 to-red-100 text-5xl shadow-inner">{KITCHEN[kMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{KITCHEN[kMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: kMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= kMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => setKMemoLocked(false)} className="rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-500 hover:bg-slate-200"><HiLockClosed className="mx-auto h-5 w-5" /><span className="mt-1 block">Unlock</span></button>
+                </div>
+              </div>
+            ) : !kMemoRunning ? (
+              <div className="mt-5 space-y-5 text-center">
+                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Kitchen</h2>
+                <p className="text-sm text-slate-600">Watch and listen as kitchen objects are shown, spelled, and named automatically.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setKMemoRepeat((p) => Math.max(1, p - 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">−</button>
+                    <span className="w-8 text-center text-lg font-black text-fuchsia-700">{kMemoRepeat}</span>
+                    <button type="button" onClick={() => setKMemoRepeat((p) => Math.min(10, p + 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">+</button>
+                  </div>
+                  <span className="text-xs text-slate-400">times</span>
+                </div>
+                <label className="flex items-center justify-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={kMemoLoop} onChange={(e) => setKMemoLoop(e.target.checked)} className="h-4 w-4 rounded border-slate-300" /> Loop</label>
+                <button type="button" onClick={() => { setKMemoRunning(true); setKMemoCount(0); setKMemoIdx(Math.floor(Math.random() * KITCHEN.length)); setKMemoLocked(false); }} className="rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start</button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs text-slate-400"><span>Item {kMemoIdx + 1}/{KITCHEN.length}</span><span>Repeat {kMemoCount + 1}/{kMemoRepeat}</span></div>
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-orange-100 to-red-100 text-5xl shadow-inner">{KITCHEN[kMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{KITCHEN[kMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: kMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= kMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setKMemoPaused(p => !p); if (!kMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${kMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{kMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setKMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* OCCUPATIONS */}
+        {tab === 'occupation' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex gap-2">
+                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => { setOccSub(m); setOccAnswered(false); setOccCorrect(false); setOccQuiz(false); setOccMemoRunning(false); setOccMemoLocked(false); setOccFibResult(null); setOccFibInput(''); if (m === 'fib') setOccQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${occSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                  </button>
+                ))}
+              </div>
+              {occSub === 'learn' && occMemoRunning && !occMemoLocked && !occMemoPaused && (
+                <button type="button" onClick={() => setOccMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
+              )}
+            </div>
+            {occSub === 'quiz' ? (
+              <div className="text-center">
+                {!occQuiz ? (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">💼 Occupations</h2>
+                    <p className="mt-2 text-sm text-slate-600">Click an occupation to hear its name, then take the quiz!</p>
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {OCCUPATIONS.map((o) => (
+                        <button key={o.name} type="button" onClick={() => speak(o.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                          <span className="text-3xl">{o.emoji}</span>
+                          <span className="text-sm font-bold text-slate-700">{o.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { const r = Math.floor(Math.random() * OCCUPATIONS.length); setOccIdx(r); setOccQuiz(true); setOccAnswered(false); setOccCorrect(false); setOccScore(0); setOccTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Quiz</button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">Which occupation is this?</h2>
+                    <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 to-orange-100 text-5xl shadow-inner">{OCCUPATIONS[occIdx].emoji}</div></div>
+                    {occAnswered && (
+                      <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${occCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{occCorrect ? '✅ Correct!' : `❌ It's ${OCCUPATIONS[occIdx].name}`}</div>
+                    )}
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {[...OCCUPATIONS].sort(() => Math.random() - 0.5).map((o) => (
+                        <button key={o.name} type="button" onClick={() => handleOccClick(o.name)} disabled={occAnswered} className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition ${occAnswered ? 'opacity-50' : 'hover:scale-105'} ${occAnswered && o.name === OCCUPATIONS[occIdx].name ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{o.emoji} {o.name}</button>
+                      ))}
+                    </div>
+                    {occAnswered && <button type="button" onClick={() => { setOccIdx((p) => (p + 1) % OCCUPATIONS.length); setOccAnswered(false); setOccCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                    <div className="mt-4 text-sm text-slate-500">Score: {occScore}/{occTotal}</div>
+                  </>
+                )}
+              </div>
+            ) : occSub === 'fib' ? (
+              <div className="text-center">
+                <h2 className="text-lg font-bold text-slate-900">Type the Occupation Name</h2>
+                <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 to-orange-100 text-5xl shadow-inner">{OCCUPATIONS[occIdx].emoji}</div></div>
+                {occFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
+                {occFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {OCCUPATIONS[occIdx].name}</div>}
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <input type="text" value={occFibInput} onChange={(e) => setOccFibInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !occAnswered) handleOccFib(); }} placeholder="Type the name..." disabled={occAnswered} className="w-56 scroll-m-20 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200 disabled:opacity-50" />
+                  <div className="flex gap-2">
+                    {!occAnswered ? <button type="button" onClick={handleOccFib} disabled={!occFibInput.trim()} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700 disabled:opacity-50">Check</button>
+                    : <button type="button" onClick={() => { setOccIdx((p) => (p + 1) % OCCUPATIONS.length); setOccAnswered(false); setOccFibResult(null); setOccFibInput(''); }} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-500">Score: {occScore}/{occTotal}</div>
+              </div>
+            ) : occMemoLocked ? (
+              <div className="mt-5 space-y-4 text-center">
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 to-orange-100 text-5xl shadow-inner">{OCCUPATIONS[occMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{OCCUPATIONS[occMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: occMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= occMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => setOccMemoLocked(false)} className="rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-500 hover:bg-slate-200"><HiLockClosed className="mx-auto h-5 w-5" /><span className="mt-1 block">Unlock</span></button>
+                </div>
+              </div>
+            ) : !occMemoRunning ? (
+              <div className="mt-5 space-y-5 text-center">
+                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Occupations</h2>
+                <p className="text-sm text-slate-600">Watch and listen as occupations are shown, spelled, and named automatically.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setOccMemoRepeat((p) => Math.max(1, p - 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">−</button>
+                    <span className="w-8 text-center text-lg font-black text-fuchsia-700">{occMemoRepeat}</span>
+                    <button type="button" onClick={() => setOccMemoRepeat((p) => Math.min(10, p + 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">+</button>
+                  </div>
+                  <span className="text-xs text-slate-400">times</span>
+                </div>
+                <label className="flex items-center justify-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={occMemoLoop} onChange={(e) => setOccMemoLoop(e.target.checked)} className="h-4 w-4 rounded border-slate-300" /> Loop</label>
+                <button type="button" onClick={() => { setOccMemoRunning(true); setOccMemoCount(0); setOccMemoIdx(Math.floor(Math.random() * OCCUPATIONS.length)); setOccMemoLocked(false); }} className="rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start</button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs text-slate-400"><span>Item {occMemoIdx + 1}/{OCCUPATIONS.length}</span><span>Repeat {occMemoCount + 1}/{occMemoRepeat}</span></div>
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 to-orange-100 text-5xl shadow-inner">{OCCUPATIONS[occMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{OCCUPATIONS[occMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: occMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= occMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setOccMemoPaused(p => !p); if (!occMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${occMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{occMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setOccMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* BIRDS */}
+        {tab === 'birds' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex gap-2">
+                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => { setBirdSub(m); setBirdAnswered(false); setBirdCorrect(false); setBirdQuiz(false); setBirdMemoRunning(false); setBirdMemoLocked(false); setBirdFibResult(null); setBirdFibInput(''); if (m === 'fib') setBirdQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${birdSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                  </button>
+                ))}
+              </div>
+              {birdSub === 'learn' && birdMemoRunning && !birdMemoLocked && !birdMemoPaused && (
+                <button type="button" onClick={() => setBirdMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
+              )}
+            </div>
+            {birdSub === 'quiz' ? (
+              <div className="text-center">
+                {!birdQuiz ? (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">🐦 Birds</h2>
+                    <p className="mt-2 text-sm text-slate-600">Click a bird to hear its name, then take the quiz!</p>
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {BIRDS.map((b) => (
+                        <button key={b.name} type="button" onClick={() => speak(b.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                          <span className="text-3xl">{b.emoji}</span>
+                          <span className="text-sm font-bold text-slate-700">{b.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { const r = Math.floor(Math.random() * BIRDS.length); setBirdIdx(r); setBirdQuiz(true); setBirdAnswered(false); setBirdCorrect(false); setBirdScore(0); setBirdTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Quiz</button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">Which bird is this?</h2>
+                    <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-sky-100 to-blue-100 text-5xl shadow-inner">{BIRDS[birdIdx].emoji}</div></div>
+                    {birdAnswered && (
+                      <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${birdCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{birdCorrect ? '✅ Correct!' : `❌ It's ${BIRDS[birdIdx].name}`}</div>
+                    )}
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {[...BIRDS].sort(() => Math.random() - 0.5).map((b) => (
+                        <button key={b.name} type="button" onClick={() => handleBirdClick(b.name)} disabled={birdAnswered} className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition ${birdAnswered ? 'opacity-50' : 'hover:scale-105'} ${birdAnswered && b.name === BIRDS[birdIdx].name ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{b.emoji} {b.name}</button>
+                      ))}
+                    </div>
+                    {birdAnswered && <button type="button" onClick={() => { setBirdIdx((p) => (p + 1) % BIRDS.length); setBirdAnswered(false); setBirdCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                    <div className="mt-4 text-sm text-slate-500">Score: {birdScore}/{birdTotal}</div>
+                  </>
+                )}
+              </div>
+            ) : birdSub === 'fib' ? (
+              <div className="text-center">
+                <h2 className="text-lg font-bold text-slate-900">Type the Bird Name</h2>
+                <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-sky-100 to-blue-100 text-5xl shadow-inner">{BIRDS[birdIdx].emoji}</div></div>
+                {birdFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
+                {birdFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {BIRDS[birdIdx].name}</div>}
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <input type="text" value={birdFibInput} onChange={(e) => setBirdFibInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !birdAnswered) handleBirdFib(); }} placeholder="Type the name..." disabled={birdAnswered} className="w-56 scroll-m-20 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200 disabled:opacity-50" />
+                  <div className="flex gap-2">
+                    {!birdAnswered ? <button type="button" onClick={handleBirdFib} disabled={!birdFibInput.trim()} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700 disabled:opacity-50">Check</button>
+                    : <button type="button" onClick={() => { setBirdIdx((p) => (p + 1) % BIRDS.length); setBirdAnswered(false); setBirdFibResult(null); setBirdFibInput(''); }} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-500">Score: {birdScore}/{birdTotal}</div>
+              </div>
+            ) : birdMemoLocked ? (
+              <div className="mt-5 space-y-4 text-center">
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-sky-100 to-blue-100 text-5xl shadow-inner">{BIRDS[birdMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{BIRDS[birdMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: birdMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= birdMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => setBirdMemoLocked(false)} className="rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-500 hover:bg-slate-200"><HiLockClosed className="mx-auto h-5 w-5" /><span className="mt-1 block">Unlock</span></button>
+                </div>
+              </div>
+            ) : !birdMemoRunning ? (
+              <div className="mt-5 space-y-5 text-center">
+                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Birds</h2>
+                <p className="text-sm text-slate-600">Watch and listen as birds are shown, spelled, and named automatically.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setBirdMemoRepeat((p) => Math.max(1, p - 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">−</button>
+                    <span className="w-8 text-center text-lg font-black text-fuchsia-700">{birdMemoRepeat}</span>
+                    <button type="button" onClick={() => setBirdMemoRepeat((p) => Math.min(10, p + 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">+</button>
+                  </div>
+                  <span className="text-xs text-slate-400">times</span>
+                </div>
+                <label className="flex items-center justify-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={birdMemoLoop} onChange={(e) => setBirdMemoLoop(e.target.checked)} className="h-4 w-4 rounded border-slate-300" /> Loop</label>
+                <button type="button" onClick={() => { setBirdMemoRunning(true); setBirdMemoCount(0); setBirdMemoIdx(Math.floor(Math.random() * BIRDS.length)); setBirdMemoLocked(false); }} className="rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start</button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs text-slate-400"><span>Item {birdMemoIdx + 1}/{BIRDS.length}</span><span>Repeat {birdMemoCount + 1}/{birdMemoRepeat}</span></div>
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-sky-100 to-blue-100 text-5xl shadow-inner">{BIRDS[birdMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{BIRDS[birdMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: birdMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= birdMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setBirdMemoPaused(p => !p); if (!birdMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${birdMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{birdMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setBirdMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ANIMALS */}
+        {tab === 'animals' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex gap-2">
+                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => { setAnimalSub(m); setAnimalAnswered(false); setAnimalCorrect(false); setAnimalQuiz(false); setAnimalMemoRunning(false); setAnimalMemoLocked(false); setAnimalFibResult(null); setAnimalFibInput(''); if (m === 'fib') setAnimalQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${animalSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                  </button>
+                ))}
+              </div>
+              {animalSub === 'learn' && animalMemoRunning && !animalMemoLocked && !animalMemoPaused && (
+                <button type="button" onClick={() => setAnimalMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
+              )}
+            </div>
+            {animalSub === 'quiz' ? (
+              <div className="text-center">
+                {!animalQuiz ? (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">🐾 Animals</h2>
+                    <p className="mt-2 text-sm text-slate-600">Click an animal to hear its name, then take the quiz!</p>
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {ANIMALS.map((a) => (
+                        <button key={a.name} type="button" onClick={() => speak(a.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                          <span className="text-3xl">{a.emoji}</span>
+                          <span className="text-sm font-bold text-slate-700">{a.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { const r = Math.floor(Math.random() * ANIMALS.length); setAnimalIdx(r); setAnimalQuiz(true); setAnimalAnswered(false); setAnimalCorrect(false); setAnimalScore(0); setAnimalTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Quiz</button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">Which animal is this?</h2>
+                    <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-emerald-100 text-5xl shadow-inner">{ANIMALS[animalIdx].emoji}</div></div>
+                    {animalAnswered && (
+                      <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${animalCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{animalCorrect ? '✅ Correct!' : `❌ It's ${ANIMALS[animalIdx].name}`}</div>
+                    )}
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {[...ANIMALS].sort(() => Math.random() - 0.5).map((a) => (
+                        <button key={a.name} type="button" onClick={() => handleAnimalClick(a.name)} disabled={animalAnswered} className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition ${animalAnswered ? 'opacity-50' : 'hover:scale-105'} ${animalAnswered && a.name === ANIMALS[animalIdx].name ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{a.emoji} {a.name}</button>
+                      ))}
+                    </div>
+                    {animalAnswered && <button type="button" onClick={() => { setAnimalIdx((p) => (p + 1) % ANIMALS.length); setAnimalAnswered(false); setAnimalCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                    <div className="mt-4 text-sm text-slate-500">Score: {animalScore}/{animalTotal}</div>
+                  </>
+                )}
+              </div>
+            ) : animalSub === 'fib' ? (
+              <div className="text-center">
+                <h2 className="text-lg font-bold text-slate-900">Type the Animal Name</h2>
+                <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-emerald-100 text-5xl shadow-inner">{ANIMALS[animalIdx].emoji}</div></div>
+                {animalFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
+                {animalFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {ANIMALS[animalIdx].name}</div>}
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <input type="text" value={animalFibInput} onChange={(e) => setAnimalFibInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !animalAnswered) handleAnimalFib(); }} placeholder="Type the name..." disabled={animalAnswered} className="w-56 scroll-m-20 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200 disabled:opacity-50" />
+                  <div className="flex gap-2">
+                    {!animalAnswered ? <button type="button" onClick={handleAnimalFib} disabled={!animalFibInput.trim()} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700 disabled:opacity-50">Check</button>
+                    : <button type="button" onClick={() => { setAnimalIdx((p) => (p + 1) % ANIMALS.length); setAnimalAnswered(false); setAnimalFibResult(null); setAnimalFibInput(''); }} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-500">Score: {animalScore}/{animalTotal}</div>
+              </div>
+            ) : animalMemoLocked ? (
+              <div className="mt-5 space-y-4 text-center">
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-emerald-100 text-5xl shadow-inner">{ANIMALS[animalMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{ANIMALS[animalMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: animalMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= animalMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => setAnimalMemoLocked(false)} className="rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-500 hover:bg-slate-200"><HiLockClosed className="mx-auto h-5 w-5" /><span className="mt-1 block">Unlock</span></button>
+                </div>
+              </div>
+            ) : !animalMemoRunning ? (
+              <div className="mt-5 space-y-5 text-center">
+                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Animals</h2>
+                <p className="text-sm text-slate-600">Watch and listen as animals are shown, spelled, and named automatically.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setAnimalMemoRepeat((p) => Math.max(1, p - 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">−</button>
+                    <span className="w-8 text-center text-lg font-black text-fuchsia-700">{animalMemoRepeat}</span>
+                    <button type="button" onClick={() => setAnimalMemoRepeat((p) => Math.min(10, p + 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">+</button>
+                  </div>
+                  <span className="text-xs text-slate-400">times</span>
+                </div>
+                <label className="flex items-center justify-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={animalMemoLoop} onChange={(e) => setAnimalMemoLoop(e.target.checked)} className="h-4 w-4 rounded border-slate-300" /> Loop</label>
+                <button type="button" onClick={() => { setAnimalMemoRunning(true); setAnimalMemoCount(0); setAnimalMemoIdx(Math.floor(Math.random() * ANIMALS.length)); setAnimalMemoLocked(false); }} className="rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start</button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs text-slate-400"><span>Item {animalMemoIdx + 1}/{ANIMALS.length}</span><span>Repeat {animalMemoCount + 1}/{animalMemoRepeat}</span></div>
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-emerald-100 text-5xl shadow-inner">{ANIMALS[animalMemoIdx].emoji}</div></div>
+                <p className="text-2xl font-black text-slate-900">{ANIMALS[animalMemoIdx].name}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: animalMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= animalMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setAnimalMemoPaused(p => !p); if (!animalMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${animalMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{animalMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setAnimalMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* MONTHS OF THE YEAR */}
+        {tab === 'months' && (
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div className="flex gap-2">
+                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => { setMonthSub(m); setMonthAnswered(false); setMonthCorrect(false); setMonthQuiz(false); setMonthMemoRunning(false); setMonthMemoLocked(false); setMonthFibResult(null); setMonthFibInput(''); if (m === 'fib') setMonthQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${monthSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                  </button>
+                ))}
+              </div>
+              {monthSub === 'learn' && monthMemoRunning && !monthMemoLocked && !monthMemoPaused && (
+                <button type="button" onClick={() => setMonthMemoLocked(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700"><HiLockClosed className="h-3.5 w-3.5" /> Lock</button>
+              )}
+            </div>
+            {monthSub === 'quiz' ? (
+              <div className="text-center">
+                {!monthQuiz ? (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">📅 Months of the Year</h2>
+                    <p className="mt-1 text-sm font-semibold text-slate-500">There are twelve months in a year.</p>
+                    <p className="mt-1 text-xs text-slate-400">Click a month to hear its name, then take the quiz!</p>
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {MONTHS_LIST.map((m, i) => (
+                        <button key={m} type="button" onClick={() => speak(m)} className="rounded-2xl border border-slate-200 bg-gradient-to-br from-pink-50 to-rose-50 px-5 py-3 text-base font-bold text-slate-800 shadow-sm transition hover:scale-105 hover:shadow-md">
+                          <span className="text-xs text-slate-400">Month {i+1}</span><br />{m}
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => { const r = Math.floor(Math.random() * MONTHS_LIST.length); setMonthIdx(r); setMonthQuiz(true); setMonthAnswered(false); setMonthCorrect(false); setMonthScore(0); setMonthTotal(0); }} className="mt-6 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">🎯 Start Quiz</button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">Which month is this?</h2>
+                    <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-4xl font-black text-pink-700 shadow-inner">{MONTHS_LIST[monthIdx].slice(0,3)}</div></div>
+                    {monthAnswered && (
+                      <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${monthCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{monthCorrect ? '✅ Correct!' : `❌ It's ${MONTHS_LIST[monthIdx]}`}</div>
+                    )}
+                    <div className="mt-5 flex flex-wrap justify-center gap-2">
+                      {[...MONTHS_LIST].sort(() => Math.random() - 0.5).map((m) => (
+                        <button key={m} type="button" onClick={() => handleMonthClick(m)} disabled={monthAnswered} className={`rounded-xl px-5 py-2.5 text-sm font-bold transition ${monthAnswered ? 'opacity-50' : 'hover:scale-105'} ${monthAnswered && m === MONTHS_LIST[monthIdx] ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{m}</button>
+                      ))}
+                    </div>
+                    {monthAnswered && <button type="button" onClick={() => { setMonthIdx((p) => (p + 1) % MONTHS_LIST.length); setMonthAnswered(false); setMonthCorrect(false); }} className="mt-5 rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                    <div className="mt-4 text-sm text-slate-500">Score: {monthScore}/{monthTotal}</div>
+                  </>
+                )}
+              </div>
+            ) : monthSub === 'fib' ? (
+              <div className="text-center">
+                <h2 className="text-lg font-bold text-slate-900">Type the Month Name</h2>
+                <div className="mt-5 flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-3xl font-black text-pink-700 shadow-inner">{MONTHS_LIST[monthIdx].slice(0,3)}</div></div>
+                {monthFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
+                {monthFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {MONTHS_LIST[monthIdx]}</div>}
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <input type="text" value={monthFibInput} onChange={(e) => setMonthFibInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !monthAnswered) handleMonthFib(); }} placeholder="Type the month name..." disabled={monthAnswered} className="w-56 scroll-m-20 rounded-xl border-2 border-slate-300 px-4 py-3 text-center text-lg font-bold text-slate-900 outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-200 disabled:opacity-50" />
+                  <div className="flex gap-2">
+                    {!monthAnswered ? <button type="button" onClick={handleMonthFib} disabled={!monthFibInput.trim()} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700 disabled:opacity-50">Check</button>
+                    : <button type="button" onClick={() => { setMonthIdx((p) => (p + 1) % MONTHS_LIST.length); setMonthAnswered(false); setMonthFibResult(null); setMonthFibInput(''); }} className="rounded-xl bg-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-fuchsia-700">Next →</button>}
+                  </div>
+                </div>
+                <div className="mt-4 text-sm text-slate-500">Score: {monthScore}/{monthTotal}</div>
+              </div>
+            ) : monthMemoLocked ? (
+              <div className="mt-5 space-y-4 text-center">
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-4xl font-black text-pink-700 shadow-inner">{MONTHS_LIST[monthMemoIdx].slice(0,3)}</div></div>
+                <p className="text-2xl font-black text-slate-900">{MONTHS_LIST[monthMemoIdx]}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: monthMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= monthMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center">
+                  <button type="button" onClick={() => setMonthMemoLocked(false)} className="rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-500 hover:bg-slate-200"><HiLockClosed className="mx-auto h-5 w-5" /><span className="mt-1 block">Unlock</span></button>
+                </div>
+              </div>
+            ) : !monthMemoRunning ? (
+              <div className="mt-5 space-y-5 text-center">
+                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Months</h2>
+                <p className="text-sm text-slate-600">Watch and listen as the months are shown, spelled, and named automatically.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setMonthMemoRepeat((p) => Math.max(1, p - 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">−</button>
+                    <span className="w-8 text-center text-lg font-black text-fuchsia-700">{monthMemoRepeat}</span>
+                    <button type="button" onClick={() => setMonthMemoRepeat((p) => Math.min(10, p + 1))} className="h-8 w-8 rounded-full bg-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-300">+</button>
+                  </div>
+                  <span className="text-xs text-slate-400">times</span>
+                </div>
+                <label className="flex items-center justify-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={monthMemoLoop} onChange={(e) => setMonthMemoLoop(e.target.checked)} className="h-4 w-4 rounded border-slate-300" /> Loop</label>
+                <button type="button" onClick={() => { setMonthMemoRunning(true); setMonthMemoCount(0); setMonthMemoIdx(0); setMonthMemoLocked(false); setMonthIntroDone(false); }} className="rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start</button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5 text-center">
+                <div className="flex items-center justify-between text-xs text-slate-400"><span>Month {monthMemoIdx + 1}/{MONTHS_LIST.length}</span><span>Repeat {monthMemoCount + 1}/{monthMemoRepeat}</span></div>
+                <div className="flex justify-center"><div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-4xl font-black text-pink-700 shadow-inner">{MONTHS_LIST[monthMemoIdx].slice(0,3)}</div></div>
+                <p className="text-2xl font-black text-slate-900">{MONTHS_LIST[monthMemoIdx]}</p>
+                <div className="flex justify-center gap-1">{Array.from({ length: monthMemoRepeat }).map((_, i) => (<div key={i} className={`h-2 w-2 rounded-full ${i <= monthMemoCount ? 'bg-fuchsia-500' : 'bg-slate-200'}`} />))}</div>
+                <div className="flex justify-center gap-2">
+                  <button type="button" onClick={() => { setMonthMemoPaused(p => !p); if (!monthMemoPaused) window.speechSynthesis.cancel(); }} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${monthMemoPaused ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}>{monthMemoPaused ? '▶ Resume' : '⏸ Pause'}</button>
+                  <button type="button" onClick={() => setMonthMemoRunning(false)} className="rounded-xl border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Stop</button>
+                </div>
               </div>
             )}
           </section>
@@ -1087,6 +2521,51 @@ export default function FunLearningPage() {
         )}
 
         <footer className="text-center text-xs text-slate-400">Tap 🔊 to hear pronunciation. Ages 3+</footer>
+
+        {/* Mobile tabs grid at bottom */}
+        <section className="rounded-3xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur md:hidden">
+          <p className="mb-3 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-400">Switch Tool</p>
+          <div className="grid grid-cols-4 gap-2">
+            {(showAllTabs ? tabs : mobileTabs.map(k => tabs.find(t => t.key === k)!).filter(Boolean)).map((t) => (
+              <button key={t.key} type="button" onClick={() => {
+                setTab(t.key);
+                setShapeAnswered(false); setShapeCorrect(false); setShapeScore(0); setShapeTotal(0); setSMemoRunning(false); setSMemoPaused(false); setSMemoLocked(false);
+                setColorAnswered(false); setColorCorrect(false); setColorScore(0); setColorTotal(0); setColorQuiz(false); setColorMemoRunning(false); setColorMemoPaused(false); setColorMemoLocked(false); setColorFibResult(null); setColorFibInput('');
+                setSightAnswered(false); setSightCorrect(false); setSightScore(0); setSightTotal(0);
+                setD3Answered(false); setD3Correct(false); setD3Score(0); setD3Total(0); setD3MemoRunning(false); setD3MemoPaused(false); setD3MemoLocked(false); setD3FibResult(null); setD3FibInput('');
+                setSpellAnswered(false); setSpellCorrect(false); setSpellScore(0); setSpellTotal(0);
+                setFbAnswered(false); setFbCorrect(false); setFbScore(0); setFbTotal(0); setFbSelected(null);
+                setTeenAnswered(false); setTeenCorrect(false); setTeenScore(0); setTeenTotal(0); setTeenMemoRunning(false); setTeenMemoPaused(false); setTeenMemoLocked(false); setTeenFibResult(null); setTeenFibInput('');
+                setTyAnswered(false); setTyCorrect(false); setTyScore(0); setTyTotal(0); setTyMemoRunning(false); setTyMemoPaused(false); setTyMemoLocked(false); setTyFibResult(null); setTyFibInput('');
+                if (t.key === 'shapes') setShapeIdx(Math.floor(Math.random() * shapes.length));
+                if (t.key === 'colors') setColorIdx(Math.floor(Math.random() * COLORS.length));
+                if (t.key === 'sight') setSightIdx(Math.floor(Math.random() * SIGHT_WORDS.length));
+                if (t.key === 'd3') setD3Idx(Math.floor(Math.random() * shape3dList.length));
+                if (t.key === 'spell') setSpellIdx(Math.floor(Math.random() * SPELL_WORDS.length));
+                if (t.key === 'blanks') setFbQIdx(Math.floor(Math.random() * QUESTIONS.length));
+                if (t.key === 'teen') setTeenIdx(Math.floor(Math.random() * TEEN_WORDS.length));
+                if (t.key === 'ty') setTyIdx(Math.floor(Math.random() * TY_WORDS.length));
+                if (t.key === 'days') { setDaysSub('quiz'); setDaysIdx(Math.floor(Math.random() * DAYS.length)); setDaysQuiz(false); setDaysAnswered(false); setDaysCorrect(false); setDaysScore(0); setDaysTotal(0); setDMemoRunning(false); setDMemoPaused(false); setDMemoLocked(false); setDaysFibResult(null); setDaysFibInput(''); }
+                if (t.key === 'veg') { setVegSub('quiz'); setVegIdx(Math.floor(Math.random() * VEGETABLES.length)); setVegQuiz(false); setVegAnswered(false); setVegCorrect(false); setVegScore(0); setVegTotal(0); setVMemoRunning(false); setVMemoPaused(false); setVMemoLocked(false); setVegFibResult(null); setVegFibInput(''); }
+                if (t.key === 'garden') { setGardenSub('quiz'); setGardenIdx(Math.floor(Math.random() * GARDEN.length)); setGardenQuiz(false); setGardenAnswered(false); setGardenCorrect(false); setGardenScore(0); setGardenTotal(0); setGMemoRunning(false); setGMemoPaused(false); setGMemoLocked(false); setGardenFibResult(null); setGardenFibInput(''); }
+                if (t.key === 'kitchen') { setKitchenSub('quiz'); setKitchenIdx(Math.floor(Math.random() * KITCHEN.length)); setKitchenQuiz(false); setKitchenAnswered(false); setKitchenCorrect(false); setKitchenScore(0); setKitchenTotal(0); setKMemoRunning(false); setKMemoPaused(false); setKMemoLocked(false); setKitchenFibResult(null); setKitchenFibInput(''); }
+                if (t.key === 'occupation') { setOccSub('quiz'); setOccIdx(Math.floor(Math.random() * OCCUPATIONS.length)); setOccQuiz(false); setOccAnswered(false); setOccCorrect(false); setOccScore(0); setOccTotal(0); setOccMemoRunning(false); setOccMemoPaused(false); setOccMemoLocked(false); setOccFibResult(null); setOccFibInput(''); }
+                if (t.key === 'birds') { setBirdSub('quiz'); setBirdIdx(Math.floor(Math.random() * BIRDS.length)); setBirdQuiz(false); setBirdAnswered(false); setBirdCorrect(false); setBirdScore(0); setBirdTotal(0); setBirdMemoRunning(false); setBirdMemoPaused(false); setBirdMemoLocked(false); setBirdFibResult(null); setBirdFibInput(''); }
+                if (t.key === 'animals') { setAnimalSub('quiz'); setAnimalIdx(Math.floor(Math.random() * ANIMALS.length)); setAnimalQuiz(false); setAnimalAnswered(false); setAnimalCorrect(false); setAnimalScore(0); setAnimalTotal(0); setAnimalMemoRunning(false); setAnimalMemoPaused(false); setAnimalMemoLocked(false); setAnimalFibResult(null); setAnimalFibInput(''); }
+                if (t.key === 'months') { setMonthSub('quiz'); setMonthIdx(Math.floor(Math.random() * MONTHS_LIST.length)); setMonthQuiz(false); setMonthAnswered(false); setMonthCorrect(false); setMonthScore(0); setMonthTotal(0); setMonthMemoRunning(false); setMonthMemoPaused(false); setMonthMemoLocked(false); setMonthFibResult(null); setMonthFibInput(''); setMonthIntroDone(false); }
+              }} className={`flex flex-col items-center gap-0.5 rounded-xl border border-slate-100 px-1 py-2.5 text-center transition ${tab === t.key ? 'border-fuchsia-300 bg-fuchsia-50 shadow-sm' : 'bg-white hover:border-slate-200 hover:shadow-sm'}`}>
+                <span className="text-lg leading-none">{t.icon}</span>
+                <span className={`text-[10px] font-bold leading-tight ${tab === t.key ? 'text-fuchsia-700' : 'text-slate-600'}`}>{t.label}</span>
+              </button>
+            ))}
+            {!showAllTabs && tabs.length > 3 && (
+              <button type="button" onClick={() => setShowAllTabs(true)} className="flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-dashed border-slate-200 px-1 py-2.5 text-center transition hover:border-slate-300 hover:bg-slate-50">
+                <span className="text-lg leading-none text-slate-400">+{tabs.length - 3}</span>
+                <span className="text-[10px] font-bold leading-tight text-slate-400">More</span>
+              </button>
+            )}
+          </div>
+        </section>
       </div>
     </main>
   );

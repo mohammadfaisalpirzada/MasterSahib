@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Peace International School - BSEK Result 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5; padding: 20px; color: #1a1a2e;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            background: linear-gradient(135deg, #1a237e, #283593, #3949ab);
+            color: white; padding: 30px; border-radius: 16px; margin-bottom: 20px;
+            box-shadow: 0 8px 30px rgba(26,35,126,0.3);
+        }
+        .header h1 { font-size: 24px; font-weight: 800; }
+        .header h2 { font-size: 15px; font-weight: 400; opacity: 0.85; margin-top: 6px; }
+        .badges { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+        .badge {
+            background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 50px;
+            font-size: 11px; font-weight: 600;
+        }
+        .badge strong { font-size: 15px; }
+
+        .kpir {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;
+        }
+        .kpi {
+            background: white; padding: 14px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .kpi .lbl { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.3px; }
+        .kpi .val { font-size: 26px; font-weight: 900; margin-top: 2px; }
+        .kpi .val.green { color: #2e7d32; }
+        .kpi .val.blue { color: #1565c0; }
+        .kpi .val.orange { color: #e65100; }
+        .kpi .val.purple { color: #6a1b9a; }
+        .kpi .sub { font-size: 10px; color: #888; margin-top: 2px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .card {
+            background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .card.full { grid-column: 1 / -1; }
+        .card h3 { font-size: 13px; font-weight: 700; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #f0f2f5; }
+        .card .chart-wrap { position: relative; width: 100%; min-height: 240px; }
+        .card .chart-wrap.tall { min-height: 280px; }
+
+        .tcard {
+            background: white; border-radius: 12px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+        }
+        .tcard h3 { font-size: 13px; font-weight: 700; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #f0f2f5; }
+        .tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+        .tab {
+            padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+            border: none; cursor: pointer; background: #f0f2f5; color: #555;
+        }
+        .tab.on { background: #1a237e; color: white; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px; }
+        th {
+            background: #f5f7fa; padding: 8px 8px; text-align: left; font-weight: 700;
+            font-size: 10px; text-transform: uppercase; color: #555; border-bottom: 2px solid #e0e0e0;
+            white-space: nowrap;
+        }
+        td { padding: 7px 8px; border-bottom: 1px solid #f0f2f5; }
+        tr:hover { background: #f8f9ff; }
+
+        .g-A1 { color: #1b5e20; font-weight: 700; }
+        .g-A2 { color: #2e7d32; font-weight: 700; }
+        .g-A { color: #388e3c; font-weight: 700; }
+        .g-B { color: #1565c0; font-weight: 700; }
+        .g-C { color: #e65100; font-weight: 700; }
+        .g- { color: #bbb; }
+
+        .pbadge { display: inline-block; padding: 2px 10px; border-radius: 50px; font-size: 10px; font-weight: 700; }
+        .pbadge.ok { background: #e8f5e9; color: #2e7d32; }
+        .pbadge.no { background: #f5f5f5; color: #bbb; }
+
+        .gTag { display: inline-block; padding: 1px 8px; border-radius: 50px; font-size: 9px; font-weight: 700; }
+        .gTag.b { background: #e3f2fd; color: #1565c0; }
+        .gTag.g { background: #fce4ec; color: #c62828; }
+
+        canvas { max-width: 100%; display: block; }
+        .foot { text-align: center; font-size: 10px; color: #aaa; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e0e0e0; }
+
+        @media (max-width: 600px) {
+            body { padding: 8px; overflow-x: hidden; }
+            .container { max-width: 100%; overflow-x: hidden; }
+            .header { padding: 14px; border-radius: 12px; }
+            .header h1 { font-size: 16px; line-height: 1.3; }
+            .header h2 { font-size: 11px; margin-top: 4px; }
+            .badges { gap: 5px; margin-top: 10px; }
+            .badge { font-size: 9px; padding: 3px 8px; border-radius: 50px; }
+            .badge strong { font-size: 11px; }
+            .kpir { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+            .kpi { padding: 8px 6px; border-radius: 10px; }
+            .kpi .lbl { font-size: 8px; }
+            .kpi .val { font-size: 18px; }
+            .kpi .sub { font-size: 8px; }
+            .grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 14px; overflow: hidden; }
+            .card { padding: 10px; border-radius: 10px; overflow: hidden; }
+            .card h3 { font-size: 11px; margin-bottom: 8px; }
+            .card .chart-wrap { min-height: 200px; }
+            .card .chart-wrap.tall { min-height: 220px; }
+            .tcard { padding: 10px; border-radius: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .tcard h3 { font-size: 11px; }
+            .tabs { gap: 4px; }
+            .tab { padding: 4px 10px; font-size: 10px; }
+            table { font-size: 9px; min-width: 420px; }
+            th { padding: 5px 3px; font-size: 7px; white-space: nowrap; }
+            td { padding: 3px; white-space: nowrap; }
+            .pbadge { font-size: 8px; padding: 1px 6px; }
+            .gTag { font-size: 8px; padding: 1px 5px; }
+            .foot { font-size: 9px; margin-top: 10px; }
+        }
+        @media (max-width: 380px) {
+            body { padding: 6px; }
+            .header { padding: 12px; }
+            .header h1 { font-size: 14px; }
+            .header h2 { font-size: 10px; }
+            .badges { gap: 4px; }
+            .badge { font-size: 8px; padding: 2px 6px; }
+            .badge strong { font-size: 10px; }
+            .kpir { grid-template-columns: repeat(2, 1fr); gap: 5px; }
+            .kpi .val { font-size: 16px; }
+            .card .chart-wrap { min-height: 180px; }
+            .card .chart-wrap.tall { min-height: 200px; }
+            table { font-size: 8px; min-width: 380px; }
+            th { font-size: 7px; padding: 4px 2px; }
+            td { padding: 2px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+    <h1>BSEK SSC Part II — Annual Exam 2026</h1>
+    <h2>Science Group | Peace International School</h2>
+    <div class="badges">
+        <span class="badge"><strong>18</strong> Students</span>
+        <span class="badge"><strong>11</strong> Boys</span>
+        <span class="badge"><strong>7</strong> Girls</span>
+        <span class="badge"><strong>100%</strong> Boys Pass ✅</span>
+        <span class="badge"><strong>85.7%</strong> Girls Pass ✅</span>
+        <span class="badge"><strong>94.4%</strong> Overall ✅</span>
+    </div>
+</div>
+
+<div class="kpir">
+    <div class="kpi"><div class="lbl">Total</div><div class="val blue">18</div><div class="sub">11 Boys · 7 Girls</div></div>
+    <div class="kpi"><div class="lbl">Pass</div><div class="val green">17</div><div class="sub">11 Boys · 6 Girls</div></div>
+    <div class="kpi"><div class="lbl">Pass %</div><div class="val green">94.4%</div><div class="sub">Boys 100% · Girls 85.7%</div></div>
+    <div class="kpi"><div class="lbl">Top Score</div><div class="val orange">931</div><div class="sub">M ROBAS KHAN - A1</div></div>
+    <div class="kpi"><div class="lbl">Average</div><div class="val purple">794</div><div class="sub">out of 1100</div></div>
+    <div class="kpi"><div class="lbl">A/A1/A2</div><div class="val green">11</div><div class="sub">61% students</div></div>
+</div>
+
+<div class="grid">
+    <div class="card"><h3>Pass Percentage</h3><div class="chart-wrap"><canvas id="c1"></canvas></div></div>
+    <div class="card"><h3>Grade Distribution</h3><div class="chart-wrap"><canvas id="c2"></canvas></div></div>
+    <div class="card"><h3>Boys vs Girls - Pass</h3><div class="chart-wrap"><canvas id="c3"></canvas></div></div>
+    <div class="card"><h3>Marks Range</h3><div class="chart-wrap"><canvas id="c4"></canvas></div></div>
+    <div class="card full"><h3>Top 10 Students</h3><div class="chart-wrap tall"><canvas id="c5"></canvas></div></div>
+    <div class="card"><h3>Boys Scores</h3><div class="chart-wrap tall"><canvas id="c6"></canvas></div></div>
+    <div class="card"><h3>Girls Scores</h3><div class="chart-wrap tall"><canvas id="c7"></canvas></div></div>
+</div>
+
+<div class="tcard">
+    <h3>Complete Result</h3>
+    <div class="tabs">
+        <button class="tab on" onclick="showTab('all',this)">All</button>
+        <button class="tab" onclick="showTab('boys',this)">Boys</button>
+        <button class="tab" onclick="showTab('girls',this)">Girls</button>
+    </div>
+    <div id="tbl"></div>
+</div>
+
+<div class="foot">BSEK SSC Part II Science Group - Annual 2026 - Peace International School</div>
+
+</div>
+
+<script>
+const D = [
+    {n:"M ROBAS KHAN",gr:173,f:"M FARHAN ATIQUE",r:316021,g:"A1",o:931,gen:"B"},
+    {n:"HUZAIFA FAISAL",gr:678,f:"M FAISAL",r:316018,g:"A1",o:877,gen:"B"},
+    {n:"M HAYYAN WAHEED",gr:188,f:"WAHEED AKHTER",r:316020,g:"A2",o:877,gen:"B"},
+    {n:"S HASAN ALI",gr:595,f:"S KASHIF ALI",r:316024,g:"A",o:865,gen:"B"},
+    {n:"HASSAN AHMED",gr:444,f:"AHMED HUSSAIN",r:316017,g:"A",o:862,gen:"B"},
+    {n:"S HAMZA ALI",gr:586,f:"S KASHIF ALI",r:316023,g:"A",o:853,gen:"B"},
+    {n:"MIR SAQIB HUSSAIN",gr:387,f:"MIR WAJIHUDDIN HUSSAIN",r:316019,g:"A",o:789,gen:"B"},
+    {n:"ABDULLAH",gr:601,f:"YAHYA ABBA QASIM",r:316016,g:"A",o:766,gen:"B"},
+    {n:"UMER FAROOQ",gr:508,f:"M IMRAN",r:316025,g:"B",o:694,gen:"B"},
+    {n:"M YAHYA BIN HAMMAD",gr:608,f:"M ABU HAMMAD",r:316022,g:"B",o:661,gen:"B"},
+    {n:"ABDUL REHMAN",gr:642,f:"M IMRAN",r:316015,g:"C",o:653,gen:"B"},
+    {n:"AYESHA KHAN",gr:518,f:"M SAIF ULLAH KHAN",r:441479,g:"A1",o:882,gen:"G"},
+    {n:"SUMMAYA BASHIR MUGHAL",gr:542,f:"M ASAD MUGHAL",r:441485,g:"A",o:868,gen:"G"},
+    {n:"HANIA",gr:10,f:"HAFIZ FAZAL-UR-REHMAN",r:441482,g:"A",o:832,gen:"G"},
+    {n:"PAKIZA NOOR",gr:702,f:"M ASIF",r:441483,g:"A",o:831,gen:"G"},
+    {n:"RAHMA UBAID ULLAH",gr:143,f:"UBAID KHALID",r:441484,g:"A",o:773,gen:"G"},
+    {n:"FATIMA AZAM",gr:604,f:"M AZAM KHAN",r:441481,g:"B",o:685,gen:"G"},
+    {n:"FATIMA",gr:672,f:"M IQBAL HALIPOTA",r:441480,g:"-",o:0,gen:"G"}
+];
+const MAX = 1100;
+const S = [...D].sort((a,b)=>b.o-a.o);
+const B = D.filter(d=>d.gen==='B');
+const G = D.filter(d=>d.gen==='G');
+
+function pC(arr){return arr.filter(d=>d.o>0).length}
+function fC(arr){return arr.filter(d=>d.o===0).length}
+
+const grades = {};
+D.forEach(d=>{let g=d.o===0?'-':d.g;grades[g]=(grades[g]||0)+1});
+
+Chart.defaults.font.family = "-apple-system, sans-serif";
+
+function mk(id,cfg){new Chart(document.getElementById(id),cfg)}
+
+mk('c1',{
+    type:'doughnut',
+    data:{
+        labels:['Pass 94.4%',''],
+        datasets:[{
+            data:[pC(D),fC(D)],
+            backgroundColor:['#2e7d32','#e0e0e0'],
+            borderWidth:2,borderColor:'#fff'
+        }]
+    },
+    options:{
+        responsive:true,maintainAspectRatio:false,cutout:'60%',
+        plugins:{
+            legend:{position:'bottom',labels:{padding:16,font:{size:13,weight:'700'},
+                filter:function(it){return it.text!==''}}}
+        }
+    }
+});
+
+mk('c2',{
+    type:'doughnut',
+    data:{
+        labels:Object.keys(grades),
+        datasets:[{
+            data:Object.values(grades),
+            backgroundColor:Object.keys(grades).map(function(l){
+                if(l==='A1')return '#1b5e20';if(l==='A2')return '#2e7d32';
+                if(l==='A')return '#43a047';if(l==='B')return '#1565c0';
+                if(l==='C')return '#e65100';return '#e0e0e0';
+            }),
+            borderWidth:2,borderColor:'#fff'
+        }]
+    },
+    options:{
+        responsive:true,maintainAspectRatio:false,cutout:'50%',
+        plugins:{
+            legend:{position:'bottom',labels:{padding:14,font:{size:11,weight:'600'}}}
+        }
+    }
+});
+
+mk('c3',{
+    type:'bar',
+    data:{
+        labels:['Boys','Girls'],
+        datasets:[{
+            label:'Pass',
+            data:[pC(B),pC(G)],
+            backgroundColor:['#1565c0','#c62828'],
+            borderRadius:6,barPercentage:0.5
+        }]
+    },
+    options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+            y:{beginAtZero:true,max:12,ticks:{stepSize:2}},
+            x:{grid:{display:false}}
+        }
+    }
+});
+
+mk('c4',{
+    type:'doughnut',
+    data:{
+        labels:['900+ (A1)','800-899 (A/A2)','700-799 (A)','600-699 (B)','500-599 (C)','<500'],
+        datasets:[{
+            data:[
+                D.filter(d=>d.o>=900).length,
+                D.filter(d=>d.o>=800&&d.o<900).length,
+                D.filter(d=>d.o>=700&&d.o<800).length,
+                D.filter(d=>d.o>=600&&d.o<700).length,
+                D.filter(d=>d.o>=500&&d.o<600).length,
+                D.filter(d=>d.o<500).length
+            ],
+            backgroundColor:['#1b5e20','#2e7d32','#43a047','#1565c0','#e65100','#e0e0e0'],
+            borderWidth:2,borderColor:'#fff'
+        }]
+    },
+    options:{
+        responsive:true,maintainAspectRatio:false,cutout:'50%',
+        plugins:{
+            legend:{position:'bottom',labels:{padding:12,font:{size:10,weight:'600'}}}
+        }
+    }
+});
+
+var top10 = S.slice(0,10);
+mk('c5',{
+    type:'bar',
+    data:{
+        labels:top10.map(function(d){return d.n}),
+        datasets:[{
+            label:'Marks',
+            data:top10.map(function(d){return d.o}),
+            backgroundColor:top10.map(function(d){return d.gen==='B'?'#1565c0':'#c62828'}),
+            borderRadius:6
+        }]
+    },
+    options:{
+        responsive:true,maintainAspectRatio:false,indexAxis:'y',
+        plugins:{legend:{display:false}},
+        scales:{
+            x:{beginAtZero:true,max:1000,grid:{color:'#f0f0f0'}},
+            y:{grid:{display:false},ticks:{font:{size:10}}}
+        }
+    }
+});
+
+var Bs = [...B].sort(function(a,b){return b.o-a.o});
+mk('c6',{
+    type:'bar',
+    data:{
+        labels:Bs.map(function(d){return d.n.split(' ').slice(0,2).join(' ')}),
+        datasets:[{
+            label:'Marks',
+            data:Bs.map(function(d){return d.o}),
+            backgroundColor:Bs.map(function(d){
+                if(d.g==='A1')return '#1b5e20';if(d.g==='A2')return '#2e7d32';
+                if(d.g==='A')return '#43a047';if(d.g==='B')return '#1565c0';return '#e65100';
+            }),
+            borderRadius:6
+        }]
+    },
+    options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+            y:{beginAtZero:true,max:1000,grid:{color:'#f0f0f0'}},
+            x:{grid:{display:false},ticks:{font:{size:9}}}
+        }
+    }
+});
+
+var Gs = [...G].sort(function(a,b){return b.o-a.o});
+mk('c7',{
+    type:'bar',
+    data:{
+        labels:Gs.map(function(d){return d.n.split(' ').slice(0,2).join(' ')}),
+        datasets:[{
+            label:'Marks',
+            data:Gs.map(function(d){return d.o}),
+            backgroundColor:Gs.map(function(d){
+                if(d.o===0)return '#e0e0e0';
+                if(d.g==='A1')return '#1b5e20';if(d.g==='A')return '#43a047';
+                if(d.g==='B')return '#1565c0';return '#e65100';
+            }),
+            borderRadius:6
+        }]
+    },
+    options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+            y:{beginAtZero:true,max:1000,grid:{color:'#f0f0f0'}},
+            x:{grid:{display:false},ticks:{font:{size:9}}}
+        }
+    }
+});
+
+function tbl(arr){
+    var h='<thead><tr><th>#</th><th>Name</th><th>GR</th><th>Father</th><th>Roll</th><th>Grade</th><th>Total</th><th>Obtained</th><th>%</th><th>Result</th></tr></thead>';
+    var s=[...arr].sort(function(a,b){return b.o-a.o});
+    var r=s.map(function(d,i){
+        var p=d.o===0?0:((d.o/MAX)*100).toFixed(1);
+        var res=d.o===0?'Fail':'Pass';
+        var rc=res==='Pass'?'ok':'no';
+        var gd=d.o===0?'-':d.g;
+        var gt=d.gen==='B'?'<span class="gTag b">Boy</span>':'<span class="gTag g">Girl</span>';
+        return '<tr><td>'+(i+1)+'</td><td><strong>'+d.n+'</strong> '+gt+'</td><td>'+d.gr+'</td><td>'+d.f+'</td><td>'+d.r+'</td><td class="g-'+d.g+'">'+gd+'</td><td>'+MAX+'</td><td><strong>'+d.o+'</strong></td><td>'+p+'%</td><td><span class="pbadge '+rc+'">'+res+'</span></td></tr>';
+    }).join('');
+    return '<table>'+h+'<tbody>'+r+'</tbody></table>';
+}
+
+function showTab(f,btn){
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});
+    btn.classList.add('on');
+    var data = f==='all'?D:(f==='boys'?B:G);
+    document.getElementById('tbl').innerHTML = tbl(data);
+}
+
+document.getElementById('tbl').innerHTML = tbl(D);
+</script>
+</body>
+</html>

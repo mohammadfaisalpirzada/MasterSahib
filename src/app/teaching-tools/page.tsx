@@ -20,6 +20,7 @@ const categoryLabels: Record<string, string> = {
 
 const ageLabels: Record<string, string> = {
   '3-6': 'Ages 3-6',
+  '5-11': 'Ages 5-11',
   '7-12': 'Ages 7-12',
   '13-16': 'Ages 13-16',
   general: 'Teachers',
