@@ -63,6 +63,15 @@
         }
         .tab.on { background: #1a237e; color: white; }
 
+        .show-more {
+            text-align: center; padding: 10px; margin-top: 8px;
+            font-size: 11px; font-weight: 600; color: #999; cursor: pointer;
+            border-top: 1px dashed #e0e0e0;
+            transition: color 0.2s;
+        }
+        .show-more:hover { color: #1a237e; }
+        .fail-row { opacity: 0.6; }
+
         table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px; }
         th {
             background: #f5f7fa; padding: 8px 8px; text-align: left; font-weight: 700;
@@ -89,6 +98,152 @@
 
         canvas { max-width: 100%; display: block; }
         .foot { text-align: center; font-size: 10px; color: #aaa; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e0e0e0; }
+
+        /* === CONGRATULATIONS BANNER === */
+        .congrats-wrap {
+            position: relative; overflow: hidden;
+            background: linear-gradient(135deg, #0d0d2b 0%, #1a1a4e 30%, #2d1b69 60%, #1a0a3e 100%);
+            border-radius: 16px; margin-bottom: 20px; padding: 35px 20px 30px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4), inset 0 0 80px rgba(255,215,0,0.05);
+            text-align: center; min-height: 180px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .congrats-wrap::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at 50% 30%, rgba(255,215,0,0.12) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* Stars container - FULL PAGE */
+        .stars-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; overflow: hidden; z-index: 9999;
+        }
+        .star {
+            position: absolute; top: -30px;
+            animation: starFall linear infinite;
+            opacity: 0;
+        }
+        @keyframes starFall {
+            0% { transform: translateY(-30px) rotate(0deg) scale(0.5); opacity: 0; }
+            8% { opacity: 0.9; }
+            85% { opacity: 0.9; }
+            100% { transform: translateY(105vh) rotate(270deg) scale(1); opacity: 0; }
+        }
+        .star span {
+            display: block; font-size: 18px;
+            filter: drop-shadow(0 0 6px rgba(255,215,0,0.8));
+            animation: starGlow 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes starGlow {
+            0% { filter: drop-shadow(0 0 4px rgba(255,215,0,0.6)); transform: scale(0.9); }
+            100% { filter: drop-shadow(0 0 12px rgba(255,215,0,1)); transform: scale(1.1); }
+        }
+
+        /* Sparkle dots */
+        .sparkle {
+            position: absolute; width: 4px; height: 4px;
+            background: #ffd700; border-radius: 50%;
+            animation: twinkle ease-in-out infinite alternate;
+            opacity: 0;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1.5); }
+            100% { opacity: 0.3; transform: scale(0.5); }
+        }
+
+        /* Main text - drops in */
+        .congrats-title {
+            position: relative; z-index: 2;
+            font-size: 32px; font-weight: 900; letter-spacing: 4px;
+            background: linear-gradient(180deg, #fff 0%, #ffd700 40%, #ffaa00 70%, #ff8c00 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; text-fill-color: transparent;
+            animation: titleDrop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, titlePulse 2s ease-in-out 1.4s infinite;
+            text-shadow: none;
+            filter: drop-shadow(0 2px 8px rgba(255,215,0,0.5));
+            opacity: 0;
+        }
+        @keyframes titleDrop {
+            0% { transform: translateY(-80px) scale(0.3); opacity: 0; filter: drop-shadow(0 2px 4px rgba(255,215,0,0.2)); }
+            60% { transform: translateY(8px) scale(1.05); opacity: 1; }
+            80% { transform: translateY(-3px) scale(0.98); }
+            100% { transform: translateY(0) scale(1); opacity: 1; filter: drop-shadow(0 2px 8px rgba(255,215,0,0.5)); }
+        }
+        @keyframes titlePulse {
+            0%, 100% { filter: drop-shadow(0 2px 8px rgba(255,215,0,0.5)); transform: scale(1); }
+            50% { filter: drop-shadow(0 4px 20px rgba(255,215,0,0.8)); transform: scale(1.03); }
+        }
+        .congrats-trophy { font-size: 48px; margin-bottom: 8px; position: relative; z-index: 2;
+            animation: trophyDrop 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards, trophyBounce 2s ease-in-out 1.4s infinite;
+            opacity: 0;
+        }
+        @keyframes trophyDrop {
+            0% { transform: translateY(-100px) scale(0.2) rotate(-20deg); opacity: 0; }
+            60% { transform: translateY(10px) scale(1.1) rotate(5deg); opacity: 1; }
+            80% { transform: translateY(-4px) scale(0.95) rotate(-2deg); }
+            100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes trophyBounce {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-8px) rotate(3deg); }
+        }
+        .congrats-sub {
+            position: relative; z-index: 2;
+            font-size: 14px; color: rgba(255,255,255,0.85); margin-top: 10px;
+            font-weight: 500; letter-spacing: 1px;
+            animation: fadeDrop 0.8s ease-out 0.6s forwards;
+            opacity: 0;
+        }
+        .congrats-stats {
+            position: relative; z-index: 2;
+            display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; justify-content: center;
+            animation: fadeDrop 0.8s ease-out 0.9s forwards;
+            opacity: 0;
+        }
+        @keyframes fadeDrop {
+            0% { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .congrats-stat {
+            background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.25);
+            padding: 6px 16px; border-radius: 50px; color: #ffd700;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .congrats-stat strong { font-size: 16px; }
+
+        /* Light beams */
+        .beam {
+            position: absolute; bottom: 0; width: 2px; height: 100%;
+            background: linear-gradient(to top, rgba(255,215,0,0.15), transparent);
+            animation: beamGlow 3s ease-in-out infinite;
+            opacity: 0.3;
+        }
+        @keyframes beamGlow {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.4; }
+        }
+
+        @media (max-width: 600px) {
+            .congrats-wrap { padding: 24px 14px 22px; border-radius: 12px; margin-bottom: 14px; min-height: 150px; }
+            .congrats-trophy { font-size: 36px; }
+            .congrats-title { font-size: 22px; letter-spacing: 2px; }
+            .congrats-sub { font-size: 11px; margin-top: 6px; }
+            .congrats-stats { gap: 8px; margin-top: 10px; }
+            .congrats-stat { font-size: 10px; padding: 4px 10px; }
+            .congrats-stat strong { font-size: 13px; }
+            .star span { font-size: 14px; }
+        }
+        @media (max-width: 380px) {
+            .congrats-wrap { padding: 18px 10px 16px; min-height: 130px; }
+            .congrats-trophy { font-size: 30px; }
+            .congrats-title { font-size: 18px; letter-spacing: 1px; }
+            .congrats-sub { font-size: 10px; }
+            .congrats-stat { font-size: 9px; padding: 3px 8px; }
+            .congrats-stat strong { font-size: 11px; }
+            .star span { font-size: 12px; }
+        }
 
         @media (max-width: 600px) {
             body { padding: 8px; overflow-x: hidden; }
@@ -118,6 +273,7 @@
             td { padding: 3px; white-space: nowrap; }
             .pbadge { font-size: 8px; padding: 1px 6px; }
             .gTag { font-size: 8px; padding: 1px 5px; }
+            .show-more { font-size: 10px; padding: 8px; }
             .foot { font-size: 9px; margin-top: 10px; }
         }
         @media (max-width: 380px) {
@@ -140,6 +296,32 @@
 </head>
 <body>
 <div class="container">
+
+<!-- FALLING STARS - FULL PAGE -->
+<div class="stars-container" id="starsContainer"></div>
+
+<!-- CONGRATULATIONS BANNER -->
+<div class="congrats-wrap" id="congratsWrap">
+
+    <!-- Light beams -->
+    <div class="beam" style="left:10%; animation-delay:0s;"></div>
+    <div class="beam" style="left:25%; animation-delay:0.5s;"></div>
+    <div class="beam" style="left:40%; animation-delay:1s;"></div>
+    <div class="beam" style="left:55%; animation-delay:1.5s;"></div>
+    <div class="beam" style="left:70%; animation-delay:0.8s;"></div>
+    <div class="beam" style="left:85%; animation-delay:1.2s;"></div>
+    <div class="beam" style="left:95%; animation-delay:0.3s;"></div>
+
+    <div class="congrats-trophy">🏆</div>
+    <div class="congrats-title">CONGRATULATIONS!</div>
+    <div class="congrats-sub">Peace International School — Outstanding BSEK SSC Results 2026</div>
+    <div class="congrats-stats">
+        <span class="congrats-stat">🎓 <strong>18</strong> Students</span>
+        <span class="congrats-stat">✅ <strong>94.4%</strong> Pass Rate</span>
+        <span class="congrats-stat">🥇 <strong>931</strong> Top Score</span>
+        <span class="congrats-stat">⭐ <strong>11</strong> A-Grade Students</span>
+    </div>
+</div>
 
 <div class="header">
     <h1>BSEK SSC Part II — Annual Exam 2026</h1>
@@ -383,28 +565,105 @@ mk('c7',{
     }
 });
 
-function tbl(arr){
+function tbl(arr, showFailed){
     var h='<thead><tr><th>#</th><th>Name</th><th>GR</th><th>Father</th><th>Roll</th><th>Grade</th><th>Total</th><th>Obtained</th><th>%</th><th>Result</th></tr></thead>';
-    var s=[...arr].sort(function(a,b){return b.o-a.o});
-    var r=s.map(function(d,i){
+    var sorted = [...arr].sort(function(a,b){return b.o-a.o});
+    var passed = sorted.filter(function(d){ return d.o > 0; });
+    var failed = sorted.filter(function(d){ return d.o === 0; });
+    var list = showFailed ? sorted : passed;
+
+    var r=list.map(function(d,i){
         var p=d.o===0?0:((d.o/MAX)*100).toFixed(1);
         var res=d.o===0?'Fail':'Pass';
         var rc=res==='Pass'?'ok':'no';
         var gd=d.o===0?'-':d.g;
         var gt=d.gen==='B'?'<span class="gTag b">Boy</span>':'<span class="gTag g">Girl</span>';
-        return '<tr><td>'+(i+1)+'</td><td><strong>'+d.n+'</strong> '+gt+'</td><td>'+d.gr+'</td><td>'+d.f+'</td><td>'+d.r+'</td><td class="g-'+d.g+'">'+gd+'</td><td>'+MAX+'</td><td><strong>'+d.o+'</strong></td><td>'+p+'%</td><td><span class="pbadge '+rc+'">'+res+'</span></td></tr>';
+        var fadeClass = d.o===0 ? ' class="fail-row"' : '';
+        return '<tr'+fadeClass+'><td>'+(i+1)+'</td><td><strong>'+d.n+'</strong> '+gt+'</td><td>'+d.gr+'</td><td>'+d.f+'</td><td>'+d.r+'</td><td class="g-'+d.g+'">'+gd+'</td><td>'+MAX+'</td><td><strong>'+d.o+'</strong></td><td>'+p+'%</td><td><span class="pbadge '+rc+'">'+res+'</span></td></tr>';
     }).join('');
-    return '<table>'+h+'<tbody>'+r+'</tbody></table>';
+
+    var moreHtml = '';
+    if(failed.length > 0 && !showFailed){
+        moreHtml = '<div class="show-more" onclick="toggleFailed()">+ ' + failed.length + ' more result</div>';
+    }
+
+    return '<table>'+h+'<tbody>'+r+'</tbody></table>' + moreHtml;
+}
+
+var currentTab = 'all';
+var showFailed = false;
+
+function toggleFailed(){
+    showFailed = true;
+    refreshTable();
 }
 
 function showTab(f,btn){
     document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});
     btn.classList.add('on');
-    var data = f==='all'?D:(f==='boys'?B:G);
-    document.getElementById('tbl').innerHTML = tbl(data);
+    currentTab = f;
+    showFailed = false;
+    refreshTable();
 }
 
-document.getElementById('tbl').innerHTML = tbl(D);
+function refreshTable(){
+    var data = currentTab==='all'?D:(currentTab==='boys'?B:G);
+    document.getElementById('tbl').innerHTML = tbl(data, showFailed);
+}
+
+document.getElementById('tbl').innerHTML = tbl(D, false);
+
+// === FALLING STARS ANIMATION ===
+(function(){
+    var container = document.getElementById('starsContainer');
+    var starSymbols = ['⭐','✦','★','✧','𝗣','黄金','🌟','✪','✫','✬'];
+    var starColors = ['#ffd700','#ffec80','#ffaa00','#ffe066','#ffb347','#fff4cc'];
+
+    // Create falling stars
+    function createStar(){
+        var el = document.createElement('div');
+        el.className = 'star';
+        el.style.left = Math.random() * 100 + '%';
+        el.style.animationDuration = (4 + Math.random() * 4) + 's';
+        el.style.animationDelay = (Math.random() * 6) + 's';
+
+        var sym = document.createElement('span');
+        sym.textContent = starSymbols[Math.floor(Math.random() * starSymbols.length)];
+        var size = 12 + Math.random() * 14;
+        sym.style.fontSize = size + 'px';
+        sym.style.color = starColors[Math.floor(Math.random() * starColors.length)];
+        el.appendChild(sym);
+        container.appendChild(el);
+    }
+
+    // Create sparkles
+    function createSparkle(){
+        var el = document.createElement('div');
+        el.className = 'sparkle';
+        el.style.left = Math.random() * 100 + '%';
+        el.style.top = Math.random() * 100 + '%';
+        el.style.animationDuration = (1.5 + Math.random() * 2.5) + 's';
+        el.style.animationDelay = (Math.random() * 4) + 's';
+        var size = 2 + Math.random() * 4;
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+        el.style.background = starColors[Math.floor(Math.random() * starColors.length)];
+        container.appendChild(el);
+    }
+
+    // Generate stars - kam shuru mein
+    for(var i = 0; i < 8; i++) createStar();
+    // Generate sparkles - kam shuru mein
+    for(var j = 0; j < 12; j++) createSparkle();
+
+    // Slowly keep adding stars - zyada waqt
+    setInterval(function(){
+        if(container.querySelectorAll('.star').length < 14) createStar();
+    }, 3000);
+    setInterval(function(){
+        if(container.querySelectorAll('.sparkle').length < 20) createSparkle();
+    }, 2500);
+})();
 </script>
 </body>
 </html>
