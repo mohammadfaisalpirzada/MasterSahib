@@ -66,8 +66,10 @@ const PortfolioPage = () => {
         <section id="about" className="mb-12">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Professional Summary</h2>
           <p className="text-gray-600 leading-relaxed">
-            Experienced education professional with over 20 years of expertise in teaching Mathematics 
-            and Physics, curriculum development, and department management. A tech-savvy leader with 
+            Education professional and freelancer with over 20 years of expertise in teaching Mathematics 
+            and Physics, curriculum development, and department management. Currently working as a freelance 
+            education consultant — developing plans, curriculums, and academic frameworks for schools including 
+            Meezan School, Daniyal Montessori Academy, and others. A tech-savvy professional with 
             a passion for integrating digital tools into education, adept at handling online education 
             platforms and fostering innovative learning environments. Committed to lifelong learning 
             and excellence in education.
@@ -98,6 +100,10 @@ const PortfolioPage = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Skills</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white p-4 rounded-lg shadow-sm">
+              <h3 className="font-semibold text-gray-800 mb-2">Curriculum & Plan Development</h3>
+              <p className="text-gray-600">Designing academic plans, curriculums, assessment systems, and teaching frameworks for schools (Meezan, Daniyal Montessori, etc.)</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="font-semibold text-gray-800 mb-2">Software Proficiency</h3>
               <p className="text-gray-600">Microsoft Office (Word, Excel, Visio), Adobe Illustrator, Photoshop, Canva, and Serif</p>
             </div>
@@ -107,7 +113,11 @@ const PortfolioPage = () => {
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="font-semibold text-gray-800 mb-2">Education Technology</h3>
-              <p className="text-gray-600">Online Education Management with platforms like Zoom</p>
+              <p className="text-gray-600">Online Education Management with platforms like Zoom, and building educational web apps</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <h3 className="font-semibold text-gray-800 mb-2">Department Management</h3>
+              <p className="text-gray-600">Leading secondary departments, coordinating teachers, aligning Cambridge & local standards</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h3 className="font-semibold text-gray-800 mb-2">Language Skills</h3>
@@ -120,15 +130,25 @@ const PortfolioPage = () => {
         <section id="experience" className="mb-12">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Professional Experience</h2>
           <div className="space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-emerald-500">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-emerald-600">Current</span>
+              </div>
+              <h3 className="font-semibold text-gray-800">Freelance Education Consultant</h3>
+              <p className="text-blue-600 mb-2">Self-Employed</p>
+              <p className="text-xs text-gray-400 mb-2">July 2026 — Present</p>
+              <p className="text-gray-600">Developing comprehensive academic plans, curriculums, and educational frameworks for schools including Meezan School, Daniyal Montessori Academy, and other institutions. Designing custom teaching strategies, assessment systems, and learning environments tailored to each school&apos;s vision.</p>
+            </div>
             <div className="bg-white p-6 rounded-lg shadow-sm">
               <h3 className="font-semibold text-gray-800">Head of Department (Secondary)</h3>
               <p className="text-blue-600 mb-2">Peace International School</p>
-              <p className="text-gray-600">Lead and manage the secondary department, oversee curriculum planning, and coordinate teaching methods to align with Cambridge and local education standards.</p>
+              <p className="text-xs text-gray-400 mb-2">2018 — June 2026</p>
+              <p className="text-gray-600">Led and managed the secondary department, oversaw curriculum planning, and coordinated teaching methods to align with Cambridge and local education standards.</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm">
               <h3 className="font-semibold text-gray-800">Mathematics Teacher</h3>
               <p className="text-blue-600 mb-2">Government Girls Secondary School</p>
-              <p className="text-gray-600">Focus on building students analytical and problem-solving skills through effective Mathematics teaching and engagement in extracurricular activities.</p>
+              <p className="text-gray-600">Focused on building students&apos; analytical and problem-solving skills through effective Mathematics teaching and engagement in extracurricular activities.</p>
             </div>
           </div>
         </section>
