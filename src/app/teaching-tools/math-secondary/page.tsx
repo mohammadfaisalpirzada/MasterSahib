@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useState, useCallback } from 'react';
+import { shuffle } from '@/app/lib/learn-utils';
 
 type Subject = 'algebra' | 'geometry' | 'trigonometry';
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -8,11 +9,6 @@ type Question = { q: string; options: string[]; answer: string };
 
 function r(a: number, b: number) { return Math.floor(Math.random() * (b - a + 1)) + a; }
 function pick<T>(arr: T[]): T { return arr[r(0, arr.length - 1)]; }
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) { const j = r(0, i); [a[i], a[j]] = [a[j], a[i]]; }
-  return a;
-}
 
 function genAlgebra(diff: Difficulty): Question {
   if (diff === 'easy') {

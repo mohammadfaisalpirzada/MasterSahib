@@ -3,34 +3,12 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HiLockClosed } from 'react-icons/hi';
+import { speak, spellWord, speakThenSpell, speakWithCallback, quizDelay, shuffle, generateOptions, numberWord } from '@/app/lib/learn-utils';
 
 type ShapeDef = { id: string; label: string; color: string; bg: string; render: (size: number) => React.ReactNode };
 type Shape3DDef = { id: string; label: string; color: string; bg: string; render: (size: number) => React.ReactNode };
 type Question = { sentence: string; blank: string; options: string[]; answer: string };
 type NumWord = { num: number; word: string };
-
-const speak = (text: string) => {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1;
-  window.speechSynthesis.speak(u);
-};
-
-const spellWord = (word: string) => {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const letters = word.toUpperCase().split('');
-  let i = 0;
-  const sayNext = () => {
-    if (i >= letters.length) { const u = new SpeechSynthesisUtterance(word); u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1; window.speechSynthesis.speak(u); return; }
-    const u = new SpeechSynthesisUtterance(letters[i]);
-    u.lang = 'en-US'; u.rate = 0.6; u.pitch = 1.2;
-    u.onend = () => { i++; setTimeout(sayNext, 180); };
-    window.speechSynthesis.speak(u);
-  };
-  sayNext();
-};
 
 const SIGHT_WORDS = [
   { word: 'Cat', hint: 'A furry pet that says meow' }, { word: 'Dog', hint: 'A pet that barks' },
@@ -167,8 +145,6 @@ function getQuizOptions(list: NumWord[], correctIdx: number): NumWord[] {
   return opts;
 }
 
-const quizDelay = (label: string) => 800 + label.length * 860 + 1000 + 1500;
-
 type Tab = 'shapes' | 'colors' | 'sight' | 'd3' | 'spell' | 'blanks' | 'teen' | 'ty' | 'days' | 'veg' | 'garden' | 'kitchen' | 'occupation' | 'birds' | 'animals' | 'months';
 
 export default function FunLearningPage() {
@@ -243,8 +219,29 @@ export default function FunLearningPage() {
     return () => window.removeEventListener('popstate', handler);
   }, [parentLocked]);
 
+  // Block keyboard shortcuts and context menu when locked
+  useEffect(() => {
+    if (!parentLocked) return;
+    const blockKeys = (e: KeyboardEvent) => {
+      // Block Escape, F5, F11, Ctrl+W, Ctrl+R, Alt+Left, Alt+Right, Meta+Left, Meta+Right
+      if (e.key === 'Escape' || e.key === 'F5' || e.key === 'F11' || e.key === 'F12' ||
+          (e.ctrlKey && (e.key === 'w' || e.key === 'r' || e.key === 'l')) ||
+          (e.altKey && e.key === 'ArrowLeft') || (e.altKey && e.key === 'ArrowRight') ||
+          (e.metaKey && e.key === 'ArrowLeft') || (e.metaKey && e.key === 'ArrowRight')) {
+        e.preventDefault(); e.stopPropagation(); return false;
+      }
+    };
+    const blockContext = (e: MouseEvent) => { e.preventDefault(); return false; };
+    window.addEventListener('keydown', blockKeys, true);
+    window.addEventListener('contextmenu', blockContext, true);
+    return () => {
+      window.removeEventListener('keydown', blockKeys, true);
+      window.removeEventListener('contextmenu', blockContext, true);
+    };
+  }, [parentLocked]);
+
   // 2D Shapes state
-  const [shapeSub, setShapeSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [shapeSub, setShapeSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [shapeIdx, setShapeIdx] = useState(() => Math.floor(Math.random() * shapes.length));
   const [shapeScore, setShapeScore] = useState(0);
   const [shapeTotal, setShapeTotal] = useState(0);
@@ -261,7 +258,7 @@ export default function FunLearningPage() {
   const [sMemoPaused, setSMemoPaused] = useState(false);
 
   // Colors state
-  const [colorSub, setColorSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [colorSub, setColorSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [colorIdx, setColorIdx] = useState(0);
   const [colorQuiz, setColorQuiz] = useState(false);
   const [currentColor, setCurrentColor] = useState('');
@@ -289,7 +286,7 @@ export default function FunLearningPage() {
   const [sightCorrect, setSightCorrect] = useState(false);
 
   // 3D Shapes state
-  const [d3Mode, setD3Mode] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [d3Mode, setD3Mode] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [d3Idx, setD3Idx] = useState(() => Math.floor(Math.random() * shape3dList.length));
   const [d3Score, setD3Score] = useState(0);
   const [d3Total, setD3Total] = useState(0);
@@ -324,7 +321,7 @@ export default function FunLearningPage() {
   const [fbTotal, setFbTotal] = useState(0);
 
   // Teen Words state
-  const [teenMode, setTeenMode] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [teenMode, setTeenMode] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [teenIdx, setTeenIdx] = useState(() => Math.floor(Math.random() * TEEN_WORDS.length));
   const [teenQuizOpts, setTeenQuizOpts] = useState<NumWord[]>([]);
   const [teenScore, setTeenScore] = useState(0);
@@ -342,7 +339,7 @@ export default function FunLearningPage() {
   const [teenMemoPaused, setTeenMemoPaused] = useState(false);
 
   // Ty Words state
-  const [tyMode, setTyMode] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [tyMode, setTyMode] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [tyIdx, setTyIdx] = useState(() => Math.floor(Math.random() * TY_WORDS.length));
   const [tyQuizOpts, setTyQuizOpts] = useState<NumWord[]>([]);
   const [tyScore, setTyScore] = useState(0);
@@ -360,7 +357,7 @@ export default function FunLearningPage() {
   const [tyMemoPaused, setTyMemoPaused] = useState(false);
 
   // Days state
-  const [daysSub, setDaysSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [daysSub, setDaysSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [daysIdx, setDaysIdx] = useState(0);
   const [daysQuiz, setDaysQuiz] = useState(false);
   const [daysAnswered, setDaysAnswered] = useState(false);
@@ -379,7 +376,7 @@ export default function FunLearningPage() {
   const [daysFibInput, setDaysFibInput] = useState('');
 
   // Vegetables state
-  const [vegSub, setVegSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [vegSub, setVegSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [vegIdx, setVegIdx] = useState(0);
   const [vegQuiz, setVegQuiz] = useState(false);
   const [vegAnswered, setVegAnswered] = useState(false);
@@ -397,7 +394,7 @@ export default function FunLearningPage() {
   const [vegFibInput, setVegFibInput] = useState('');
 
   // Garden state
-  const [gardenSub, setGardenSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [gardenSub, setGardenSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [gardenIdx, setGardenIdx] = useState(0);
   const [gardenQuiz, setGardenQuiz] = useState(false);
   const [gardenAnswered, setGardenAnswered] = useState(false);
@@ -415,7 +412,7 @@ export default function FunLearningPage() {
   const [gardenFibInput, setGardenFibInput] = useState('');
 
   // Kitchen state
-  const [kitchenSub, setKitchenSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [kitchenSub, setKitchenSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [kitchenIdx, setKitchenIdx] = useState(0);
   const [kitchenQuiz, setKitchenQuiz] = useState(false);
   const [kitchenAnswered, setKitchenAnswered] = useState(false);
@@ -433,7 +430,7 @@ export default function FunLearningPage() {
   const [kitchenFibInput, setKitchenFibInput] = useState('');
 
   // Occupations state
-  const [occSub, setOccSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [occSub, setOccSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [occIdx, setOccIdx] = useState(0);
   const [occQuiz, setOccQuiz] = useState(false);
   const [occAnswered, setOccAnswered] = useState(false);
@@ -451,7 +448,7 @@ export default function FunLearningPage() {
   const [occMemoIdx, setOccMemoIdx] = useState(0);
 
   // Birds state
-  const [birdSub, setBirdSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [birdSub, setBirdSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [birdIdx, setBirdIdx] = useState(0);
   const [birdQuiz, setBirdQuiz] = useState(false);
   const [birdAnswered, setBirdAnswered] = useState(false);
@@ -469,7 +466,7 @@ export default function FunLearningPage() {
   const [birdMemoIdx, setBirdMemoIdx] = useState(0);
 
   // Animals state
-  const [animalSub, setAnimalSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [animalSub, setAnimalSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [animalIdx, setAnimalIdx] = useState(0);
   const [animalQuiz, setAnimalQuiz] = useState(false);
   const [animalAnswered, setAnimalAnswered] = useState(false);
@@ -487,7 +484,7 @@ export default function FunLearningPage() {
   const [animalMemoIdx, setAnimalMemoIdx] = useState(0);
 
   // Months state
-  const [monthSub, setMonthSub] = useState<'quiz' | 'learn' | 'fib'>('quiz');
+  const [monthSub, setMonthSub] = useState<'quiz' | 'learn' | 'fib'>('learn');
   const [monthIdx, setMonthIdx] = useState(0);
   const [monthQuiz, setMonthQuiz] = useState(false);
   const [monthAnswered, setMonthAnswered] = useState(false);
@@ -1112,7 +1109,7 @@ export default function FunLearningPage() {
     locked ? null : !running ? (
       <div className="mt-5 space-y-5 text-center">
         <h2 className="text-lg font-bold text-slate-900">🔄 {title}</h2>
-        <p className="text-sm text-slate-600">Watch and listen as items are shown, spelled, and named automatically.</p>
+        <p className="text-sm text-slate-600">Listen and repeat as items are spelled and named automatically.</p>
         <div className="flex items-center justify-center gap-3">
           <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
           <div className="flex items-center gap-2">
@@ -1187,14 +1184,14 @@ export default function FunLearningPage() {
                 if (t.key === 'blanks') setFbQIdx(Math.floor(Math.random() * QUESTIONS.length));
                 if (t.key === 'teen') setTeenIdx(Math.floor(Math.random() * TEEN_WORDS.length));
                 if (t.key === 'ty') setTyIdx(Math.floor(Math.random() * TY_WORDS.length));
-                if (t.key === 'days') { setDaysSub('quiz'); setDaysIdx(Math.floor(Math.random() * DAYS.length)); setDaysQuiz(false); setDaysAnswered(false); setDaysCorrect(false); setDaysScore(0); setDaysTotal(0); setDMemoRunning(false); setDMemoPaused(false); setDMemoLocked(false); setDaysFibResult(null); setDaysFibInput(''); }
-                if (t.key === 'veg') { setVegSub('quiz'); setVegIdx(Math.floor(Math.random() * VEGETABLES.length)); setVegQuiz(false); setVegAnswered(false); setVegCorrect(false); setVegScore(0); setVegTotal(0); setVMemoRunning(false); setVMemoPaused(false); setVMemoLocked(false); setVegFibResult(null); setVegFibInput(''); }
-                if (t.key === 'garden') { setGardenSub('quiz'); setGardenIdx(Math.floor(Math.random() * GARDEN.length)); setGardenQuiz(false); setGardenAnswered(false); setGardenCorrect(false); setGardenScore(0); setGardenTotal(0); setGMemoRunning(false); setGMemoPaused(false); setGMemoLocked(false); setGardenFibResult(null); setGardenFibInput(''); }
-                if (t.key === 'kitchen') { setKitchenSub('quiz'); setKitchenIdx(Math.floor(Math.random() * KITCHEN.length)); setKitchenQuiz(false); setKitchenAnswered(false); setKitchenCorrect(false); setKitchenScore(0); setKitchenTotal(0); setKMemoRunning(false); setKMemoPaused(false); setKMemoLocked(false); setKitchenFibResult(null); setKitchenFibInput(''); }
-                if (t.key === 'occupation') { setOccSub('quiz'); setOccIdx(Math.floor(Math.random() * OCCUPATIONS.length)); setOccQuiz(false); setOccAnswered(false); setOccCorrect(false); setOccScore(0); setOccTotal(0); setOccMemoRunning(false); setOccMemoPaused(false); setOccMemoLocked(false); setOccFibResult(null); setOccFibInput(''); }
-                if (t.key === 'birds') { setBirdSub('quiz'); setBirdIdx(Math.floor(Math.random() * BIRDS.length)); setBirdQuiz(false); setBirdAnswered(false); setBirdCorrect(false); setBirdScore(0); setBirdTotal(0); setBirdMemoRunning(false); setBirdMemoPaused(false); setBirdMemoLocked(false); setBirdFibResult(null); setBirdFibInput(''); }
-                if (t.key === 'animals') { setAnimalSub('quiz'); setAnimalIdx(Math.floor(Math.random() * ANIMALS.length)); setAnimalQuiz(false); setAnimalAnswered(false); setAnimalCorrect(false); setAnimalScore(0); setAnimalTotal(0); setAnimalMemoRunning(false); setAnimalMemoPaused(false); setAnimalMemoLocked(false); setAnimalFibResult(null); setAnimalFibInput(''); }
-                if (t.key === 'months') { setMonthSub('quiz'); setMonthIdx(Math.floor(Math.random() * MONTHS_LIST.length)); setMonthQuiz(false); setMonthAnswered(false); setMonthCorrect(false); setMonthScore(0); setMonthTotal(0); setMonthMemoRunning(false); setMonthMemoPaused(false); setMonthMemoLocked(false); setMonthFibResult(null); setMonthFibInput(''); setMonthIntroDone(false); }
+                if (t.key === 'days') { setDaysSub('learn'); setDaysIdx(Math.floor(Math.random() * DAYS.length)); setDaysQuiz(false); setDaysAnswered(false); setDaysCorrect(false); setDaysScore(0); setDaysTotal(0); setDMemoRunning(false); setDMemoPaused(false); setDMemoLocked(false); setDaysFibResult(null); setDaysFibInput(''); }
+                if (t.key === 'veg') { setVegSub('learn'); setVegIdx(Math.floor(Math.random() * VEGETABLES.length)); setVegQuiz(false); setVegAnswered(false); setVegCorrect(false); setVegScore(0); setVegTotal(0); setVMemoRunning(false); setVMemoPaused(false); setVMemoLocked(false); setVegFibResult(null); setVegFibInput(''); }
+                if (t.key === 'garden') { setGardenSub('learn'); setGardenIdx(Math.floor(Math.random() * GARDEN.length)); setGardenQuiz(false); setGardenAnswered(false); setGardenCorrect(false); setGardenScore(0); setGardenTotal(0); setGMemoRunning(false); setGMemoPaused(false); setGMemoLocked(false); setGardenFibResult(null); setGardenFibInput(''); }
+                if (t.key === 'kitchen') { setKitchenSub('learn'); setKitchenIdx(Math.floor(Math.random() * KITCHEN.length)); setKitchenQuiz(false); setKitchenAnswered(false); setKitchenCorrect(false); setKitchenScore(0); setKitchenTotal(0); setKMemoRunning(false); setKMemoPaused(false); setKMemoLocked(false); setKitchenFibResult(null); setKitchenFibInput(''); }
+                if (t.key === 'occupation') { setOccSub('learn'); setOccIdx(Math.floor(Math.random() * OCCUPATIONS.length)); setOccQuiz(false); setOccAnswered(false); setOccCorrect(false); setOccScore(0); setOccTotal(0); setOccMemoRunning(false); setOccMemoPaused(false); setOccMemoLocked(false); setOccFibResult(null); setOccFibInput(''); }
+                if (t.key === 'birds') { setBirdSub('learn'); setBirdIdx(Math.floor(Math.random() * BIRDS.length)); setBirdQuiz(false); setBirdAnswered(false); setBirdCorrect(false); setBirdScore(0); setBirdTotal(0); setBirdMemoRunning(false); setBirdMemoPaused(false); setBirdMemoLocked(false); setBirdFibResult(null); setBirdFibInput(''); }
+                if (t.key === 'animals') { setAnimalSub('learn'); setAnimalIdx(Math.floor(Math.random() * ANIMALS.length)); setAnimalQuiz(false); setAnimalAnswered(false); setAnimalCorrect(false); setAnimalScore(0); setAnimalTotal(0); setAnimalMemoRunning(false); setAnimalMemoPaused(false); setAnimalMemoLocked(false); setAnimalFibResult(null); setAnimalFibInput(''); }
+                if (t.key === 'months') { setMonthSub('learn'); setMonthIdx(Math.floor(Math.random() * MONTHS_LIST.length)); setMonthQuiz(false); setMonthAnswered(false); setMonthCorrect(false); setMonthScore(0); setMonthTotal(0); setMonthMemoRunning(false); setMonthMemoPaused(false); setMonthMemoLocked(false); setMonthFibResult(null); setMonthFibInput(''); setMonthIntroDone(false); }
               }} className={`rounded-full px-3 py-1.5 text-xs font-bold whitespace-nowrap transition ${tab === t.key ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                 {t.icon} {t.label}
               </button>
@@ -1212,9 +1209,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setShapeSub(m); setSMemoRunning(false); setShapeAnswered(false); setShapeCorrect(false); setShapeFibResult(null); setShapeFibInput(''); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${shapeSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -1266,7 +1263,7 @@ export default function FunLearningPage() {
               </div>
             ) : !sMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Shapes</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Shapes</h2>
                 <p className="text-sm text-slate-600">Watch and listen as shapes are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each shape:</span>
@@ -1300,9 +1297,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setColorSub(m); setColorAnswered(false); setColorCorrect(false); setColorMemoRunning(false); setColorMemoLocked(false); setColorFibResult(null); setColorFibInput(''); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${colorSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -1318,7 +1315,7 @@ export default function FunLearningPage() {
                     <p className="mt-2 text-sm text-slate-600">Click a color to hear its name, then take the quiz!</p>
                     <div className="mt-5 flex flex-wrap justify-center gap-3">
                       {COLORS.map((c) => (
-                        <button key={c} type="button" onClick={() => speak(c)} className="flex flex-col items-center gap-1">
+                        <button key={c} type="button" onClick={() => speakThenSpell(c)} className="flex flex-col items-center gap-1">
                           <div className="h-16 w-16 rounded-2xl shadow-md transition hover:scale-110" style={{ backgroundColor: colorHex[c] }} />
                           <span className="text-xs font-bold text-slate-700">{c}</span>
                         </button>
@@ -1368,7 +1365,7 @@ export default function FunLearningPage() {
               </div>
             ) : !colorMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Colors</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Colors</h2>
                 <p className="text-sm text-slate-600">Watch and listen as colors are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each color:</span>
@@ -1432,9 +1429,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setD3Mode(m); setD3Answered(false); setD3Correct(false); setD3MemoRunning(false); setD3MemoLocked(false); setD3FibResult(null); setD3FibInput(''); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${d3Mode === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -1486,7 +1483,7 @@ export default function FunLearningPage() {
               </div>
             ) : !d3MemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn 3D Shapes</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn 3D Shapes</h2>
                 <p className="text-sm text-slate-600">Watch and listen as 3D shapes are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each shape:</span>
@@ -1520,9 +1517,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setTeenMode(m); setTeenAnswered(false); setTeenCorrect(false); setTeenMemoRunning(false); setTeenMemoLocked(false); setTeenFibResult(null); setTeenFibInput(''); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${teenMode === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -1549,7 +1546,7 @@ export default function FunLearningPage() {
               </div>
             ) : !teenMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔢 Auto Learn Teen Words</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Teen Words</h2>
                 <p className="text-sm text-slate-600">Watch and listen as teen number words (13-19) are shown, spelled, and named.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -1583,9 +1580,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setTyMode(m); setTyAnswered(false); setTyCorrect(false); setTyMemoRunning(false); setTyMemoLocked(false); setTyFibResult(null); setTyFibInput(''); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${tyMode === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -1612,7 +1609,7 @@ export default function FunLearningPage() {
               </div>
             ) : !tyMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔟 Auto Learn Ty Words</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Ty Words</h2>
                 <p className="text-sm text-slate-600">Watch and listen as tens number words (20-90) are shown, spelled, and named.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -1646,9 +1643,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setDaysSub(m); setDaysAnswered(false); setDaysCorrect(false); setDaysQuiz(false); setDMemoRunning(false); setDMemoLocked(false); setDaysFibResult(null); setDaysFibInput(''); if (m === 'fib') setDaysQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${daysSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -1665,7 +1662,7 @@ export default function FunLearningPage() {
                     <p className="mt-1 text-xs text-slate-400">Click a day to hear its name, then take the quiz!</p>
                     <div className="mt-5 flex flex-wrap justify-center gap-2">
                       {DAYS.map((d, i) => (
-                        <button key={d} type="button" onClick={() => speak(d)} className="rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 to-purple-50 px-5 py-3 text-base font-bold text-slate-800 shadow-sm transition hover:scale-105 hover:shadow-md">
+                        <button key={d} type="button" onClick={() => speakThenSpell(d)} className="rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 to-purple-50 px-5 py-3 text-base font-bold text-slate-800 shadow-sm transition hover:scale-105 hover:shadow-md">
                           <span className="text-xs text-slate-400">Day {i+1}</span><br />{d}
                         </button>
                       ))}
@@ -1715,7 +1712,7 @@ export default function FunLearningPage() {
               </div>
             ) : !dMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Days</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Days</h2>
                 <p className="text-sm text-slate-600">Watch and listen as the days are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -1749,9 +1746,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setVegSub(m); setVegAnswered(false); setVegCorrect(false); setVegQuiz(false); setVMemoRunning(false); setVMemoLocked(false); setVegFibResult(null); setVegFibInput(''); if (m === 'fib') setVegQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${vegSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -1767,7 +1764,7 @@ export default function FunLearningPage() {
                     <p className="mt-2 text-sm text-slate-600">Click a vegetable to hear its name, then take the quiz!</p>
                     <div className="mt-5 flex flex-wrap justify-center gap-2">
                       {VEGETABLES.map((v) => (
-                        <button key={v.name} type="button" onClick={() => speak(v.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                        <button key={v.name} type="button" onClick={() => speakThenSpell(v.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
                           <span className="text-3xl">{v.emoji}</span>
                           <span className="text-sm font-bold text-slate-700">{v.name}</span>
                         </button>
@@ -1818,7 +1815,7 @@ export default function FunLearningPage() {
               </div>
             ) : !vMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Vegetables</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Vegetables</h2>
                 <p className="text-sm text-slate-600">Watch and listen as vegetables are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -1852,9 +1849,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setGardenSub(m); setGardenAnswered(false); setGardenCorrect(false); setGardenQuiz(false); setGMemoRunning(false); setGMemoLocked(false); setGardenFibResult(null); setGardenFibInput(''); if (m === 'fib') setGardenQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${gardenSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -1870,7 +1867,7 @@ export default function FunLearningPage() {
                     <p className="mt-2 text-sm text-slate-600">Click an object to hear its name, then take the quiz!</p>
                     <div className="mt-5 flex flex-wrap justify-center gap-2">
                       {GARDEN.map((o) => (
-                        <button key={o.name} type="button" onClick={() => speak(o.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                        <button key={o.name} type="button" onClick={() => speakThenSpell(o.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
                           <span className="text-3xl">{o.emoji}</span>
                           <span className="text-sm font-bold text-slate-700">{o.name}</span>
                         </button>
@@ -1921,7 +1918,7 @@ export default function FunLearningPage() {
               </div>
             ) : !gMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Garden</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Garden</h2>
                 <p className="text-sm text-slate-600">Watch and listen as garden objects are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -1955,9 +1952,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setKitchenSub(m); setKitchenAnswered(false); setKitchenCorrect(false); setKitchenQuiz(false); setKMemoRunning(false); setKMemoLocked(false); setKitchenFibResult(null); setKitchenFibInput(''); if (m === 'fib') setKitchenQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${kitchenSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -1973,7 +1970,7 @@ export default function FunLearningPage() {
                     <p className="mt-2 text-sm text-slate-600">Click an object to hear its name, then take the quiz!</p>
                     <div className="mt-5 flex flex-wrap justify-center gap-2">
                       {KITCHEN.map((o) => (
-                        <button key={o.name} type="button" onClick={() => speak(o.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                        <button key={o.name} type="button" onClick={() => speakThenSpell(o.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
                           <span className="text-3xl">{o.emoji}</span>
                           <span className="text-sm font-bold text-slate-700">{o.name}</span>
                         </button>
@@ -2024,7 +2021,7 @@ export default function FunLearningPage() {
               </div>
             ) : !kMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Kitchen</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Kitchen</h2>
                 <p className="text-sm text-slate-600">Watch and listen as kitchen objects are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -2058,9 +2055,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setOccSub(m); setOccAnswered(false); setOccCorrect(false); setOccQuiz(false); setOccMemoRunning(false); setOccMemoLocked(false); setOccFibResult(null); setOccFibInput(''); if (m === 'fib') setOccQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${occSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -2076,7 +2073,7 @@ export default function FunLearningPage() {
                     <p className="mt-2 text-sm text-slate-600">Click an occupation to hear its name, then take the quiz!</p>
                     <div className="mt-5 flex flex-wrap justify-center gap-2">
                       {OCCUPATIONS.map((o) => (
-                        <button key={o.name} type="button" onClick={() => speak(o.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                        <button key={o.name} type="button" onClick={() => speakThenSpell(o.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
                           <span className="text-3xl">{o.emoji}</span>
                           <span className="text-sm font-bold text-slate-700">{o.name}</span>
                         </button>
@@ -2127,7 +2124,7 @@ export default function FunLearningPage() {
               </div>
             ) : !occMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Occupations</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Occupations</h2>
                 <p className="text-sm text-slate-600">Watch and listen as occupations are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -2161,9 +2158,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setBirdSub(m); setBirdAnswered(false); setBirdCorrect(false); setBirdQuiz(false); setBirdMemoRunning(false); setBirdMemoLocked(false); setBirdFibResult(null); setBirdFibInput(''); if (m === 'fib') setBirdQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${birdSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -2179,7 +2176,7 @@ export default function FunLearningPage() {
                     <p className="mt-2 text-sm text-slate-600">Click a bird to hear its name, then take the quiz!</p>
                     <div className="mt-5 flex flex-wrap justify-center gap-2">
                       {BIRDS.map((b) => (
-                        <button key={b.name} type="button" onClick={() => speak(b.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                        <button key={b.name} type="button" onClick={() => speakThenSpell(b.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
                           <span className="text-3xl">{b.emoji}</span>
                           <span className="text-sm font-bold text-slate-700">{b.name}</span>
                         </button>
@@ -2230,7 +2227,7 @@ export default function FunLearningPage() {
               </div>
             ) : !birdMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Birds</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Birds</h2>
                 <p className="text-sm text-slate-600">Watch and listen as birds are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -2264,9 +2261,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setAnimalSub(m); setAnimalAnswered(false); setAnimalCorrect(false); setAnimalQuiz(false); setAnimalMemoRunning(false); setAnimalMemoLocked(false); setAnimalFibResult(null); setAnimalFibInput(''); if (m === 'fib') setAnimalQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${animalSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -2282,7 +2279,7 @@ export default function FunLearningPage() {
                     <p className="mt-2 text-sm text-slate-600">Click an animal to hear its name, then take the quiz!</p>
                     <div className="mt-5 flex flex-wrap justify-center gap-2">
                       {ANIMALS.map((a) => (
-                        <button key={a.name} type="button" onClick={() => speak(a.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
+                        <button key={a.name} type="button" onClick={() => speakThenSpell(a.name)} className="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:scale-105 hover:shadow-md">
                           <span className="text-3xl">{a.emoji}</span>
                           <span className="text-sm font-bold text-slate-700">{a.name}</span>
                         </button>
@@ -2333,7 +2330,7 @@ export default function FunLearningPage() {
               </div>
             ) : !animalMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Animals</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Animals</h2>
                 <p className="text-sm text-slate-600">Watch and listen as animals are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -2367,9 +2364,9 @@ export default function FunLearningPage() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div className="flex gap-2">
-                {(['quiz', 'learn', 'fib'] as const).map((m) => (
+                {(['learn', 'quiz', 'fib'] as const).map((m) => (
                   <button key={m} type="button" onClick={() => { setMonthSub(m); setMonthAnswered(false); setMonthCorrect(false); setMonthQuiz(false); setMonthMemoRunning(false); setMonthMemoLocked(false); setMonthFibResult(null); setMonthFibInput(''); if (m === 'fib') setMonthQuiz(true); }} className={`rounded-full px-4 py-1.5 text-xs font-bold transition ${monthSub === m ? 'bg-fuchsia-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                    {m === 'quiz' ? '🎯 Quiz' : m === 'learn' ? '🔄 Auto Learn' : '✏️ Fill the Name'}
+                    {m === 'learn' ? '📖 Hear & Learn' : m === 'quiz' ? '🎯 Quiz' : '✏️ Type It'}
                   </button>
                 ))}
               </div>
@@ -2386,7 +2383,7 @@ export default function FunLearningPage() {
                     <p className="mt-1 text-xs text-slate-400">Click a month to hear its name, then take the quiz!</p>
                     <div className="mt-5 flex flex-wrap justify-center gap-2">
                       {MONTHS_LIST.map((m, i) => (
-                        <button key={m} type="button" onClick={() => speak(m)} className="rounded-2xl border border-slate-200 bg-gradient-to-br from-pink-50 to-rose-50 px-5 py-3 text-base font-bold text-slate-800 shadow-sm transition hover:scale-105 hover:shadow-md">
+                        <button key={m} type="button" onClick={() => speakThenSpell(m)} className="rounded-2xl border border-slate-200 bg-gradient-to-br from-pink-50 to-rose-50 px-5 py-3 text-base font-bold text-slate-800 shadow-sm transition hover:scale-105 hover:shadow-md">
                           <span className="text-xs text-slate-400">Month {i+1}</span><br />{m}
                         </button>
                       ))}
@@ -2436,7 +2433,7 @@ export default function FunLearningPage() {
               </div>
             ) : !monthMemoRunning ? (
               <div className="mt-5 space-y-5 text-center">
-                <h2 className="text-lg font-bold text-slate-900">🔄 Auto Learn Months</h2>
+                <h2 className="text-lg font-bold text-slate-900">🔄 Listen & Learn Months</h2>
                 <p className="text-sm text-slate-600">Watch and listen as the months are shown, spelled, and named automatically.</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
@@ -2545,14 +2542,14 @@ export default function FunLearningPage() {
                 if (t.key === 'blanks') setFbQIdx(Math.floor(Math.random() * QUESTIONS.length));
                 if (t.key === 'teen') setTeenIdx(Math.floor(Math.random() * TEEN_WORDS.length));
                 if (t.key === 'ty') setTyIdx(Math.floor(Math.random() * TY_WORDS.length));
-                if (t.key === 'days') { setDaysSub('quiz'); setDaysIdx(Math.floor(Math.random() * DAYS.length)); setDaysQuiz(false); setDaysAnswered(false); setDaysCorrect(false); setDaysScore(0); setDaysTotal(0); setDMemoRunning(false); setDMemoPaused(false); setDMemoLocked(false); setDaysFibResult(null); setDaysFibInput(''); }
-                if (t.key === 'veg') { setVegSub('quiz'); setVegIdx(Math.floor(Math.random() * VEGETABLES.length)); setVegQuiz(false); setVegAnswered(false); setVegCorrect(false); setVegScore(0); setVegTotal(0); setVMemoRunning(false); setVMemoPaused(false); setVMemoLocked(false); setVegFibResult(null); setVegFibInput(''); }
-                if (t.key === 'garden') { setGardenSub('quiz'); setGardenIdx(Math.floor(Math.random() * GARDEN.length)); setGardenQuiz(false); setGardenAnswered(false); setGardenCorrect(false); setGardenScore(0); setGardenTotal(0); setGMemoRunning(false); setGMemoPaused(false); setGMemoLocked(false); setGardenFibResult(null); setGardenFibInput(''); }
-                if (t.key === 'kitchen') { setKitchenSub('quiz'); setKitchenIdx(Math.floor(Math.random() * KITCHEN.length)); setKitchenQuiz(false); setKitchenAnswered(false); setKitchenCorrect(false); setKitchenScore(0); setKitchenTotal(0); setKMemoRunning(false); setKMemoPaused(false); setKMemoLocked(false); setKitchenFibResult(null); setKitchenFibInput(''); }
-                if (t.key === 'occupation') { setOccSub('quiz'); setOccIdx(Math.floor(Math.random() * OCCUPATIONS.length)); setOccQuiz(false); setOccAnswered(false); setOccCorrect(false); setOccScore(0); setOccTotal(0); setOccMemoRunning(false); setOccMemoPaused(false); setOccMemoLocked(false); setOccFibResult(null); setOccFibInput(''); }
-                if (t.key === 'birds') { setBirdSub('quiz'); setBirdIdx(Math.floor(Math.random() * BIRDS.length)); setBirdQuiz(false); setBirdAnswered(false); setBirdCorrect(false); setBirdScore(0); setBirdTotal(0); setBirdMemoRunning(false); setBirdMemoPaused(false); setBirdMemoLocked(false); setBirdFibResult(null); setBirdFibInput(''); }
-                if (t.key === 'animals') { setAnimalSub('quiz'); setAnimalIdx(Math.floor(Math.random() * ANIMALS.length)); setAnimalQuiz(false); setAnimalAnswered(false); setAnimalCorrect(false); setAnimalScore(0); setAnimalTotal(0); setAnimalMemoRunning(false); setAnimalMemoPaused(false); setAnimalMemoLocked(false); setAnimalFibResult(null); setAnimalFibInput(''); }
-                if (t.key === 'months') { setMonthSub('quiz'); setMonthIdx(Math.floor(Math.random() * MONTHS_LIST.length)); setMonthQuiz(false); setMonthAnswered(false); setMonthCorrect(false); setMonthScore(0); setMonthTotal(0); setMonthMemoRunning(false); setMonthMemoPaused(false); setMonthMemoLocked(false); setMonthFibResult(null); setMonthFibInput(''); setMonthIntroDone(false); }
+                if (t.key === 'days') { setDaysSub('learn'); setDaysIdx(Math.floor(Math.random() * DAYS.length)); setDaysQuiz(false); setDaysAnswered(false); setDaysCorrect(false); setDaysScore(0); setDaysTotal(0); setDMemoRunning(false); setDMemoPaused(false); setDMemoLocked(false); setDaysFibResult(null); setDaysFibInput(''); }
+                if (t.key === 'veg') { setVegSub('learn'); setVegIdx(Math.floor(Math.random() * VEGETABLES.length)); setVegQuiz(false); setVegAnswered(false); setVegCorrect(false); setVegScore(0); setVegTotal(0); setVMemoRunning(false); setVMemoPaused(false); setVMemoLocked(false); setVegFibResult(null); setVegFibInput(''); }
+                if (t.key === 'garden') { setGardenSub('learn'); setGardenIdx(Math.floor(Math.random() * GARDEN.length)); setGardenQuiz(false); setGardenAnswered(false); setGardenCorrect(false); setGardenScore(0); setGardenTotal(0); setGMemoRunning(false); setGMemoPaused(false); setGMemoLocked(false); setGardenFibResult(null); setGardenFibInput(''); }
+                if (t.key === 'kitchen') { setKitchenSub('learn'); setKitchenIdx(Math.floor(Math.random() * KITCHEN.length)); setKitchenQuiz(false); setKitchenAnswered(false); setKitchenCorrect(false); setKitchenScore(0); setKitchenTotal(0); setKMemoRunning(false); setKMemoPaused(false); setKMemoLocked(false); setKitchenFibResult(null); setKitchenFibInput(''); }
+                if (t.key === 'occupation') { setOccSub('learn'); setOccIdx(Math.floor(Math.random() * OCCUPATIONS.length)); setOccQuiz(false); setOccAnswered(false); setOccCorrect(false); setOccScore(0); setOccTotal(0); setOccMemoRunning(false); setOccMemoPaused(false); setOccMemoLocked(false); setOccFibResult(null); setOccFibInput(''); }
+                if (t.key === 'birds') { setBirdSub('learn'); setBirdIdx(Math.floor(Math.random() * BIRDS.length)); setBirdQuiz(false); setBirdAnswered(false); setBirdCorrect(false); setBirdScore(0); setBirdTotal(0); setBirdMemoRunning(false); setBirdMemoPaused(false); setBirdMemoLocked(false); setBirdFibResult(null); setBirdFibInput(''); }
+                if (t.key === 'animals') { setAnimalSub('learn'); setAnimalIdx(Math.floor(Math.random() * ANIMALS.length)); setAnimalQuiz(false); setAnimalAnswered(false); setAnimalCorrect(false); setAnimalScore(0); setAnimalTotal(0); setAnimalMemoRunning(false); setAnimalMemoPaused(false); setAnimalMemoLocked(false); setAnimalFibResult(null); setAnimalFibInput(''); }
+                if (t.key === 'months') { setMonthSub('learn'); setMonthIdx(Math.floor(Math.random() * MONTHS_LIST.length)); setMonthQuiz(false); setMonthAnswered(false); setMonthCorrect(false); setMonthScore(0); setMonthTotal(0); setMonthMemoRunning(false); setMonthMemoPaused(false); setMonthMemoLocked(false); setMonthFibResult(null); setMonthFibInput(''); setMonthIntroDone(false); }
               }} className={`flex flex-col items-center gap-0.5 rounded-xl border border-slate-100 px-1 py-2.5 text-center transition ${tab === t.key ? 'border-fuchsia-300 bg-fuchsia-50 shadow-sm' : 'bg-white hover:border-slate-200 hover:shadow-sm'}`}>
                 <span className="text-lg leading-none">{t.icon}</span>
                 <span className={`text-[10px] font-bold leading-tight ${tab === t.key ? 'text-fuchsia-700' : 'text-slate-600'}`}>{t.label}</span>

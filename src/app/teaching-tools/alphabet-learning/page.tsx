@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { speak, shuffle } from '@/app/lib/learn-utils';
 
 type Letter = { upper: string; lower: string; emoji: string; name: string };
 
@@ -71,23 +72,6 @@ const CARD_BG = [
   'bg-lime-50', 'bg-green-50', 'bg-emerald-50', 'bg-teal-50', 'bg-cyan-50',
   'bg-sky-50',
 ];
-
-const speak = (text: string) => {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1;
-  window.speechSynthesis.speak(u);
-};
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 export default function AlphabetLearningPage() {
   const [mode, setMode] = useState<'learn' | 'quiz'>('learn');

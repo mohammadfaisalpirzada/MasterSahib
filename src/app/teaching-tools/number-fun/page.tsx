@@ -2,14 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-
-const speak = (text: string) => {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US'; u.rate = 0.8; u.pitch = 1.1;
-  window.speechSynthesis.speak(u);
-};
+import { speak } from '@/app/lib/learn-utils';
 
 const NUMBERS = Array.from({ length: 100 }, (_, i) => i + 1);
 

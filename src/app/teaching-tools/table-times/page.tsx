@@ -2,45 +2,14 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { speak, shuffle, generateOptions, numberWord } from '@/app/lib/learn-utils';
 
 const TABLES = Array.from({ length: 19 }, (_, i) => i + 2);
 const MULTIPLIERS = Array.from({ length: 12 }, (_, i) => i + 1);
 
-const speak = (text: string) => {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1;
-  window.speechSynthesis.speak(u);
-};
-
 function getFacts(table: number): { num: number; answer: number }[] {
   return MULTIPLIERS.map((m) => ({ num: m, answer: table * m }));
 }
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function generateOptions(correct: number): number[] {
-  const opts = new Set<number>([correct]);
-  while (opts.size < 4) {
-    const offset = Math.floor(Math.random() * 20) - 10;
-    const alt = correct + offset;
-    if (alt >= 0 && alt !== correct) opts.add(alt);
-  }
-  return shuffle([...opts]);
-}
-
-const numberWord = (n: number): string => {
-  const w = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
-  return w[n] || String(n);
-};
 
 export default function TableTimesPage() {
   const [table, setTable] = useState(2);
@@ -61,7 +30,7 @@ export default function TableTimesPage() {
   const autoStateRef = useRef({ idx: autoIdx, count: autoCount, repeat: autoRepeat, loop: autoLoop, speed: autoSpeed });
   autoStateRef.current = { idx: autoIdx, count: autoCount, repeat: autoRepeat, loop: autoLoop, speed: autoSpeed };
 
-  const speedInterval: Record<string, number> = { slow: 6000, medium: 4000, fast: 2500, 'very-fast': 1500 };
+  const speedInterval: Record<string, number> = { slow: 8000, medium: 6000, fast: 4000, 'very-fast': 2500 };
 
   const facts = useMemo(() => getFacts(table), [table]);
 
@@ -180,7 +149,7 @@ export default function TableTimesPage() {
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex gap-2">
             {(['learn', 'auto', 'quiz'] as const).map((m) => (
-              <button key={m} type="button" onClick={() => { setMode(m); handleStopAuto(); }} className={`rounded-full px-5 py-2 text-sm font-bold transition ${mode === m ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{m === 'learn' ? '📖 Learn' : m === 'auto' ? '🔄 Auto Learn' : '🎯 Quiz'}</button>
+              <button key={m} type="button" onClick={() => { setMode(m); handleStopAuto(); }} className={`rounded-full px-5 py-2 text-sm font-bold transition ${mode === m ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{m === 'learn' ? '📖 Hear & Learn' : m === 'auto' ? '🔄 Listen & Repeat' : '🎯 Quiz'}</button>
             ))}
           </div>
         </section>
@@ -202,12 +171,12 @@ export default function TableTimesPage() {
           </section>
         )}
 
-        {/* Auto Learn Mode */}
+        {/* Listen & Repeat Mode */}
         {mode === 'auto' && (
           <section className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
             {!autoRunning && !autoPaused ? (
               <>
-                <h2 className="text-lg font-black text-slate-900">🔄 Auto Learn &mdash; Table of {table}</h2>
+                <h2 className="text-lg font-black text-slate-900">🔄 Listen & Repeat &mdash; Table of {table}</h2>
                 <p className="mt-2 text-sm text-slate-600">Listen to the table being read aloud automatically.</p>
                 <div className="mt-5 flex flex-wrap items-center justify-center gap-6">
                   <div className="flex items-center gap-2">
@@ -233,11 +202,11 @@ export default function TableTimesPage() {
                     </div>
                   ))}
                 </div>
-                <button type="button" onClick={handleStartAuto} className="mt-6 rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start Auto Learn</button>
+                <button type="button" onClick={handleStartAuto} className="mt-6 rounded-xl bg-fuchsia-600 px-8 py-3 text-base font-bold text-white transition hover:bg-fuchsia-700">▶ Start Listen & Repeat</button>
               </>
             ) : (
               <>
-                <h2 className="text-lg font-black text-slate-900">🔄 Auto Learn &mdash; Table of {table}</h2>
+                <h2 className="text-lg font-black text-slate-900">🔄 Listen & Repeat &mdash; Table of {table}</h2>
                 <div className="mt-4 flex items-center justify-center gap-4 text-sm text-slate-500">
                   <span>{autoPaused ? '⏸ Paused' : '▶ Playing'}</span>
                   <span>Fact {autoIdx + 1}/{MULTIPLIERS.length}</span>
