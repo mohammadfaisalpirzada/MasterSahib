@@ -119,7 +119,7 @@ const buildFallbackNewsItems = (): EducationNewsItem[] => {
     {
       title: 'Educational resources are ready for your next class.',
       date: 'Live update',
-      link: new URL('/teaching-tools', SITE_URL).toString(),
+      link: new URL('/educational-resources', SITE_URL).toString(),
       sourceName: 'themastersahib.com',
       sourceUrl: SITE_URL,
       scrapedAt,

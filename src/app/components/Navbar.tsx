@@ -27,7 +27,7 @@ const navItems: NavItem[] = [
   {
     label: 'Educational Resources',
     desktopLabel: 'Edu Resources',
-    href: '/teaching-tools',
+    href: '/educational-resources',
     children: educationalResourceNavLinks,
   },
   { label: 'Contact', href: '/contact' },

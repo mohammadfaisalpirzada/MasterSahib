@@ -20,7 +20,7 @@ export const config = {
     '/ggss-nishtar-road/admin/:path*',
     '/ggss-nishtar-road/stipend/:path*',
     '/resume-builder/:path*',
-    '/teaching-tools/:path*',
+    '/educational-resources/:path*',
     '/portfolio/:path*',
     '/student/:path*',
     '/teacher/:path*',
