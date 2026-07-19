@@ -63,15 +63,14 @@ function generateWorksheetHTML(topic: WsTopic, type: string, studentName: string
   /* ── Fill in the Blanks ── */
   if (type === 'fill-blanks' || type === 'mixed') {
     const items = selectedWords.slice(0, 6);
-    body += `<div class="section"><h3>📝 Fill in the Blanks</h3>`;
+    body += `<div class="fb-section"><h3>📝 Fill in the Blanks</h3>`;
     if (hasImages) {
-      body += `<div class="fib-grid">`;
+      body += `<table class="tbl"><tbody>`;
       items.forEach((w) => {
         const emoji = getEmoji(topic, w);
-        const label = getLabel(w);
-        body += `<div class="fib-row"><span class="fib-emoji">${emoji}</span><span class="fib-text">This is a <span class="blank-line"></span></span></div>`;
+        body += `<tr><td class="img-cell">${emoji}</td><td class="word-cell">This is a <span class="blank-line"></span></td></tr>`;
       });
-      body += `</div>`;
+      body += `</tbody></table>`;
     } else {
       body += `<ol class="questions">`;
       items.forEach((w) => {
@@ -86,7 +85,7 @@ function generateWorksheetHTML(topic: WsTopic, type: string, studentName: string
   /* ── Multiple Choice (text shown, pick correct text) ── */
   if (type === 'mcq' || (type === 'mixed' && !hasImages)) {
     const items = selectedWords.slice(0, 5);
-    body += `<div class="section"><h3>🔘 Multiple Choice — Choose the correct answer</h3><ol class="questions">`;
+    body += `<div class="fb-section"><h3>🔘 Multiple Choice — Choose the correct answer</h3><ol class="questions">`;
     items.forEach((w) => {
       const label = getLabel(w);
       const distractors = shuffle(topic.words.filter(x => x !== w)).slice(0, 3).map(x => getLabel(x));
@@ -96,58 +95,52 @@ function generateWorksheetHTML(topic: WsTopic, type: string, studentName: string
     body += `</ol></div>`;
   }
 
-  /* ── Match Image to Word (left = images, right = shuffled words) ── */
+  /* ── Match Image to Word ── */
   if (type === 'match' || (type === 'mixed' && hasImages)) {
-    const items = indices.slice(0, 6);
-    const leftItems = items.map(i => ({ emoji: topic.images?.[i] || '❓', idx: i }));
-    const rightItems = shuffle(items.map(i => ({ word: getLabel(topic.words[i]), idx: i })));
-    body += `<div class="section"><h3>🔗 Match the Image to the Word — Draw a line</h3>`;
-    body += `<table class="match-table"><tr>`;
-    body += `<td class="match-col">`;
-    leftItems.forEach((item, i) => {
-      body += `<div class="match-row"><span class="match-emoji">${item.emoji}</span><span class="match-num">${i + 1}.</span><span class="match-line"></span></div>`;
+    const pairs = indices.slice(0, 6).map(i => ({ emoji: topic.images?.[i] || '❓', word: getLabel(topic.words[i]), idx: i }));
+    const right = shuffle([...pairs]);
+    body += `<div class="fb-section"><h3>🔗 Match the Image to the Word — Draw a line</h3>`;
+    body += `<table class="tbl"><tbody>`;
+    pairs.forEach((item, i) => {
+      const letter = String.fromCharCode(65 + i);
+      body += `<tr><td class="img-cell">${item.emoji} ${i+1}.</td><td class="word-cell">(${letter}) ${right[i].word}</td></tr>`;
     });
-    body += `</td><td class="match-col">`;
-    rightItems.forEach((item) => {
-      const letter = String.fromCharCode(65 + rightItems.indexOf(item));
-      body += `<div class="match-row"><span class="match-letter">(${letter})</span><span class="match-word">${item.word}</span><span class="match-line"></span></div>`;
-    });
-    body += `</td></tr></table></div>`;
+    body += `</tbody></table></div>`;
   }
 
   /* ── Circle the Correct: SEE IMAGE → PICK THE WORD ── */
   if (type === 'circle' || (type === 'mixed' && hasImages)) {
     const items = selectedWords.slice(0, 5);
-    body += `<div class="section"><h3>⭕ Look at the Picture — Circle the Correct Word</h3>`;
-    body += `<div class="circle-grid">`;
+    body += `<div class="fb-section"><h3>⭕ Look at the Picture — Circle the Correct Word</h3>`;
+    body += `<table class="tbl"><tbody>`;
     items.forEach((w) => {
       const emoji = getEmoji(topic, w);
       const label = getLabel(w);
       const distractors = shuffle(topic.words.filter(x => x !== w)).slice(0, 2).map(x => getLabel(x));
       const opts = shuffle([label, ...distractors]);
-      body += `<div class="circle-card"><div class="circle-img">${emoji}</div><div class="circle-options">${opts.map(o => `<span class="opt-circle">(&nbsp;)&nbsp;${o}</span>`).join('')}</div></div>`;
+      body += `<tr><td class="img-cell">${emoji}</td><td class="word-cell">${opts.map(o => `<span class="opt-circle">(&nbsp;)&nbsp;${o}</span>`).join('')}</td></tr>`;
     });
-    body += `</div></div>`;
+    body += `</tbody></table></div>`;
   }
 
   /* ── Write the Word: SEE IMAGE → WRITE WORD ── */
   if (type === 'write' || type === 'mixed') {
     if (hasImages) {
-      const items = indices.slice(0, 8);
-      body += `<div class="section"><h3>✍️ Look at the Picture — Write the Word</h3>`;
-      body += `<div class="write-grid">`;
+      const items = indices.slice(0, 6);
+      body += `<div class="fb-section"><h3>✍️ Look at the Picture — Write the Word</h3>`;
+      body += `<table class="tbl"><tbody>`;
       items.forEach((i) => {
         const emoji = topic.images?.[i] || '❓';
-        body += `<div class="write-card"><div class="write-img">${emoji}</div><div class="write-line-box"></div></div>`;
+        body += `<tr><td class="img-cell">${emoji}</td><td class="word-cell"><span class="write-line-blank"></span></td></tr>`;
       });
-      body += `</div></div>`;
+      body += `</tbody></table></div>`;
     } else {
       const items = selectedWords.slice(0, 6);
-      body += `<div class="section"><h3>✍️ Write the Word</h3><ol class="questions">`;
+      body += `<div class="fb-section"><h3>✍️ Write the Word</h3><ol class="questions">`;
       items.forEach((w) => {
         body += `<li><strong>${getLabel(w)}</strong> <div class="write-line-full"></div></li>`;
       });
-      body += `</ol></div>`;
+      body += `</ol>`;
     }
   }
 
@@ -180,40 +173,19 @@ const WORKSHEET_CSS = `
   .ws-title { font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 8px; color: #0f172a; }
   .ws-meta { display: flex; justify-content: space-between; font-size: 11px; color: #475569; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; margin-bottom: 10px; flex-wrap: wrap; gap: 4px; }
   .ws-body { font-size: 13px; line-height: 1.7; }
-  .section { margin-bottom: 12px; }
-  .section h3 { font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 2px; }
+  .fb-section { margin-bottom: 12px; }
+  .fb-section h3 { font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 2px; }
   .questions { padding-left: 18px; }
   .questions li { margin-bottom: 6px; }
-  .blank-line { display: inline-block; min-width: 100px; border-bottom: 2px solid #1e293b; margin: 0 4px; height: 1.2em; vertical-align: bottom; }
-  .opt-circle { display: inline-block; margin: 2px 12px 2px 0; font-size: 12px; }
+  .blank-line { display: inline-block; min-width: 100px; border-bottom: 2px solid #1e293b; margin: 0 4px; height: 1.2em; }
+  .opt-circle { display: inline-block; margin: 2px 16px 2px 0; font-size: 12px; white-space: nowrap; }
 
-  /* Fill in the blanks with images */
-  .fib-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
-  .fib-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
-  .fib-emoji { font-size: 36px; flex-shrink: 0; width: 50px; text-align: center; }
-  .fib-text { font-size: 13px; }
-
-  /* Match columns */
-  .match-table { width: 100%; border-collapse: collapse; }
-  .match-col { width: 50%; vertical-align: top; padding: 0 8px; }
-  .match-row { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px dotted #e2e8f0; }
-  .match-emoji { font-size: 32px; width: 45px; text-align: center; flex-shrink: 0; }
-  .match-num { font-weight: 700; font-size: 13px; color: #475569; width: 22px; }
-  .match-letter { font-weight: 700; font-size: 13px; color: #475569; width: 28px; }
-  .match-word { font-size: 13px; font-weight: 600; }
-  .match-line { flex: 1; border-bottom: 1px solid #94a3b8; height: 1px; }
-
-  /* Circle the correct (image → pick word) */
-  .circle-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
-  .circle-card { display: flex; align-items: center; gap: 12px; padding: 6px 8px; border: 1.5px solid #e2e8f0; border-radius: 10px; }
-  .circle-img { font-size: 48px; width: 60px; text-align: center; flex-shrink: 0; }
-  .circle-options { display: flex; gap: 12px; flex-wrap: wrap; }
-
-  /* Write the word (image → write) */
-  .write-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .write-card { text-align: center; padding: 8px; border: 1.5px solid #e2e8f0; border-radius: 10px; }
-  .write-img { font-size: 42px; margin-bottom: 6px; }
-  .write-line-box { border-bottom: 2px solid #1e293b; height: 22px; }
+  /* Table-based alignment for all exercise types */
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl td { padding: 5px 4px; border-bottom: 1px dotted #d1d5db; vertical-align: middle; }
+  .img-cell { width: 48px; font-size: 30px; text-align: center; vertical-align: middle; white-space: nowrap; }
+  .word-cell { font-size: 13px; vertical-align: middle; }
+  .write-line-blank { display: inline-block; min-width: 180px; border-bottom: 2px solid #1e293b; height: 1.5em; vertical-align: bottom; }
   .write-line-full { border-bottom: 2px solid #1e293b; height: 20px; margin-top: 4px; }
 
   .ws-footer { text-align: center; font-size: 10px; color: #94a3b8; border-top: 2px solid #4f46e5; padding-top: 5px; margin-top: 16px; letter-spacing: 0.5px; }
