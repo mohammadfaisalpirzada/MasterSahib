@@ -155,6 +155,56 @@ export async function addTeacher(data: {
   };
 }
 
+/** Update an existing teacher record by row number (id format: row_X) */
+export async function updateTeacher(id: string, data: {
+  name: string; pid: string; designation: string; mobile?: string;
+  place_of_posting: string; semis_code?: string; taluka: string;
+  contractual_appointment: string; regularization_date: string;
+  increments_claimed: number; arrears: number; recurring_annual_cost: number;
+  pensionary_implications: string;
+}): Promise<TeacherRecord> {
+  const sheets = getGoogleSheetsClient();
+  const spreadsheetId = getSpreadsheetId();
+
+  const rowIndex = parseInt(id.replace('row_', ''), 10);
+  if (isNaN(rowIndex) || rowIndex < 2) throw new Error('Invalid record ID');
+
+  const sNo = rowIndex - 1; // S.No in column A
+
+  const values = [
+    sNo,
+    data.name, data.pid, data.designation, data.mobile || '',
+    data.place_of_posting, data.semis_code || '', data.taluka,
+    data.contractual_appointment, data.regularization_date,
+    data.increments_claimed, data.arrears, data.recurring_annual_cost,
+    data.pensionary_implications,
+  ].map(toSheetValue);
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `${SHEET_TAB}!A${rowIndex}:N${rowIndex}`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: [values] },
+  });
+
+  return {
+    id,
+    name: data.name,
+    pid: data.pid,
+    designation: data.designation,
+    mobile: data.mobile || '',
+    place_of_posting: data.place_of_posting,
+    semis_code: data.semis_code || '',
+    taluka: data.taluka,
+    contractual_appointment: data.contractual_appointment,
+    regularization_date: data.regularization_date,
+    increments_claimed: data.increments_claimed,
+    arrears: data.arrears,
+    recurring_annual_cost: data.recurring_annual_cost,
+    pensionary_implications: data.pensionary_implications,
+  };
+}
+
 /** Delete all teacher records (keep header) */
 export async function clearAllTeachers(): Promise<void> {
   const sheets = getGoogleSheetsClient();
