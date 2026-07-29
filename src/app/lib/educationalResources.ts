@@ -461,6 +461,28 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     icon: '📈',
     color: 'from-slate-500 to-gray-400',
   },
+  {
+    title: 'STEDA Teaching License',
+    description: 'Complete learning & practice platform for the Sindh Teaching License exam. Study books, quizzes, practice tests, and track progress.',
+    status: 'Ready',
+    href: '/educational-resources/steda-teaching-license',
+    addedOn: '2026-07-19',
+    ageGroup: 'general',
+    category: 'teachers',
+    icon: '🎓',
+    color: 'from-amber-500 to-orange-500',
+  },
+  {
+    title: 'IGCSE 0580 Math Study Guide',
+    description: 'Cambridge IGCSE Mathematics (0580) learning department — 40-week roadmap, chapter resources, guided study and live question practice.',
+    status: 'Ready',
+    href: '/igcse-0580-mathematics',
+    addedOn: '2026-07-22',
+    ageGroup: '13-16',
+    category: 'kids',
+    icon: '📘',
+    color: 'from-blue-500 to-indigo-500',
+  },
 ];
 
 const getAddedTimestamp = (item: EducationalResourceItem, index: number) => {

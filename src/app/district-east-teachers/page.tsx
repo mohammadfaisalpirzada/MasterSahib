@@ -5,9 +5,9 @@ import { type TeacherRecord } from './types';
 import './style.css';
 
 const initialForm = {
-  name: '', pid: '', designation: '', cnic: '', mobile: '', place_of_posting: '', semis_code: '', taluka: '',
+  name: '', pid: '', designation: '', mobile: '', place_of_posting: '', semis_code: '', taluka: '',
   contractual_appointment: '', regularization_date: '', increments_claimed: '', arrears: '',
-  recurring_annual_cost: '', pensionary_implications: '', remarks: ''
+  recurring_annual_cost: '', pensionary_implications: ''
 };
 
 export default function DistrictEastTeachersPage() {
@@ -120,14 +120,13 @@ export default function DistrictEastTeachersPage() {
         <form onSubmit={submit} className="de-form">
           {[
             ['name','Name of affected teacher *','text'],['pid','PID / Personnel No. *','text'],['designation','Designation *','text'],
-            ['cnic','CNIC','text'],['mobile','Mobile Number','tel'],['place_of_posting','Place of Posting / School *','text'],
+            ['mobile','Mobile Number','tel'],['place_of_posting','Place of Posting / School *','text'],
             ['semis_code','SEMIS Code','text'],['contractual_appointment','Date of Contractual Appointment *','date'],
             ['regularization_date','Date of Regularization *','date'],['increments_claimed','Increments Claimed *','number'],
             ['arrears','Arrears (Rs.) *','number'],['recurring_annual_cost','Recurring Annual Cost (Rs.) *','number'],
             ['pensionary_implications','Pensionary Implications *','text']
           ].map(([name,label,type]) => <label key={name}><span>{label}</span><input type={type} min={type==='number'?0:undefined} required={label.includes('*')} value={form[name as keyof typeof form]} onChange={e=>update(name as keyof typeof form,e.target.value)} /></label>)}
           <label><span>Taluka *</span><select required value={form.taluka} onChange={e=>update('taluka',e.target.value)}><option value="">Select Taluka</option><option>Gulshan-e-Iqbal</option><option>Jamshed Town</option><option>Ferozabad</option><option>Gulzar-e-Hijri</option></select></label>
-          <label className="de-wide"><span>Remarks</span><textarea rows={3} value={form.remarks} onChange={e=>update('remarks',e.target.value)} /></label>
           <div className="de-actions de-wide"><button className="de-primary" disabled={saving}>{saving?'Submitting...':'＋ Submit Teacher Record'}</button><button type="button" onClick={()=>setForm(initialForm)}>Clear Form</button></div>
         </form>
         {message && <p className="de-message">{message}</p>}

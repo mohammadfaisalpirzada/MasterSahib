@@ -29,7 +29,6 @@ export async function POST(req: Request) {
       name: String(body.name).trim(),
       pid: String(body.pid).trim(),
       designation: String(body.designation).trim(),
-      cnic: String(body.cnic || '').trim(),
       mobile: String(body.mobile || '').trim(),
       place_of_posting: String(body.place_of_posting).trim(),
       semis_code: String(body.semis_code || '').trim(),
@@ -40,7 +39,6 @@ export async function POST(req: Request) {
       arrears: Number(body.arrears),
       recurring_annual_cost: Number(body.recurring_annual_cost),
       pensionary_implications: String(body.pensionary_implications).trim(),
-      remarks: String(body.remarks || '').trim(),
     };
 
     await ensureSheetExists();

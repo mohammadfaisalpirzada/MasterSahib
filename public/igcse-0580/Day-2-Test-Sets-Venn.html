@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 2 Test: Sets & Venn Diagrams — Sabrina's IGCSE 0580</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --accent: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f6f8fc;
+            --text: #172033;
+            --muted: #526079;
+            --border: #dce3ef;
+            --card-bg: #fff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        /* NAVBAR */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 68px;
+            background: rgba(255,255,255,.88);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(148,163,184,.18);
+            box-shadow: 0 8px 30px rgba(15,23,42,.05);
+            display: flex; align-items: center; padding: 0 24px; z-index: 1000;
+        }
+        .navbar-inner { display: flex; align-items: center; width: 100%; max-width: 960px; margin: 0 auto; }
+        .navbar-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 16px; }
+        .navbar-brand-icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 16px; box-shadow: 0 8px 20px rgba(37,99,235,.24);
+        }
+        .badge { display: inline-block; background: #e8efff; color: #1d4ed8; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .badge.warning { background: #fef3c7; color: #92400e; }
+        .badge.success { background: #d1fae5; color: #065f46; }
+
+        /* MAIN */
+        .main { max-width: 820px; margin: 0 auto; padding: 100px 24px 80px; }
+
+        /* HEADER */
+        .test-header {
+            background: linear-gradient(135deg, #fff 0%, #f0f6ff 100%);
+            border: 1px solid #dce6fa;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 32px;
+            box-shadow: 0 12px 35px rgba(30,64,175,.07);
+            text-align: center;
+        }
+        .test-header h1 {
+            font-size: clamp(1.8rem,4vw,2.8rem);
+            font-weight: 700;
+            letter-spacing: -.04em;
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+        .test-header .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 20px; }
+        .test-meta { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+        .test-meta-item { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
+        .test-meta-item strong { color: var(--text); }
+
+        /* INSTRUCTIONS */
+        .instructions {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 24px rgba(15,23,42,.04);
+        }
+        .instructions h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .instructions ul { padding-left: 20px; }
+        .instructions li { margin-bottom: 6px; color: var(--muted); font-size: 14px; }
+        .instructions li strong { color: var(--text); }
+
+        /* SECTION */
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(15,23,42,.04);
+        }
+        .section-title {
+            font-size: 20px; font-weight: 700;
+            margin-bottom: 4px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+
+        /* QUESTIONS */
+        .question {
+            padding: 20px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .question:last-child { border-bottom: none; padding-bottom: 0; }
+        .question:first-of-type { padding-top: 0; }
+        .question-number {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white; border-radius: 50%;
+            font-size: 13px; font-weight: 700;
+            margin-right: 10px; flex-shrink: 0;
+        }
+        .question-text { font-size: 15px; color: var(--text); line-height: 1.7; }
+        .question-text strong { font-weight: 600; }
+        .marks { color: var(--muted); font-size: 13px; font-style: italic; }
+
+        /* SUB-QUESTIONS */
+        .sub-q { margin-top: 10px; margin-left: 38px; }
+        .sub-q-item { margin-bottom: 6px; font-size: 15px; }
+
+        /* ANSWER BOX */
+        .answer-box {
+            background: #f8fafc;
+            border: 2px dashed #d1d9e6;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-top: 12px;
+            min-height: 44px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        /* Venn diagram SVG container */
+        .venn-container {
+            display: flex; justify-content: center; margin: 20px 0;
+        }
+        .venn-container svg { max-width: 100%; }
+
+        /* TABLE */
+        .set-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+        .set-table th { background: #f1f5f9; padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text); border-bottom: 2px solid var(--border); }
+        .set-table td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: var(--muted); }
+
+        /* FORMULA BOX */
+        .formula-box { background: #1f2937; border-radius: 12px; margin: 16px 0; overflow: hidden; }
+        .formula-box-header { background: #374151; padding: 10px 16px; font-size: 12px; font-weight: 600; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px; }
+        .formula-box pre { padding: 16px; margin: 0; overflow-x: auto; }
+        .formula-box code { background: none; padding: 0; color: #e5e7eb; font-size: 14px; line-height: 1.8; font-family: 'JetBrains Mono', monospace; }
+
+        /* COLLAPSIBLE ANSWER */
+        .collapsible { margin-top: 12px; }
+        .collapsible input[type="checkbox"] { display: none; }
+        .collapsible label {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 8px 16px; border-radius: 10px;
+            cursor: pointer; font-size: 13px; font-weight: 600;
+            transition: all .15s ease;
+            box-shadow: 0 4px 12px rgba(37,99,235,.2);
+        }
+        .collapsible label:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37,99,235,.3); }
+        .collapsible .answer-content {
+            max-height: 0; overflow: hidden;
+            transition: max-height .35s ease;
+        }
+        .collapsible input:checked + label + .answer-content { max-height: 3000px; }
+        .collapsible input:checked + label { background: linear-gradient(135deg, var(--success), #059669); }
+        .answer-box-inner {
+            background: #ecfdf5; border: 1px solid #a7f3d0;
+            border-radius: 12px; padding: 18px; margin-top: 10px;
+            font-size: 14px; color: #065f46; line-height: 1.7;
+        }
+        .answer-box-inner strong { color: #065f46; }
+        .answer-box-inner .step { margin-bottom: 8px; }
+        .answer-box-inner .step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px; background: #10b981; color: white;
+            border-radius: 50%; font-size: 11px; font-weight: 700;
+            margin-right: 6px;
+        }
+
+        /* RESULT SUMMARY */
+        .result-summary {
+            background: linear-gradient(135deg, #fff 0%, #f0f6ff 100%);
+            border: 1px solid #dce6fa;
+            border-radius: 20px;
+            padding: 32px;
+            text-align: center;
+            margin-top: 32px;
+            box-shadow: 0 12px 35px rgba(30,64,175,.07);
+        }
+        .result-summary h2 { font-size: 22px; margin-bottom: 8px; }
+        .score-display {
+            font-size: 48px; font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 16px 0;
+        }
+        .grade-badge { font-size: 18px; font-weight: 700; padding: 10px 24px; border-radius: 12px; display: inline-block; margin-top: 12px; }
+        .grade-a { background: #d1fae5; color: #065f46; }
+        .grade-b { background: #dbeafe; color: #1e40af; }
+        .grade-c { background: #fef3c7; color: #92400e; }
+        .grade-f { background: #fee2e2; color: #991b1b; }
+
+        /* FOOTER */
+        .footer {
+            text-align: center; padding: 32px 24px;
+            color: #94a3b8; font-size: 13px;
+        }
+        .footer a { color: var(--primary); text-decoration: none; }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .main { padding: 84px 16px 60px; }
+            .test-header, .section, .instructions { padding: 24px 18px; }
+            .sub-q { margin-left: 20px; }
+            .test-meta { gap: 12px; }
+        }
+
+        /* PRINT */
+        @media print {
+            .navbar, .collapsible label, .footer { display: none !important; }
+            .main { padding-top: 20px; }
+            .collapsible .answer-content { max-height: none !important; overflow: visible !important; }
+            .section, .test-header, .instructions { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+            .answer-box { border-style: solid; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="navbar-inner">
+        <a href="Chapter-1-Study-Guide.html" class="navbar-brand">
+            <div class="navbar-brand-icon">📘</div>
+            <span>Sabrina's IGCSE 0580</span>
+        </a>
+        <div style="flex: 1;"></div>
+        <span class="badge warning">Day 2 Test</span>
+    </div>
+</nav>
+
+<div class="main">
+
+<!-- TEST HEADER -->
+<div class="test-header">
+    <div style="margin-bottom: 12px;">
+        <span class="badge">Cambridge IGCSE 0580</span>
+    </div>
+    <h1>Day 2 Test: Sets & Venn Diagrams</h1>
+    <p class="subtitle">Chapter 1 — Review of Number Concepts</p>
+    <div class="test-meta">
+        <div class="test-meta-item">⏱️ <strong>45 minutes</strong></div>
+        <div class="test-meta-item">📝 <strong>30 marks</strong></div>
+        <div class="test-meta-item">🚫 <strong>No calculator</strong></div>
+        <div class="test-meta-item">📅 <strong>23 July 2026</strong></div>
+    </div>
+</div>
+
+<!-- INSTRUCTIONS -->
+<div class="instructions">
+    <h2>📋 Instructions</h2>
+    <ul>
+        <li><strong>Answer ALL questions.</strong> Write your answers in the spaces provided.</li>
+        <li>Show all working where necessary — you may get marks for correct method even if your final answer is wrong.</li>
+        <li>Click <strong>"Show Answer"</strong> after completing each question to check your work.</li>
+        <li>At the end, click <strong>"Calculate Score"</strong> to see your result.</li>
+    </ul>
+</div>
+
+<!-- FORMULA REFERENCE -->
+<div class="formula-box">
+    <div class="formula-box-header">Set Notation Reference</div>
+    <code>
+{ }      — Curly brackets make a set
+∈        — "is an element of" (is in the set)
+∪        — Union: "OR" — everything in either set (or both)
+∩        — Intersection: "AND" — only what's in both sets
+A'       — Complement: everything NOT in A
+n(A)     — Number of elements in set A
+∅        — Empty set (nothing in it)
+U        — Universal set (everything we're talking about)
+    </code>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION A: KNOWLEDGE & UNDERSTANDING (10 marks) -->
+<!-- ============================================ -->
+<div class="section">
+    <div class="section-title">📝 Section A — Knowledge & Understanding</div>
+    <div class="section-subtitle">10 marks | Write answers in the spaces below each question</div>
+
+    <!-- Q1 -->
+    <div class="question" id="q1">
+        <div class="question-text">
+            <span class="question-number">1</span>
+            <strong>Write the symbol for:</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">(a) the union of sets A and B <span class="marks">[1]</span></div>
+                <div class="answer-box">A ∪ B</div>
+                <div class="sub-q-item">(b) the intersection of sets A and B <span class="marks">[1]</span></div>
+                <div class="answer-box">A ∩ B</div>
+                <div class="sub-q-item">(c) the complement of set A <span class="marks">[1]</span></div>
+                <div class="answer-box">A'</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a1">
+            <label for="a1">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>A ∪ B</strong> — the "U" shape means OR (either set or both)</div>
+                    <div class="step"><span class="step-num">b</span> <strong>A ∩ B</strong> — the upside-down "U" means AND (both sets)</div>
+                    <div class="step"><span class="step-num">c</span> <strong>A'</strong> — the dash/apostrophe means NOT in A</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question" id="q2">
+        <div class="question-text">
+            <span class="question-number">2</span>
+            <strong>Let U = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10} and A = {2, 4, 6, 8, 10}.</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">(a) Write down all the elements of set A. <span class="marks">[1]</span></div>
+                <div class="answer-box">A = {2, 4, 6, 8, 10}</div>
+                <div class="sub-q-item">(b) Write down all the elements of A'. <span class="marks">[1]</span></div>
+                <div class="answer-box">A' = {1, 3, 5, 7, 9}</div>
+                <div class="sub-q-item">(c) How many elements are in A'? Write n(A') = <span class="marks">[1]</span></div>
+                <div class="answer-box">n(A') = 5</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a2">
+            <label for="a2">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>A = {2, 4, 6, 8, 10}</strong> — these are the even numbers from 1 to 10</div>
+                    <div class="step"><span class="step-num">b</span> <strong>A' = {1, 3, 5, 7, 9}</strong> — everything in U that is NOT in A (the odd numbers)</div>
+                    <div class="step"><span class="step-num">c</span> <strong>n(A') = 5</strong> — count the elements: 1, 3, 5, 7, 9 = five elements</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question" id="q3">
+        <div class="question-text">
+            <span class="question-number">3</span>
+            <strong>P = {a, b, c, d} and Q = {c, d, e, f, g}.</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">(a) Write down the elements of P ∪ Q. <span class="marks">[1]</span></div>
+                <div class="answer-box">P ∪ Q = {a, b, c, d, e, f, g}</div>
+                <div class="sub-q-item">(b) Write down the elements of P ∩ Q. <span class="marks">[1]</span></div>
+                <div class="answer-box">P ∩ Q = {c, d}</div>
+                <div class="sub-q-item">(c) Find n(P ∪ Q). <span class="marks">[1]</span></div>
+                <div class="answer-box">n(P ∪ Q) = 7</div>
+                <div class="sub-q-item">(d) Is the statement "a ∈ Q" true or false? <span class="marks">[1]</span></div>
+                <div class="answer-box">False — "a" is not in set Q</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a3">
+            <label for="a3">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>P ∪ Q = {a, b, c, d, e, f, g}</strong> — everything in P OR Q (or both). List each element only once.</div>
+                    <div class="step"><span class="step-num">b</span> <strong>P ∩ Q = {c, d}</strong> — only elements that appear in BOTH sets</div>
+                    <div class="step"><span class="step-num">c</span> <strong>n(P ∪ Q) = 7</strong> — count the elements: a, b, c, d, e, f, g</div>
+                    <div class="step"><span class="step-num">d</span> <strong>False</strong> — "a" is in P but NOT in Q</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION B: SET OPERATIONS (10 marks) -->
+<!-- ============================================ -->
+<div class="section">
+    <div class="section-title">🔧 Section B — Set Operations</div>
+    <div class="section-subtitle">10 marks | Show your working</div>
+
+    <!-- Q4 -->
+    <div class="question" id="q4">
+        <div class="question-text">
+            <span class="question-number">4</span>
+            <strong>Let U = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}, A = {1, 2, 3, 4, 5, 6} and B = {4, 5, 6, 7, 8, 9}.</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">(a) List the elements of A ∪ B. <span class="marks">[1]</span></div>
+                <div class="answer-box">A ∪ B = {1, 2, 3, 4, 5, 6, 7, 8, 9}</div>
+                <div class="sub-q-item">(b) List the elements of A ∩ B. <span class="marks">[1]</span></div>
+                <div class="answer-box">A ∩ B = {4, 5, 6}</div>
+                <div class="sub-q-item">(c) List the elements of A'. <span class="marks">[1]</span></div>
+                <div class="answer-box">A' = {7, 8, 9, 10, 11, 12}</div>
+                <div class="sub-q-item">(d) List the elements of B'. <span class="marks">[1]</span></div>
+                <div class="answer-box">B' = {1, 2, 3, 10, 11, 12}</div>
+                <div class="sub-q-item">(e) Find (A ∩ B)'. <span class="marks">[2]</span></div>
+                <div class="answer-box">(A ∩ B)' = {1, 2, 3, 7, 8, 9, 10, 11, 12}</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a4">
+            <label for="a4">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>A ∪ B = {1, 2, 3, 4, 5, 6, 7, 8, 9}</strong> — combine both sets, don't repeat 4, 5, 6</div>
+                    <div class="step"><span class="step-num">b</span> <strong>A ∩ B = {4, 5, 6}</strong> — only elements in BOTH A and B</div>
+                    <div class="step"><span class="step-num">c</span> <strong>A' = {7, 8, 9, 10, 11, 12}</strong> — everything in U not in A</div>
+                    <div class="step"><span class="step-num">d</span> <strong>B' = {1, 2, 3, 10, 11, 12}</strong> — everything in U not in B</div>
+                    <div class="step"><span class="step-num">e</span> <strong>(A ∩ B)' = {1, 2, 3, 7, 8, 9, 10, 11, 12}</strong> — First find A ∩ B = {4, 5, 6}, then remove those from U</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question" id="q5">
+        <div class="question-text">
+            <span class="question-number">5</span>
+            <strong>U = {prime numbers up to 20}, P = {2, 3, 5, 7} and Q = {3, 5, 11, 13}.</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">(a) Write out all the elements of U. <span class="marks">[1]</span></div>
+                <div class="answer-box">U = {2, 3, 5, 7, 11, 13, 17, 19}</div>
+                <div class="sub-q-item">(b) Find P ∩ Q. <span class="marks">[1]</span></div>
+                <div class="answer-box">P ∩ Q = {3, 5}</div>
+                <div class="sub-q-item">(c) Find P ∪ Q. <span class="marks">[1]</span></div>
+                <div class="answer-box">P ∪ Q = {2, 3, 5, 7, 11, 13}</div>
+                <div class="sub-q-item">(d) Find n(Q'). <span class="marks">[1]</span></div>
+                <div class="answer-box">Q' = {2, 7, 17, 19}, so n(Q') = 4</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a5">
+            <label for="a5">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>U = {2, 3, 5, 7, 11, 13, 17, 19}</strong> — these are all the prime numbers from 2 to 19</div>
+                    <div class="step"><span class="step-num">b</span> <strong>P ∩ Q = {3, 5}</strong> — primes in BOTH sets</div>
+                    <div class="step"><span class="step-num">c</span> <strong>P ∪ Q = {2, 3, 5, 7, 11, 13}</strong> — all primes in either set</div>
+                    <div class="step"><span class="step-num">d</span> <strong>Q' = {2, 7, 17, 19}, n(Q') = 4</strong> — primes NOT in Q: remove 3, 5, 11, 13 from U</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION C: VENN DIAGRAMS (10 marks) -->
+<!-- ============================================ -->
+<div class="section">
+    <div class="section-title">📊 Section C — Venn Diagrams</div>
+    <div class="section-subtitle">10 marks | Draw diagrams where asked</div>
+
+    <!-- Q6 -->
+    <div class="question" id="q6">
+        <div class="question-text">
+            <span class="question-number">6</span>
+            <strong>U = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, A = {1, 2, 3, 4, 5} and B = {4, 5, 6, 7}.</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">(a) Draw a Venn diagram to show this information. Label each section clearly. <span class="marks">[3]</span></div>
+                <div class="answer-box">Draw a rectangle (U), with two overlapping circles (A and B). Place: 1, 2, 3 in A only; 4, 5 in the overlap; 6, 7 in B only; 8, 9, 10 outside both circles.</div>
+                <div class="sub-q-item">(b) Using your Venn diagram, find:<br>
+                    &nbsp;&nbsp;&nbsp;(i) n(A ∪ B) <span class="marks">[1]</span></div>
+                <div class="answer-box">n(A ∪ B) = 7</div>
+                <div class="sub-q-item">&nbsp;&nbsp;&nbsp;(ii) n(A ∩ B) <span class="marks">[1]</span></div>
+                <div class="answer-box">n(A ∩ B) = 2</div>
+                <div class="sub-q-item">&nbsp;&nbsp;&nbsp;(iii) n(B') <span class="marks">[1]</span></div>
+                <div class="answer-box">n(B') = 5</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a6">
+            <label for="a6">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>Draw a rectangle with label U.</strong> Draw two overlapping circles inside, label left circle "A" and right circle "B".</div>
+                    <div class="step" style="margin-left:28px;">In the <strong>A-only</strong> part: write 1, 2, 3<br>
+                    In the <strong>overlap</strong>: write 4, 5<br>
+                    In the <strong>B-only</strong> part: write 6, 7<br>
+                    <strong>Outside both circles</strong> (but inside rectangle): write 8, 9, 10</div>
+                    <div class="step"><span class="step-num">b(i)</span> <strong>n(A ∪ B) = 7</strong> — count everything inside either circle: 1+2+5+2+2 = 7</div>
+                    <div class="step"><span class="step-num">b(ii)</span> <strong>n(A ∩ B) = 2</strong> — count the overlap: 4, 5</div>
+                    <div class="step"><span class="step-num">b(iii)</span> <strong>n(B') = 5</strong> — count everything outside B: 1, 2, 3, 8, 9, 10</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question" id="q7">
+        <div class="question-text">
+            <span class="question-number">7</span>
+            <strong>In a class of 40 students:</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">• 22 students study French</div>
+                <div class="sub-q-item">• 18 students study German</div>
+                <div class="sub-q-item">• 8 students study both French and German</div>
+                <div class="sub-q-item" style="margin-top: 12px;">(a) Draw a Venn diagram to represent this information. <span class="marks">[3]</span></div>
+                <div class="answer-box">Draw rectangle (U = 40), two overlapping circles (F and G). F only: 14; overlap: 8; G only: 10; outside: 8.</div>
+                <div class="sub-q-item">(b) How many students study French only? <span class="marks">[1]</span></div>
+                <div class="answer-box">22 - 8 = 14 students</div>
+                <div class="sub-q-item">(c) How many students study neither French nor German? <span class="marks">[1]</span></div>
+                <div class="answer-box">40 - (14 + 8 + 10) = 8 students</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a7">
+            <label for="a7">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>Venn Diagram:</strong><br>
+                    Rectangle = U (40 students total)<br>
+                    Circle F (French) and Circle G (German) overlapping<br>
+                    <strong>Overlap (both):</strong> 8<br>
+                    <strong>F only:</strong> 22 - 8 = 14<br>
+                    <strong>G only:</strong> 18 - 8 = 10<br>
+                    <strong>Outside circles (neither):</strong> 40 - 14 - 8 - 10 = 8</div>
+                    <div class="step"><span class="step-num">b</span> <strong>14 students</strong> study French only (22 total French minus 8 who study both)</div>
+                    <div class="step"><span class="step-num">c</span> <strong>8 students</strong> study neither: 40 - 14 - 8 - 10 = 8</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION D: CHALLENGE QUESTIONS (10 marks) -->
+<!-- ============================================ -->
+<div class="section">
+    <div class="section-title">🏆 Section D — Challenge Questions</div>
+    <div class="section-subtitle">10 marks | These require deeper thinking</div>
+
+    <!-- Q8 -->
+    <div class="question" id="q8">
+        <div class="question-text">
+            <span class="question-number">8</span>
+            <strong>U = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}.</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">A = {x : x is a factor of 12}</div>
+                <div class="sub-q-item">B = {x : x is a multiple of 4}</div>
+                <div class="sub-q-item" style="margin-top: 12px;">(a) List the elements of set A. <span class="marks">[1]</span></div>
+                <div class="answer-box">A = {1, 2, 3, 4, 6, 12}</div>
+                <div class="sub-q-item">(b) List the elements of set B. <span class="marks">[1]</span></div>
+                <div class="answer-box">B = {4, 8, 12, 16, 20}</div>
+                <div class="sub-q-item">(c) Draw a Venn diagram for sets A and B within U. <span class="marks">[3]</span></div>
+                <div class="answer-box">A only: {1, 2, 3, 6}; overlap: {4, 12}; B only: {8, 16, 20}; outside: {5, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19}</div>
+                <div class="sub-q-item">(d) Find n(A ∩ B). <span class="marks">[1]</span></div>
+                <div class="answer-box">n(A ∩ B) = 2</div>
+                <div class="sub-q-item">(e) Find n(A ∪ B)'. <span class="marks">[2]</span></div>
+                <div class="answer-box">A ∪ B has 9 elements, so n(A ∪ B)' = 20 - 9 = 11</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a8">
+            <label for="a8">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>A = {1, 2, 3, 4, 6, 12}</strong> — factors of 12: 1×12, 2×6, 3×4</div>
+                    <div class="step"><span class="step-num">b</span> <strong>B = {4, 8, 12, 16, 20}</strong> — multiples of 4 up to 20: 4×1, 4×2, 4×3, 4×4, 4×5</div>
+                    <div class="step"><span class="step-num">c</span> <strong>Venn Diagram:</strong><br>
+                    Rectangle = U (20 elements)<br>
+                    A only: 1, 2, 3, 6 (factors of 12 that aren't multiples of 4)<br>
+                    Overlap: 4, 12 (both factors of 12 AND multiples of 4)<br>
+                    B only: 8, 16, 20 (multiples of 4 that aren't factors of 12)<br>
+                    Outside both: 5, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19</div>
+                    <div class="step"><span class="step-num">d</span> <strong>n(A ∩ B) = 2</strong> — elements in both: {4, 12}</div>
+                    <div class="step"><span class="step-num">e</span> <strong>n(A ∪ B)' = 11</strong><br>
+                    A ∪ B = {1, 2, 3, 4, 6, 8, 12, 16, 20} = 9 elements<br>
+                    Outside both circles: 5, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19 = 11 elements<br>
+                    (A ∪ B)' = 20 - 9 = <strong>11</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="question" id="q9">
+        <div class="question-text">
+            <span class="question-number">9</span>
+            <strong>In a survey of 50 people:</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">• 30 like Tea</div>
+                <div class="sub-q-item">• 25 like Coffee</div>
+                <div class="sub-q-item">• 10 like neither Tea nor Coffee</div>
+                <div class="sub-q-item" style="margin-top: 12px;">(a) Draw a Venn diagram to show this information. <span class="marks">[3]</span></div>
+                <div class="answer-box">Draw rectangle (U = 50), two overlapping circles (T and C). T only: 15; overlap: 15; C only: 10; outside: 10.</div>
+                <div class="sub-q-item">(b) How many people like both Tea and Coffee? <span class="marks">[1]</span></div>
+                <div class="answer-box">n(T ∩ C) = 15</div>
+                <div class="sub-q-item">(c) How many people like Tea only? <span class="marks">[1]</span></div>
+                <div class="answer-box">30 - 15 = 15 people</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a9">
+            <label for="a9">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>Step-by-step:</strong><br>
+                    People who like Tea OR Coffee = 50 - 10 = 40<br>
+                    Using the formula: n(T ∪ C) = n(T) + n(C) - n(T ∩ C)<br>
+                    40 = 30 + 25 - n(T ∩ C)<br>
+                    n(T ∩ C) = 55 - 40 = <strong>15</strong><br><br>
+                    So: T only = 30 - 15 = 15; Overlap = 15; C only = 25 - 15 = 10; Outside = 10</div>
+                    <div class="step"><span class="step-num">b</span> <strong>15 people</strong> like both Tea and Coffee</div>
+                    <div class="step"><span class="step-num">c</span> <strong>15 people</strong> like Tea only (30 - 15 overlap = 15)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="question" id="q10">
+        <div class="question-text">
+            <span class="question-number">10</span>
+            <strong>U = {1, 2, 3, ..., 30}. A = {x : x is even} and B = {x : x is a multiple of 3}.</strong>
+            <div class="sub-q">
+                <div class="sub-q-item">(a) List the elements of A ∩ B. <span class="marks">[1]</span></div>
+                <div class="answer-box">A ∩ B = {6, 12, 18, 24, 30}</div>
+                <div class="sub-q-item">(b) Find n(A'). <span class="marks">[1]</span></div>
+                <div class="answer-box">A' = odd numbers 1-30 = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29}, n(A') = 15</div>
+            </div>
+        </div>
+        <div class="collapsible">
+            <input type="checkbox" id="a10">
+            <label for="a10">💡 Show Answer</label>
+            <div class="answer-content">
+                <div class="answer-box-inner">
+                    <div class="step"><span class="step-num">a</span> <strong>A ∩ B = {6, 12, 18, 24, 30}</strong> — numbers that are BOTH even AND multiples of 3 (i.e. multiples of 6)</div>
+                    <div class="step"><span class="step-num">b</span> <strong>n(A') = 15</strong> — A' is all the odd numbers from 1 to 30. There are 15 even and 15 odd numbers in 1–30.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCORE CALCULATOR -->
+<div class="result-summary" id="scoreSection">
+    <h2>📊 Your Score</h2>
+    <p style="color: var(--muted); font-size: 14px;">Total: 30 marks</p>
+    <div class="score-display" id="scoreDisplay">—/30</div>
+    <div style="margin: 16px 0;">
+        <label for="scoreInput" style="font-weight: 600; margin-right: 8px;">Enter your marks:</label>
+        <input type="number" id="scoreInput" min="0" max="30" style="width: 80px; padding: 8px 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 16px; font-weight: 600; text-align: center;">
+        <button onclick="calculateScore()" style="margin-left: 8px; padding: 8px 20px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,.2);">Calculate</button>
+    </div>
+    <div id="gradeDisplay"></div>
+    <div id="feedbackDisplay" style="margin-top: 16px; font-size: 14px; color: var(--muted);"></div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    <p>📘 Sabrina's IGCSE 0580 — Day 2 Test: Sets & Venn Diagrams</p>
+    <p>Created: 23 July 2026 · Cambridge IGCSE Mathematics (2028-2030)</p>
+    <p style="margin-top: 8px;"><a href="Chapter-1-Study-Guide.html">← Back to Study Guide</a></p>
+</div>
+
+</div><!-- /main -->
+
+<script>
+function calculateScore() {
+    var score = parseInt(document.getElementById('scoreInput').value);
+    var display = document.getElementById('scoreDisplay');
+    var grade = document.getElementById('gradeDisplay');
+    var feedback = document.getElementById('feedbackDisplay');
+
+    if (isNaN(score) || score < 0 || score > 30) {
+        display.textContent = '—/30';
+        grade.innerHTML = '';
+        feedback.textContent = 'Please enter a valid score (0–30).';
+        return;
+    }
+
+    display.textContent = score + '/30';
+    var pct = Math.round((score / 30) * 100);
+
+    if (pct >= 90) {
+        grade.innerHTML = '<span class="grade-badge grade-a">🌟 Excellent! ' + pct + '% — Keep it up!</span>';
+        feedback.textContent = 'Outstanding work! You have a strong understanding of Sets & Venn Diagrams.';
+    } else if (pct >= 70) {
+        grade.innerHTML = '<span class="grade-badge grade-b">👍 Good! ' + pct + '% — Almost there!</span>';
+        feedback.textContent = 'Good job! Review the questions you got wrong and try the practice questions again.';
+    } else if (pct >= 50) {
+        grade.innerHTML = '<span class="grade-badge grade-c">📖 Fair — ' + pct + '% — Keep practising!</span>';
+        feedback.textContent = 'You\'re on the right track. Go back to the study guide and review the topics you found difficult.';
+    } else {
+        grade.innerHTML = '<span class="grade-badge grade-f">💪 Keep trying — ' + pct + '%</span>';
+        feedback.textContent = 'Don\'t worry! Re-read the Sets & Venn Diagrams section in the study guide and try this test again.';
+    }
+}
+
+// Enter key triggers score calc
+document.getElementById('scoreInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') calculateScore();
+});
+</script>
+
+</body>
+</html>

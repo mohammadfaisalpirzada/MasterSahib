@@ -15,6 +15,20 @@ type QuickCard = {
 
 const quickCards: QuickCard[] = [
   {
+    title: 'IGCSE 0580 Study Guide',
+    description: 'Sabrina\'s Cambridge IGCSE Mathematics study guide with chapter-wise explanations, QR codes, and practice exercises.',
+    href: '/igcse-0580-mathematics',
+    accent: 'from-blue-500 to-indigo-600',
+    newUntil: '2026-08-31T23:59:59+05:00',
+  },
+  {
+    title: 'Sindh Teaching License (STEDA)',
+    description: 'Complete guide for the Sindh Teaching License examination — eligibility, syllabus, preparation & more.',
+    href: '/teaching-license',
+    accent: 'from-emerald-500 to-cyan-600',
+    newUntil: '2026-08-31T23:59:59+05:00',
+  },
+  {
     title: 'Upgraded Salary Calculator',
     description: 'Calculate upgraded salary details with a dedicated school utility.',
     href: '/upgraded-salary-calculator',
@@ -455,6 +469,7 @@ export default function HomePage() {
           <div>
             <p className="text-sm font-bold text-slate-900">Quick Links</p>
             <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
+              <Link href="/teaching-license" className="transition hover:text-slate-900">Sindh Teaching License (STEDA)</Link>
               <Link href="/peace-quiz" className="transition hover:text-slate-900">Quiz</Link>
               <Link href="/ggss-nishtar-road" className="transition hover:text-slate-900">GGSS</Link>
               <Link href="/educational-resources" className="transition hover:text-slate-900">Educational Resources</Link>

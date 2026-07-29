@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 1: Review of Number Concepts — Sabrina's IGCSE 0580 Study Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ifm-color-primary: #2563eb;
+            --ifm-color-primary-dark: #1d4ed8;
+            --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --ifm-font-family-monospace: 'JetBrains Mono', 'Courier New', monospace;
+            --ifm-font-size-base: 16px;
+            --ifm-line-height-base: 1.6;
+            --ifm-navbar-height: 60px;
+            --sidebar-width: 280px;
+            --toc-width: 240px;
+            --ifm-background-color: #ffffff;
+            --ifm-text-color: #1f2937;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--ifm-font-family-base); font-size: var(--ifm-font-size-base); line-height: var(--ifm-line-height-base); color: var(--ifm-text-color); background: var(--ifm-background-color); }
+
+        /* NAVBAR */
+        .navbar { position: fixed; top: 0; left: 0; right: 0; height: var(--ifm-navbar-height); background: #ffffff; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; padding: 0 16px; z-index: 1000; }
+        .navbar-inner { display: flex; align-items: center; width: 100%; max-width: 1440px; margin: 0 auto; }
+        .navbar-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ifm-text-color); font-weight: 700; font-size: 16px; min-width: 280px; }
+        .navbar-brand-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; }
+        .navbar-menu-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; margin-right: 8px; }
+        .navbar-menu-toggle span { display: block; width: 20px; height: 2px; background: var(--ifm-text-color); margin: 4px 0; }
+
+        /* LAYOUT */
+        .docs-wrapper { display: flex; padding-top: var(--ifm-navbar-height); min-height: 100vh; }
+
+        /* SIDEBAR */
+        .sidebar { position: fixed; top: var(--ifm-navbar-height); left: 0; bottom: 0; width: var(--sidebar-width); background: #f9fafb; border-right: 1px solid #e5e7eb; overflow-y: auto; padding: 16px 0; z-index: 100; }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+        .sidebar-section { margin-bottom: 2px; }
+        .sidebar-section-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; font-size: 13px; font-weight: 600; color: #374151; cursor: pointer; user-select: none; transition: all 0.15s ease; border-radius: 6px; margin: 0 8px; }
+        .sidebar-section-header:hover { background: #e5e7eb; color: #111827; }
+        .sidebar-section-header.active-section { background: #dbeafe; color: #1d4ed8; }
+        .sidebar-section-header .arrow { font-size: 10px; transition: transform 0.25s ease; color: #9ca3af; flex-shrink: 0; }
+        .sidebar-section-header.expanded .arrow { transform: rotate(90deg); }
+        .sidebar-section-items { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+        .sidebar-section-items.show { max-height: 1000px; }
+        .sidebar-item { display: block; padding: 6px 20px 6px 28px; color: #374151; text-decoration: none; font-size: 13px; border-left: 3px solid transparent; transition: all 0.15s ease; }
+        .sidebar-item:hover { background: #e5e7eb; color: #111827; }
+        .sidebar-item.active { background: #dbeafe; color: #1d4ed8; border-left-color: #2563eb; font-weight: 600; }
+        .sidebar-subitem { padding-left: 40px; font-size: 12px; }
+
+        /* MAIN */
+        .main-wrapper { margin-left: var(--sidebar-width); flex: 1; min-width: 0; display: flex; }
+        .main-content { flex: 1; min-width: 0; max-width: calc(100% - var(--toc-width)); padding: 40px 64px 80px; }
+        .container { max-width: 820px; margin: 0 auto; }
+
+        /* TYPOGRAPHY */
+        .markdown h1 { font-size: 2rem; font-weight: 700; color: #111827; margin-bottom: 16px; line-height: 1.3; }
+        .markdown h2 { font-size: 1.5rem; font-weight: 700; color: #111827; margin-top: 48px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb; }
+        .markdown h3 { font-size: 1.25rem; font-weight: 600; color: #1f2937; margin-top: 32px; margin-bottom: 12px; }
+        .markdown h4 { font-size: 1.1rem; font-weight: 600; color: #374151; margin-top: 24px; margin-bottom: 8px; }
+        .markdown p { margin-bottom: 16px; color: #4b5563; }
+        .markdown ul, .markdown ol { margin-bottom: 16px; padding-left: 24px; }
+        .markdown li { margin-bottom: 8px; color: #4b5563; }
+        .markdown strong { color: #1f2937; font-weight: 600; }
+        .markdown code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: var(--ifm-font-family-monospace); font-size: 0.9em; }
+        .markdown a { color: #2563eb; text-decoration: none; }
+        .markdown a:hover { text-decoration: underline; }
+
+        /* ADMONITIONS */
+        .admonition { margin: 24px 0; border-radius: 8px; overflow: hidden; border: 1px solid; }
+        .admonition-title { display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-weight: 600; font-size: 14px; }
+        .admonition-content { padding: 0 16px 16px; }
+        .admonition.info { background: #eff6ff; border-color: #bfdbfe; }
+        .admonition.info .admonition-title { background: #dbeafe; color: #1e40af; }
+        .admonition.tip { background: #ecfdf5; border-color: #a7f3d0; }
+        .admonition.tip .admonition-title { background: #d1fae5; color: #065f46; }
+        .admonition.warning { background: #fffbeb; border-color: #fde68a; }
+        .admonition.warning .admonition-title { background: #fef3c7; color: #92400e; }
+        .admonition.danger { background: #fef2f2; border-color: #fecaca; }
+        .admonition.danger .admonition-title { background: #fee2e2; color: #991b1b; }
+
+        /* CARDS */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 24px 0; }
+        .card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; transition: all 0.15s ease; }
+        .card:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1); }
+        .card-icon { font-size: 24px; margin-bottom: 12px; }
+        .card-title { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 8px; }
+        .card-text { font-size: 14px; color: #6b7280; line-height: 1.5; }
+
+        /* TABLES */
+        .markdown table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        .markdown thead { background: #f9fafb; }
+        .markdown th { padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; }
+        .markdown td { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; color: #4b5563; }
+        .markdown tr:hover td { background: #f9fafb; }
+
+        /* CODE BLOCKS */
+        .code-block { background: #1f2937; border-radius: 8px; margin: 24px 0; overflow: hidden; }
+        .code-block-header { background: #374151; padding: 8px 16px; font-size: 12px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+        .code-block pre { padding: 16px; margin: 0; overflow-x: auto; }
+        .code-block code { background: none; padding: 0; color: #e5e7eb; font-size: 14px; line-height: 1.8; }
+
+        /* EXAMPLE BLOCKS */
+        .example-block { background: linear-gradient(135deg, #f0f9ff 0%, #ede9fe 100%); border: 1px solid #c7d2fe; border-radius: 8px; margin: 24px 0; overflow: hidden; }
+        .example-header { background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: white; padding: 12px 16px; font-weight: 600; font-size: 14px; }
+        .example-body { padding: 20px; }
+        .example-question { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 16px; }
+        .example-step { display: flex; gap: 12px; margin-bottom: 12px; padding: 12px; background: white; border-radius: 6px; }
+        .step-number { width: 24px; height: 24px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+        .step-text { font-size: 14px; color: #374151; line-height: 1.5; }
+        .example-answer { background: #d1fae5; border: 1px solid #6ee7b7; border-radius: 6px; padding: 12px 16px; margin-top: 16px; }
+        .answer-label { font-weight: 600; color: #065f46; font-size: 14px; }
+
+        /* VIDEO EMBEDS */
+        .video-section { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin: 24px 0; }
+        .video-section-title { font-size: 15px; font-weight: 600; color: #374151; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .video-list { display: flex; flex-direction: column; gap: 10px; }
+        .video-toggle { display: flex; align-items: center; gap: 10px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 16px; cursor: pointer; transition: all .2s ease; text-decoration: none; color: inherit; }
+        .video-toggle:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37,99,235,.08); transform: translateY(-1px); }
+        .video-toggle .play-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(239,68,68,.3); }
+        .video-toggle .video-info { flex: 1; }
+        .video-toggle .video-name { font-size: 14px; font-weight: 600; color: #1f2937; }
+        .video-toggle .video-channel { font-size: 12px; color: #6b7280; }
+        .video-toggle .video-arrow { color: #9ca3af; font-size: 12px; transition: transform .3s ease; }
+        .video-toggle.active { border-color: #2563eb; background: #eff6ff; }
+        .video-toggle.active .video-arrow { transform: rotate(180deg); }
+        .video-embed { max-height: 0; overflow: hidden; transition: max-height .4s ease, padding .3s ease; }
+        .video-embed.open { max-height: 500px; padding-top: 12px; }
+        .video-embed iframe { width: 100%; aspect-ratio: 16/9; border: none; border-radius: 10px; }
+
+        /* PRACTICE */
+        .practice-section { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; margin: 24px 0; overflow: hidden; }
+        .practice-header { background: #d1fae5; padding: 12px 16px; font-weight: 600; color: #065f46; font-size: 14px; }
+        .practice-body { padding: 20px; }
+        .practice-item { background: white; border-radius: 6px; padding: 16px; margin-bottom: 12px; border-left: 4px solid #10b981; }
+        .practice-question { font-weight: 500; color: #1f2937; margin-bottom: 8px; }
+        .collapsible { margin-top: 8px; }
+        .collapsible input[type="checkbox"] { display: none; }
+        .collapsible label { display: inline-flex; align-items: center; gap: 6px; background: #f3f4f6; border: 1px solid #e5e7eb; color: #374151; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s ease; }
+        .collapsible label:hover { background: #e5e7eb; }
+        .collapsible .content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .collapsible input:checked + label + .content { max-height: 2000px; }
+        .collapsible input:checked + label { background: #d1fae5; border-color: #10b981; color: #065f46; }
+        .practice-answer { background: #ecfdf5; border-radius: 6px; padding: 12px; margin-top: 8px; font-size: 14px; color: #374151; }
+
+        /* FORMULA BOX */
+        .formula-box { background: #1f2937; border-radius: 8px; margin: 24px 0; overflow: hidden; }
+        .formula-box-header { background: #374151; padding: 10px 16px; font-size: 12px; font-weight: 600; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px; }
+        .formula-box pre { padding: 16px; margin: 0; overflow-x: auto; }
+        .formula-box code { background: none; padding: 0; color: #e5e7eb; font-size: 15px; line-height: 1.8; }
+
+        /* CONVERSION GRID */
+        .conversion-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
+        .conversion-item { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; text-align: center; transition: all 0.15s ease; }
+        .conversion-item:hover { border-color: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1); }
+        .conversion-fraction { font-size: 20px; font-weight: 700; color: #2563eb; }
+        .conversion-equals { color: #9ca3af; font-size: 12px; margin: 4px 0; }
+        .conversion-decimal { font-size: 16px; font-weight: 600; color: #374151; }
+        .conversion-percent { font-size: 14px; color: #7c3aed; font-weight: 500; }
+
+        /* TOC */
+        .toc { position: fixed; top: var(--ifm-navbar-height); right: 0; bottom: 0; width: var(--toc-width); padding: 24px 16px; overflow-y: auto; border-left: 1px solid #e5e7eb; background: white; }
+        .toc::-webkit-scrollbar { width: 4px; }
+        .toc::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+        .toc-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; margin-bottom: 12px; }
+        .toc-link { display: block; padding: 6px 12px; font-size: 13px; color: #6b7280; text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s ease; }
+        .toc-link:hover { color: #2563eb; }
+        .toc-link.active { color: #2563eb; border-left-color: #2563eb; font-weight: 500; }
+        .toc-link.toc-h3 { padding-left: 24px; font-size: 12px; }
+        .toc-link.toc-h4 { padding-left: 36px; font-size: 11px; }
+
+        /* BADGE */
+        .badge-version { display: inline-block; background: #dbeafe; color: #2563eb; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+        /* PROGRESS */
+        .progress-tracker { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 20px; margin-bottom: 32px; }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .progress-title { font-weight: 600; font-size: 14px; color: #1f2937; }
+        .progress-count { font-size: 13px; color: #6b7280; }
+        .progress-bar { background: #e5e7eb; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+        .progress-fill { background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%); height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .progress-topics { display: flex; flex-wrap: wrap; gap: 6px; }
+        .topic-check { display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: white; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; color: #6b7280; cursor: pointer; transition: all 0.15s ease; }
+        .topic-check:hover { border-color: #2563eb; }
+        .topic-check input[type="checkbox"] { width: 14px; height: 14px; accent-color: #2563eb; }
+        .topic-check.done { background: #d1fae5; border-color: #10b981; color: #065f46; text-decoration: line-through; }
+
+        /* NUMBER LINE */
+        .number-line { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin: 24px 0; text-align: center; }
+        .number-line-title { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 16px; }
+
+        /* FOOTER */
+        .footer { margin-left: var(--sidebar-width); padding: 32px 64px; background: #1f2937; color: #9ca3af; font-size: 14px; }
+        .footer a { color: #60a5fa; text-decoration: none; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) { .toc { display: none; } .main-content { max-width: 100%; } }
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.open { transform: translateX(0); }
+            .main-wrapper { margin-left: 0; }
+            .navbar-menu-toggle { display: block; }
+            .navbar-brand { min-width: auto; }
+            .main-content { padding: 24px; }
+            .footer { margin-left: 0; padding: 24px; }
+            .conversion-grid { grid-template-columns: 1fr; }
+        }
+        /* 2026 learning workspace refresh */
+        :root {
+            --ifm-color-primary: #2563eb;
+            --ifm-color-primary-dark: #1d4ed8;
+            --ifm-background-color: #f6f8fc;
+            --ifm-text-color: #172033;
+            --sidebar-width: 292px;
+            --toc-width: 252px;
+        }
+        body { background: #f6f8fc; letter-spacing: -0.005em; }
+        .navbar {
+            height: 68px;
+            border-bottom: 1px solid rgba(148,163,184,.18);
+            background: rgba(255,255,255,.88);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 8px 30px rgba(15,23,42,.05);
+        }
+        .navbar-brand-icon { width: 38px; height: 38px; border-radius: 12px; box-shadow: 0 8px 20px rgba(37,99,235,.24); }
+        .badge-version { background: #e8efff; color: #1d4ed8; padding: 6px 12px; font-weight: 700; }
+        .docs-wrapper { padding-top: 68px; }
+        .sidebar {
+            top: 68px;
+            padding: 20px 8px;
+            border-right: 1px solid rgba(148,163,184,.18);
+            background: rgba(248,250,252,.94);
+        }
+        .sidebar-section-header { padding: 11px 14px; border-radius: 12px; }
+        .sidebar-section-header:hover { background: #eef2ff; }
+        .sidebar-section-header.active-section { background: #e8efff; color: #1d4ed8; }
+        .sidebar-item { margin: 2px 4px; padding: 8px 14px 8px 24px; border: 0; border-radius: 10px; }
+        .sidebar-item.active { background: #fff; color: #1d4ed8; box-shadow: 0 5px 18px rgba(37,99,235,.09); }
+        .main-content { padding: 48px 60px 96px; }
+        .container { max-width: 850px; }
+        .markdown h1 { font-size: clamp(2rem,4vw,3.25rem); line-height: 1.08; letter-spacing: -.04em; }
+        .markdown h2 { margin-top: 64px; padding-bottom: 12px; border-color: #dce3ef; letter-spacing: -.025em; scroll-margin-top: 92px; }
+        .markdown h3, .markdown h4 { scroll-margin-top: 92px; }
+        .markdown p, .markdown li { color: #526079; }
+        .progress-tracker {
+            border: 1px solid #dce6fa;
+            border-radius: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg,#fff 0%,#f0f6ff 100%);
+            box-shadow: 0 12px 35px rgba(30,64,175,.07);
+        }
+        .progress-bar { height: 9px; border-radius: 99px; }
+        .topic-check { padding: 7px 11px; border-radius: 9px; }
+        .card, .conversion-item { border-radius: 16px; border-color: #e2e8f0; background: #fff; box-shadow: 0 8px 24px rgba(15,23,42,.04); }
+        .card:hover, .conversion-item:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(37,99,235,.11); }
+        .admonition, .example-block, .practice-section, .formula-box, .code-block, .video-section { border-radius: 16px; }
+        .example-header { padding: 14px 18px; }
+        .example-body, .practice-body { padding: 22px; }
+        .example-step, .practice-item { border-radius: 11px; }
+        .toc { top: 68px; padding: 28px 18px; border-left-color: rgba(148,163,184,.18); background: #fff; }
+        .toc-link { margin: 2px 0; padding: 7px 12px; border-radius: 0 9px 9px 0; }
+        .toc-link.active { background: #eff6ff; }
+        .footer { background: #07152f; }
+        @media (max-width: 900px) {
+            .main-content { padding: 28px 18px 72px; }
+            .sidebar { top: 68px; box-shadow: 18px 0 50px rgba(15,23,42,.18); }
+            .navbar-brand span { font-size: 14px; }
+            .markdown table { display: block; overflow-x: auto; white-space: nowrap; }
+            .cards-grid { grid-template-columns: 1fr; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="navbar-inner">
+        <button class="navbar-menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+            <span></span><span></span><span></span>
+        </button>
+        <a href="#" class="navbar-brand">
+            <div class="navbar-brand-icon">📘</div>
+            <span>Sabrina's IGCSE 0580</span>
+        </a>
+        <div style="flex: 1;"></div>
+        <span class="badge-version">Chapter 1</span>
+    </div>
+</nav>
+
+<div class="docs-wrapper">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-section" data-section="getting-started">
+        <div class="sidebar-section-header expanded" onclick="toggleSection(this)">
+            <span>Getting Started</span>
+            <span class="arrow">▶</span>
+        </div>
+        <div class="sidebar-section-items show">
+            <a href="#overview" class="sidebar-item active">📖 Overview</a>
+            <a href="#weekly-calendar" class="sidebar-item">📅 Weekly Calendar</a>
+        </div>
+    </div>
+    <div class="sidebar-section" data-section="day1">
+        <div class="sidebar-section-header" onclick="toggleSection(this)">
+            <span>Day 1 — Types of Number</span>
+            <span class="arrow">▶</span>
+        </div>
+        <div class="sidebar-section-items">
+            <a href="#types-of-number" class="sidebar-item">🔢 Types of Number</a>
+            <a href="#natural-numbers" class="sidebar-item sidebar-subitem">Natural Numbers</a>
+            <a href="#integers" class="sidebar-item sidebar-subitem">Integers</a>
+            <a href="#primes" class="sidebar-item sidebar-subitem">Prime Numbers</a>
+            <a href="#square-numbers" class="sidebar-item sidebar-subitem">Square Numbers</a>
+            <a href="#cube-numbers" class="sidebar-item sidebar-subitem">Cube Numbers</a>
+            <a href="#factors" class="sidebar-item sidebar-subitem">Factors</a>
+            <a href="#multiples" class="sidebar-item sidebar-subitem">Multiples</a>
+            <a href="#prime-factorisation" class="sidebar-item sidebar-subitem">Prime Factorisation</a>
+            <a href="#hcf-lcm" class="sidebar-item sidebar-subitem">HCF & LCM</a>
+        </div>
+    </div>
+    <div class="sidebar-section" data-section="day2">
+        <div class="sidebar-section-header" onclick="toggleSection(this)">
+            <span>Day 2 — Sets & Venn</span>
+            <span class="arrow">▶</span>
+        </div>
+        <div class="sidebar-section-items">
+            <a href="#sets" class="sidebar-item">📊 Sets & Venn Diagrams</a>
+            <a href="#set-notation" class="sidebar-item sidebar-subitem">Set Notation</a>
+            <a href="#venn-diagrams" class="sidebar-item sidebar-subitem">Venn Diagrams</a>
+        </div>
+    </div>
+    <div class="sidebar-section" data-section="day3">
+        <div class="sidebar-section-header" onclick="toggleSection(this)">
+            <span>Day 3 — Powers & Roots</span>
+            <span class="arrow">▶</span>
+        </div>
+        <div class="sidebar-section-items">
+            <a href="#powers" class="sidebar-item">⬆️ Powers & Roots</a>
+            <a href="#squares-cubes" class="sidebar-item sidebar-subitem">Squares & Cubes Table</a>
+            <a href="#square-root" class="sidebar-item sidebar-subitem">Square Roots</a>
+            <a href="#cube-root" class="sidebar-item sidebar-subitem">Cube Roots</a>
+        </div>
+    </div>
+    <div class="sidebar-section" data-section="day4">
+        <div class="sidebar-section-header" onclick="toggleSection(this)">
+            <span>Day 4 — Fractions</span>
+            <span class="arrow">▶</span>
+        </div>
+        <div class="sidebar-section-items">
+            <a href="#fractions" class="sidebar-item">🔢 Fractions, Decimals, %</a>
+            <a href="#fraction-types" class="sidebar-item sidebar-subitem">Types of Fractions</a>
+            <a href="#conversions" class="sidebar-item sidebar-subitem">Conversions</a>
+        </div>
+    </div>
+    <div class="sidebar-section" data-section="day5">
+        <div class="sidebar-section-header" onclick="toggleSection(this)">
+            <span>Day 5 — Ordering & Operations</span>
+            <span class="arrow">▶</span>
+        </div>
+        <div class="sidebar-section-items">
+            <a href="#ordering" class="sidebar-item">📏 Ordering & Inequalities</a>
+            <a href="#bidmas" class="sidebar-item">➕ BIDMAS</a>
+            <a href="#negative-numbers" class="sidebar-item sidebar-subitem">Negative Numbers</a>
+        </div>
+    </div>
+    <div class="sidebar-section" data-section="day6">
+        <div class="sidebar-section-header" onclick="toggleSection(this)">
+            <span>Day 6 — Indices & Standard Form</span>
+            <span class="arrow">▶</span>
+        </div>
+        <div class="sidebar-section-items">
+            <a href="#indices" class="sidebar-item">📐 Indices Laws</a>
+            <a href="#standard-form" class="sidebar-item">🔬 Standard Form</a>
+        </div>
+    </div>
+    <div class="sidebar-section" data-section="day7">
+        <div class="sidebar-section-header" onclick="toggleSection(this)">
+            <span>Day 7 — Review</span>
+            <span class="arrow">▶</span>
+        </div>
+        <div class="sidebar-section-items">
+            <a href="#self-test" class="sidebar-item">📝 Self-Test</a>
+            <a href="#resources" class="sidebar-item">🌐 Free Resources</a>
+        </div>
+    </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div class="main-wrapper">
+<main class="main-content">
+<div class="container">
+
+<!-- OVERVIEW -->
+<div id="overview">
+    <div style="margin-bottom: 8px;"><span class="badge-version">Cambridge IGCSE 0580 (2028–2030)</span></div>
+    <h1>Chapter 1: Review of Number Concepts</h1>
+    <p><strong>Student:</strong> Sabrina &nbsp;|&nbsp; <strong>Coursebook:</strong> Cambridge IGCSE Mathematics Core & Extended (3rd Ed)</p>
+
+    <div class="admonition tip">
+        <div class="admonition-title">💡 What This Guide Covers</div>
+        <div class="admonition-content">
+            <p>This is your <strong>complete, detailed</strong> study guide for Chapter 1. Every topic has:</p>
+            <ul>
+                <li><strong>Detailed explanations</strong> — each concept explained step by step with examples</li>
+                <li><strong>Worked examples</strong> — see exactly how to solve each type of question</li>
+                <li><strong>QR codes</strong> — scan to watch video tutorials</li>
+                <li><strong>Practice questions</strong> — test yourself with answers included</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="progress-tracker">
+        <div class="progress-header">
+            <div class="progress-title">📋 Your Progress This Week</div>
+            <div class="progress-count" id="progressCount">0 of 8 topics done</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+        <div class="progress-topics">
+            <label class="topic-check" onclick="toggleTopic(this)"><input type="checkbox"> Types of Number</label>
+            <label class="topic-check" onclick="toggleTopic(this)"><input type="checkbox"> Sets & Venn</label>
+            <label class="topic-check" onclick="toggleTopic(this)"><input type="checkbox"> Powers & Roots</label>
+            <label class="topic-check" onclick="toggleTopic(this)"><input type="checkbox"> Fractions, Decimals, %</label>
+            <label class="topic-check" onclick="toggleTopic(this)"><input type="checkbox"> Ordering</label>
+            <label class="topic-check" onclick="toggleTopic(this)"><input type="checkbox"> BIDMAS</label>
+            <label class="topic-check" onclick="toggleTopic(this)"><input type="checkbox"> Indices</label>
+            <label class="topic-check" onclick="toggleTopic(this)"><input type="checkbox"> Standard Form</label>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TOPIC 1: TYPES OF NUMBER — VERY DETAILED -->
+<!-- ============================================ -->
+<div id="types-of-number">
+    <h2>🔢 Types of Number</h2>
+    <p><strong>Syllabus:</strong> C1.1 / E1.1 &nbsp;|&nbsp; <strong>Time needed:</strong> ~2 hours</p>
+    <p>Numbers are the building blocks of mathematics. In this topic, you'll learn to <strong>identify</strong>, <strong>classify</strong>, and <strong>work with</strong> different types of numbers. Understanding these types is essential because IGCSE questions often ask you to "write down a prime number" or "list all the square numbers" — you need to know exactly what each type means.</p>
+
+    <!-- NATURAL NUMBERS -->
+    <div id="natural-numbers">
+        <h3>Natural Numbers</h3>
+        <p><strong>Natural numbers</strong> are the counting numbers — the first numbers you ever learned as a child. They start at 1 and go on forever:</p>
+        <div class="formula-box">
+            <div class="formula-box-header">Natural Numbers</div>
+            <code>1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, … (and so on forever)</code>
+        </div>
+        <p><strong>Key facts about natural numbers:</strong></p>
+        <ul>
+            <li>They start at <strong>1</strong> (not 0)</li>
+            <li>They are always <strong>positive</strong> (no negatives)</li>
+            <li>They are always <strong>whole numbers</strong> (no decimals or fractions)</li>
+            <li>They go on <strong>forever</strong> — there is no biggest natural number</li>
+        </ul>
+        <div class="admonition info">
+            <div class="admonition-title">💡 Example</div>
+            <div class="admonition-content">
+                <p><strong>Question:</strong> Write down the first five natural numbers.</p>
+                <p><strong>Answer:</strong> 1, 2, 3, 4, 5</p>
+                <p>Notice: we start at 1, not 0. Natural numbers are for counting — you can't count "zero apples" in real life!</p>
+            </div>
+        </div>
+        <div class="admonition warning">
+            <div class="admonition-title">⚠️ Common Mistake</div>
+            <div class="admonition-content">
+                <p>Some people think 0 is a natural number. In IGCSE, <strong>natural numbers start at 1</strong>. If the question says "whole numbers" then 0 is included, but "natural numbers" means 1, 2, 3, …</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- INTEGERS -->
+    <div id="integers">
+        <h3>Integers</h3>
+        <p><strong>Integers</strong> are all whole numbers — including negative numbers, zero, and positive numbers. Think of them as natural numbers plus their negatives and zero.</p>
+        <div class="formula-box">
+            <div class="formula-box-header">Integers</div>
+            <code>…, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, …</code>
+        </div>
+        <p><strong>Key facts about integers:</strong></p>
+        <ul>
+            <li>They include <strong>negative numbers</strong>: -1, -2, -3, …</li>
+            <li>They include <strong>zero</strong>: 0</li>
+            <li>They include <strong>positive numbers</strong>: 1, 2, 3, …</li>
+            <li>They are always <strong>whole numbers</strong> (no decimals or fractions like 2.5 or 3/4)</li>
+            <li>They go on forever in both directions</li>
+        </ul>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Is this an integer?</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text"><strong>5</strong> — Is this an integer? <strong>YES</strong> ✅ (it's a positive whole number)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text"><strong>-3</strong> — Is this an integer? <strong>YES</strong> ✅ (it's a negative whole number)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text"><strong>0</strong> — Is this an integer? <strong>YES</strong> ✅ (zero is an integer)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text"><strong>2.5</strong> — Is this an integer? <strong>NO</strong> ❌ (it has a decimal part)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">5</div>
+                    <div class="step-text"><strong>-7.1</strong> — Is this an integer? <strong>NO</strong> ❌ (it has a decimal part)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">6</div>
+                    <div class="step-text"><strong>3/4</strong> — Is this an integer? <strong>NO</strong> ❌ (it's a fraction, not a whole number)</div>
+                </div>
+            </div>
+        </div>
+        <div class="admonition tip">
+            <div class="admonition-title">💡 Memory Tip</div>
+            <div class="admonition-content">
+                <p>Think of integers as <strong>all the numbers on a number line that land exactly on a mark</strong> — no in-between values. If you can point to it on a number line without it being between two marks, it's an integer.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRIME NUMBERS -->
+    <div id="primes">
+        <h3>Prime Numbers</h3>
+        <p>A <strong>prime number</strong> is a number that has <strong>exactly two factors</strong>: 1 and itself. This means it can only be divided exactly by 1 and by itself — nothing else.</p>
+        <div class="formula-box">
+            <div class="formula-box-header">Prime Numbers — Definition</div>
+            <code>A prime number has EXACTLY two factors: 1 and itself.
+Examples: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31</code>
+        </div>
+        <p><strong>Why is 1 NOT a prime number?</strong></p>
+        <ul>
+            <li>A prime number must have <strong>exactly two</strong> factors</li>
+            <li>1 only has <strong>one factor</strong> (1 itself)</li>
+            <li>Therefore, 1 is <strong>NOT prime</strong></li>
+        </ul>
+        <p><strong>Why is 2 the only even prime?</strong></p>
+        <ul>
+            <li>Every even number (except 2) can be divided by 2</li>
+            <li>So every even number (except 2) has at least three factors: 1, 2, and itself</li>
+            <li>2 only has two factors: 1 and 2 — so it IS prime</li>
+        </ul>
+        <p><strong>All prime numbers up to 31 (MEMORISE THESE):</strong></p>
+        <div class="formula-box">
+            <div class="formula-box-header">Primes to Memorise</div>
+            <code>2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31</code>
+        </div>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Is 17 prime?</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Find all the factors of 17: What numbers divide exactly into 17?</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">17 ÷ 1 = 17 ✅ (1 is a factor)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">17 ÷ 2 = 8.5 ❌ (not a whole number)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">17 ÷ 3 = 5.67 ❌ (not a whole number)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">5</div>
+                    <div class="step-text">Keep going… none work until 17 ÷ 17 = 1 ✅</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">6</div>
+                    <div class="step-text">Factors of 17: only <strong>1 and 17</strong> — that's exactly two factors!</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    <strong>Yes, 17 is prime</strong> because it only has two factors: 1 and 17.
+                </div>
+            </div>
+        </div>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Is 15 prime?</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Find all factors of 15: 1, 3, 5, 15</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">That's <strong>four factors</strong>, not two!</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">15 = 3 × 5, so it has factors besides 1 and itself</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    <strong>No, 15 is NOT prime</strong> because it has more than two factors (1, 3, 5, 15).
+                </div>
+            </div>
+        </div>
+        <div class="admonition danger">
+            <div class="admonition-title">🚨 Common Mistakes</div>
+            <div class="admonition-content">
+                <p><strong>1 is NOT prime</strong> — it only has one factor</p>
+                <p><strong>2 IS prime</strong> — it's the only even prime</p>
+                <p><strong>0 is NOT prime</strong> — it has infinitely many factors</p>
+                <p><strong>Negative numbers are NEVER prime</strong> — primes must be positive</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SQUARE NUMBERS -->
+    <div id="square-numbers">
+        <h3>Square Numbers</h3>
+        <p>A <strong>square number</strong> is the result of multiplying a number by itself. We write this as n² (read as "n squared").</p>
+        <div class="formula-box">
+            <div class="formula-box-header">Square Numbers</div>
+            <code>n² = n × n
+1² = 1    2² = 4    3² = 9    4² = 16   5² = 25
+6² = 36   7² = 49   8² = 64   9² = 81   10² = 100
+11² = 121  12² = 144  13² = 169  14² = 196  15² = 225</code>
+        </div>
+        <p><strong>Why are they called "square" numbers?</strong></p>
+        <p>If you arrange dots in a square shape, square numbers are the ones that form a perfect square:</p>
+        <ul>
+            <li>4 dots can make a 2×2 square</li>
+            <li>9 dots can make a 3×3 square</li>
+            <li>16 dots can make a 4×4 square</li>
+        </ul>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Calculate 12²</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">12² means 12 × 12</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">12 × 12 = 144</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    12² = <strong>144</strong>
+                </div>
+            </div>
+        </div>
+        <div class="admonition warning">
+            <div class="admonition-title">⚠️ Common Mistake</div>
+            <div class="admonition-content">
+                <p><strong>12² ≠ 24</strong> — Don't multiply 12 × 2! Squaring means multiplying the number by ITSELF: 12 × 12 = 144, not 12 × 2 = 24.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUBE NUMBERS -->
+    <div id="cube-numbers">
+        <h3>Cube Numbers</h3>
+        <p>A <strong>cube number</strong> is the result of multiplying a number by itself <strong>three times</strong>. We write this as n³ (read as "n cubed").</p>
+        <div class="formula-box">
+            <div class="formula-box-header">Cube Numbers</div>
+            <code>n³ = n × n × n
+1³ = 1      2³ = 8      3³ = 27     4³ = 64     5³ = 125
+6³ = 216    7³ = 343    8³ = 512    9³ = 729    10³ = 1000</code>
+        </div>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Calculate 4³</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">4³ means 4 × 4 × 4</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">4 × 4 = 16</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">16 × 4 = 64</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    4³ = <strong>64</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FACTORS -->
+    <div id="factors">
+        <h3>Factors</h3>
+        <p>A <strong>factor</strong> of a number is a number that divides into it <strong>exactly</strong> (with no remainder). Factors always come in pairs.</p>
+        <div class="formula-box">
+            <div class="formula-box-header">Factors</div>
+            <code>A factor divides a number exactly.
+Example: Factors of 12 = 1, 2, 3, 4, 6, 12
+Because: 1×12=12, 2×6=12, 3×4=12</code>
+        </div>
+        <p><strong>How to find all factors of a number:</strong></p>
+        <ol>
+            <li>Start with 1 and the number itself (they're always factors)</li>
+            <li>Try 2, 3, 4, 5, … up to the square root of the number</li>
+            <li>If n divides exactly, then both n and (number ÷ n) are factors</li>
+        </ol>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Find all factors of 36</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">1 × 36 = 36 → factors: <strong>1 and 36</strong></div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">2 × 18 = 36 → factors: <strong>2 and 18</strong></div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">3 × 12 = 36 → factors: <strong>3 and 12</strong></div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">4 × 9 = 36 → factors: <strong>4 and 9</strong></div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">5</div>
+                    <div class="step-text">6 × 6 = 36 → factor: <strong>6</strong> (just one, since both are the same)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">6</div>
+                    <div class="step-text">Next would be 7, but 7 × 5 = 35 (too small) and 7 × 6 = 42 (too big) — stop!</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    Factors of 36 = <strong>1, 2, 3, 4, 6, 9, 12, 18, 36</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MULTIPLES -->
+    <div id="multiples">
+        <h3>Multiples</h3>
+        <p>A <strong>multiple</strong> of a number is what you get when you multiply it by 1, 2, 3, 4, … (its times table). Multiples go on forever.</p>
+        <div class="formula-box">
+            <div class="formula-box-header">Multiples</div>
+            <code>Multiples of 5: 5, 10, 15, 20, 25, 30, 35, 40, …
+Multiples of 3: 3, 6, 9, 12, 15, 18, 21, 24, …
+Just keep adding the number to get the next multiple!</code>
+        </div>
+        <p><strong>Key difference between factors and multiples:</strong></p>
+        <ul>
+            <li><strong>Factors</strong> are <strong>smaller</strong> than (or equal to) the number — they divide INTO it</li>
+            <li><strong>Multiples</strong> are <strong>larger</strong> than (or equal to) the number — the number divides INTO them</li>
+        </ul>
+        <div class="admonition tip">
+            <div class="admonition-title">💡 Memory Tip</div>
+            <div class="admonition-content">
+                <p><strong>Factors</strong> = "What can divide into this number?" (go DOWN)</p>
+                <p><strong>Multiples</strong> = "What can this number divide into?" (go UP — the times table)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRIME FACTORISATION -->
+    <div id="prime-factorisation">
+        <h3>Prime Factor Decomposition (Product of Prime Factors)</h3>
+        <p>Every whole number (greater than 1) can be broken down into a <strong>multiplication of prime numbers</strong>. This is called <strong>prime factorisation</strong> or <strong>product of prime factors</strong>.</p>
+        <p><strong>Two methods to find prime factors:</strong></p>
+        <ol>
+            <li><strong>Factor tree</strong> — keep breaking the number into two factors until all branches end in primes</li>
+            <li><strong>Division method</strong> — keep dividing by the smallest prime that works</li>
+        </ol>
+        <div class="example-block">
+            <div class="example-header">Method 1: Factor Tree — Express 72 as product of primes</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">72 = <strong>8 × 9</strong> (break into two factors)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">8 = <strong>2 × 4</strong> (break 8 further)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">4 = <strong>2 × 2</strong> (break 4 — now we have primes!)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">9 = <strong>3 × 3</strong> (break 9 — now we have primes!)</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">5</div>
+                    <div class="step-text">All the prime ends: 2, 2, 2, 3, 3</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    72 = <strong>2 × 2 × 2 × 3 × 3</strong> = <strong>2³ × 3²</strong>
+                </div>
+            </div>
+        </div>
+        <div class="example-block">
+            <div class="example-header">Method 2: Division Method — Express 180 as product of primes</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">180 ÷ 2 = 90</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">90 ÷ 2 = 45</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">45 ÷ 3 = 15</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">15 ÷ 3 = 5</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">5</div>
+                    <div class="step-text">5 ÷ 5 = 1 (done!)</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    180 = <strong>2 × 2 × 3 × 3 × 5</strong> = <strong>2² × 3² × 5</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HCF AND LCM -->
+    <div id="hcf-lcm">
+        <h3>HCF (Highest Common Factor) and LCM (Lowest Common Multiple)</h3>
+
+        <h4>HCF — Highest Common Factor</h4>
+        <p>The <strong>HCF</strong> of two or more numbers is the <strong>largest number that divides into all of them exactly</strong>. It's also called the Greatest Common Divisor (GCD).</p>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Find HCF of 24 and 36</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Write both as products of primes:<br>24 = 2 × 2 × 2 × 3 = 2³ × 3<br>36 = 2 × 2 × 3 × 3 = 2² × 3²</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Find the <strong>common</strong> primes with the <strong>lowest</strong> power:<br>Common 2s: min(3,2) = 2²<br>Common 3s: min(1,2) = 3¹</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Multiply: 2² × 3 = 4 × 3 = 12</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    HCF(24, 36) = <strong>12</strong>
+                </div>
+            </div>
+        </div>
+
+        <h4>LCM — Lowest Common Multiple</h4>
+        <p>The <strong>LCM</strong> of two or more numbers is the <strong>smallest number that all of them divide into exactly</strong>.</p>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Find LCM of 24 and 36</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Write both as products of primes:<br>24 = 2³ × 3<br>36 = 2² × 3²</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Find the <strong>highest</strong> power of each prime that appears:<br>Highest 2s: max(3,2) = 2³<br>Highest 3s: max(1,2) = 3²</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Multiply: 2³ × 3² = 8 × 9 = 72</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    LCM(24, 36) = <strong>72</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="admonition info">
+            <div class="admonition-title">💡 Quick Check</div>
+            <div class="admonition-content">
+                <p><strong>HCF check:</strong> Does 12 divide into 24? Yes (24÷12=2). Does 12 divide into 36? Yes (36÷12=3). ✅</p>
+                <p><strong>LCM check:</strong> Does 24 divide into 72? Yes (72÷24=3). Does 36 divide into 72? Yes (72÷36=2). ✅</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIDEOS -->
+    <div class="video-section">
+        <div class="video-section-title">▶️ Watch & Learn — Prime Numbers & Factors</div>
+        <div class="video-list">
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">Prime Numbers</div>
+                        <div class="video-channel">Corbettmaths</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/MUVQY6Oo5x8" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">Factors</div>
+                        <div class="video-channel">Corbettmaths</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/YkbMTSqE1vM" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">LCM &amp; HCF using Product of Primes</div>
+                        <div class="video-channel">Corbettmaths</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/oK-EFDLeEqc" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRACTICE -->
+    <div class="practice-section">
+        <div class="practice-header">✏️ Practice Questions — Try These!</div>
+        <div class="practice-body">
+            <div class="practice-item">
+                <div class="practice-question">1. List all prime numbers between 20 and 40.</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q1">
+                    <label for="q1">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer"><strong>23, 29, 31, 37</strong></div></div>
+                </div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">2. Express 180 as a product of prime factors.</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q2">
+                    <label for="q2">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer">180 = 2 × 90 = 2 × 2 × 45 = 2 × 2 × 5 × 9 = <strong>2² × 3² × 5</strong></div></div>
+                </div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">3. Find the HCF and LCM of 24 and 36.</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q3">
+                    <label for="q3">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer"><strong>HCF = 12</strong> (common primes: 2 × 2 × 3)<br><strong>LCM = 72</strong> (highest powers: 2³ × 3²)</div></div>
+                </div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">4. Write down all square numbers from 1 to 225.</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q4">
+                    <label for="q4">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer"><strong>1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225</strong> (1² to 15²)</div></div>
+                </div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">5. Is 1 a prime number? Explain why or why not.</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q5">
+                    <label for="q5">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer"><strong>No.</strong> A prime number must have exactly two factors (1 and itself). 1 only has one factor, so it is NOT prime.</div></div>
+                </div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">6. Find all factors of 48.</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q5b">
+                    <label for="q5b">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer"><strong>1, 2, 3, 4, 6, 8, 12, 16, 24, 48</strong></div></div>
+                </div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">7. Which of these are integers: 5, -3, 0, 2.5, -7.1, 3/4?</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q5c">
+                    <label for="q5c">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer"><strong>5, -3, 0</strong> are integers. 2.5, -7.1, and 3/4 are NOT integers (they have decimal/fraction parts).</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="video-section">
+        <div class="video-section-title">▶️ More Practice Videos</div>
+        <div class="video-list">
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">Primes, Factors &amp; Multiples — Practice Questions</div>
+                        <div class="video-channel">Corbettmaths</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/xt_uzz5S7ro" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">Factors, Multiples and Primes</div>
+                        <div class="video-channel">Maths Genie</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/9vG0QoWB6ZU" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TOPIC 2: SETS & VENN DIAGRAMS — DETAILED -->
+<!-- ============================================ -->
+<div id="sets">
+    <h2>📊 Sets & Venn Diagrams</h2>
+    <p><strong>Syllabus:</strong> C1.2 / E1.2 &nbsp;|&nbsp; <strong>Time needed:</strong> ~1.5 hours</p>
+    <p>A <strong>set</strong> is a collection of objects or numbers. We use special notation and diagrams to describe and compare sets. This topic is about learning the "language" of sets — the symbols and diagrams mathematicians use.</p>
+
+    <div id="set-notation">
+        <h3>Set Notation — What Each Symbol Means</h3>
+        <p>Set notation is like a special shorthand. Once you learn these symbols, you can read and write mathematical statements very efficiently.</p>
+        <table>
+            <thead><tr><th>Symbol</th><th>Name</th><th>What It Means</th><th>Example</th></tr></thead>
+            <tbody>
+                <tr><td><strong>{ }</strong></td><td>Curly brackets</td><td>Makes a set — lists the elements inside</td><td>{1, 2, 3} — the set containing 1, 2, and 3</td></tr>
+                <tr><td><strong>∈</strong></td><td>Element of</td><td>"Is in the set"</td><td>3 ∈ {1, 2, 3} — "3 is in the set"</td></tr>
+                <tr><td><strong>∪</strong></td><td>Union</td><td>"OR" — everything in either set (or both)</td><td>A ∪ B — all elements in A or B or both</td></tr>
+                <tr><td><strong>∩</strong></td><td>Intersection</td><td>"AND" — only what's in both sets</td><td>A ∩ B — elements in both A and B</td></tr>
+                <tr><td><strong>A'</strong></td><td>Complement</td><td>"NOT in A" — everything outside A</td><td>A' — everything in the universal set that is NOT in A</td></tr>
+                <tr><td><strong>n(A)</strong></td><td>Number in set</td><td>How many elements are in A</td><td>n(A) = 3 means set A has 3 elements</td></tr>
+                <tr><td><strong>∅</strong></td><td>Empty set</td><td>A set with nothing in it</td><td>∅ or { } — no elements at all</td></tr>
+                <tr><td><strong>U</strong></td><td>Universal set</td><td>Everything we're talking about</td><td>U = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}</td></tr>
+            </tbody>
+        </table>
+        <div class="admonition tip">
+            <div class="admonition-title">💡 How to Remember Union vs Intersection</div>
+            <div class="admonition-content">
+                <p><strong>∪ (Union)</strong> looks like a <strong>U</strong> — think "either <strong>U</strong>sually" = OR = everything</p>
+                <p><strong>∩ (Intersection)</strong> looks like an <strong>n</strong> — think "a<strong>n</strong>d" = AND = only the overlap</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="venn-diagrams">
+        <h3>Venn Diagrams</h3>
+        <p>A <strong>Venn diagram</strong> uses overlapping circles inside a rectangle to visually show how sets relate to each other. The rectangle represents the universal set (everything), and each circle represents one set.</p>
+        <div class="admonition info">
+            <div class="admonition-title">📐 How to Draw a Venn Diagram</div>
+            <div class="admonition-content">
+                <ol>
+                    <li><strong>Draw a rectangle</strong> — this is the universal set (U)</li>
+                    <li><strong>Draw overlapping circles</strong> inside — one for each set</li>
+                    <li><strong>Write numbers in the overlap</strong> if they're in BOTH sets</li>
+                    <li><strong>Write numbers in the non-overlapping part</strong> if they're in only ONE set</li>
+                    <li><strong>Write numbers outside the circles</strong> if they're in U but not in any set</li>
+                </ol>
+            </div>
+        </div>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Draw a Venn Diagram for A = {1, 2, 3, 4} and B = {3, 4, 5, 6}</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text"><strong>Find the overlap:</strong> What numbers are in BOTH A and B? → <strong>3 and 4</strong> go in the middle</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text"><strong>Circle A only:</strong> What's in A but NOT in B? → <strong>1 and 2</strong> go in the left part of circle A</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text"><strong>Circle B only:</strong> What's in B but NOT in A? → <strong>5 and 6</strong> go in the right part of circle B</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text"><strong>A ∪ B (union):</strong> Everything in either circle → {1, 2, 3, 4, 5, 6}</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">5</div>
+                    <div class="step-text"><strong>A ∩ B (intersection):</strong> Only the overlap → {3, 4}</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    A ∪ B = {1, 2, 3, 4, 5, 6} and A ∩ B = {3, 4}
+                </div>
+            </div>
+        </div>
+        <div class="example-block">
+            <div class="example-header">Worked Example: Complement of a Set</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Let U = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10} and A = {2, 4, 6, 8, 10}</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text"><strong>A'</strong> means "everything NOT in A"</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Go through U and remove anything in A: remove 2, 4, 6, 8, 10</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">What's left: 1, 3, 5, 7, 9</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    A' = <strong>{1, 3, 5, 7, 9}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="video-section">
+        <div class="video-section-title">▶️ Watch & Learn — Sets &amp; Venn Diagrams</div>
+        <div class="video-list">
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">Set Notation and Venn Diagrams Explained</div>
+                        <div class="video-channel">GCSE Maths Revision</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/RQbYHfuuLms" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">Venn Diagrams — Revision Session</div>
+                        <div class="video-channel">Corbettmaths</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/GghFGrj-qr4" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="practice-section">
+        <div class="practice-header">✏️ Practice Questions</div>
+        <div class="practice-body">
+            <div class="practice-item">
+                <div class="practice-question">1. P = {2, 4, 6, 8, 10} and Q = {3, 6, 9, 12}. Find P ∪ Q and P ∩ Q.</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q6">
+                    <label for="q6">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer"><strong>P ∪ Q</strong> = {2, 3, 4, 6, 8, 9, 10, 12}<br><strong>P ∩ Q</strong> = {6} (only 6 is in both)</div></div>
+                </div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">2. In a class of 30 students, 18 play football and 12 play cricket. 5 play both. How many play neither?</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q7">
+                    <label for="q7">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer">Football only: 18 - 5 = 13. Cricket only: 12 - 5 = 7. Total playing: 13 + 5 + 7 = 25. Neither: <strong>30 - 25 = 5</strong></div></div>
+                </div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">3. If U = {1,2,3,4,5,6,7,8,9,10} and A = {2,4,6,8,10}, what is A'?</div>
+                <div class="collapsible">
+                    <input type="checkbox" id="q8">
+                    <label for="q8">💡 Show Answer</label>
+                    <div class="content"><div class="practice-answer"><strong>A' = {1, 3, 5, 7, 9}</strong> — these are the numbers NOT in A.</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TOPIC 3: POWERS AND ROOTS — DETAILED -->
+<!-- ============================================ -->
+<div id="powers">
+    <h2>⬆️ Powers and Roots</h2>
+    <p><strong>Syllabus:</strong> C1.3 / E1.3 &nbsp;|&nbsp; <strong>Time needed:</strong> ~2 hours</p>
+    <p>Powers (indices) and roots are <strong>opposite operations</strong>. A power means multiply a number by itself repeatedly. A root asks: "what number, multiplied by itself, gives this answer?"</p>
+
+    <div id="squares-cubes">
+        <h3>Squares and Cubes — Tables You MUST Memorise</h3>
+        <p><strong>Square numbers</strong> are made by multiplying a number by itself once: n² = n × n</p>
+        <table>
+            <thead><tr><th>n</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th></tr></thead>
+            <tbody><tr><td><strong>n²</strong></td><td>1</td><td>4</td><td>9</td><td>16</td><td>25</td><td>36</td><td>49</td><td>64</td><td>81</td><td>100</td><td>121</td><td>144</td><td>169</td><td>196</td><td>225</td></tr></tbody>
+        </table>
+        <p><strong>Cube numbers</strong> are made by multiplying a number by itself twice: n³ = n × n × n</p>
+        <table>
+            <thead><tr><th>n</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+            <tbody><tr><td><strong>n³</strong></td><td>1</td><td>8</td><td>27</td><td>64</td><td>125</td><td>216</td><td>343</td><td>512</td><td>729</td><td>1000</td></tr></tbody>
+        </table>
+    </div>
+
+    <div id="square-root">
+        <h3>Square Roots (√)</h3>
+        <p>The <strong>square root</strong> is the opposite of squaring. If n² = x, then √x = n. It asks: "what number, when multiplied by itself, gives this?"</p>
+        <div class="example-block">
+            <div class="example-header">Worked Example: What is √144?</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Ask yourself: what number squared = 144?</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">From the squares table: 12² = 144</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    √144 = <strong>12</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="cube-root">
+        <h3>Cube Roots (∛)</h3>
+        <p>The <strong>cube root</strong> is the opposite of cubing. If n³ = x, then ∛x = n.</p>
+        <div class="example-block">
+            <div class="example-header">Worked Example: What is ∛27?</div>
+            <div class="example-body">
+                <div class="example-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Ask yourself: what number cubed = 27?</div>
+                </div>
+                <div class="example-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">From the cubes table: 3³ = 27</div>
+                </div>
+                <div class="example-answer">
+                    <div class="answer-label">✅ Answer:</div>
+                    ∛27 = <strong>3</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admonition warning">
+        <div class="admonition-title">⚠️ Common Mistakes</div>
+        <div class="admonition-content">
+            <p><strong>2³ ≠ 2 × 3</strong> — 2³ means 2 × 2 × 2 = 8, NOT 6!</p>
+            <p><strong>3² ≠ 3 × 2</strong> — 3² means 3 × 3 = 9, NOT 6!</p>
+            <p><strong>√16 ≠ 8</strong> — √16 = 4 (because 4² = 16)</p>
+        </div>
+    </div>
+
+    <div class="example-block">
+        <div class="example-header">Worked Example: Calculate 5² + √81 - ³√27</div>
+        <div class="example-body">
+            <div class="example-step"><div class="step-number">1</div><div class="step-text">5² = 5 × 5 = <strong>25</strong></div></div>
+            <div class="example-step"><div class="step-number">2</div><div class="step-text">√81 = ? → 9² = 81, so √81 = <strong>9</strong></div></div>
+            <div class="example-step"><div class="step-number">3</div><div class="step-text">³√27 = ? → 3³ = 27, so ³√27 = <strong>3</strong></div></div>
+            <div class="example-step"><div class="step-number">4</div><div class="step-text">25 + 9 - 3 = <strong>31</strong></div></div>
+            <div class="example-answer"><div class="answer-label">✅ Answer:</div>5² + √81 - ³√27 = 25 + 9 - 3 = <strong>31</strong></div>
+        </div>
+    </div>
+
+    <div class="video-section">
+        <div class="video-section-title">▶️ Watch & Learn — Powers &amp; Roots</div>
+        <div class="video-list">
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">What are Indices? — IGCSE 0580</div>
+                        <div class="video-channel">Mr Oh Math</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/_5FNvg5x9GQ" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+
+    <div class="practice-section">
+        <div class="practice-header">✏️ Practice Questions</div>
+        <div class="practice-body">
+            <div class="practice-item">
+                <div class="practice-question">1. Calculate: (a) 7² (b) 4³ (c) √144 (d) ³√64</div>
+                <div class="collapsible"><input type="checkbox" id="q9"><label for="q9">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) 49 (b) 64 (c) 12 (d) 4</div></div></div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">2. Calculate: 3² + 4²</div>
+                <div class="collapsible"><input type="checkbox" id="q10"><label for="q10">💡 Show Answer</label><div class="content"><div class="practice-answer">3² + 4² = 9 + 16 = <strong>25</strong> (note: this is NOT the same as (3+4)² = 49!)</div></div></div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">3. Find the value of: √169 + ³√125 - 2³</div>
+                <div class="collapsible"><input type="checkbox" id="q11"><label for="q11">💡 Show Answer</label><div class="content"><div class="practice-answer">13 + 5 - 8 = <strong>10</strong></div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TOPIC 4: FRACTIONS, DECIMALS & PERCENTAGES — DETAILED -->
+<!-- ============================================ -->
+<div id="fractions">
+    <h2>🔢 Fractions, Decimals & Percentages</h2>
+    <p><strong>Syllabus:</strong> C1.4 / E1.4 &nbsp;|&nbsp; <strong>Time needed:</strong> ~2.5 hours</p>
+    <p>Fractions, decimals, and percentages are just <strong>three different ways of writing the same number</strong>. Being able to convert between them is essential for IGCSE.</p>
+
+    <div id="fraction-types">
+        <h3>Types of Fractions</h3>
+        <div class="cards-grid">
+            <div class="card" style="border-top: 3px solid #2563eb;">
+                <div class="card-title">Proper Fraction</div>
+                <div class="card-text">Top number is <strong>smaller</strong> than bottom. Value is less than 1.<br><strong>2/3, 4/7, 1/5</strong><br>Think: "proper" = less than 1 whole</div>
+            </div>
+            <div class="card" style="border-top: 3px solid #7c3aed;">
+                <div class="card-title">Improper Fraction</div>
+                <div class="card-text">Top number is <strong>bigger</strong> than bottom. Value is 1 or more.<br><strong>7/4, 9/3, 11/5</strong><br>Think: "improper" = more than 1 whole</div>
+            </div>
+            <div class="card" style="border-top: 3px solid #10b981;">
+                <div class="card-title">Mixed Number</div>
+                <div class="card-text">A whole number + a fraction.<br><strong>2 1/3, 1 3/4, 3 2/5</strong><br>Think: "mixed" = whole number mixed with a fraction</div>
+            </div>
+        </div>
+        <div class="admonition info">
+            <div class="admonition-title">🔄 Converting Between Mixed and Improper</div>
+            <div class="admonition-content">
+                <p><strong>Mixed → Improper:</strong> Multiply the whole number by the bottom, add the top. Keep the same bottom.</p>
+                <p>2 3/4 = (2 × 4 + 3) / 4 = 8 + 3 / 4 = <strong>11/4</strong></p>
+                <p><strong>Improper → Mixed:</strong> Divide the top by the bottom. The quotient is the whole number, the remainder goes on top.</p>
+                <p>11/4 = 11 ÷ 4 = 2 remainder 3 → <strong>2 3/4</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="conversions">
+        <h3>Key Conversions to Memorise</h3>
+        <div class="conversion-grid">
+            <div class="conversion-item"><div class="conversion-fraction">1/2</div><div class="conversion-equals">=</div><div class="conversion-decimal">0.5</div><div class="conversion-percent">= 50%</div></div>
+            <div class="conversion-item"><div class="conversion-fraction">1/4</div><div class="conversion-equals">=</div><div class="conversion-decimal">0.25</div><div class="conversion-percent">= 25%</div></div>
+            <div class="conversion-item"><div class="conversion-fraction">3/4</div><div class="conversion-equals">=</div><div class="conversion-decimal">0.75</div><div class="conversion-percent">= 75%</div></div>
+            <div class="conversion-item"><div class="conversion-fraction">1/5</div><div class="conversion-equals">=</div><div class="conversion-decimal">0.2</div><div class="conversion-percent">= 20%</div></div>
+            <div class="conversion-item"><div class="conversion-fraction">1/3</div><div class="conversion-equals">=</div><div class="conversion-decimal">0.333…</div><div class="conversion-percent">= 33⅓%</div></div>
+            <div class="conversion-item"><div class="conversion-fraction">2/3</div><div class="conversion-equals">=</div><div class="conversion-decimal">0.666…</div><div class="conversion-percent">= 66⅔%</div></div>
+            <div class="conversion-item"><div class="conversion-fraction">1/8</div><div class="conversion-equals">=</div><div class="conversion-decimal">0.125</div><div class="conversion-percent">= 12.5%</div></div>
+            <div class="conversion-item"><div class="conversion-fraction">3/8</div><div class="conversion-equals">=</div><div class="conversion-decimal">0.375</div><div class="conversion-percent">= 37.5%</div></div>
+            <div class="conversion-item"><div class="conversion-fraction">1/10</div><div class="conversion-equals">=</div><div class="conversion-decimal">0.1</div><div class="conversion-percent">= 10%</div></div>
+        </div>
+    </div>
+
+    <h3>How to Convert</h3>
+    <div class="cards-grid">
+        <div class="card" style="border-top: 3px solid #2563eb;">
+            <div class="card-title">Fraction → Decimal</div>
+            <div class="card-text"><strong>Divide the top by the bottom.</strong><br>3/4 = 3 ÷ 4 = 0.75<br>7/8 = 7 ÷ 8 = 0.875<br>2/3 = 2 ÷ 3 = 0.666…</div>
+        </div>
+        <div class="card" style="border-top: 3px solid #7c3aed;">
+            <div class="card-title">Decimal → Percentage</div>
+            <div class="card-text"><strong>Multiply by 100.</strong><br>0.6 × 100 = 60%<br>0.125 × 100 = 12.5%<br>0.03 × 100 = 3%</div>
+        </div>
+        <div class="card" style="border-top: 3px solid #10b981;">
+            <div class="card-title">Percentage → Fraction</div>
+            <div class="card-text"><strong>Put over 100, then simplify.</strong><br>45% = 45/100 = <strong>9/20</strong><br>60% = 60/100 = <strong>3/5</strong></div>
+        </div>
+    </div>
+
+    <div class="example-block">
+        <div class="example-header">Worked Example: Convert 3/5 to decimal and percentage</div>
+        <div class="example-body">
+            <div class="example-step"><div class="step-number">1</div><div class="step-text"><strong>Fraction → Decimal:</strong> 3 ÷ 5 = 0.6</div></div>
+            <div class="example-step"><div class="step-number">2</div><div class="step-text"><strong>Decimal → Percentage:</strong> 0.6 × 100 = 60%</div></div>
+            <div class="example-answer"><div class="answer-label">✅ Answer:</div>3/5 = <strong>0.6 = 60%</strong></div>
+        </div>
+    </div>
+
+    <div class="video-section">
+        <div class="video-section-title">▶️ Watch & Learn — Fractions, Decimals &amp; Percentages</div>
+        <div class="video-list">
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">Equivalent Fractions, Decimals and Percentages</div>
+                        <div class="video-channel">Corbettmaths</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/Iq-6CjlEUW4" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="practice-section">
+        <div class="practice-header">✏️ Practice Questions</div>
+        <div class="practice-body">
+            <div class="practice-item">
+                <div class="practice-question">1. Convert to decimals: (a) 3/5 (b) 7/8 (c) 2/3</div>
+                <div class="collapsible"><input type="checkbox" id="q12"><label for="q12">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) 0.6 (b) 0.875 (c) 0.666… (recurring)</div></div></div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">2. Convert to percentages: (a) 0.45 (b) 3/4 (c) 0.125</div>
+                <div class="collapsible"><input type="checkbox" id="q13"><label for="q13">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) 45% (b) 75% (c) 12.5%</div></div></div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">3. Put in order, smallest first: 3/7, 0.42, 43%, 3/8</div>
+                <div class="collapsible"><input type="checkbox" id="q14"><label for="q14">💡 Show Answer</label><div class="content"><div class="practice-answer">Convert all to decimals: 3/7 ≈ 0.429, 0.42, 0.43, 3/8 = 0.375<br><strong>3/8 (0.375) &lt; 0.42 &lt; 3/7 (0.429) &lt; 43% (0.43)</strong></div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TOPIC 5: ORDERING & BIDMAS — DETAILED -->
+<!-- ============================================ -->
+<div id="ordering">
+    <h2>📏 Ordering & Inequality Symbols</h2>
+    <p><strong>Syllabus:</strong> C1.5 / E1.5 &nbsp;|&nbsp; <strong>Time needed:</strong> ~1 hour</p>
+    <p>How to compare numbers and put them in order using inequality symbols.</p>
+
+    <table>
+        <thead><tr><th>Symbol</th><th>Name</th><th>Read As</th><th>Example</th></tr></thead>
+        <tbody>
+            <tr><td><strong>=</strong></td><td>Equals</td><td>"is equal to"</td><td>5 = 5</td></tr>
+            <tr><td><strong>≠</strong></td><td>Not equal to</td><td>"is not equal to"</td><td>5 ≠ 7</td></tr>
+            <tr><td><strong>&lt;</strong></td><td>Less than</td><td>"is less than"</td><td>3 &lt; 7</td></tr>
+            <tr><td><strong>&gt;</strong></td><td>Greater than</td><td>"is greater than"</td><td>9 &gt; 4</td></tr>
+            <tr><td><strong>≤</strong></td><td>Less than or equal to</td><td>"is less than or equal to"</td><td>x ≤ 10</td></tr>
+            <tr><td><strong>≥</strong></td><td>Greater than or equal to</td><td>"is greater than or equal to"</td><td>x ≥ 5</td></tr>
+        </tbody>
+    </table>
+
+    <div class="admonition tip">
+        <div class="admonition-title">💡 Memory Tip</div>
+        <div class="admonition-content">
+            <p>The symbol always "eats" the bigger number. Think of it as an alligator mouth: the open side faces the larger number. <strong>3 &lt; 5</strong> — the mouth opens towards 5.</p>
+        </div>
+    </div>
+
+    <div class="example-block">
+        <div class="example-header">Worked Example: Put in order: 0.5, 3/5, 60%, 0.55</div>
+        <div class="example-body">
+            <div class="example-step"><div class="step-number">1</div><div class="step-text"><strong>Convert everything to decimals:</strong><br>0.5 = 0.5<br>3/5 = 3 ÷ 5 = 0.6<br>60% = 60/100 = 0.6<br>0.55 = 0.55</div></div>
+            <div class="example-step"><div class="step-number">2</div><div class="step-text"><strong>Compare:</strong> 0.5 &lt; 0.55 &lt; 0.6 = 0.6</div></div>
+            <div class="example-answer"><div class="answer-label">✅ Answer:</div><strong>0.5 &lt; 0.55 &lt; 3/5 = 60%</strong></div>
+        </div>
+    </div>
+</div>
+
+<div id="bidmas">
+    <h2>➕ BIDMAS — Order of Operations</h2>
+    <p><strong>Syllabus:</strong> C1.6 / E1.6 &nbsp;|&nbsp; <strong>Time needed:</strong> ~2 hours</p>
+    <p>BIDMAS tells you which order to do operations in when a calculation has more than one operation.</p>
+
+    <div class="formula-box">
+        <div class="formula-box-header">B.I.D.M.A.S.</div>
+        <code>
+<strong>B</strong> — Brackets — do these first
+<strong>I</strong> — Indices — powers and roots
+<strong>D / M</strong> — Division and Multiplication — left to right
+<strong>A / S</strong> — Addition and Subtraction — left to right
+        </code>
+    </div>
+
+    <div class="admonition warning">
+        <div class="admonition-title">⚠️ Important Rule!</div>
+        <div class="admonition-content">
+            <p>Division and Multiplication are done <strong>left to right</strong> (not D before M). Same for Addition and Subtraction — left to right.</p>
+        </div>
+    </div>
+
+    <div class="example-block">
+        <div class="example-header">Worked Example: Calculate 3 + 4 × 2</div>
+        <div class="example-body">
+            <div class="example-step"><div class="step-number">1</div><div class="step-text">No brackets or indices. <strong>Multiplication first:</strong> 4 × 2 = 8</div></div>
+            <div class="example-step"><div class="step-number">2</div><div class="step-text">Then addition: 3 + 8 = 11</div></div>
+            <div class="example-answer"><div class="answer-label">✅ Answer:</div>3 + 4 × 2 = <strong>11</strong> (NOT 14!)</div>
+        </div>
+    </div>
+
+    <div class="example-block">
+        <div class="example-header">Worked Example: Calculate (3 + 4) × 2</div>
+        <div class="example-body">
+            <div class="example-step"><div class="step-number">1</div><div class="step-text"><strong>Brackets first:</strong> (3 + 4) = 7</div></div>
+            <div class="example-step"><div class="step-number">2</div><div class="step-text">Then multiply: 7 × 2 = 14</div></div>
+            <div class="example-answer"><div class="answer-label">✅ Answer:</div>(3 + 4) × 2 = <strong>14</strong></div>
+        </div>
+    </div>
+
+    <div id="negative-numbers">
+        <h3>Operations with Negative Numbers</h3>
+        <div class="cards-grid">
+            <div class="card"><div class="card-title">(-3)² = 9</div><div class="card-text">Negative 3 squared: (-3) × (-3) = 9<br>Negative × Negative = Positive</div></div>
+            <div class="card"><div class="card-title">-3² = -9</div><div class="card-text">Negative of 3 squared: -(3 × 3) = -9<br>No brackets, so power first, then negative</div></div>
+            <div class="card"><div class="card-title">(-4) × (-2) = 8</div><div class="card-text">Negative × Negative = Positive<br>4 × 2 = 8</div></div>
+            <div class="card"><div class="card-title">5 + (-3) = 2</div><div class="card-text">Adding a negative is like subtracting<br>5 + (-3) = 5 - 3 = 2</div></div>
+        </div>
+    </div>
+
+    <div class="practice-section">
+        <div class="practice-header">✏️ Practice Questions (No Calculator!)</div>
+        <div class="practice-body">
+            <div class="practice-item">
+                <div class="practice-question">1. Work out: (a) 5 + 3 × 2 (b) (5 + 3) × 2 (c) 20 ÷ 4 - 1 (d) (-3)²</div>
+                <div class="collapsible"><input type="checkbox" id="q17"><label for="q17">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) 5 + 6 = <strong>11</strong> (b) 8 × 2 = <strong>16</strong> (c) 5 - 1 = <strong>4</strong> (d) (-3)×(-3) = <strong>9</strong></div></div></div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">2. Work out: (a) 2² + 3² (b) 10 - 2 × 3 + 1 (c) 6 × (-2) + 3</div>
+                <div class="collapsible"><input type="checkbox" id="q18"><label for="q18">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) 4 + 9 = <strong>13</strong> (b) 10 - 6 + 1 = <strong>5</strong> (c) -12 + 3 = <strong>-9</strong></div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TOPIC 7: INDICES — DETAILED -->
+<!-- ============================================ -->
+<div id="indices">
+    <h2>📐 Indices (Laws of Powers)</h2>
+    <p><strong>Syllabus:</strong> C1.7 / E1.7 &nbsp;|&nbsp; <strong>Time needed:</strong> ~2.5 hours</p>
+    <p>Indices (powers) have rules that make calculations quicker. You MUST memorise these rules — they come up in every IGCSE paper.</p>
+
+    <div class="formula-box">
+        <div class="formula-box-header">INDEX LAWS — MEMORISE THESE!</div>
+        <code>
+Law 1:  aᵐ × aⁿ = aᵐ⁺ⁿ     (same base, multiply → add powers)
+Law 2:  aᵐ ÷ aⁿ = aᵐ⁻ⁿ     (same base, divide → subtract powers)
+Law 3:  (aᵐ)ⁿ = aᵐⁿ        (power of a power → multiply powers)
+Law 4:  a⁰ = 1              (anything to power 0 = 1)
+Law 5:  a⁻ⁿ = 1/aⁿ          (negative power = 1 over)
+Law 6:  a¹ = a               (anything to power 1 = itself)
+        </code>
+    </div>
+
+    <div class="example-block">
+        <div class="example-header">Worked Example: Simplify 2³ × 2⁵</div>
+        <div class="example-body">
+            <div class="example-step"><div class="step-number">1</div><div class="step-text">Same base (2)? Yes! So add the powers: 3 + 5 = 8</div></div>
+            <div class="example-step"><div class="step-number">2</div><div class="step-text">2³ × 2⁵ = 2⁸ = <strong>256</strong></div></div>
+            <div class="example-answer"><div class="answer-label">✅ Answer:</div>2³ × 2⁵ = <strong>2⁸</strong></div>
+        </div>
+    </div>
+
+    <div class="example-block">
+        <div class="example-header">Worked Example: Simplify 3⁻²</div>
+        <div class="example-body">
+            <div class="example-step"><div class="step-number">1</div><div class="step-text">Negative index means "1 over": 3⁻² = 1/3²</div></div>
+            <div class="example-step"><div class="step-number">2</div><div class="step-text">3² = 9, so 1/9</div></div>
+            <div class="example-answer"><div class="answer-label">✅ Answer:</div>3⁻² = <strong>1/9</strong></div>
+        </div>
+    </div>
+
+    <div class="admonition danger">
+        <div class="admonition-title">🚨 Common Mistakes to Avoid!</div>
+        <div class="admonition-content">
+            <p><strong>WRONG:</strong> 2³ × 3⁴ = 6⁷ ❌ (You can only add indices when the BASE is the same!)</p>
+            <p><strong>RIGHT:</strong> 2³ × 3⁴ = 8 × 81 = 648 ✅</p>
+            <p><strong>WRONG:</strong> (2x)³ = 2x³ ❌ (The power applies to EVERYTHING inside the bracket!)</p>
+            <p><strong>RIGHT:</strong> (2x)³ = 2³x³ = 8x³ ✅</p>
+        </div>
+    </div>
+
+    <div class="video-section">
+        <div class="video-section-title">▶️ Watch & Learn — Index Laws</div>
+        <div class="video-list">
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">Laws of Indices</div>
+                        <div class="video-channel">Corbettmaths</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/xa5R3cq2jQI" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="practice-section">
+        <div class="practice-header">✏️ Practice Questions</div>
+        <div class="practice-body">
+            <div class="practice-item">
+                <div class="practice-question">1. Simplify: (a) 2⁴ × 2³ (b) 5⁷ ÷ 5⁴ (c) (3²)³</div>
+                <div class="collapsible"><input type="checkbox" id="q19"><label for="q19">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) 2⁷ = <strong>128</strong> (b) 5³ = <strong>125</strong> (c) 3⁶ = <strong>729</strong></div></div></div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">2. Simplify: (a) 5⁰ (b) 4⁻¹ (c) 2⁻³</div>
+                <div class="collapsible"><input type="checkbox" id="q20"><label for="q20">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) <strong>1</strong> (b) 1/4 (c) 1/8</div></div></div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">3. Simplify: (a) x⁵ × x² (b) y⁸ ÷ y³ (c) (a³)⁴</div>
+                <div class="collapsible"><input type="checkbox" id="q21"><label for="q21">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) x⁷ (b) y⁵ (c) a¹²</div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TOPIC 8: STANDARD FORM — DETAILED -->
+<!-- ============================================ -->
+<div id="standard-form">
+    <h2>🔬 Standard Form (Scientific Notation)</h2>
+    <p><strong>Syllabus:</strong> C1.8 / E1.8 &nbsp;|&nbsp; <strong>Time needed:</strong> ~2 hours</p>
+    <p>Standard form is a way of writing <strong>very large</strong> or <strong>very small</strong> numbers clearly. Every number in standard form looks like: <strong>A × 10ⁿ</strong></p>
+
+    <div class="formula-box">
+        <div class="formula-box-header">STANDARD FORM</div>
+        <code>
+Rule:   A × 10ⁿ where 1 ≤ A < 10
+Large:  n is positive (e.g. 5.4 × 10³)
+Small:  n is negative (e.g. 3.2 × 10⁻³)
+        </code>
+    </div>
+
+    <div class="example-block">
+        <div class="example-header">Worked Example: Write 45,000 in standard form</div>
+        <div class="example-body">
+            <div class="example-step"><div class="step-number">1</div><div class="step-text">Put decimal after first non-zero digit: 4.5</div></div>
+            <div class="example-step"><div class="step-number">2</div><div class="step-text">Count decimal places moved: 45,000 → 4.5000 = <strong>4 places left</strong></div></div>
+            <div class="example-step"><div class="step-number">3</div><div class="step-text">Write as A × 10ⁿ: n is positive for large numbers</div></div>
+            <div class="example-answer"><div class="answer-label">✅ Answer:</div>45,000 = <strong>4.5 × 10⁴</strong></div>
+        </div>
+    </div>
+
+    <div class="example-block">
+        <div class="example-header">Worked Example: Write 0.0032 in standard form</div>
+        <div class="example-body">
+            <div class="example-step"><div class="step-number">1</div><div class="step-text">Move decimal right until you get 3.2 (between 1 and 10)</div></div>
+            <div class="example-step"><div class="step-number">2</div><div class="step-text">Count: 0.0032 → 3.2 = <strong>3 places right</strong></div></div>
+            <div class="example-step"><div class="step-number">3</div><div class="step-text">Negative power for small numbers</div></div>
+            <div class="example-answer"><div class="answer-label">✅ Answer:</div>0.0032 = <strong>3.2 × 10⁻³</strong></div>
+        </div>
+    </div>
+
+    <h3>Quick Reference Table</h3>
+    <table>
+        <thead><tr><th>Ordinary Number</th><th>Standard Form</th><th>Think</th></tr></thead>
+        <tbody>
+            <tr><td>5,600</td><td>5.6 × 10³</td><td>Move 3 places left → power +3</td></tr>
+            <tr><td>320,000,000</td><td>3.2 × 10⁸</td><td>Move 8 places left → power +8</td></tr>
+            <tr><td>0.0067</td><td>6.7 × 10⁻³</td><td>Move 3 places right → power -3</td></tr>
+            <tr><td>0.000045</td><td>4.5 × 10⁻⁵</td><td>Move 5 places right → power -5</td></tr>
+        </tbody>
+    </table>
+
+    <div class="video-section">
+        <div class="video-section-title">▶️ Watch & Learn — Standard Form</div>
+        <div class="video-list">
+            <div>
+                <div class="video-toggle" onclick="toggleVideo(this)">
+                    <div class="play-icon">▶</div>
+                    <div class="video-info">
+                        <div class="video-name">Standard Form</div>
+                        <div class="video-channel">Corbettmaths</div>
+                    </div>
+                    <div class="video-arrow">▼</div>
+                </div>
+                <div class="video-embed"><iframe src="https://www.youtube.com/embed/cxGyZ3Yx9ow" allowfullscreen loading="lazy"></iframe></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="practice-section">
+        <div class="practice-header">✏️ Practice Questions</div>
+        <div class="practice-body">
+            <div class="practice-item">
+                <div class="practice-question">1. Write in standard form: (a) 56,400 (b) 0.00783 (c) 320,000,000</div>
+                <div class="collapsible"><input type="checkbox" id="q22"><label for="q22">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) 5.64 × 10⁴ (b) 7.83 × 10⁻³ (c) 3.2 × 10⁸</div></div></div>
+            </div>
+            <div class="practice-item">
+                <div class="practice-question">2. Write as ordinary numbers: (a) 4.5 × 10³ (b) 3.2 × 10⁻⁴</div>
+                <div class="collapsible"><input type="checkbox" id="q23"><label for="q23">💡 Show Answer</label><div class="content"><div class="practice-answer">(a) 4,500 (b) 0.00032</div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- WEEKLY CALENDAR -->
+<!-- ============================================ -->
+<div id="weekly-calendar">
+    <h2>📅 Weekly Calendar</h2>
+    <table>
+        <thead><tr><th>Date</th><th>Day</th><th>Topic</th><th>Time</th></tr></thead>
+        <tbody>
+            <tr><td><strong>22 Jul (Wed)</strong></td><td>Day 1</td><td>Types of Number</td><td>2 hrs</td></tr>
+            <tr><td><strong>23 Jul (Thu)</strong></td><td>Day 2</td><td>Sets & Venn Diagrams</td><td>1.5 hrs</td></tr>
+            <tr><td><strong>24 Jul (Fri)</strong></td><td>Day 3</td><td>Powers and Roots</td><td>2 hrs</td></tr>
+            <tr><td><strong>25 Jul (Sat)</strong></td><td>Day 4</td><td>Fractions, Decimals, %</td><td>2.5 hrs</td></tr>
+            <tr><td><strong>26 Jul (Sun)</strong></td><td>Day 5</td><td>Ordering & Four Operations</td><td>2 hrs</td></tr>
+            <tr><td><strong>27 Jul (Mon)</strong></td><td>Day 6</td><td>Indices & Standard Form</td><td>2.5 hrs</td></tr>
+            <tr><td><strong>28 Jul (Tue)</strong></td><td>Day 7</td><td>Review & Self-Test</td><td>2 hrs</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3"><strong>Total Study Time</strong></td><td><strong>~14.5 hrs</strong></td></tr></tfoot>
+    </table>
+</div>
+
+<!-- SELF TEST -->
+<div id="self-test">
+    <h2>📝 Self-Test</h2>
+    <p>After finishing all 7 days, test yourself with these questions.</p>
+    <h3>PART A — No Calculator (30 marks)</h3>
+    <div class="practice-item"><div class="practice-question">1. Write down all prime numbers between 20 and 40. (2)</div></div>
+    <div class="practice-item"><div class="practice-question">2. Express 180 as a product of prime factors. (2)</div></div>
+    <div class="practice-item"><div class="practice-question">3. Find the HCF and LCM of 24 and 36. (3)</div></div>
+    <div class="practice-item"><div class="practice-question">4. Work out without a calculator: (a) 3/4 + 2/5 (2) (b) 7/8 × 4/9 (2) (c) 2 1/3 × 1 1/2 (2)</div></div>
+    <div class="practice-item"><div class="practice-question">5. Put in order, smallest first: 3/7, 0.42, 43%, 3/8 (3)</div></div>
+    <div class="practice-item"><div class="practice-question">6. Work out: (a) 5 + 3 × 2 (2) (b) (5 + 3) × 2 (2) (c) 20 / 4 - 1 (2) (d) (-3)² (2)</div></div>
+    <div class="practice-item"><div class="practice-question">7. Simplify: (a) 2⁴ × 2³ (2) (b) 5⁰ (1) (c) 4⁻¹ (1)</div></div>
+    <h3>PART B — Calculator (20 marks)</h3>
+    <div class="practice-item"><div class="practice-question">8. Write in standard form: (a) 56,400 (2) (b) 0.00783 (2) (c) Write 3.2 × 10⁴ as an ordinary number (1)</div></div>
+    <div class="practice-item"><div class="practice-question">9. Calculate: (3.4 × 10⁵) × (2.1 × 10³). Give answer in standard form. (3)</div></div>
+</div>
+
+<!-- FREE RESOURCES -->
+<div id="resources">
+    <h2>🌐 All Free Resources</h2>
+    <div class="cards-grid">
+        <div class="card"><div class="card-icon">📐</div><div class="card-title">Maths Genie</div><div class="card-text">Videos + worksheets by topic<br><strong>mathsgenie.co.uk</strong></div></div>
+        <div class="card"><div class="card-icon">📊</div><div class="card-title">Corbettmaths</div><div class="card-text">Videos + practice questions<br><strong>corbettmaths.com</strong></div></div>
+        <div class="card"><div class="card-icon">📝</div><div class="card-title">Save My Exams</div><div class="card-text">Revision notes + exam questions<br><strong>savemyexams.com</strong></div></div>
+        <div class="card"><div class="card-icon">📄</div><div class="card-title">Cazoom Maths</div><div class="card-text">Printable worksheets<br><strong>cazoommaths.com</strong></div></div>
+        <div class="card"><div class="card-icon">🎓</div><div class="card-title">Flipped Tuition</div><div class="card-text">Free video course<br><strong>flippedtuition.com/igcse-maths</strong></div></div>
+        <div class="card"><div class="card-icon">📚</div><div class="card-title">Cambridge Past Papers</div><div class="card-text">Official exam papers<br><strong>cambridgeinternational.org</strong></div></div>
+    </div>
+    <div class="video-section">
+        <div class="video-section-title">🌐 Visit These Free Websites</div>
+        <div class="video-list">
+            <a href="https://mathsgenie.co.uk" target="_blank" class="video-toggle">
+                <div class="play-icon" style="background: linear-gradient(135deg, #2563eb, #7c3aed);">📐</div>
+                <div class="video-info">
+                    <div class="video-name">Maths Genie</div>
+                    <div class="video-channel">Videos + worksheets by topic</div>
+                </div>
+                <div class="video-arrow">↗</div>
+            </a>
+            <a href="https://corbettmaths.com" target="_blank" class="video-toggle">
+                <div class="play-icon" style="background: linear-gradient(135deg, #2563eb, #7c3aed);">📊</div>
+                <div class="video-info">
+                    <div class="video-name">Corbettmaths</div>
+                    <div class="video-channel">Videos + practice questions</div>
+                </div>
+                <div class="video-arrow">↗</div>
+            </a>
+            <a href="https://savemyexams.com" target="_blank" class="video-toggle">
+                <div class="play-icon" style="background: linear-gradient(135deg, #2563eb, #7c3aed);">📝</div>
+                <div class="video-info">
+                    <div class="video-name">Save My Exams</div>
+                    <div class="video-channel">Revision notes + exam questions</div>
+                </div>
+                <div class="video-arrow">↗</div>
+            </a>
+            <a href="https://flippedtuition.com/igcse-maths" target="_blank" class="video-toggle">
+                <div class="play-icon" style="background: linear-gradient(135deg, #2563eb, #7c3aed);">🎓</div>
+                <div class="video-info">
+                    <div class="video-name">Flipped Tuition</div>
+                    <div class="video-channel">Free IGCSE video course</div>
+                </div>
+                <div class="video-arrow">↗</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+</div>
+</main>
+
+<!-- TOC -->
+<aside class="toc">
+    <div class="toc-title">On This Page</div>
+    <a href="#overview" class="toc-link active">Overview</a>
+    <a href="#weekly-calendar" class="toc-link">Weekly Calendar</a>
+    <a href="#types-of-number" class="toc-link">Types of Number</a>
+    <a href="#natural-numbers" class="toc-link toc-h3">Natural Numbers</a>
+    <a href="#integers" class="toc-link toc-h3">Integers</a>
+    <a href="#primes" class="toc-link toc-h3">Prime Numbers</a>
+    <a href="#square-numbers" class="toc-link toc-h3">Square Numbers</a>
+    <a href="#cube-numbers" class="toc-link toc-h3">Cube Numbers</a>
+    <a href="#factors" class="toc-link toc-h3">Factors</a>
+    <a href="#multiples" class="toc-link toc-h3">Multiples</a>
+    <a href="#prime-factorisation" class="toc-link toc-h3">Prime Factorisation</a>
+    <a href="#hcf-lcm" class="toc-link toc-h3">HCF & LCM</a>
+    <a href="#sets" class="toc-link">Sets & Venn Diagrams</a>
+    <a href="#set-notation" class="toc-link toc-h3">Set Notation</a>
+    <a href="#venn-diagrams" class="toc-link toc-h3">Venn Diagrams</a>
+    <a href="#powers" class="toc-link">Powers & Roots</a>
+    <a href="#squares-cubes" class="toc-link toc-h3">Squares & Cubes</a>
+    <a href="#square-root" class="toc-link toc-h3">Square Roots</a>
+    <a href="#cube-root" class="toc-link toc-h3">Cube Roots</a>
+    <a href="#fractions" class="toc-link">Fractions, Decimals, %</a>
+    <a href="#fraction-types" class="toc-link toc-h3">Types of Fractions</a>
+    <a href="#conversions" class="toc-link toc-h3">Conversions</a>
+    <a href="#ordering" class="toc-link">Ordering & Inequalities</a>
+    <a href="#bidmas" class="toc-link">BIDMAS</a>
+    <a href="#negative-numbers" class="toc-link toc-h3">Negative Numbers</a>
+    <a href="#indices" class="toc-link">Indices Laws</a>
+    <a href="#standard-form" class="toc-link">Standard Form</a>
+    <a href="#self-test" class="toc-link">Self-Test</a>
+    <a href="#resources" class="toc-link">Free Resources</a>
+</aside>
+
+</div>
+</div>
+
+<footer class="footer">
+    <p>📘 Sabrina's IGCSE 0580 Study Guide — Chapter 1: Review of Number Concepts</p>
+    <p>Created: 22 July 2026 · Cambridge IGCSE Mathematics (2028-2030)</p>
+</footer>
+
+<script>
+// Toggle sidebar section expand/collapse
+function toggleSection(header) {
+    const items = header.nextElementSibling;
+    const isExpanded = header.classList.contains('expanded');
+    
+    if (isExpanded) {
+        header.classList.remove('expanded');
+        items.classList.remove('show');
+    } else {
+        header.classList.add('expanded');
+        items.classList.add('show');
+    }
+}
+
+// Progress tracker
+function toggleTopic(label) {
+    const checkbox = label.querySelector('input[type="checkbox"]');
+    label.classList.toggle('done', checkbox.checked);
+    updateProgress();
+}
+function updateProgress() {
+    const checkboxes = document.querySelectorAll('.topic-check input[type="checkbox"]');
+    const checked = document.querySelectorAll('.topic-check input[type="checkbox"]:checked').length;
+    const total = checkboxes.length;
+    document.getElementById('progressCount').textContent = `${checked} of ${total} topics done`;
+    document.getElementById('progressFill').style.width = `${(checked / total) * 100}%`;
+    try {
+        localStorage.setItem('sabrina-igcse-0580-ch1-progress', JSON.stringify(
+            Array.from(checkboxes).map(function(box) { return box.checked; })
+        ));
+    } catch (e) {}
+}
+
+// Scroll-spy: track active heading in sidebar + right TOC
+function updateActiveHeading() {
+    const headings = document.querySelectorAll('main [id]');
+    let currentId = '';
+    const scrollTop = window.scrollY + 120;
+
+    headings.forEach(function(section) {
+        if (section.offsetTop <= scrollTop) {
+            currentId = section.getAttribute('id');
+        }
+    });
+
+    // Update right-side TOC
+    document.querySelectorAll('.toc-link').forEach(function(link) {
+        if (link.getAttribute('href') === '#' + currentId) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+
+    // Update sidebar items
+    document.querySelectorAll('.sidebar-item').forEach(function(item) {
+        if (item.getAttribute('href') === '#' + currentId) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+
+    // Highlight section header that contains the active item
+    document.querySelectorAll('.sidebar-section').forEach(function(section) {
+        const header = section.querySelector('.sidebar-section-header');
+        const activeItem = section.querySelector('.sidebar-item.active');
+        if (activeItem) {
+            header.classList.add('active-section');
+        } else {
+            header.classList.remove('active-section');
+        }
+    });
+
+    // Auto-expand the sidebar section containing the active heading
+    document.querySelectorAll('.sidebar-section').forEach(function(section) {
+        const items = section.querySelector('.sidebar-section-items');
+        const header = section.querySelector('.sidebar-section-header');
+        const activeItem = section.querySelector('.sidebar-item.active');
+        if (activeItem && !header.classList.contains('expanded')) {
+            header.classList.add('expanded');
+            items.classList.add('show');
+        }
+    });
+}
+
+window.addEventListener('scroll', updateActiveHeading);
+window.addEventListener('load', function() {
+    updateActiveHeading();
+    try {
+        var saved = JSON.parse(localStorage.getItem('sabrina-igcse-0580-ch1-progress') || '[]');
+        document.querySelectorAll('.topic-check input[type="checkbox"]').forEach(function(box, index) {
+            box.checked = Boolean(saved[index]);
+            box.closest('.topic-check').classList.toggle('done', box.checked);
+        });
+        updateProgress();
+    } catch (e) {}
+});
+
+// Smooth scroll for sidebar and TOC links
+document.querySelectorAll('.toc-link, .sidebar-item').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
+            // On mobile: auto-close sidebar after clicking a link
+            var sidebar = document.querySelector('.sidebar');
+            if (sidebar && sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+});
+
+// Toggle video embed
+function toggleVideo(btn) {
+    var embed = btn.nextElementSibling;
+    var isOpen = embed.classList.contains('open');
+
+    // Close all other open videos first
+    document.querySelectorAll('.video-embed.open').forEach(function(e) {
+        if (e !== embed) {
+            e.classList.remove('open');
+            e.previousElementSibling.classList.remove('active');
+        }
+    });
+
+    if (isOpen) {
+        embed.classList.remove('open');
+        btn.classList.remove('active');
+    } else {
+        embed.classList.add('open');
+        btn.classList.add('active');
+    }
+}
+
+// ---- Mobile Sidebar: Swipe & Tap-to-Close ----
+(function() {
+    var sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    var startX = 0;
+    var startY = 0;
+    var swiping = false;
+
+    // Swipe right to open (from left edge)
+    document.addEventListener('touchstart', function(e) {
+        var touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        swiping = false;
+        // Only detect if finger starts near left edge (first 30px) or sidebar is closed
+        if (startX <= 30 || !sidebar.classList.contains('open')) {
+            swiping = true;
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+        if (!swiping) return;
+        swiping = false;
+        var touch = e.changedTouches[0];
+        var diffX = touch.clientX - startX;
+        var diffY = Math.abs(touch.clientY - startY);
+
+        // Horizontal swipe must be > 60px and more horizontal than vertical
+        if (diffX > 60 && diffY < 100) {
+            if (!sidebar.classList.contains('open')) {
+                sidebar.classList.add('open');  // swipe right → open
+            }
+        } else if (diffX < -60 && diffY < 100) {
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');  // swipe left → close
+            }
+        }
+    }, { passive: true });
+
+    // Tap outside sidebar to close (on mobile)
+    document.addEventListener('click', function(e) {
+        if (!sidebar.classList.contains('open')) return;
+        // If tap is NOT inside sidebar or the hamburger button
+        if (!sidebar.contains(e.target) && !e.target.closest('.navbar-menu-toggle')) {
+            sidebar.classList.remove('open');
+        }
+    });
+})();
+</script>
+
+</body>
+</html>

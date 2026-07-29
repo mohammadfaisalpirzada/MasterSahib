@@ -2,14 +2,16 @@ import 'server-only';
 import { getGoogleSheetsClient } from '@/app/lib/googleSheets';
 import { type TeacherRecord } from '@/app/district-east-teachers/types';
 
-const SHEET_TAB = 'Teachers';
+const SHEET_TAB = '2026';
 const HEADERS = [
-  'S.No', 'Name', 'PID', 'Designation', 'CNIC', 'Mobile',
+  'S.No', 'Name', 'PID', 'Designation', 'Mobile',
   'Place of Posting', 'SEMIS Code', 'Taluka',
   'Contractual Appointment', 'Regularization Date',
   'Increments Claimed', 'Arrears', 'Recurring Annual Cost',
-  'Pensionary Implications', 'Remarks', 'Created At'
+  'Pensionary Implications'
 ];
+
+const RANGE = `${SHEET_TAB}!A:N`;
 
 function getSpreadsheetId(): string {
   const id = process.env.DISTRICT_EAST_SPREADSHEET_ID;
@@ -24,32 +26,28 @@ function toSheetValue(val: unknown): string {
 
 function rowToTeacher(row: string[], index: number): TeacherRecord {
   return {
-    id: `row_${index + 2}`, // row 1 = header, so data starts at row 2
-    created_at: row[16] || new Date().toISOString(),
+    id: `row_${index + 2}`,
     name: row[1] || '',
     pid: row[2] || '',
     designation: row[3] || '',
-    cnic: row[4] || '',
-    mobile: row[5] || '',
-    place_of_posting: row[6] || '',
-    semis_code: row[7] || '',
-    taluka: row[8] || '',
-    contractual_appointment: row[9] || '',
-    regularization_date: row[10] || '',
-    increments_claimed: Number(row[11]) || 0,
-    arrears: Number(row[12]) || 0,
-    recurring_annual_cost: Number(row[13]) || 0,
-    pensionary_implications: row[14] || '',
-    remarks: row[15] || '',
+    mobile: row[4] || '',
+    place_of_posting: row[5] || '',
+    semis_code: row[6] || '',
+    taluka: row[7] || '',
+    contractual_appointment: row[8] || '',
+    regularization_date: row[9] || '',
+    increments_claimed: Number(row[10]) || 0,
+    arrears: Number(row[11]) || 0,
+    recurring_annual_cost: Number(row[12]) || 0,
+    pensionary_implications: row[13] || '',
   };
 }
 
-/** Ensure the "Teachers" tab exists with headers */
+/** Ensure the "2026" tab exists with headers */
 export async function ensureSheetExists() {
   const sheets = getGoogleSheetsClient();
   const spreadsheetId = getSpreadsheetId();
 
-  // Check if Teachers tab exists
   const meta = await sheets.spreadsheets.get({
     spreadsheetId,
     fields: 'sheets(properties(title))',
@@ -60,7 +58,6 @@ export async function ensureSheetExists() {
     .filter(Boolean) || [];
 
   if (!existingTabs.includes(SHEET_TAB)) {
-    // Create tab
     await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
       requestBody: {
@@ -69,10 +66,10 @@ export async function ensureSheetExists() {
     });
   }
 
-  // Check if headers exist (row 1 is populated)
+  // Check if headers exist
   const headerCheck = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${SHEET_TAB}!A1:Q1`,
+    range: `${SHEET_TAB}!A1:N1`,
   });
 
   const existingHeaders = headerCheck.data.values?.[0] || [];
@@ -95,50 +92,46 @@ export async function getAllTeachers(): Promise<TeacherRecord[]> {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${SHEET_TAB}!A:Q`,
+    range: RANGE,
   });
 
   const rows = response.data.values || [];
   if (rows.length < 2) return [];
 
-  // Skip header row, process data rows
   const dataRows = rows.slice(1).filter(row => row.some(cell => String(cell || '').trim().length > 0));
   return dataRows.map(rowToTeacher);
 }
 
 /** Add a new teacher record to the sheet */
 export async function addTeacher(data: {
-  name: string; pid: string; designation: string; cnic?: string; mobile?: string;
+  name: string; pid: string; designation: string; mobile?: string;
   place_of_posting: string; semis_code?: string; taluka: string;
   contractual_appointment: string; regularization_date: string;
   increments_claimed: number; arrears: number; recurring_annual_cost: number;
-  pensionary_implications: string; remarks?: string;
+  pensionary_implications: string;
 }): Promise<TeacherRecord> {
   const sheets = getGoogleSheetsClient();
   const spreadsheetId = getSpreadsheetId();
-
-  const now = new Date().toISOString();
 
   // Get current row count to calculate S.No
   const existing = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range: `${SHEET_TAB}!A:A`,
   });
-  const rowCount = (existing.data.values || []).length; // includes header
+  const rowCount = (existing.data.values || []).length;
 
   const values = [
     rowCount, // S.No
-    data.name, data.pid, data.designation,
-    data.cnic || '', data.mobile || '',
+    data.name, data.pid, data.designation, data.mobile || '',
     data.place_of_posting, data.semis_code || '', data.taluka,
     data.contractual_appointment, data.regularization_date,
     data.increments_claimed, data.arrears, data.recurring_annual_cost,
-    data.pensionary_implications, data.remarks || '', now
+    data.pensionary_implications,
   ].map(toSheetValue);
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: `${SHEET_TAB}!A:Q`,
+    range: RANGE,
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
     requestBody: { values: [values] },
@@ -146,11 +139,9 @@ export async function addTeacher(data: {
 
   return {
     id: `row_${rowCount + 1}`,
-    created_at: now,
     name: data.name,
     pid: data.pid,
     designation: data.designation,
-    cnic: data.cnic || '',
     mobile: data.mobile || '',
     place_of_posting: data.place_of_posting,
     semis_code: data.semis_code || '',
@@ -161,7 +152,6 @@ export async function addTeacher(data: {
     arrears: data.arrears,
     recurring_annual_cost: data.recurring_annual_cost,
     pensionary_implications: data.pensionary_implications,
-    remarks: data.remarks || '',
   };
 }
 
@@ -181,18 +171,12 @@ export async function clearAllTeachers(): Promise<void> {
   const sheetId = teacherSheet?.properties?.sheetId;
   if (sheetId === null || sheetId === undefined) return;
 
-  // Delete all data rows (leave header)
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId,
     requestBody: {
       requests: [{
         deleteDimension: {
-          range: {
-            sheetId,
-            dimension: 'ROWS',
-            startIndex: 1,
-            endIndex: 99999, // delete all rows after header
-          },
+          range: { sheetId, dimension: 'ROWS', startIndex: 1, endIndex: 99999 },
         },
       }],
     },
@@ -203,19 +187,19 @@ export async function clearAllTeachers(): Promise<void> {
 export async function getTeachersCsvRows(): Promise<{ headers: string[]; rows: string[][] }> {
   const records = await getAllTeachers();
   const headers = [
-    'S.No', 'Name', 'PID', 'Designation', 'CNIC', 'Mobile',
+    'S.No', 'Name', 'PID', 'Designation', 'Mobile',
     'Place of Posting', 'SEMIS Code', 'Taluka',
     'Contractual Appointment', 'Regularization Date',
     'Increments Claimed', 'Arrears', 'Recurring Annual Cost',
-    'Pensionary Implications', 'Remarks'
+    'Pensionary Implications'
   ];
 
   const rows = records.map((r, i) => [
-    String(i + 1), r.name, r.pid, r.designation, r.cnic || '', r.mobile || '',
+    String(i + 1), r.name, r.pid, r.designation, r.mobile || '',
     r.place_of_posting, r.semis_code || '', r.taluka,
     r.contractual_appointment, r.regularization_date,
     String(r.increments_claimed), String(r.arrears), String(r.recurring_annual_cost),
-    r.pensionary_implications, r.remarks || ''
+    r.pensionary_implications
   ]);
 
   return { headers, rows };
