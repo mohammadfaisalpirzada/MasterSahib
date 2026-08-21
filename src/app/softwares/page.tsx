@@ -13,6 +13,7 @@ import {
   HiOutlineChartBar,
   HiOutlineAcademicCap,
   HiOutlineCheckCircle,
+  HiOutlineExternalLink,
 } from 'react-icons/hi';
 
 export const metadata = {
@@ -213,17 +214,18 @@ export default function SoftwaresHubPage() {
                     href="/softwares/video-editor"
                     className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-indigo-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                   >
-                    <span>⚡</span> Open Video Editor Studio
+                    <span>⚡</span> Open Video Editor Hub
                     <HiOutlineArrowRight className="h-4 w-4" />
                   </Link>
 
                   <a
-                    href="http://localhost:8000"
+                    href="https://mastersahib-editor.loca.lt"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-indigo-300 bg-indigo-50/80 px-5 py-3.5 text-sm font-bold text-indigo-700 transition hover:-translate-y-0.5 hover:bg-indigo-100"
                   >
-                    <span>🚀</span> Direct Local App
+                    <span>🌐</span> Launch Live Web App
+                    <HiOutlineExternalLink className="h-4 w-4" />
                   </a>
                 </div>
               </div>
