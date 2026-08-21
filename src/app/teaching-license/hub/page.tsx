@@ -101,7 +101,6 @@ const sidebarModules = [
     sections: [
       { id: "m6-overview", label: "Module Overview" },
       { id: "m6-mock-test", label: "100-MCQ Full Mock Test" },
-      { id: "m6-quiz", label: "Open Interactive Quiz", href: "/peace-quiz" },
     ],
   },
 ];
@@ -1756,12 +1755,6 @@ export default function STEDALearningHubPage() {
                 and track your progress.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link
-                  href="/peace-quiz"
-                  className="rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
-                >
-                  Open Interactive Quiz →
-                </Link>
                 <Link
                   href="#module-0"
                   className="rounded-2xl bg-cyan-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-cyan-600"

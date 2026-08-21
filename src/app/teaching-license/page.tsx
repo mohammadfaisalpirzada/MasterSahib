@@ -256,7 +256,6 @@ const preparationTips = [
 
 const importantLinks = [
   { label: "STEDA Learning Hub (Full Notes)", url: "/teaching-license/hub" },
-  { label: "Practice Quiz on TheMasterSahib", url: "/peace-quiz" },
   { label: "Educational Resources", url: "/educational-resources" },
   { label: "Contact for Support", url: "/contact" },
 ];
@@ -539,20 +538,6 @@ export default function TeachingLicensePage() {
             ))}
           </div>
 
-          {/* CTA to Quiz */}
-          <div className="mt-8 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-cyan-50 p-6 text-center sm:p-8">
-            <h3 className="text-xl font-black text-slate-900 sm:text-2xl">Start Practicing Now</h3>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600 sm:text-base">
-              Use TheMasterSahib&apos;s quiz module to practice MCQs daily and build your confidence
-              for the STEDA examination.
-            </p>
-            <Link
-              href="/peace-quiz"
-              className="mt-6 inline-flex rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-emerald-700"
-            >
-              Open Quiz Module →
-            </Link>
-          </div>
         </section>
 
         {/* ═══════════ DOCUMENTS REQUIRED ═══════════ */}
@@ -718,12 +703,6 @@ export default function TeachingLicensePage() {
                 Open Learning Hub →
               </Link>
               <Link
-                href="/peace-quiz"
-                className="rounded-2xl bg-cyan-500 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-cyan-600"
-              >
-                Start Quiz Practice →
-              </Link>
-              <Link
                 href="/educational-resources"
                 className="rounded-2xl border border-slate-600 bg-transparent px-6 py-3 text-sm font-semibold text-slate-300 transition hover:-translate-y-0.5 hover:border-slate-400 hover:text-white"
               >
@@ -747,8 +726,6 @@ export default function TeachingLicensePage() {
               <Link href="/" className="transition hover:text-slate-900">Home</Link>
               {" · "}
               <Link href="/contact" className="transition hover:text-slate-900">Contact</Link>
-              {" · "}
-              <Link href="/peace-quiz" className="transition hover:text-slate-900">Quiz</Link>
             </p>
           </div>
         </footer>

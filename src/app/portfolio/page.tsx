@@ -141,7 +141,7 @@ const PortfolioPage = () => {
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm">
               <h3 className="font-semibold text-gray-800">Head of Department (Secondary)</h3>
-              <p className="text-blue-600 mb-2">Peace International School</p>
+              <p className="text-blue-600 mb-2">Private School</p>
               <p className="text-xs text-gray-400 mb-2">2018 — June 2026</p>
               <p className="text-gray-600">Led and managed the secondary department, oversaw curriculum planning, and coordinated teaching methods to align with Cambridge and local education standards.</p>
             </div>

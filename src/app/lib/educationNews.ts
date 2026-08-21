@@ -125,14 +125,6 @@ const buildFallbackNewsItems = (): EducationNewsItem[] => {
       scrapedAt,
     },
     {
-      title: 'Daily quiz practice is available for students right now.',
-      date: 'Live update',
-      link: new URL('/peace-quiz', SITE_URL).toString(),
-      sourceName: 'themastersahib.com',
-      sourceUrl: SITE_URL,
-      scrapedAt,
-    },
-    {
       title: 'Resume builder and portfolio sections are active for learners.',
       date: 'Live update',
       link: new URL('/resume-builder', SITE_URL).toString(),

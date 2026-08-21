@@ -15,7 +15,7 @@ function buildPayload(body: any) {
     taluka: String(body.taluka).trim(),
     contractual_appointment: body.contractual_appointment,
     regularization_date: body.regularization_date,
-    increments_claimed: Number(body.increments_claimed),
+    increments_claimed: String(body.increments_claimed || '').trim(),
     arrears: Number(body.arrears || 0),
     recurring_annual_cost: Number(body.recurring_annual_cost || 0),
     pensionary_implications: String(body.pensionary_implications || '').trim(),

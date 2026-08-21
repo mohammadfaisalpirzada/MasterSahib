@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import AppShell from "./components/AppShell";
 import { Providers } from "./providers";
-
-
+import GoogleAnalytics from "./components/GoogleAnalytics";
+import GoogleAdsense from "./components/GoogleAdsense";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://themastersahib.com"),
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: "TheMasterSahib",
     template: "%s | TheMasterSahib",
   },
-  description: "TheMasterSahib: a learning platform for quiz practice, portfolio building, and resume creation.",
+  description: "TheMasterSahib: a learning platform for educational resources, portfolio building, and resume creation.",
   alternates: {
     canonical: "/",
   },
@@ -37,8 +37,8 @@ export const metadata: Metadata = {
     images: ["/images/main_logo.png"],
   },
   icons: {
-    icon: '/images/main_logo.png',
-    shortcut: '/images/main_logo.png',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
     apple: '/images/main_logo.png',
   },
 };
@@ -48,13 +48,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.GOOGLE_ANALYTICS_ID || '';
+  const adsenseId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_PUB || '';
+
   return (
     <html lang="en">
-       <body className="min-h-screen bg-gradient-to-b from-indigo-50 to-white"
-          >
-       <Providers>
-         <AppShell>{children}</AppShell>
-       </Providers>
+      <head>
+      </head>
+      <body className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
+        <GoogleAnalytics gaId={gaId} />
+        {adsenseId && <GoogleAdsense publisherId={adsenseId} />}
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );

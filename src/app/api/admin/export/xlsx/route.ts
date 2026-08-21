@@ -36,7 +36,7 @@ export async function GET() {
     return new NextResponse(buffer, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': 'attachment; filename="district-east-teachers.xlsx"',
+        'Content-Disposition': 'attachment; filename="pay-fixation-2008.xlsx"',
       },
     });
   } catch (e) {

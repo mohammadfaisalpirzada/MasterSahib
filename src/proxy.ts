@@ -15,16 +15,12 @@ export default withAuth(
 // Public route intentionally left out: /contact
 export const config = {
   matcher: [
-    '/peace-quiz/:path*',
+    '/my-presentations/:path*',
     '/ggss-nishtar-road/staff-portal/:path*',
     '/ggss-nishtar-road/admin/:path*',
     '/ggss-nishtar-road/stipend/:path*',
     '/resume-builder/:path*',
     '/educational-resources/:path*',
     '/portfolio/:path*',
-    '/student/:path*',
-    '/teacher/:path*',
-    '/admin/:path*',
-    '/quiz-score/:path*',
   ],
 };

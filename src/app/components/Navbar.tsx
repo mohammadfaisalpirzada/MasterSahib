@@ -22,7 +22,24 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
-  { label: 'Quiz Program', href: '/peace-quiz' },
+  {
+    label: 'Softwares',
+    desktopLabel: 'Softwares',
+    href: '/softwares',
+    children: [
+      {
+        label: '🎬 MasterSahib Video Editor',
+        href: '/softwares/video-editor',
+        description: 'AI Video Merger, Sequence Editor & Social SEO Studio',
+      },
+      {
+        label: '🚀 All Softwares Hub',
+        href: '/softwares',
+        description: 'Explore proprietary AI software suites and upcoming tools',
+      },
+    ],
+  },
+  { label: 'Courses', href: '/courses/ai-for-teachers' },
   { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },
   {
     label: 'Educational Resources',
@@ -34,7 +51,7 @@ const navItems: NavItem[] = [
 ];
 
 const secondaryNavItem = { label: 'Portfolio', href: '/portfolio' };
-
+const presentationOwnerEmail = 'mohammadfaisalpirzada@gmail.com';
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openDesktopDropdown, setOpenDesktopDropdown] = useState<string | null>(null);
@@ -44,6 +61,7 @@ export default function Navbar() {
   const router = useRouter();
   const signInHref = `/auth/signin?callbackUrl=${encodeURIComponent(safePathname)}`;
   const { data: session, status } = useSession();
+  const canAccessPresentations = session?.user?.email?.toLowerCase() === presentationOwnerEmail;
   const headerRef = useRef<HTMLElement | null>(null);
 
   const isActiveRoute = (href: string) => {
@@ -110,13 +128,15 @@ export default function Navbar() {
           className="flex min-w-0 items-center gap-2 rounded-xl px-2 py-1 transition hover:bg-white/10"
           aria-label="Go to home page"
         >
-          <Image
-            src="/images/main_logo.png"
-            alt="TheMasterSahib Logo"
-            width={48}
-            height={48}
-            className="h-10 w-10 rounded-full border border-white/30 object-cover sm:h-11 sm:w-11"
-          />
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/10 sm:h-11 sm:w-11">
+            <Image
+              src="/images/main_logo.png"
+              alt="TheMasterSahib Logo"
+              width={48}
+              height={48}
+              className="h-full w-full scale-[1.55] object-cover"
+            />
+          </span>
           <div className="min-w-0">
             <p className="truncate text-base font-extrabold leading-tight sm:text-xl">TheMasterSahib</p>
             <p className="hidden truncate text-xs text-indigo-100 sm:block">Learn. Build. Grow.</p>
@@ -210,6 +230,18 @@ export default function Navbar() {
         </ul>
 
         <div className="hidden items-center gap-3 lg:flex">
+          {canAccessPresentations ? (
+            <Link
+              href="/my-presentations"
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                isActiveRoute('/my-presentations')
+                  ? 'border-white bg-white text-indigo-700'
+                  : 'border-white/35 bg-white/10 text-white hover:bg-white/20'
+              }`}
+            >
+              My Presentations
+            </Link>
+          ) : null}
           <Link
             href={secondaryNavItem.href}
             className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
@@ -358,6 +390,16 @@ export default function Navbar() {
               >
                 {secondaryNavItem.label}
               </Link>
+
+              {canAccessPresentations ? (
+                <Link
+                  href="/my-presentations"
+                  className="mt-3 block rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-base font-semibold text-white transition hover:bg-white/20"
+                  onClick={() => setIsMobileOpen(false)}
+                >
+                  My Presentations
+                </Link>
+              ) : null}
 
               {status === 'loading' ? (
                 <div className="mt-3 text-sm text-indigo-100">Loading...</div>

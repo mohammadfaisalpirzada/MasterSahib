@@ -1,6 +1,6 @@
 import 'server-only';
 import { getGoogleSheetsClient } from '@/app/lib/googleSheets';
-import { type TeacherRecord } from '@/app/district-east-teachers/types';
+import { type TeacherRecord } from '@/app/pay-fixation-2008/types';
 
 const SHEET_TAB = '2026';
 const HEADERS = [
@@ -36,7 +36,7 @@ function rowToTeacher(row: string[], index: number): TeacherRecord {
     taluka: row[7] || '',
     contractual_appointment: row[8] || '',
     regularization_date: row[9] || '',
-    increments_claimed: Number(row[10]) || 0,
+    increments_claimed: row[10] || '',
     arrears: Number(row[11]) || 0,
     recurring_annual_cost: Number(row[12]) || 0,
     pensionary_implications: row[13] || '',
@@ -107,7 +107,7 @@ export async function addTeacher(data: {
   name: string; pid: string; designation: string; mobile?: string;
   place_of_posting: string; semis_code?: string; taluka: string;
   contractual_appointment: string; regularization_date: string;
-  increments_claimed: number; arrears: number; recurring_annual_cost: number;
+  increments_claimed: string; arrears: number; recurring_annual_cost: number;
   pensionary_implications: string;
 }): Promise<TeacherRecord> {
   const sheets = getGoogleSheetsClient();
@@ -160,7 +160,7 @@ export async function updateTeacher(id: string, data: {
   name: string; pid: string; designation: string; mobile?: string;
   place_of_posting: string; semis_code?: string; taluka: string;
   contractual_appointment: string; regularization_date: string;
-  increments_claimed: number; arrears: number; recurring_annual_cost: number;
+  increments_claimed: string; arrears: number; recurring_annual_cost: number;
   pensionary_implications: string;
 }): Promise<TeacherRecord> {
   const sheets = getGoogleSheetsClient();

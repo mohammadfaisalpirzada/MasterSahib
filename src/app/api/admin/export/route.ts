@@ -15,7 +15,7 @@ export async function GET() {
     return new Response('\ufeff' + body, {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="district-east-teachers.csv"',
+        'Content-Disposition': 'attachment; filename="pay-fixation-2008.csv"',
       },
     });
   } catch (e) {

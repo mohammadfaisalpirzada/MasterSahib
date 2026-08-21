@@ -77,12 +77,6 @@ export default function HubLayout({
           </div>
           <div className="flex items-center gap-2">
             <Link
-              href="/peace-quiz"
-              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
-            >
-              Quiz
-            </Link>
-            <Link
               href="/contact"
               className="hidden rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:block"
             >

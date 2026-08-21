@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
+import WorkshopBannerCarousel from './components/WorkshopBannerCarousel';
 
 type QuickCard = {
   title: string;
@@ -15,8 +16,15 @@ type QuickCard = {
 
 const quickCards: QuickCard[] = [
   {
+    title: 'MasterSahib Softwares',
+    description: 'Explore proprietary AI software suites, MasterSahib Video Editor (MSVE), and innovative digital tools.',
+    href: '/softwares',
+    accent: 'from-blue-600 via-indigo-600 to-purple-600',
+    newUntil: '2026-12-31T23:59:59+05:00',
+  },
+  {
     title: 'IGCSE 0580 Study Guide',
-    description: 'Sabrina\'s Cambridge IGCSE Mathematics study guide with chapter-wise explanations, QR codes, and practice exercises.',
+    description: "Sabrina's Cambridge IGCSE Mathematics study guide with chapter-wise explanations, QR codes, and practice exercises.",
     href: '/igcse-0580-mathematics',
     accent: 'from-blue-500 to-indigo-600',
     newUntil: '2026-08-31T23:59:59+05:00',
@@ -36,12 +44,6 @@ const quickCards: QuickCard[] = [
     newUntil: '2026-06-24T23:59:59+05:00',
   },
   {
-    title: 'Quiz',
-    description: 'Attempt quiz modules, check progress, and practice daily.',
-    href: '/peace-quiz',
-    accent: 'from-cyan-500 to-sky-600',
-  },
-  {
     title: 'GGSS',
     description: 'Open GGSS staff and profile management workspace.',
     href: '/ggss-nishtar-road',
@@ -59,11 +61,17 @@ const quickCards: QuickCard[] = [
     href: '/educational-resources',
     accent: 'from-fuchsia-500 to-pink-600',
   },
+  {
+    title: 'Pay Fixation 2008',
+    description: "Pre-2008 recruited employees' data — pay fixation, increments & arrears across District East, Karachi.",
+    href: '/pay-fixation-2008',
+    accent: 'from-rose-500 to-red-600',
+  },
 ];
 
 const highlights = [
   { label: 'Fast Access', value: '1 Click' },
-  { label: 'Modules', value: '4+' },
+  { label: 'Modules', value: '5+' },
   { label: 'Daily Ready', value: '100%' },
 ];
 
@@ -259,6 +267,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-slate-900">
+      <WorkshopBannerCarousel />
       <section className="relative overflow-hidden border-b border-slate-200/70 bg-white">
         <div className="absolute -left-20 top-[-120px] h-64 w-64 rounded-full bg-cyan-200/50 blur-3xl" />
         <div className="absolute right-[-90px] top-14 h-72 w-72 rounded-full bg-orange-200/45 blur-3xl" />
@@ -278,12 +287,6 @@ export default function HomePage() {
               </h1>
 
               <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
-                <Link
-                  href="/peace-quiz"
-                  className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-700"
-                >
-                  Open Quiz
-                </Link>
                 <Link
                   href="/educational-resources"
                   className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-400"
@@ -462,7 +465,7 @@ export default function HomePage() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Master Sahib</p>
             <h3 className="mt-2 text-xl font-black text-slate-900">Learning Hub</h3>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Clean digital workspace for quiz, GGSS management, and daily teaching flow.
+              Clean digital workspace for educational resources, GGSS management, and daily teaching flow.
             </p>
           </div>
 
@@ -470,7 +473,6 @@ export default function HomePage() {
             <p className="text-sm font-bold text-slate-900">Quick Links</p>
             <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
               <Link href="/teaching-license" className="transition hover:text-slate-900">Sindh Teaching License (STEDA)</Link>
-              <Link href="/peace-quiz" className="transition hover:text-slate-900">Quiz</Link>
               <Link href="/ggss-nishtar-road" className="transition hover:text-slate-900">GGSS</Link>
               <Link href="/educational-resources" className="transition hover:text-slate-900">Educational Resources</Link>
               <Link href="/contact" className="transition hover:text-slate-900">Contact</Link>

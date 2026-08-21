@@ -14,7 +14,6 @@ type AppShellProps = {
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const safePathname = pathname || '/';
-  const isPeaceQuizRoute = safePathname.startsWith('/peace-quiz');
   const isAuthSignInRoute = safePathname.startsWith('/auth/signin');
 
   const [isGgssDomain, setIsGgssDomain] = useState(false);
@@ -28,7 +27,7 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <>
-      {!isPeaceQuizRoute && !isGgssRoute && !isAuthSignInRoute && !isKidsLearningRoute ? (
+      {!isGgssRoute && !isAuthSignInRoute && !isKidsLearningRoute ? (
         <>
           <Navbar />
           <NewsTicker />
