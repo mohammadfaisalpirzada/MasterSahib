@@ -214,18 +214,17 @@ export default function SoftwaresHubPage() {
                     href="/softwares/video-editor"
                     className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-indigo-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                   >
-                    <span>⚡</span> Open Video Editor Hub
+                    <span>⚡</span> Launch Video Studio
                     <HiOutlineArrowRight className="h-4 w-4" />
                   </Link>
 
                   <a
-                    href="https://mastersahib-editor.loca.lt"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-indigo-300 bg-indigo-50/80 px-5 py-3.5 text-sm font-bold text-indigo-700 transition hover:-translate-y-0.5 hover:bg-indigo-100"
+                    href="/downloads/MasterSahib_Video_Editor.apk"
+                    download="MasterSahib_Video_Editor.apk"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3.5 text-sm font-bold text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-100"
                   >
-                    <span>🌐</span> Launch Live Web App
-                    <HiOutlineExternalLink className="h-4 w-4" />
+                    <HiOutlineDownload className="h-5 w-5" />
+                    <span>Download Mobile APK</span>
                   </a>
                 </div>
               </div>
