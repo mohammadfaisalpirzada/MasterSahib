@@ -105,21 +105,32 @@ export default function VideoEditorSoftwarePage() {
           </div>
 
           {/* Verification Helper Alert */}
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900">
-            <div className="flex items-center gap-2">
-              <span className="text-base">🔑</span>
-              <span>
-                <strong>Cloud Web Link Prompt:</strong> If asked on the live link, enter password{' '}
-                <code className="rounded bg-amber-200/80 px-1.5 py-0.5 font-bold">{tunnelPassword}</code> and click <em>Submit</em>.
-              </span>
+          <div className="mt-5 rounded-2xl border-2 border-indigo-200 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-4 text-slate-800 shadow-sm">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2.5">
+                <span className="text-2xl">🔑</span>
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-900">
+                    Live Cloud Studio — 1-Time Quick Unlock
+                  </h4>
+                  <p className="mt-1 text-xs text-slate-700">
+                    Jab aap <strong>Launch Live Web App</strong> par click karein aur password/IP mangay to yeh IP daal kar <strong>Submit</strong> par click karein:
+                  </p>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <code className="rounded-lg bg-indigo-600 px-2.5 py-1 text-sm font-black text-white shadow-sm">
+                      {tunnelPassword}
+                    </code>
+                    <button
+                      onClick={copyPassword}
+                      className="inline-flex items-center gap-1 rounded-lg border border-indigo-300 bg-white px-3 py-1 text-xs font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50"
+                    >
+                      <HiOutlineClipboardCopy className="h-3.5 w-3.5" />
+                      {copied ? 'Copied! ✓' : 'Copy IP Address'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={copyPassword}
-              className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-white px-3 py-1 font-bold text-amber-800 transition hover:bg-amber-100"
-            >
-              <HiOutlineClipboardCopy className="h-3.5 w-3.5" />
-              {copied ? 'Copied! ✓' : 'Copy Password'}
-            </button>
           </div>
         </div>
       </section>
