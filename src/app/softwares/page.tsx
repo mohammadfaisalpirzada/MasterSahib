@@ -14,6 +14,7 @@ import {
   HiOutlineAcademicCap,
   HiOutlineCheckCircle,
   HiOutlineExternalLink,
+  HiOutlineDownload,
 } from 'react-icons/hi';
 
 export const metadata = {
