@@ -145,7 +145,10 @@ export async function POST(req: NextRequest) {
 
     // ── Admin login ─────────────────────────────────────────────────────────
     if (name.toLowerCase() === 'admin') {
-      const valid = safeStringEqual(password, 'adminadmin321');
+      // Set GGSS_STAFF_PORTAL_ADMIN_PASSWORD in Vercel env vars to override;
+      // 'adminadmin321' is only the fallback used when it is not set.
+      const adminPassword = process.env.GGSS_STAFF_PORTAL_ADMIN_PASSWORD?.trim() || 'adminadmin321';
+      const valid = safeStringEqual(password, adminPassword);
       if (!valid) {
         await new Promise(r => setTimeout(r, THROTTLE_MS));
         return NextResponse.json({ success: false, error: 'Invalid credentials.' }, { status: 401 });

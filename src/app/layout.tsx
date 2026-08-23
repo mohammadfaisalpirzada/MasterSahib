@@ -8,32 +8,32 @@ import GoogleAdsense from "./components/GoogleAdsense";
 export const metadata: Metadata = {
   metadataBase: new URL("https://themastersahib.com"),
   title: {
-    default: "TheMasterSahib",
-    template: "%s | TheMasterSahib",
+    default: "The Master Sahib",
+    template: "%s | The Master Sahib",
   },
-  description: "TheMasterSahib: a learning platform for educational resources, portfolio building, and resume creation.",
+  description: "The Master Sahib: a learning platform for educational resources, portfolio building, and resume creation.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "TheMasterSahib",
-    description: "Learn, practice, and grow with TheMasterSahib.",
+    title: "The Master Sahib",
+    description: "Learn, practice, and grow with The Master Sahib.",
     url: "https://themastersahib.com",
-    siteName: "TheMasterSahib",
+    siteName: "The Master Sahib",
     type: "website",
     images: [
       {
         url: "/images/main_logo.png",
         width: 512,
         height: 512,
-        alt: "TheMasterSahib Logo",
+        alt: "The Master Sahib Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TheMasterSahib",
-    description: "Learn, practice, and grow with TheMasterSahib.",
+    title: "The Master Sahib",
+    description: "Learn, practice, and grow with The Master Sahib.",
     images: ["/images/main_logo.png"],
   },
   icons: {
@@ -41,6 +41,17 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
     apple: '/images/main_logo.png',
   },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "The Master Sahib",
+  alternateName: ["Master Sahib", "MasterSahib", "TheMasterSahib"],
+  url: "https://themastersahib.com",
+  logo: "https://themastersahib.com/images/main_logo.png",
+  description:
+    "The Master Sahib: a learning platform for educational resources, portfolio building, and resume creation.",
 };
 
 export default function RootLayout({
@@ -54,6 +65,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
       </head>
       <body className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
         <GoogleAnalytics gaId={gaId} />

@@ -3,8 +3,12 @@ import { appendQuizRowToSheet, deleteSheetRow, getQuizRowsFromSheet, ensureSheet
 
 const STUDENT_TAB_NAME = 'students record 26-27';
 const STUDENT_HEADER_ROW = ['class', 'teacher_name', 'teacher_phone', 'total_students', 'boys', 'girls', 'notes', 'updated_at'];
-const CLASS_PASSWORD = '20262027';
-const ADMIN_PASSWORD = 'adminadmin321';
+// Shared class/admin passwords for the student-record tool. Set
+// GGSS_STUDENT_RECORD_CLASS_PASSWORD / GGSS_STUDENT_RECORD_ADMIN_PASSWORD in
+// Vercel env vars to override — these string literals are only the fallback
+// used when those env vars are not set.
+const CLASS_PASSWORD = process.env.GGSS_STUDENT_RECORD_CLASS_PASSWORD?.trim() || '20262027';
+const ADMIN_PASSWORD = process.env.GGSS_STUDENT_RECORD_ADMIN_PASSWORD?.trim() || 'adminadmin321';
 const CLASS_OPTIONS = [
   'ECE',
   'IM', 'IA',
