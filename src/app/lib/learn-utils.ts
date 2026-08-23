@@ -2,12 +2,20 @@
 
 /* ─── Speech ────────────────────────────────────────────────────── */
 
+// Chrome (and some other browsers) clip the beginning of the very next utterance
+// if speak() is called in the same tick as cancel() — the engine hasn't finished
+// tearing down the previous utterance yet. A short delay after cancel() lets it
+// settle so the first word/line is actually heard.
+const SPEECH_RESTART_DELAY = 60;
+
 export const speak = (text: string) => {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1;
-  window.speechSynthesis.speak(u);
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1;
+    window.speechSynthesis.speak(u);
+  }, SPEECH_RESTART_DELAY);
 };
 
 export const spellWord = (word: string) => {
@@ -27,27 +35,31 @@ export const spellWord = (word: string) => {
     u.onend = () => { i++; setTimeout(sayNext, 180); };
     window.speechSynthesis.speak(u);
   };
-  sayNext();
+  setTimeout(sayNext, SPEECH_RESTART_DELAY);
 };
 
 /** Say the word, then spell it letter by letter, then say the word again. */
 export const speakThenSpell = (word: string) => {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1;
-  u.onend = () => { setTimeout(() => spellWord(word), 300); };
-  window.speechSynthesis.speak(u);
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1;
+    u.onend = () => { setTimeout(() => spellWord(word), 300); };
+    window.speechSynthesis.speak(u);
+  }, SPEECH_RESTART_DELAY);
 };
 
 /** Speak text, call onEnd when finished. */
 export const speakWithCallback = (text: string, onEnd: () => void) => {
   if (typeof window === 'undefined' || !window.speechSynthesis) { onEnd(); return; }
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1;
-  u.onend = onEnd;
-  window.speechSynthesis.speak(u);
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 0.85; u.pitch = 1.1;
+    u.onend = onEnd;
+    window.speechSynthesis.speak(u);
+  }, SPEECH_RESTART_DELAY);
 };
 
 /* ─── Quiz helpers ──────────────────────────────────────────────── */

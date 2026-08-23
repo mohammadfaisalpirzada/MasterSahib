@@ -241,7 +241,7 @@ export default function MonthsTab() {
             <>
               <h2 className="text-lg font-bold text-slate-900">Which month is this?</h2>
               <div className="mt-5 flex justify-center">
-                <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-4xl font-black text-pink-700 shadow-inner">{MONTHS_LIST[monthIdx].slice(0, 3)}</div>
+                <div className="flex h-24 min-w-[9rem] items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 px-5 text-2xl font-black text-pink-700 shadow-inner sm:text-3xl">{MONTHS_LIST[monthIdx]}</div>
               </div>
               {monthAnswered && <div className={`mt-3 rounded-2xl p-3 text-sm font-bold ${monthCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{monthCorrect ? '✅ Correct!' : `❌ It's ${MONTHS_LIST[monthIdx]}`}</div>}
               <div className="mt-5 flex flex-wrap justify-center gap-2">
@@ -276,7 +276,7 @@ export default function MonthsTab() {
         <div className="text-center">
           <h2 className="text-lg font-bold text-slate-900">Type the Month Name</h2>
           <div className="mt-5 flex justify-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-3xl font-black text-pink-700 shadow-inner">{MONTHS_LIST[monthIdx].slice(0, 3)}</div>
+            <div className="flex h-24 min-w-[9rem] items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 px-5 text-xl font-black text-pink-700 shadow-inner sm:text-2xl">{MONTHS_LIST[monthIdx]}</div>
           </div>
           {monthFibResult === 'correct' && <div className="mt-3 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-700">✅ Correct!</div>}
           {monthFibResult === 'wrong' && <div className="mt-3 rounded-2xl bg-rose-100 p-3 text-sm font-bold text-rose-700">❌ It's {MONTHS_LIST[monthIdx]}</div>}
@@ -320,7 +320,7 @@ export default function MonthsTab() {
       ) : monthMemoLocked ? (
         <div className="mt-5 space-y-4 text-center">
           <div className="flex justify-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-4xl font-black text-pink-700 shadow-inner">{MONTHS_LIST[monthMemoIdx].slice(0, 3)}</div>
+            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-4xl shadow-inner">📆</div>
           </div>
           <p className="text-2xl font-black text-slate-900">{MONTHS_LIST[monthMemoIdx]}</p>
           <div className="flex justify-center gap-1">
@@ -380,7 +380,7 @@ export default function MonthsTab() {
             </span>
           </div>
           <div className="flex justify-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-4xl font-black text-pink-700 shadow-inner">{MONTHS_LIST[monthMemoIdx].slice(0, 3)}</div>
+            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-rose-100 text-4xl shadow-inner">📆</div>
           </div>
           <p className="text-2xl font-black text-slate-900">{MONTHS_LIST[monthMemoIdx]}</p>
           <div className="flex justify-center gap-1">

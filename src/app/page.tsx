@@ -79,7 +79,7 @@ export default function HomePage() {
   const now = Date.now();
 
   return (
-    <main className="min-h-screen bg-[#f4f7fb] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <main className="bg-[#f4f7fb] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <WorkshopBannerCarousel />
 
       <div className="border-b border-slate-200 bg-slate-900 dark:border-slate-800">

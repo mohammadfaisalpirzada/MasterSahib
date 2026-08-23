@@ -68,46 +68,64 @@ export default function WorkshopBannerCarousel() {
 
   if (!loading && banners.length === 0) return null;
 
+  const secondBanner = banners.length > 1 ? banners[(activeIndex + 1) % banners.length] : null;
+
   return (
     <section aria-label="Latest workshops and announcements" className="bg-[#f4f7fb] px-3 pb-2 pt-4 sm:px-6 sm:pt-6 dark:bg-slate-950">
-      <div className="group relative mx-auto max-w-7xl overflow-hidden rounded-[1.5rem] bg-slate-950 shadow-[0_22px_70px_-30px_rgba(15,23,42,0.7)] sm:rounded-[2rem]">
+      <div className="group relative mx-auto max-w-7xl rounded-[1.5rem] bg-slate-100/80 p-2 shadow-[0_18px_50px_-25px_rgba(15,23,42,0.35)] sm:rounded-[2rem] sm:p-3 dark:bg-slate-900/60">
         {loading ? (
-          <div className="aspect-video animate-pulse bg-gradient-to-br from-slate-800 via-slate-900 to-cyan-950" />
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+            <div className="aspect-video animate-pulse rounded-2xl bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800" />
+            <div className="hidden aspect-video animate-pulse rounded-2xl bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200 sm:block dark:from-slate-800 dark:via-slate-900 dark:to-slate-800" />
+          </div>
         ) : (
           <>
             <div
-              className="relative aspect-video touch-pan-y"
+              className="relative touch-pan-y"
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              {banners.map((banner, index) => (
-                <article
-                  key={banner.id}
-                  aria-hidden={index !== activeIndex}
-                  className={`absolute inset-0 transition duration-700 ease-out ${index === activeIndex ? 'scale-100 opacity-100' : 'pointer-events-none scale-[1.03] opacity-0'}`}
-                >
+              {/* Two banners per row on tablet/desktop (same image ratio per banner, just laid
+                  out side by side, each its own rounded card) so the strip doesn't run so tall.
+                  Mobile keeps one at a time. */}
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+                <div className="relative aspect-video overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10">
                   <img
-                    src={banner.imageUrl}
-                    alt={banner.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')}
-                    className="h-full w-full object-contain"
-                    loading={index === 0 ? 'eager' : 'lazy'}
+                    key={banners[activeIndex].id}
+                    src={banners[activeIndex].imageUrl}
+                    alt={banners[activeIndex].name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')}
+                    className="animate-bannerIn h-full w-full object-contain"
+                    loading="eager"
                   />
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/65 to-transparent" />
-                </article>
-              ))}
+                </div>
+                {secondBanner ? (
+                  <div className="relative hidden aspect-video overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 sm:block dark:bg-slate-800 dark:ring-white/10">
+                    <img
+                      key={secondBanner.id}
+                      src={secondBanner.imageUrl}
+                      alt={secondBanner.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')}
+                      className="animate-bannerIn h-full w-full object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : null}
+              </div>
+
+              {banners.length > 1 ? (
+                <>
+                  <button type="button" onClick={() => showSlide(activeIndex - 1)} aria-label="Previous banner" className="absolute left-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-black/35 text-2xl text-white backdrop-blur transition hover:bg-black/60 sm:grid sm:left-6">‹</button>
+                  <button type="button" onClick={() => showSlide(activeIndex + 1)} aria-label="Next banner" className="absolute right-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-black/35 text-2xl text-white backdrop-blur transition hover:bg-black/60 sm:grid sm:right-6">›</button>
+                </>
+              ) : null}
             </div>
 
             {banners.length > 1 ? (
-              <>
-                <button type="button" onClick={() => showSlide(activeIndex - 1)} aria-label="Previous banner" className="absolute left-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-black/35 text-2xl text-white backdrop-blur transition hover:bg-black/60 sm:grid sm:left-5">‹</button>
-                <button type="button" onClick={() => showSlide(activeIndex + 1)} aria-label="Next banner" className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-black/35 text-2xl text-white backdrop-blur transition hover:bg-black/60 sm:grid sm:right-5">›</button>
-                <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2 rounded-full bg-black/35 px-3 py-2 backdrop-blur sm:bottom-5">
-                  {banners.map((banner, index) => (
-                    <button key={banner.id} type="button" onClick={() => showSlide(index)} aria-label={`Show banner ${index + 1}`} aria-current={index === activeIndex ? 'true' : undefined} className={`h-2 rounded-full transition-all ${index === activeIndex ? 'w-7 bg-white' : 'w-2 bg-white/55 hover:bg-white/80'}`} />
-                  ))}
-                </div>
-              </>
+              <div className="flex items-center justify-center gap-2 pb-1 pt-3">
+                {banners.map((banner, index) => (
+                  <button key={banner.id} type="button" onClick={() => showSlide(index)} aria-label={`Show banner ${index + 1}`} aria-current={index === activeIndex ? 'true' : undefined} className={`h-2 rounded-full transition-all ${index === activeIndex ? 'w-7 bg-slate-800 dark:bg-white' : 'w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-500'}`} />
+                ))}
+              </div>
             ) : null}
           </>
         )}

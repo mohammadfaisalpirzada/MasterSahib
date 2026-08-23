@@ -52,10 +52,22 @@ const navItems: NavItem[] = [
 
 const secondaryNavItem = { label: 'Portfolio', href: '/portfolio' };
 const presentationOwnerEmail = 'mohammadfaisalpirzada@gmail.com';
+
+// Items shown directly in the desktop bar. GGSS / Contact / Portfolio / My Presentations
+// move into the "More" overflow menu on desktop to keep the bar from feeling crowded.
+// Mobile keeps the full list in its drawer, unchanged.
+const desktopMainItems = navItems.filter((item) => item.href !== '/ggss-nishtar-road' && item.href !== '/contact');
+const desktopMoreItems = [
+  { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },
+  { label: 'Contact', href: '/contact' },
+  secondaryNavItem,
+];
+
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openDesktopDropdown, setOpenDesktopDropdown] = useState<string | null>(null);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const pathname = usePathname();
   const safePathname = pathname || '/';
@@ -64,6 +76,7 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const canAccessPresentations = session?.user?.email?.toLowerCase() === presentationOwnerEmail;
   const headerRef = useRef<HTMLElement | null>(null);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
 
   const isActiveRoute = (href: string) => {
     if (href === '/') {
@@ -93,6 +106,7 @@ export default function Navbar() {
     setIsMobileOpen(false);
     setOpenDesktopDropdown(null);
     setOpenMobileDropdown(null);
+    setIsMoreOpen(false);
   }, [safePathname]);
 
   useEffect(() => {
@@ -112,6 +126,9 @@ export default function Navbar() {
     const handleOutsideClick = (event: MouseEvent) => {
       if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
         setOpenDesktopDropdown(null);
+      }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setIsMoreOpen(false);
       }
     };
 
@@ -158,7 +175,7 @@ export default function Navbar() {
         </Link>
 
         <ul className="hidden items-center gap-1 lg:flex">
-          {navItems.map((item) => {
+          {desktopMainItems.map((item) => {
             const isOpen = openDesktopDropdown === item.href;
             const isActive = isItemActive(item);
 
@@ -253,28 +270,50 @@ export default function Navbar() {
           >
             {isDark ? <HiOutlineSun className="h-5 w-5" /> : <HiOutlineMoon className="h-5 w-5" />}
           </button>
-          {canAccessPresentations ? (
-            <Link
-              href="/my-presentations"
-              className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                isActiveRoute('/my-presentations')
-                  ? 'border-white bg-white text-indigo-700'
-                  : 'border-white/35 bg-white/10 text-white hover:bg-white/20'
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsMoreOpen((current) => !current)}
+              aria-label="More links"
+              title="More links"
+              aria-expanded={isMoreOpen}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                isMoreOpen ? 'border-white bg-white text-indigo-700' : 'border-white/30 bg-white/10 text-white hover:bg-white/20'
               }`}
             >
-              My Presentations
-            </Link>
-          ) : null}
-          <Link
-            href={secondaryNavItem.href}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              isActiveRoute(secondaryNavItem.href)
-                ? 'border-white bg-white text-indigo-700'
-                : 'border-white/35 bg-white/10 text-white hover:bg-white/20'
-            }`}
-          >
-            {secondaryNavItem.label}
-          </Link>
+              <HiOutlineMenuAlt3 className="h-5 w-5" />
+            </button>
+
+            <div
+              className={`absolute right-0 top-full z-50 w-56 pt-2 text-slate-900 transition-all duration-200 ${
+                isMoreOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
+              }`}
+            >
+              <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                {desktopMoreItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
+                      isActiveRoute(item.href) ? 'bg-slate-100 dark:bg-slate-800' : ''
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                {canAccessPresentations ? (
+                  <Link
+                    href="/my-presentations"
+                    className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
+                      isActiveRoute('/my-presentations') ? 'bg-slate-100 dark:bg-slate-800' : ''
+                    }`}
+                  >
+                    My Presentations
+                  </Link>
+                ) : null}
+              </div>
+            </div>
+          </div>
 
           {status === 'loading' ? (
             <div className="rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm text-indigo-50">
