@@ -21,8 +21,8 @@ export default function HomeSignIn() {
 
   if (session) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3">
-        <span className="text-sm font-semibold text-emerald-800">
+      <div className="flex items-center justify-center gap-3 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-3 dark:border-emerald-800 dark:bg-emerald-950/40">
+        <span className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
           {session.user?.name || 'Signed in'}
         </span>
       </div>
@@ -32,7 +32,7 @@ export default function HomeSignIn() {
   return (
     <button
       onClick={handleGoogleSignIn}
-      className="rounded-2xl border border-cyan-300 bg-cyan-50 px-5 py-3 text-sm font-semibold text-cyan-700 transition hover:-translate-y-0.5 hover:bg-cyan-100"
+      className="rounded-2xl border border-cyan-300 bg-cyan-50 px-5 py-3 text-sm font-semibold text-cyan-700 transition hover:-translate-y-0.5 hover:bg-cyan-100 dark:border-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-300 dark:hover:bg-cyan-900/50"
     >
       Sign in with Google
     </button>

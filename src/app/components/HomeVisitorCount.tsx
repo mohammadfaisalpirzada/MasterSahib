@@ -38,7 +38,7 @@ export default function HomeVisitorCount() {
   }, []);
 
   return (
-    <span className="text-xl font-black text-cyan-800">
+    <span className="text-xl font-black text-cyan-800 dark:text-cyan-300">
       {visitorCount !== null ? visitorCount.toLocaleString() : '—'}
     </span>
   );

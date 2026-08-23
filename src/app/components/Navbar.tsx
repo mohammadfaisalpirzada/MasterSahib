@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
-import { HiChevronDown, HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
+import { HiChevronDown, HiOutlineMenuAlt3, HiOutlineMoon, HiOutlineSun, HiOutlineX } from 'react-icons/hi';
 
 import { educationalResourceNavLinks } from '@/app/lib/educationalResources';
 
@@ -56,6 +56,7 @@ export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openDesktopDropdown, setOpenDesktopDropdown] = useState<string | null>(null);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
+  const [isDark, setIsDark] = useState(false);
   const pathname = usePathname();
   const safePathname = pathname || '/';
   const router = useRouter();
@@ -93,6 +94,19 @@ export default function Navbar() {
     setOpenDesktopDropdown(null);
     setOpenMobileDropdown(null);
   }, [safePathname]);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+  }, []);
+
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle('dark', next);
+    try {
+      localStorage.setItem('ms-theme', next ? 'dark' : 'light');
+    } catch {}
+  };
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -184,10 +198,10 @@ export default function Navbar() {
                       isOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
                     }`}
                   >
-                    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
                       <Link
                         href={item.href}
-                        className="block rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                        className="block rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                       >
                         Open All Educational Resources
                       </Link>
@@ -197,12 +211,12 @@ export default function Navbar() {
                           <Link
                             key={child.href}
                             href={child.href}
-                            className={`rounded-xl px-3 py-2.5 transition hover:bg-indigo-50 ${
-                              isActiveRoute(child.href) ? 'bg-indigo-50' : ''
+                            className={`rounded-xl px-3 py-2.5 transition hover:bg-indigo-50 dark:hover:bg-slate-800 ${
+                              isActiveRoute(child.href) ? 'bg-indigo-50 dark:bg-slate-800' : ''
                             }`}
                           >
-                            <span className="block text-sm font-semibold text-slate-900">{child.label}</span>
-                            <span className="mt-0.5 block text-xs leading-5 text-slate-600">{child.description}</span>
+                            <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">{child.label}</span>
+                            <span className="mt-0.5 block text-xs leading-5 text-slate-600 dark:text-slate-400">{child.description}</span>
                           </Link>
                         ))}
                       </div>
@@ -230,6 +244,15 @@ export default function Navbar() {
         </ul>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
+          >
+            {isDark ? <HiOutlineSun className="h-5 w-5" /> : <HiOutlineMoon className="h-5 w-5" />}
+          </button>
           {canAccessPresentations ? (
             <Link
               href="/my-presentations"
@@ -290,15 +313,26 @@ export default function Navbar() {
           )}
         </div>
 
-        <button
-          type="button"
-          className="inline-flex items-center justify-center rounded-lg border border-white/30 bg-white/10 p-2 text-white transition hover:bg-white/20 lg:hidden"
-          onClick={() => setIsMobileOpen((current) => !current)}
-          aria-label={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          title={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
-        >
-          {isMobileOpen ? <HiOutlineX className="h-6 w-6" /> : <HiOutlineMenuAlt3 className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
+          >
+            {isDark ? <HiOutlineSun className="h-5 w-5" /> : <HiOutlineMoon className="h-5 w-5" />}
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-lg border border-white/30 bg-white/10 p-2 text-white transition hover:bg-white/20"
+            onClick={() => setIsMobileOpen((current) => !current)}
+            aria-label={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            title={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          >
+            {isMobileOpen ? <HiOutlineX className="h-6 w-6" /> : <HiOutlineMenuAlt3 className="h-6 w-6" />}
+          </button>
+        </div>
       </nav>
 
       {isMobileOpen ? (
