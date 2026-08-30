@@ -41,3 +41,6 @@ next-env.d.ts
 .env*.local
 
 .env*
+
+# local AI tool caches (not part of the app)
+.opencode/
