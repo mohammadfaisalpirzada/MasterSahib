@@ -5,7 +5,26 @@
 html,
 body {
   max-width: 100%;
+}
+
+/* `overflow-x: hidden` here is deliberate on <html> (it just suppresses any
+   horizontal scrollbar on the document) but a trap on <body>: per the CSS
+   spec, once one axis is a non-visible/non-clip value the other axis's
+   `visible` is forced to `auto`, so `overflow-x: hidden` on <body> silently
+   turns it into a second, independent scroll container stacked on the normal
+   window scroll — that is what lets the page scroll past the end of its
+   content into blank space. `overflow-x: clip` suppresses the horizontal
+   scrollbar the same way but does NOT promote the other axis, so <body>
+   stays on the single document scroll. The `hidden` line is kept first as a
+   fallback for engines that don't support `clip`. */
+html {
   overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 html {

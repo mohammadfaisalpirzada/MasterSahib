@@ -13,6 +13,49 @@ type BannerResponse = {
   banners?: Banner[];
 };
 
+/** How far banner `index` sits from the box's own `activeIndex`, as a percent
+ * offset (0 = centered/visible, 100 = waiting off the right edge, -100 = just
+ * exited off the left edge). Wrapping is shortest-path so it loops cleanly. */
+function slideOffset(index: number, activeIndex: number, length: number) {
+  let diff = index - activeIndex;
+  if (diff > length / 2) diff -= length;
+  if (diff < -length / 2) diff += length;
+  if (diff > 2) diff = 3;
+  if (diff < -2) diff = -3;
+  return diff * 100;
+}
+
+function BannerBox({ banners, activeIndex, className }: { banners: Banner[]; activeIndex: number; className: string }) {
+  return (
+    <div className={className}>
+      {banners.map((banner, index) => {
+        const offset = slideOffset(index, activeIndex, banners.length);
+        const isVisible = offset === 0;
+        return (
+          <a
+            key={banner.id}
+            href={banner.imageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open ${banner.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')} full size`}
+            aria-hidden={!isVisible}
+            tabIndex={isVisible ? 0 : -1}
+            className="absolute inset-0 block transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{ transform: `translateX(${offset}%)` }}
+          >
+            <img
+              src={banner.imageUrl}
+              alt={banner.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')}
+              className="h-full w-full object-contain"
+              loading={Math.abs(offset) <= 100 ? 'eager' : 'lazy'}
+            />
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function WorkshopBannerCarousel() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -68,7 +111,7 @@ export default function WorkshopBannerCarousel() {
 
   if (!loading && banners.length === 0) return null;
 
-  const secondBanner = banners.length > 1 ? banners[(activeIndex + 1) % banners.length] : null;
+  const secondIndex = banners.length > 1 ? (activeIndex + 1) % banners.length : activeIndex;
 
   return (
     <section aria-label="Latest workshops and announcements" className="bg-[#f4f7fb] px-3 pb-2 pt-4 sm:px-6 sm:pt-6 dark:bg-slate-950">
@@ -86,29 +129,22 @@ export default function WorkshopBannerCarousel() {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              {/* Two banners per row on tablet/desktop (same image ratio per banner, just laid
-                  out side by side, each its own rounded card) so the strip doesn't run so tall.
-                  Mobile keeps one at a time. */}
+              {/* Two banners per row on tablet/desktop, each its own rounded card. Both
+                  slide right-to-left together (whatever was on the right becomes the left,
+                  the old left exits further left) instead of swapping instantly. Mobile
+                  shows one at a time with swipe. Click a banner to open it full size. */}
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
-                <div className="relative aspect-video overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10">
-                  <img
-                    key={banners[activeIndex].id}
-                    src={banners[activeIndex].imageUrl}
-                    alt={banners[activeIndex].name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')}
-                    className="animate-bannerIn h-full w-full object-contain"
-                    loading="eager"
+                <BannerBox
+                  banners={banners}
+                  activeIndex={activeIndex}
+                  className="relative aspect-video overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10"
+                />
+                {banners.length > 1 ? (
+                  <BannerBox
+                    banners={banners}
+                    activeIndex={secondIndex}
+                    className="relative hidden aspect-video overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 sm:block dark:bg-slate-800 dark:ring-white/10"
                   />
-                </div>
-                {secondBanner ? (
-                  <div className="relative hidden aspect-video overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 sm:block dark:bg-slate-800 dark:ring-white/10">
-                    <img
-                      key={secondBanner.id}
-                      src={secondBanner.imageUrl}
-                      alt={secondBanner.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')}
-                      className="animate-bannerIn h-full w-full object-contain"
-                      loading="lazy"
-                    />
-                  </div>
                 ) : null}
               </div>
 

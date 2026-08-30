@@ -47,6 +47,7 @@ export default function VideoEditorSoftwarePage() {
   const [exportProgress, setExportProgress] = useState<number>(0);
   const [exportStatusText, setExportStatusText] = useState<string>('');
   const [mergedVideoUrl, setMergedVideoUrl] = useState<string | null>(null);
+  const [mergedVideoExt, setMergedVideoExt] = useState<'webm' | 'mp4'>('webm');
 
   // Social Studio Copywriting State
   const [activePlatform, setActivePlatform] = useState<'youtube' | 'reels' | 'tiktok' | 'facebook'>('youtube');
@@ -67,48 +68,104 @@ export default function VideoEditorSoftwarePage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Cleanup Object URLs on unmount
+  // Keep the latest clips / merged URL in refs so the unmount cleanup below can
+  // see them without having to list them as effect dependencies.
+  const clipsRef = useRef<VideoClip[]>([]);
+  const mergedVideoUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    clipsRef.current = clips;
+  }, [clips]);
+  useEffect(() => {
+    mergedVideoUrlRef.current = mergedVideoUrl;
+  }, [mergedVideoUrl]);
+
+  // Cleanup Object URLs on unmount ONLY.
+  //
+  // This used to depend on [clips, mergedVideoUrl], which meant React ran the
+  // cleanup before every re-render where those changed — i.e. every time a clip
+  // was added, trimmed, reordered, or its duration was filled in. Each of those
+  // runs revoked the blob: URL of every existing clip, so previously imported
+  // videos stopped playing the moment a second clip was added or metadata
+  // resolved. Revoking now happens per-clip in removeClip / "Clear Timeline",
+  // and for everything still live here on unmount.
   useEffect(() => {
     return () => {
-      clips.forEach((clip) => {
+      clipsRef.current.forEach((clip) => {
         if (clip.url.startsWith('blob:')) {
           URL.revokeObjectURL(clip.url);
         }
       });
-      if (mergedVideoUrl) {
-        URL.revokeObjectURL(mergedVideoUrl);
+      if (mergedVideoUrlRef.current) {
+        URL.revokeObjectURL(mergedVideoUrlRef.current);
       }
     };
-  }, [clips, mergedVideoUrl]);
+  }, []);
 
   // Handle Video File Upload
+  //
+  // Previously a clip was only added to the timeline once the hidden
+  // <video>'s `onloadedmetadata` event fired. On several real devices/
+  // browsers (large files, HEVC/.mov clips exported by phone cameras,
+  // some Android WebViews) that event never fires and there was no
+  // `onerror`/timeout fallback either — so the clip silently never
+  // appeared in the timeline with zero feedback to the user. That is
+  // exactly the "video attach nahi ho rahi" symptom. Fix: add the clip
+  // to the timeline immediately (so it always shows up), then fill in
+  // the real duration in the background — with an onerror handler and a
+  // timeout fallback so it always settles even if metadata never loads.
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const newClips: VideoClip[] = [];
     Array.from(files).forEach((file) => {
-      const url = URL.createObjectURL(file);
-      const tempVideo = document.createElement('video');
-      tempVideo.src = url;
-      tempVideo.preload = 'metadata';
+      if (!file.type.startsWith('video/')) {
+        alert(`"${file.name}" ek video file nahi hai, is liye skip kar di gayi.`);
+        return;
+      }
 
-      tempVideo.onloadedmetadata = () => {
-        const duration = Math.round(tempVideo.duration || 10);
-        setClips((prev) => [
-          ...prev,
-          {
-            id: 'clip_' + Math.random().toString(36).substring(2, 9),
-            name: file.name.replace(/\.[^/.]+$/, ''),
-            url: url,
-            file: file,
-            duration: duration,
-            trimStart: 0,
-            trimEnd: duration,
-            speed: 1.0,
-          },
-        ]);
+      const url = URL.createObjectURL(file);
+      const clipId = 'clip_' + Math.random().toString(36).substring(2, 9);
+      const fallbackDuration = 10;
+
+      setClips((prev) => [
+        ...prev,
+        {
+          id: clipId,
+          name: file.name.replace(/\.[^/.]+$/, ''),
+          url,
+          file,
+          duration: fallbackDuration,
+          trimStart: 0,
+          trimEnd: fallbackDuration,
+          speed: 1.0,
+        },
+      ]);
+
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      tempVideo.muted = true;
+      tempVideo.playsInline = true;
+      tempVideo.src = url;
+
+      let settled = false;
+      const finalizeDuration = (rawDuration: number) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeoutId);
+        const safeDuration = Number.isFinite(rawDuration) && rawDuration > 0 ? Math.round(rawDuration) : fallbackDuration;
+        setClips((prev) =>
+          prev.map((clip) =>
+            clip.id === clipId ? { ...clip, duration: safeDuration, trimEnd: safeDuration } : clip
+          )
+        );
       };
+
+      tempVideo.onloadedmetadata = () => finalizeDuration(tempVideo.duration);
+      tempVideo.onerror = () => finalizeDuration(fallbackDuration);
+      // Belt-and-suspenders: some formats/devices never fire loadedmetadata
+      // at all, so the clip's real duration is filled in after a short wait
+      // instead of being stuck on the fallback forever.
+      const timeoutId = window.setTimeout(() => finalizeDuration(tempVideo.duration || fallbackDuration), 4000);
     });
 
     if (fileInputRef.current) {
@@ -163,9 +220,16 @@ export default function VideoEditorSoftwarePage() {
 
     video.src = clip.url;
     video.playbackRate = clip.speed;
-    video.currentTime = clip.trimStart;
 
     video.onloadeddata = () => {
+      // Seek only once the media is actually loaded — setting currentTime
+      // before metadata is ready is silently ignored, which made the preview
+      // player start every trimmed clip from 0 instead of from trimStart.
+      try {
+        video.currentTime = clip.trimStart;
+      } catch {
+        /* not seekable yet — playback still starts, just from 0 */
+      }
       video.play().catch(() => {});
     };
 
@@ -268,6 +332,12 @@ export default function VideoEditorSoftwarePage() {
     mediaRecorder.onstop = () => {
       const finalBlob = new Blob(recordedChunks, { type: selectedMime });
       const finalUrl = URL.createObjectURL(finalBlob);
+      // Release the previous export before replacing it so repeated exports
+      // don't leak blob: URLs.
+      if (mergedVideoUrlRef.current) {
+        URL.revokeObjectURL(mergedVideoUrlRef.current);
+      }
+      setMergedVideoExt(selectedMime.startsWith('video/mp4') ? 'mp4' : 'webm');
       setMergedVideoUrl(finalUrl);
       setIsExporting(false);
       setExportProgress(100);
@@ -293,13 +363,18 @@ export default function VideoEditorSoftwarePage() {
       await new Promise<void>((resolve) => {
         videoElem.src = clip.url;
         videoElem.playbackRate = clip.speed;
-        videoElem.currentTime = clip.trimStart;
 
         videoElem.onloadeddata = () => {
-          videoElem.play().catch(() => {});
+          // Seek after load — currentTime set before metadata is ready is
+          // ignored, which would render trimmed clips from their real start.
+          try {
+            videoElem.currentTime = clip.trimStart;
+          } catch {
+            /* not seekable yet */
+          }
 
           const drawFrame = () => {
-            if (videoElem.paused || videoElem.ended || videoElem.currentTime >= clip.trimEnd) {
+            if (videoElem.ended || videoElem.currentTime >= clip.trimEnd) {
               resolve();
               return;
             }
@@ -322,7 +397,14 @@ export default function VideoEditorSoftwarePage() {
             requestAnimationFrame(drawFrame);
           };
 
-          drawFrame();
+          // Start drawing only once playback has actually begun. Calling
+          // drawFrame() synchronously after play() used to see videoElem.paused
+          // still true (play() resolves asynchronously) and resolve the promise
+          // immediately, so clips were silently dropped from the exported video.
+          videoElem
+            .play()
+            .then(() => drawFrame())
+            .catch(() => resolve());
         };
 
         videoElem.onerror = () => {
@@ -546,7 +628,13 @@ export default function VideoEditorSoftwarePage() {
 
                   {clips.length > 0 && (
                     <button
-                      onClick={() => setClips([])}
+                      onClick={() => {
+                        clips.forEach((clip) => {
+                          if (clip.url.startsWith('blob:')) URL.revokeObjectURL(clip.url);
+                        });
+                        setClips([]);
+                        setActiveClipIndex(0);
+                      }}
                       className="rounded-xl border border-rose-900/50 bg-rose-950/30 p-1.5 text-rose-400 transition hover:bg-rose-900/50"
                       title="Clear Timeline"
                     >
@@ -630,10 +718,11 @@ export default function VideoEditorSoftwarePage() {
                             max={clip.trimEnd - 1}
                             value={clip.trimStart}
                             onChange={(e) => {
-                              const val = Math.max(0, Number(e.target.value));
-                              const updated = [...clips];
-                              updated[idx].trimStart = val;
-                              setClips(updated);
+                              const raw = Math.max(0, Number(e.target.value) || 0);
+                              const val = Math.min(raw, clip.trimEnd - 1);
+                              setClips((prev) =>
+                                prev.map((c, i) => (i === idx ? { ...c, trimStart: val } : c))
+                              );
                             }}
                             className="w-12 rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5 text-center text-white"
                           />
@@ -648,10 +737,11 @@ export default function VideoEditorSoftwarePage() {
                             max={clip.duration}
                             value={clip.trimEnd}
                             onChange={(e) => {
-                              const val = Math.min(clip.duration, Number(e.target.value));
-                              const updated = [...clips];
-                              updated[idx].trimEnd = val;
-                              setClips(updated);
+                              const raw = Math.min(clip.duration, Number(e.target.value) || 0);
+                              const val = Math.max(raw, clip.trimStart + 1);
+                              setClips((prev) =>
+                                prev.map((c, i) => (i === idx ? { ...c, trimEnd: val } : c))
+                              );
                             }}
                             className="w-12 rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5 text-center text-white"
                           />
@@ -663,9 +753,10 @@ export default function VideoEditorSoftwarePage() {
                           <select
                             value={clip.speed}
                             onChange={(e) => {
-                              const updated = [...clips];
-                              updated[idx].speed = Number(e.target.value);
-                              setClips(updated);
+                              const val = Number(e.target.value);
+                              setClips((prev) =>
+                                prev.map((c, i) => (i === idx ? { ...c, speed: val } : c))
+                              );
                             }}
                             className="rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5 text-xs text-white"
                           >
@@ -759,7 +850,7 @@ export default function VideoEditorSoftwarePage() {
                     <p className="text-xs font-bold text-emerald-400">✨ Video Ready for Download!</p>
                     <a
                       href={mergedVideoUrl}
-                      download={`${exportFileName || 'MasterSahib_Video'}.webm`}
+                      download={`${exportFileName || 'MasterSahib_Video'}.${mergedVideoExt}`}
                       className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow transition hover:bg-emerald-500"
                     >
                       <HiOutlineDownload className="h-4 w-4" />
