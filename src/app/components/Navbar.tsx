@@ -8,6 +8,7 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 import { HiChevronDown, HiOutlineMenuAlt3, HiOutlineMoon, HiOutlineSun, HiOutlineX } from 'react-icons/hi';
 
 import { educationalResourceNavLinks } from '@/app/lib/educationalResources';
+import { govtFormNavLinks } from '@/app/lib/govtForms';
 
 type NavItem = {
   label: string;
@@ -39,13 +40,19 @@ const navItems: NavItem[] = [
       },
     ],
   },
-  { label: 'Courses', href: '/courses/ai-for-teachers' },
+  { label: 'Courses', href: '/courses/ai-for-all' },
   { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },
   {
     label: 'Educational Resources',
     desktopLabel: 'Edu Resources',
     href: '/educational-resources',
     children: educationalResourceNavLinks,
+  },
+  {
+    label: 'Govt Educational Forms',
+    desktopLabel: 'Govt Forms',
+    href: '/govt-forms',
+    children: govtFormNavLinks,
   },
   { label: 'Contact', href: '/contact' },
 ];
@@ -159,13 +166,13 @@ export default function Navbar() {
           className="flex min-w-0 items-center gap-2 rounded-xl px-2 py-1 transition hover:bg-white/10"
           aria-label="Go to home page"
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/10 sm:h-11 sm:w-11">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/10">
             <Image
               src="/images/main_logo.png"
               alt="TheMasterSahib Logo"
               width={48}
               height={48}
-              className="h-full w-full scale-[1.55] object-cover"
+              className="h-full w-full scale-110 object-contain"
             />
           </span>
           <div className="min-w-0">
@@ -215,12 +222,12 @@ export default function Navbar() {
                       isOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
                     }`}
                   >
-                    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                    <div className="max-h-[75vh] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
                       <Link
                         href={item.href}
                         className="block rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                       >
-                        Open All Educational Resources
+                        Open All {item.desktopLabel ?? item.label}
                       </Link>
 
                       <div className="mt-2 grid gap-1">
@@ -375,9 +382,9 @@ export default function Navbar() {
       </nav>
 
       {isMobileOpen ? (
-        <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm lg:hidden">
-          <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 pt-8">
-            <div className="mb-8 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-slate-900/90 backdrop-blur-sm lg:hidden">
+          <div className="mx-auto flex w-full max-w-md flex-col px-6 pb-16 pt-8">
+            <div className="sticky top-0 z-10 -mx-6 mb-6 flex items-center justify-between bg-slate-900/95 px-6 pb-4 pt-1 backdrop-blur-sm">
               <span className="text-lg font-bold">Navigation</span>
               <button
                 type="button"
@@ -412,7 +419,7 @@ export default function Navbar() {
                             className="block rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20"
                             onClick={() => setIsMobileOpen(false)}
                           >
-                            Open All Educational Resources
+                            Open All {item.label}
                           </Link>
 
                           {item.children.map((child) => (

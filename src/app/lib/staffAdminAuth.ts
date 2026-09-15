@@ -21,7 +21,7 @@ const requiredEnv = (key: string) => {
 
 const getSessionSecret = () => requiredEnv('AUTH_SESSION_SECRET');
 
-const getAdminPassword = () => process.env.GGSS_ADMIN_PASSWORD?.trim() || 'adminadmin321';
+const getAdminPassword = () => requiredEnv('GGSS_ADMIN_PASSWORD');
 
 const encode = (value: string) => Buffer.from(value, 'utf8').toString('base64url');
 const decode = (value: string) => Buffer.from(value, 'base64url').toString('utf8');

@@ -6,8 +6,13 @@ import { getGoogleSheetsClient } from '@/app/lib/googleSheets';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const getSecret = (): string =>
-  process.env.AUTH_SESSION_SECRET?.trim() || 'ggss-portal-fallback-secret-change-me';
+const getSecret = (): string => {
+  const value = process.env.AUTH_SESSION_SECRET?.trim();
+  if (!value) {
+    throw new Error('Missing required environment variable: AUTH_SESSION_SECRET');
+  }
+  return value;
+};
 
 const hmacSign = (payload: string): string =>
   createHmac('sha256', getSecret()).update(payload).digest('base64url');
@@ -145,9 +150,12 @@ export async function POST(req: NextRequest) {
 
     // ── Admin login ─────────────────────────────────────────────────────────
     if (name.toLowerCase() === 'admin') {
-      // Set GGSS_STAFF_PORTAL_ADMIN_PASSWORD in Vercel env vars to override;
-      // 'adminadmin321' is only the fallback used when it is not set.
-      const adminPassword = process.env.GGSS_STAFF_PORTAL_ADMIN_PASSWORD?.trim() || 'adminadmin321';
+      // Unified school-wide admin password — same one used by the main admin
+      // dashboard, stipend admin, and student-record admin. One password, not five.
+      const adminPassword = process.env.GGSS_ADMIN_PASSWORD?.trim();
+      if (!adminPassword) {
+        return NextResponse.json({ success: false, error: 'Server is missing GGSS_ADMIN_PASSWORD.' }, { status: 500 });
+      }
       const valid = safeStringEqual(password, adminPassword);
       if (!valid) {
         await new Promise(r => setTimeout(r, THROTTLE_MS));

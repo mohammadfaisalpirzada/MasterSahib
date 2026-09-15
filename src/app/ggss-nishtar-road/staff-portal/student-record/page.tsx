@@ -361,7 +361,7 @@
 //       return;
 //     }
 
-//     if (password !== expectedPassword) {
+//     if (!passwordVerified) {
 //       if (!autoSave) setStatus('Invalid password.');
 //       return;
 //     }
@@ -435,7 +435,7 @@
 //       return;
 //     }
 
-//     if (password !== expectedPassword) {
+//     if (!passwordVerified) {
 //       setStatus('Invalid password.');
 //       return;
 //     }
@@ -484,7 +484,7 @@
 //       actionMode === 'prompt' ||
 //       !effectiveClass ||
 //       !password ||
-//       password !== expectedPassword ||
+//       !passwordVerified ||
 //       JSON.stringify(record) === JSON.stringify(lastSavedRecord)
 //     ) {
 //       return;
@@ -499,7 +499,7 @@
 //         clearTimeout(saveTimerRef.current);
 //       }
 //     };
-//   }, [record, step, actionMode, selectedClass, password, expectedPassword, lastSavedRecord]);
+//   }, [record, step, actionMode, selectedClass, password, passwordVerified, lastSavedRecord]);
 
 //   return (
 //     <main className="min-h-screen bg-slate-50">
@@ -941,13 +941,13 @@ const CLASS_OPTIONS = [
   'XM', 'XA',
   'Admin',
 ];
-const START_PASSWORD = '20262027';
-const ADMIN_PASSWORD = 'adminadmin321';
-
 export default function StudentRecordFormPage() {
   const [started, setStarted] = useState(false);
   const [selectedClass, setSelectedClass] = useState('');
   const [password, setPassword] = useState('');
+  // Set only after the server confirms the password for the current class/password pair.
+  // The real password value is never shipped to the browser — the server is the sole authority.
+  const [passwordVerified, setPasswordVerified] = useState(false);
   const [headers, setHeaders] = useState<string[]>([]);
   const [record, setRecord] = useState<Record<string, string>>({});
   const [exists, setExists] = useState(false);
@@ -1095,11 +1095,9 @@ export default function StudentRecordFormPage() {
     return value;
   };
 
-  const expectedPassword = useMemo(() => {
-    if (selectedClass.toLowerCase() === 'admin') return ADMIN_PASSWORD;
-    if (!selectedClass) return '';
-    return START_PASSWORD;
-  }, [selectedClass]);
+  useEffect(() => {
+    setPasswordVerified(false);
+  }, [password, selectedClass]);
 
   const handleStart = () => {
     setStarted(true);
@@ -1131,13 +1129,7 @@ export default function StudentRecordFormPage() {
     }
 
     if (!password) {
-      showToastMessage('error', 'Enter the password for this class.');
-      return;
-    }
-
-    const expected = className.toLowerCase() === 'admin' ? ADMIN_PASSWORD : START_PASSWORD;
-    if (password !== expected) {
-      showToastMessage('error', 'Invalid security access password.');
+      showToastMessage('error', isAdminClass ? 'Enter the admin password.' : 'Enter your staff PID.');
       return;
     }
 
@@ -1224,6 +1216,7 @@ export default function StudentRecordFormPage() {
       setCurrentClassIndex(index >= 0 ? index : null);
       setStep('loaded');
       setActionMode(data.exists ? 'prompt' : 'new');
+      setPasswordVerified(true);
       showToastMessage('success', 'Class details synchronized successfully.');
     } catch (error) {
       showToastMessage('error', error instanceof Error ? error.message : 'Unable to load class records.');
@@ -1285,7 +1278,7 @@ export default function StudentRecordFormPage() {
   const handleSave = async ({ autoSave = false }: { autoSave?: boolean } = {}) => {
     if (isLocked) return; // Prevent live-saving if the form is sealed
 
-    if (!effectiveClass || !password || password !== expectedPassword) return;
+    if (!effectiveClass || !password || !passwordVerified) return;
     if (!hasRecordData(record, headers) || !hasRequiredName || !hasRequiredGr) return;
 
     setSaving(true);
@@ -1368,7 +1361,7 @@ export default function StudentRecordFormPage() {
   };
 
   const handleDeleteRecord = async () => {
-    if (!effectiveClass || !password || password !== expectedPassword || !currentRow?.rowNumber) return;
+    if (!effectiveClass || !password || !passwordVerified || !currentRow?.rowNumber) return;
 
     const confirmed = window.confirm('Delete this student record? This action cannot be undone.');
     if (!confirmed) return;
@@ -1409,7 +1402,7 @@ export default function StudentRecordFormPage() {
       isLocked ||
       !effectiveClass ||
       !password ||
-      password !== expectedPassword ||
+      !passwordVerified ||
       JSON.stringify(record) === JSON.stringify(lastSavedRecord)
     ) {
       return;
@@ -1422,7 +1415,7 @@ export default function StudentRecordFormPage() {
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [record, step, actionMode, selectedClass, password, expectedPassword, lastSavedRecord, isLocked]);
+  }, [record, step, actionMode, selectedClass, password, passwordVerified, lastSavedRecord, isLocked]);
 
   return (
     <main className="min-h-screen bg-slate-50 relative">
@@ -1542,14 +1535,14 @@ export default function StudentRecordFormPage() {
                       ) : null}
 
                       <label className="block text-sm font-medium text-slate-700">
-                        Password
+                        {isAdminClass ? 'Admin Password' : 'Your Staff PID'}
                         <div className="mt-2 flex items-center gap-2">
                           <input
                             type={passwordInputType}
                             inputMode={passwordInputMode}
                             value={password}
                             onChange={(event) => setPassword(event.target.value)}
-                            placeholder="Enter class password"
+                            placeholder={isAdminClass ? 'Enter admin password' : 'Enter your personal number (PID)'}
                             className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                           />
                           <button
@@ -1581,7 +1574,7 @@ export default function StudentRecordFormPage() {
                     <p className="mt-1 text-slate-500">
                       {isAdminClass
                         ? 'Admin can manage the selected class after password entry. Refresh page to switch classes.'
-                        : 'Teacher stays on this class after password entry. Refresh page to switch classes.'}
+                        : 'Only recognised staff PIDs are accepted — verified live against the staff sheet. Refresh page to switch classes.'}
                     </p>
                   </div>
                 )}

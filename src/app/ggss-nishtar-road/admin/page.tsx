@@ -2046,6 +2046,24 @@ export default function GgssAdminPage() {
                 <p className="text-sm font-bold">School Takeover Inventory</p>
                 <p className="mt-1 text-xs" style={{ color: '#c8a96e' }}>Create, preview, and download handover item list as PDF</p>
               </Link>
+
+              <Link
+                href="/ggss-nishtar-road/admin/admission-form"
+                style={{ border: '1px solid #1a3a6b', background: 'rgba(26,58,107,0.06)', color: '#1a3a6b' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:bg-[rgba(26,58,107,0.12)]"
+              >
+                <p className="text-sm font-bold">Admission Form</p>
+                <p className="mt-1 text-xs" style={{ color: '#1a3a6b' }}>Fill and print a new student admission form</p>
+              </Link>
+
+              <Link
+                href="/ggss-nishtar-road/admin/admission-form/records"
+                style={{ border: '1px solid #0f766e', background: 'rgba(15,118,110,0.06)', color: '#0f766e' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:bg-[rgba(15,118,110,0.12)]"
+              >
+                <p className="text-sm font-bold">All Students — Admission Records</p>
+                <p className="mt-1 text-xs" style={{ color: '#0f766e' }}>View and edit every submitted admission form</p>
+              </Link>
             </div>
 
             {activeView ? (

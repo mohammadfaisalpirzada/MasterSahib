@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 const FB_PAGE_URL = 'https://www.facebook.com/nishtarroadschool';
 const FB_EMBED_SRC = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(FB_PAGE_URL)}&tabs=timeline&width=500&height=700&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId`;
@@ -43,11 +44,15 @@ const navLinks = [
   { label: 'Facebook',     href: '#facebook' },
 ];
 
+const SCHOOL_ADMIN_EMAIL = 'mohammadfaisalpirzada@gmail.com';
+
 export default function GgssNishtarRoadLandingPage() {
   const [form, setForm] = useState({ name: '', phone: '', message: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { data: session } = useSession();
+  const isSchoolAdmin = session?.user?.email?.toLowerCase() === SCHOOL_ADMIN_EMAIL;
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(true);
   const [faculty, setFaculty] = useState<FacultyItem[]>([]);
@@ -187,6 +192,15 @@ export default function GgssNishtarRoadLandingPage() {
                 {l.label}
               </a>
             ))}
+            {isSchoolAdmin && (
+              <Link
+                href="/ggss-nishtar-road/admin"
+                style={{ color: '#1a3a6b', fontWeight: 700, fontSize: '13px', padding: '6px 12px', borderRadius: '8px', whiteSpace: 'nowrap', background: 'rgba(200,169,110,0.18)', border: '1px solid rgba(200,169,110,0.5)' }}
+                className="transition hover:bg-[rgba(200,169,110,0.3)]"
+              >
+                Admin Portal
+              </Link>
+            )}
           </div>
           <button className="md:hidden p-2 flex flex-col gap-1.5" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
             <span style={{ display: 'block', width: '22px', height: '2px', backgroundColor: '#1a3a6b', borderRadius: '2px' }} />
@@ -201,6 +215,15 @@ export default function GgssNishtarRoadLandingPage() {
                 {l.label}
               </a>
             ))}
+            {isSchoolAdmin && (
+              <Link
+                href="/ggss-nishtar-road/admin"
+                onClick={() => setMenuOpen(false)}
+                style={{ display: 'block', color: '#1a3a6b', fontWeight: 700, fontSize: '14px', padding: '10px 0' }}
+              >
+                🛠️ Admin Portal
+              </Link>
+            )}
           </div>
         )}
       </nav>

@@ -26,8 +26,10 @@ const requiredEnv = (key: string) => {
 };
 
 const getSessionSecret = () => requiredEnv('AUTH_SESSION_SECRET');
-const getTeacherPassword = () => process.env.GGSS_STIPEND_PASSWORD?.trim() || 'ggssnishtarroad';
-const getAdminPassword = () => process.env.GGSS_STIPEND_ADMIN_PASSWORD?.trim() || 'adminadmin321';
+const getTeacherPassword = () => requiredEnv('GGSS_STIPEND_PASSWORD');
+// Admin password is unified school-wide (same as the main admin dashboard) —
+// no separate admin password just for the stipend tool.
+const getAdminPassword = () => requiredEnv('GGSS_ADMIN_PASSWORD');
 
 const encode = (value: string) => Buffer.from(value, 'utf8').toString('base64url');
 const decode = (value: string) => Buffer.from(value, 'base64url').toString('utf8');

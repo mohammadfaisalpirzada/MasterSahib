@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { appendQuizRowToSheet, deleteSheetRow, getQuizRowsFromSheet, ensureSheetTabExists, getQuizSheetIdByTitle, updateQuizRowInSheet } from '@/app/lib/googleSheets';
+import { PID_KEY, getStaffSheetRows, rowsToRecords } from '@/app/lib/staffRecords';
 
 const STUDENT_TAB_NAME = 'students record 26-27';
 const STUDENT_HEADER_ROW = ['class', 'teacher_name', 'teacher_phone', 'total_students', 'boys', 'girls', 'notes', 'updated_at'];
-// Shared class/admin passwords for the student-record tool. Set
-// GGSS_STUDENT_RECORD_CLASS_PASSWORD / GGSS_STUDENT_RECORD_ADMIN_PASSWORD in
-// Vercel env vars to override — these string literals are only the fallback
-// used when those env vars are not set.
-const CLASS_PASSWORD = process.env.GGSS_STUDENT_RECORD_CLASS_PASSWORD?.trim() || '20262027';
-const ADMIN_PASSWORD = process.env.GGSS_STUDENT_RECORD_ADMIN_PASSWORD?.trim() || 'adminadmin321';
 const CLASS_OPTIONS = [
   'ECE',
   'IM', 'IA',
@@ -31,6 +26,25 @@ const requiredEnv = (key: string) => {
   }
 
   return value;
+};
+
+// Single school-wide admin password, shared with the main admin dashboard,
+// staff portal and stipend admin — one password for anyone who needs full admin access.
+const getAdminPassword = () => requiredEnv('GGSS_ADMIN_PASSWORD');
+
+// Non-admin access is no longer a shared class password known to everyone —
+// each teacher must prove they are real staff by entering their own personal
+// number (PID), checked against the live staff sheet.
+const isValidStaffPid = async (pid: string): Promise<boolean> => {
+  const trimmed = pid.trim();
+  if (!trimmed) return false;
+  try {
+    const { rows } = await getStaffSheetRows();
+    const { records } = rowsToRecords(rows);
+    return records.some((record) => String(record[PID_KEY] ?? '').trim() === trimmed);
+  } catch {
+    return false;
+  }
 };
 
 const resolveSpreadsheetId = (): string => {
@@ -59,12 +73,13 @@ const toQuotedSheetName = (sheetName: string) => {
   return `'${escaped}'`;
 };
 
-const validatePassword = (className: string, password: string) => {
+const validatePassword = async (className: string, password: string): Promise<boolean> => {
   if (className.toLowerCase() === 'admin') {
-    return password === ADMIN_PASSWORD;
+    return password === getAdminPassword();
   }
 
-  return password === CLASS_PASSWORD;
+  // Any class: the "password" field is now the teacher's own staff PID.
+  return isValidStaffPid(password);
 };
 
 const getSheetRows = async (spreadsheetId: string) => {
@@ -204,8 +219,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Password is required.' }, { status: 400 });
     }
 
-    if (!validatePassword(className, password)) {
-      return NextResponse.json({ success: false, error: 'Invalid password.' }, { status: 401 });
+    if (!(await validatePassword(className, password))) {
+      return NextResponse.json({ success: false, error: 'Invalid PID / password.' }, { status: 401 });
     }
 
     const spreadsheetId = resolveSpreadsheetId();

@@ -210,13 +210,13 @@ export const getFirstColumnValuesFromTab = async (
 type QuizSheetAppendOptions = {
   spreadsheetId?: string;
   range: string;
-  values: string[];
+  values: readonly string[];
 };
 
 type QuizSheetUpdateOptions = {
   spreadsheetId?: string;
   range: string;
-  values: string[];
+  values: readonly string[];
 };
 
 export const appendQuizRowToSheet = async (options: QuizSheetAppendOptions) => {
@@ -229,7 +229,7 @@ export const appendQuizRowToSheet = async (options: QuizSheetAppendOptions) => {
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
     requestBody: {
-      values: [options.values],
+      values: [[...options.values]],
     },
   });
 };
@@ -243,7 +243,7 @@ export const updateQuizRowInSheet = async (options: QuizSheetUpdateOptions) => {
     range: options.range,
     valueInputOption: 'USER_ENTERED',
     requestBody: {
-      values: [options.values],
+      values: [[...options.values]],
     },
   });
 };
@@ -379,7 +379,7 @@ export const updateQuizUserPasswordInSheet = async (
 
 export const ensureSheetTabExists = async (
   tabName: string,
-  headerRow: string[],
+  headerRow: readonly string[],
   options?: QuizSheetMetaOptions,
 ) => {
   const spreadsheetId = resolveSpreadsheetId(options?.spreadsheetId);
@@ -404,7 +404,7 @@ export const ensureSheetTabExists = async (
         spreadsheetId,
         range: `${toQuotedSheetName(tabName)}!A1`,
         valueInputOption: 'RAW',
-        requestBody: { values: [headerRow] },
+        requestBody: { values: [[...headerRow]] },
       });
     } catch (error) {
       const message = error instanceof Error ? error.message.toLowerCase() : '';

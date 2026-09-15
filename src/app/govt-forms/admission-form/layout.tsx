@@ -1,0 +1,9 @@
+import type { Metadata } from 'next';
+
+import { buildFormMetadata } from '@/app/lib/govtFormMeta';
+
+export const metadata: Metadata = buildFormMetadata('/govt-forms/admission-form');
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return children;
+}

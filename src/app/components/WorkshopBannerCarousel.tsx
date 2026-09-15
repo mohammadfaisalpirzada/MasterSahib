@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type MouseEvent, type TouchEvent } from 'react';
+import { FaWhatsapp, FaFacebookF } from 'react-icons/fa';
 
 type Banner = {
   id: string;
@@ -25,6 +26,122 @@ function slideOffset(index: number, activeIndex: number, length: number) {
   return diff * 100;
 }
 
+function bannerTitle(banner: Banner) {
+  return banner.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ');
+}
+
+function absoluteBannerUrl(banner: Banner) {
+  if (typeof window === 'undefined') return banner.imageUrl;
+  return `${window.location.origin}${banner.imageUrl}`;
+}
+
+/** Fetches the banner image itself (not just its link) as a File, so it can be
+ * handed to the OS share sheet — that's what lets WhatsApp/Facebook attach the
+ * actual picture instead of a text link. */
+async function fetchBannerFile(banner: Banner): Promise<File> {
+  const response = await fetch(banner.imageUrl);
+  if (!response.ok) throw new Error('image fetch failed');
+  const blob = await response.blob();
+  const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+  return new File([blob], `${bannerTitle(banner) || 'banner'}.${ext}`, { type: blob.type || 'image/jpeg' });
+}
+
+/** Downloads the image straight to the device as a fallback for browsers that
+ * can't share files directly (mainly desktop), so it can be attached by hand. */
+function downloadBannerFile(file: File) {
+  const url = URL.createObjectURL(file);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = file.name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+type ShareStatus = null | 'sharing' | 'downloaded' | 'error';
+
+function ShareButtons({ banner }: { banner: Banner }) {
+  const [status, setStatus] = useState<ShareStatus>(null);
+
+  const shareImage = useCallback(async (openLinkFallback: () => void) => {
+    setStatus('sharing');
+    try {
+      const file = await fetchBannerFile(banner);
+      const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
+      if (nav.canShare && nav.canShare({ files: [file] }) && navigator.share) {
+        await navigator.share({ files: [file], title: bannerTitle(banner) });
+        setStatus(null);
+        return;
+      }
+      // No native "share a file" support here (typical on desktop) — download the
+      // actual image so it can be attached by hand, and open the app as a shortcut.
+      downloadBannerFile(file);
+      openLinkFallback();
+      setStatus('downloaded');
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setStatus(null); // user closed the share sheet, no error to show
+        return;
+      }
+      setStatus('error');
+    } finally {
+      window.setTimeout(() => setStatus((s) => (s === 'sharing' ? null : s)), 3000);
+    }
+  }, [banner]);
+
+  const handleWhatsApp = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    shareImage(() => {
+      window.open(`https://wa.me/?text=${encodeURIComponent(bannerTitle(banner))}`, '_blank', 'noopener,noreferrer');
+    });
+  }, [banner, shareImage]);
+
+  const handleFacebook = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    shareImage(() => {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(absoluteBannerUrl(banner))}`, '_blank', 'noopener,noreferrer');
+    });
+  }, [banner, shareImage]);
+
+  return (
+    <div className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1.5 sm:bottom-3 sm:right-3">
+      {status === 'downloaded' ? (
+        <span className="rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+          Image download ho gayi — ab attach kar dein
+        </span>
+      ) : null}
+      {status === 'error' ? (
+        <span className="rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+          Share nahi ho saka, dobara koshish karein
+        </span>
+      ) : null}
+      <div className="flex gap-1.5">
+        <button
+          type="button"
+          onClick={handleWhatsApp}
+          disabled={status === 'sharing'}
+          aria-label={`Share ${bannerTitle(banner)} image on WhatsApp`}
+          className="grid h-8 w-8 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-[#25D366] disabled:opacity-60 sm:h-9 sm:w-9"
+        >
+          <FaWhatsapp className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+        </button>
+        <button
+          type="button"
+          onClick={handleFacebook}
+          disabled={status === 'sharing'}
+          aria-label={`Share ${bannerTitle(banner)} image on Facebook`}
+          className="grid h-8 w-8 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-[#1877F2] disabled:opacity-60 sm:h-9 sm:w-9"
+        >
+          <FaFacebookF className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function BannerBox({ banners, activeIndex, className }: { banners: Banner[]; activeIndex: number; className: string }) {
   return (
     <div className={className}>
@@ -37,7 +154,7 @@ function BannerBox({ banners, activeIndex, className }: { banners: Banner[]; act
             href={banner.imageUrl}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Open ${banner.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')} full size`}
+            aria-label={`Open ${bannerTitle(banner)} full size`}
             aria-hidden={!isVisible}
             tabIndex={isVisible ? 0 : -1}
             className="absolute inset-0 block transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -45,13 +162,14 @@ function BannerBox({ banners, activeIndex, className }: { banners: Banner[]; act
           >
             <img
               src={banner.imageUrl}
-              alt={banner.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')}
+              alt={bannerTitle(banner)}
               className="h-full w-full object-contain"
               loading={Math.abs(offset) <= 100 ? 'eager' : 'lazy'}
             />
           </a>
         );
       })}
+      {banners.length > 0 ? <ShareButtons banner={banners[activeIndex]} /> : null}
     </div>
   );
 }

@@ -32,6 +32,38 @@ const educationalResourceSlugs = [
   "worksheet-builder",
 ];
 
+// Public print-ready government forms under /govt-forms/*
+const govtFormSlugs = [
+  "admission-form",
+  "ag-vendor-creation",
+  "bonafide-certificate",
+  "casual-leave-order",
+  "character-certificate",
+  "employee-data-verification",
+  "joining-report",
+  "leave-application-form",
+  "medical-fitness-certificate",
+  "no-dues-certificate",
+  "no-inquiry-certificate",
+  "noc-request-application",
+  "pay01-employee-master-file",
+  "pay02-payroll-amendment",
+  "pay03-payroll-amendment-multiple",
+  "pay05-temporary-gp-fund-loan",
+  "pay06-permanent-gp-fund-advance",
+  "pension-direct-credit-option",
+  "pension-indemnity-bond",
+  "pensioner-fingerprints",
+  "school-leaving-certificate",
+  "seniority-inclusion-application",
+  "service-certificate",
+  "service-profile-employee",
+  "student-bonafide-certificate",
+  "teacher-leave-application",
+  "teaching-allowance-application",
+  "time-scale-application",
+];
+
 // Public top-level marketing / tool pages (excludes auth-gated GGSS
 // staff/admin/stipend routes, /api, /auth, /my-presentations, /audience)
 const staticRoutes = [
@@ -46,10 +78,11 @@ const staticRoutes = [
   "/resume-builder",
   "/softwares",
   "/softwares/video-editor",
-  "/courses/ai-for-teachers",
+  "/courses/ai-for-all",
   "/padlet",
   "/pay-fixation-2008",
   "/ggss-nishtar-road",
+  "/govt-forms",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -57,9 +90,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     (slug) => `/educational-resources/${slug}`
   );
 
+  const govtFormRoutes = govtFormSlugs.map(
+    (slug) => `/govt-forms/${slug}`
+  );
+
   const now = new Date();
 
-  return [...staticRoutes, ...resourceRoutes].map((path) => ({
+  return [...staticRoutes, ...resourceRoutes, ...govtFormRoutes].map((path) => ({
     url: `${baseUrl}${path}`,
     lastModified: now,
     changeFrequency: "weekly" as const,

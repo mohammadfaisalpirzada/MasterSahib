@@ -14,9 +14,22 @@ type Presentation = {
   audiencePdf: { id: string; enabled: boolean; pin: string | null } | null;
 };
 
+// Quick-access link shown while presenting (e.g. to demo a live tool mid-slide).
+// Opens in a new tab — switch back with Ctrl+Tab / Alt+Tab to land exactly
+// where you left off. Only shown on the matching presentation (by title).
+const LIVE_DEMO_LINK = {
+  label: 'NotebookLM',
+  url: 'https://notebook.google.com/',
+  matchesTitle: (title: string) => {
+    const normalized = title.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return normalized.includes('notebooklm') && normalized.includes('mastery');
+  },
+};
+
 export default function PresentationLibrary({ presentations, driveConnected }: { presentations: Presentation[]; driveConnected: boolean }) {
   const [active, setActive] = useState<Presentation | null>(null);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [pins, setPins] = useState<Record<string, string>>(() => Object.fromEntries(
     presentations.flatMap((presentation) => presentation.audiencePdf?.pin ? [[presentation.id, presentation.audiencePdf.pin]] : []),
   ));
@@ -58,6 +71,7 @@ export default function PresentationLibrary({ presentations, driveConnected }: {
   };
 
   const close = useCallback(() => {
+    if (document.fullscreenElement) document.exitFullscreen?.();
     setActive(null);
     setSlideIndex(0);
   }, []);
@@ -72,10 +86,27 @@ export default function PresentationLibrary({ presentations, driveConnected }: {
     setSlideIndex((current) => (current >= active.slideUrls.length - 1 ? 0 : current + 1));
   }, [active]);
 
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.();
+    } else {
+      document.documentElement.requestFullscreen?.();
+    }
+  }, []);
+
+  // Track real fullscreen state (Esc / F11 also exit fullscreen outside our button).
+  useEffect(() => {
+    const onFullscreenChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!active) return;
-      if (event.key === 'Escape') close();
+      const target = event.target as HTMLElement | null;
+      if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
+      if (event.key === 'Escape' && !document.fullscreenElement) close();
       if (event.key === 'ArrowLeft') previous();
       if (event.key === 'ArrowRight' || event.key === ' ' || event.key === 'PageDown') next();
       if (event.key === 'PageUp') previous();
@@ -141,20 +172,62 @@ export default function PresentationLibrary({ presentations, driveConnected }: {
         <div className="fixed inset-0 z-[100] flex flex-col bg-black" role="dialog" aria-modal="true">
           <div className="flex items-center justify-between gap-4 bg-slate-950 px-4 py-3 text-white">
             <p className="min-w-0 truncate font-semibold">{active.title}</p>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => document.documentElement.requestFullscreen?.()} className="rounded-lg bg-white/10 px-3 py-2 text-sm hover:bg-white/20">Full screen</button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {LIVE_DEMO_LINK.matchesTitle(active.title) && (
+                <a
+                  href={LIVE_DEMO_LINK.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg bg-cyan-500/90 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-400"
+                  title={`Opens ${LIVE_DEMO_LINK.url} in a new tab — switch back with Ctrl+Tab to return here`}
+                >
+                  🔗 {LIVE_DEMO_LINK.label}
+                </a>
+              )}
+              <button type="button" onClick={toggleFullscreen} className="rounded-lg bg-white/10 px-3 py-2 text-sm hover:bg-white/20">
+                {isFullscreen ? 'Exit full screen' : 'Full screen'}
+              </button>
               <button type="button" onClick={close} className="rounded-lg bg-rose-600 px-3 py-2 text-sm hover:bg-rose-500">Close</button>
             </div>
           </div>
           {active.slideUrls.length ? (
-            <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
-              {/* Google returns temporary signed image URLs for each slide. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={active.slideUrls[slideIndex]} alt={`Slide ${slideIndex + 1}`} className="max-h-full max-w-full object-contain" />
-              <button type="button" onClick={previous} aria-label="Previous slide" className="absolute left-2 rounded-full bg-black/55 px-4 py-3 text-3xl text-white hover:bg-black/80 sm:left-6">‹</button>
-              <button type="button" onClick={next} aria-label="Next slide" className="absolute right-2 rounded-full bg-black/55 px-4 py-3 text-3xl text-white hover:bg-black/80 sm:right-6">›</button>
-              <div className="absolute bottom-4 rounded-full bg-black/65 px-4 py-2 text-sm font-semibold text-white">{slideIndex + 1} / {active.slideUrls.length}</div>
-            </div>
+            <>
+              <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+                {/* Google returns temporary signed image URLs for each slide. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={active.slideUrls[slideIndex]} alt={`Slide ${slideIndex + 1}`} className="max-h-full max-w-full object-contain" />
+                <button type="button" onClick={previous} aria-label="Previous slide" className="absolute left-2 rounded-full bg-black/55 px-4 py-3 text-3xl text-white hover:bg-black/80 sm:left-6">‹</button>
+                <button type="button" onClick={next} aria-label="Next slide" className="absolute right-2 rounded-full bg-black/55 px-4 py-3 text-3xl text-white hover:bg-black/80 sm:right-6">›</button>
+                {isFullscreen && <div className="absolute bottom-4 rounded-full bg-black/65 px-4 py-2 text-sm font-semibold text-white">{slideIndex + 1} / {active.slideUrls.length}</div>}
+              </div>
+
+              {/* Thumbnail strip: only shown when not fullscreen, so you can jump straight
+                  to any slide with one click instead of stepping through with next/prev. */}
+              {!isFullscreen && (
+                <div className="shrink-0 border-t border-white/10 bg-slate-950/95 px-3 py-2">
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    <span className="shrink-0 rounded-full bg-black/50 px-3 py-1.5 text-xs font-bold text-white">
+                      {slideIndex + 1} / {active.slideUrls.length}
+                    </span>
+                    {active.slideUrls.map((url, index) => (
+                      <button
+                        key={url}
+                        type="button"
+                        onClick={() => setSlideIndex(index)}
+                        aria-label={`Go to slide ${index + 1}`}
+                        aria-current={index === slideIndex}
+                        className={`shrink-0 overflow-hidden rounded-md border-2 transition ${
+                          index === slideIndex ? 'border-cyan-400' : 'border-transparent opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt={`Slide ${index + 1} thumbnail`} className="h-14 w-24 object-cover sm:h-16 sm:w-28" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <iframe src={active.previewUrl} title={active.title} className="min-h-0 w-full flex-1 border-0" allowFullScreen />
           )}
