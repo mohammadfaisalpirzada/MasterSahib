@@ -188,10 +188,10 @@ function Field({
       className={`flex items-end gap-[9px] ${className}`}
       style={{ flex: flex, minWidth: minWidth ?? 0 }}
     >
-      <span className="text-[12px] font-bold text-black whitespace-nowrap leading-none pb-[2px]">
+      <span className="text-[12px] font-bold text-black whitespace-nowrap leading-none pb-[3px]">
         {label}:
       </span>
-      <span className="flex-1 border-b border-black px-1 text-[13px] font-semibold text-black leading-tight min-h-[22px] truncate pb-[2px] text-center">
+      <span className="flex-1 border-b border-black px-1 text-[13px] font-semibold text-black leading-tight min-h-[22px] truncate pb-[3px] text-center">
         {displayVal || '\u00A0'}
       </span>
     </div>
@@ -307,7 +307,7 @@ export const AdmissionFormPrintView = forwardRef<
         </div>
 
         {/* Student Personal Data Section */}
-        <div className="pr-[104px] space-y-[9px]">
+        <div className="pr-[104px] space-y-[8px]">
           <SectionHeading>Student Personal Data</SectionHeading>
           <div className="flex gap-3">
             <Field label="Roll No. (Allotted by office)" value={data.rollNo} flex={1} />
@@ -329,7 +329,7 @@ export const AdmissionFormPrintView = forwardRef<
       </div>
 
       {/* Previous School & Admission Details */}
-      <div className="space-y-[9px] mt-[14px]">
+      <div className="space-y-[8px] mt-[14px]">
         <div className="flex">
           <Field label="Previous Class" value={data.previousClass} flex={1} />
         </div>
@@ -369,7 +369,7 @@ export const AdmissionFormPrintView = forwardRef<
 
       {/* Parents / Guardian's Personal Data */}
       <SectionHeading>Parents / Guardian&apos;s Personal Data</SectionHeading>
-      <div className="space-y-[9px]">
+      <div className="space-y-[8px]">
         <div className="flex gap-3">
           <Field label="Father's Name" value={data.fatherName} flex={1.3} />
           <Field label="CNIC No" value={data.fatherCnic} flex={1} />
@@ -405,7 +405,7 @@ export const AdmissionFormPrintView = forwardRef<
 
       {/* For Office Use Only */}
       <SectionHeading>For Office Use Only</SectionHeading>
-      <div className="space-y-[9px]">
+      <div className="space-y-[8px]">
         <div className="flex gap-3">
           <Field label="Class in which admitted" value={data.officeClassAdmitted} flex={1} />
           <Field label="Date of Admission" value={data.officeAdmissionDate} flex={1} />

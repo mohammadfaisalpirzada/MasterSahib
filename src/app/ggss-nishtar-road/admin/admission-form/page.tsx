@@ -1030,11 +1030,16 @@ export default function AdmissionFormPage() {
                child, so justify-content had no effect) just baked a big
                blank strip into the printed page / exported PDF. max-height
                + overflow:hidden stays only as a safety net so an unusually
-               long address/name can never spill onto a second page. */
+               long address/name can never spill onto a second page.
+               No padding here either — AdmissionFormPrintView already has
+               its own 34px/42px padding; adding 10mm/12mm on top of that
+               was double-counted margin that pushed the real content past
+               297mm, so the bottom (e.g. "For Office Use Only") was being
+               silently clipped by overflow:hidden. */
             max-height: 297mm !important;
             overflow: hidden !important;
             margin: 0 !important;
-            padding: 10mm 12mm !important;
+            padding: 0 !important;
             background: #fff !important;
             border: none !important;
             box-shadow: none !important;
