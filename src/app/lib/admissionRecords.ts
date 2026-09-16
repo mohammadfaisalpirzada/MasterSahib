@@ -41,6 +41,8 @@ export const ADMISSION_HEADER_ROW = [
   'submitted_at',
   'father_cell',
   'guardian_cell',
+  'academic_group',
+  'elective_subject',
 ] as const;
 
 export const resolveAdmissionSpreadsheetId = (): string => {

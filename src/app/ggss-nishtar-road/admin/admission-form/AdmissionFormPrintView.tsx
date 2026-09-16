@@ -43,6 +43,8 @@ export type AdmissionFormPrintData = {
   preparedSign?: string;
   officeDate?: string;
   pictureBase64?: string;
+  academicGroup?: string;
+  electiveSubject?: string;
 };
 
 export const normalizeRecordToPrintData = (record: Record<string, string | undefined>): AdmissionFormPrintData => {
@@ -84,6 +86,8 @@ export const normalizeRecordToPrintData = (record: Record<string, string | undef
     preparedSign: record.prepared_sign || record.preparedSign || '',
     officeDate: record.office_date || record.officeDate || '',
     pictureBase64: record.picture_base64 || record.pictureBase64 || '',
+    academicGroup: record.academic_group || record.academicGroup || '',
+    electiveSubject: record.elective_subject || record.electiveSubject || '',
   };
 };
 
@@ -209,17 +213,23 @@ export const AdmissionFormPrintView = forwardRef<
     <div
       ref={ref}
       id={id}
-      className={`a4-admission-form bg-white text-black p-4 font-sans border border-slate-300 print:border-none print:p-0 ${className}`}
+      className={`a4-admission-form bg-white text-black font-sans border border-slate-300 print:border-none print:p-0 ${className}`}
       style={{
         width: '100%',
         maxWidth: '780px',
+        minHeight: '1060px',
         margin: '0 auto',
+        padding: '24px 28px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
         boxSizing: 'border-box',
         backgroundColor: '#ffffff',
       }}
     >
-      {/* Top Banner: Sr No and Admission Form Box */}
-      <div className="flex items-center justify-between pb-1">
+      <div>
+        {/* Top Banner: Sr No and Admission Form Box */}
+        <div className="flex items-center justify-between pb-2">
         <div className="flex items-baseline gap-1 text-[11px] font-bold">
           <span>Sr No.</span>
           <span className="inline-block border-b border-black px-2 text-[11.5px] font-bold text-black min-w-[65px] text-center">
@@ -330,6 +340,12 @@ export const AdmissionFormPrintView = forwardRef<
           <Field label="In which class admission sought out" value={data.admissionClass} flex={1.2} />
           <Field label="Date of Admission" value={data.admissionDate} flex={1} />
         </div>
+        {(data.admissionClass === 'IX' || data.admissionClass === 'X' || data.academicGroup || data.electiveSubject) ? (
+          <div className="flex gap-3">
+            <Field label="Faculty / Group" value={data.academicGroup || '-'} flex={1.2} />
+            <Field label="Elective Subject" value={data.electiveSubject || '-'} flex={1} />
+          </div>
+        ) : null}
         <div className="flex items-end gap-3">
           <div className="flex items-center gap-2 text-[10px] font-bold text-black whitespace-nowrap">
             <span>Nadra (B Form, CRC):</span>
@@ -401,14 +417,15 @@ export const AdmissionFormPrintView = forwardRef<
         </div>
       </div>
 
-      {/* Documents list footer */}
-      <div className="mt-2 border-t border-black pt-1 text-[9.5px] leading-tight text-slate-800">
-        <p className="mb-0.5 font-bold text-black">Documents to be attached along with:</p>
-        <p>
-          1. Previous School Leaving Certificate (TC) &nbsp;&nbsp;&nbsp; 2. Father &amp; Mother CNIC Copies &nbsp;&nbsp;&nbsp; 3. Birth / Child Registration Certificate
-          <br />
-          4. Form &quot;B&quot; Issued by NADRA Office &nbsp;&nbsp;&nbsp; 5. Recent Photographs (05 Nos.)
-        </p>
+        {/* Documents list footer */}
+        <div className="mt-3 border-t-2 border-black pt-1.5 text-[9.5px] leading-tight text-slate-800">
+          <p className="mb-0.5 font-bold text-black">Documents to be attached along with:</p>
+          <p>
+            1. Previous School Leaving Certificate (TC) &nbsp;&nbsp;&nbsp; 2. Father &amp; Mother CNIC Copies &nbsp;&nbsp;&nbsp; 3. Birth / Child Registration Certificate
+            <br />
+            4. Form &quot;B&quot; Issued by NADRA Office &nbsp;&nbsp;&nbsp; 5. Recent Photographs (05 Nos.)
+          </p>
+        </div>
       </div>
     </div>
   );

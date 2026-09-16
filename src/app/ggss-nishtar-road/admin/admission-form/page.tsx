@@ -48,6 +48,8 @@ type AdmissionFormData = {
   preparedBy: string;
   preparedSign: string;
   officeDate: string;
+  academicGroup: string;
+  electiveSubject: string;
 };
 
 const EMPTY_FORM = (): AdmissionFormData => ({
@@ -87,6 +89,8 @@ const EMPTY_FORM = (): AdmissionFormData => ({
   preparedBy: '',
   preparedSign: '',
   officeDate: '',
+  academicGroup: '',
+  electiveSubject: '',
 });
 
 const CLASS_OPTIONS = ['ECE', 'Prep / KG', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
@@ -94,6 +98,17 @@ const CLASS_OPTIONS = ['ECE', 'Prep / KG', 'I', 'II', 'III', 'IV', 'V', 'VI', 'V
 const NEW_STUDENT_CLASS_OPTIONS = ['ECE', 'I'];
 const RELIGION_OPTIONS = ['Islam', 'Christianity', 'Hinduism', 'Other'];
 const NATIONALITY_OPTIONS = ['Pakistani', 'Other'];
+
+// BSEK / Sindh Govt SSC Groups & Electives (for Class IX and X)
+export const ACADEMIC_GROUPS = [
+  'Science',
+  'General (Arts)',
+] as const;
+
+export const ELECTIVE_OPTIONS: Record<string, string[]> = {
+  Science: ['Biology', 'Computer Science'],
+  'General (Arts)': ['General Science', 'Civics', 'Economics', 'Education', 'Islamic Studies (Elective)', 'Other'],
+};
 
 // ---------- CNIC / phone auto-dash formatting ----------
 // CNIC & B-Form: 13 digits -> XXXXX-XXXXXXX-X. Phone/WhatsApp: 11 digits -> 03XX-XXXXXXX.
@@ -427,6 +442,55 @@ export default function AdmissionFormPage() {
     }
   };
 
+  // Auto-save form draft to localStorage whenever form, picture, or newStudent changes
+  const DRAFT_KEY = 'ggss_admission_form_draft_v1';
+
+  // Load draft on mount (after session confirmed)
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  useEffect(() => {
+    if (!authenticated || draftLoaded) return;
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.form && typeof parsed.form === 'object') {
+          setForm((curr) => ({ ...curr, ...parsed.form }));
+        }
+        if (parsed.picturePreview && typeof parsed.picturePreview === 'string') {
+          setPicturePreview(parsed.picturePreview);
+        }
+        if (typeof parsed.isNewStudent === 'boolean') {
+          setIsNewStudent(parsed.isNewStudent);
+        }
+      }
+    } catch (e) {
+      console.warn('Draft load error:', e);
+    } finally {
+      setDraftLoaded(true);
+    }
+  }, [authenticated, draftLoaded]);
+
+  // Persist draft on every change
+  useEffect(() => {
+    if (!authenticated || !draftLoaded) return;
+    try {
+      // Don't save if totally empty
+      if (!form.studentName && !form.fatherName && !picturePreview) return;
+      localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({
+          form,
+          picturePreview,
+          isNewStudent,
+          savedAt: Date.now(),
+        })
+      );
+    } catch (e) {
+      // Storage quota or disabled — non-blocking
+      console.warn('Draft save error:', e);
+    }
+  }, [form, picturePreview, isNewStudent, authenticated, draftLoaded]);
+
   // Auto-fill the next serial number as soon as the admin session is confirmed.
   useEffect(() => {
     if (authenticated) void fetchNextSerial();
@@ -662,6 +726,11 @@ export default function AdmissionFormPage() {
   // -----------------------------------------------------------
 
   const handleNewForm = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      // ignore
+    }
     setForm(EMPTY_FORM());
     setIsNewStudent(false);
     setPicturePreview('');
@@ -743,6 +812,33 @@ export default function AdmissionFormPage() {
       setPictureZoom(1);
       setPendingPictureImage(image);
       setPictureMessage('');
+
+      // Auto-render default crop immediately into picturePreview so even if
+      // the user clicks Save right away without pressing "Use This Photo",
+      // the photo is never missing!
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = PICTURE_TARGET_WIDTH;
+        canvas.height = PICTURE_TARGET_HEIGHT;
+        const context = canvas.getContext('2d');
+        if (context) {
+          drawCenteredCrop(
+            context,
+            image,
+            image.naturalWidth || image.width,
+            image.naturalHeight || image.height,
+            PICTURE_TARGET_WIDTH,
+            PICTURE_TARGET_HEIGHT,
+            0.18,
+            0.5,
+            1
+          );
+          const compressed = compressCanvasToJpegBase64(canvas);
+          setPicturePreview(compressed);
+        }
+      } catch (autoErr) {
+        console.warn('Auto initial compression skipped:', autoErr);
+      }
     } catch (error) {
       setPictureMessage(error instanceof Error ? error.message : 'Unable to process photo.');
     } finally {
@@ -904,6 +1000,8 @@ export default function AdmissionFormPage() {
         prepared_sign: form.preparedSign,
         office_date: form.officeDate,
         picture_base64: picturePreview,
+        academic_group: form.academicGroup,
+        elective_subject: form.electiveSubject,
       };
 
       const response = await fetch('/api/ggss-admission-form', {
@@ -919,6 +1017,13 @@ export default function AdmissionFormPage() {
 
       setShowSaveSuccessAnim(true);
       window.setTimeout(() => setShowSaveSuccessAnim(false), 2200);
+
+      // Clear the local draft now that it is successfully saved to Google Sheets
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch {
+        // non-blocking
+      }
 
       setSaveMessage('Saved to student records sheet successfully. Preparing PDF...');
 
@@ -1024,14 +1129,18 @@ export default function AdmissionFormPage() {
       <style>{`
         @page {
           size: A4 portrait;
-          margin: 6mm 8mm;
+          margin: 0;
         }
         @media print {
           html, body {
             margin: 0 !important;
             padding: 0 !important;
             background: #fff !important;
-            height: auto !important;
+            width: 210mm !important;
+            height: 297mm !important;
+            overflow: hidden !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           body * {
             visibility: hidden !important;
@@ -1041,16 +1150,21 @@ export default function AdmissionFormPage() {
             visibility: visible !important;
           }
           #admission-form-a4-print-target {
-            position: absolute !important;
+            position: fixed !important;
             left: 0 !important;
             top: 0 !important;
-            width: 100% !important;
+            width: 210mm !important;
+            height: 297mm !important;
             margin: 0 !important;
-            padding: 0 !important;
+            padding: 10mm 12mm !important;
             background: #fff !important;
-            display: block !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
             border: none !important;
             box-shadow: none !important;
+            box-sizing: border-box !important;
+            z-index: 99999 !important;
           }
           .no-print,
           #admission-print-area {
@@ -1693,6 +1807,58 @@ export default function AdmissionFormPage() {
                   <input type="date" value={form.admissionDate} onChange={(e) => handleChange('admissionDate', e.target.value)} className="admission-underline" />
                 </div>
               </div>
+
+              {/* BSEK Faculty/Group & Elective Sub-options for Class IX and X */}
+              {(form.admissionClass === 'IX' || form.admissionClass === 'X') ? (
+                <div className="admission-row bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                  <div className="admission-field">
+                    <label className="admission-label">
+                      Faculty / Group (BSEK):
+                    </label>
+                    <select
+                      value={form.academicGroup}
+                      onChange={(e) => {
+                        const nextGroup = e.target.value;
+                        setForm((prev) => ({
+                          ...prev,
+                          academicGroup: nextGroup,
+                          electiveSubject: '',
+                        }));
+                      }}
+                      className="admission-underline"
+                      required
+                    >
+                      <option value="">Select Group...</option>
+                      {ACADEMIC_GROUPS.map((grp) => (
+                        <option key={grp} value={grp}>{grp}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="admission-field">
+                    <label className="admission-label">
+                      Elective Subject:
+                    </label>
+                    {form.academicGroup ? (
+                      <select
+                        value={form.electiveSubject}
+                        onChange={(e) => handleChange('electiveSubject', e.target.value)}
+                        className="admission-underline"
+                        required
+                      >
+                        <option value="">Select Subject...</option>
+                        {(ELECTIVE_OPTIONS[form.academicGroup] || []).map((subj) => (
+                          <option key={subj} value={subj}>{subj}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="admission-underline inline-block text-slate-400">
+                        First select Faculty / Group
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : null}
 
               <div className="admission-row">
                 <div className="admission-field full flex-wrap items-center gap-3">

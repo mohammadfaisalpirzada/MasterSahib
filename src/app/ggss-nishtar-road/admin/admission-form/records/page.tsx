@@ -52,6 +52,8 @@ const DETAIL_SECTIONS: Array<{ title: string; fields: Array<{ key: string; label
     title: 'Admission',
     fields: [
       { key: 'admission_class', label: 'Class Admission Sought' },
+      { key: 'academic_group', label: 'Group / Faculty (IX/X)' },
+      { key: 'elective_subject', label: 'Elective Subject (IX/X)' },
       { key: 'admission_date', label: 'Date of Admission' },
       { key: 'nadra_status', label: 'Nadra (B Form/CRC)' },
       { key: 'b_form_no', label: 'B-Form No.' },
@@ -655,14 +657,18 @@ export default function AdmissionRecordsPage() {
       <style>{`
         @page {
           size: A4 portrait;
-          margin: 6mm 8mm;
+          margin: 0;
         }
         @media print {
           html, body {
             margin: 0 !important;
             padding: 0 !important;
             background: #fff !important;
-            height: auto !important;
+            width: 210mm !important;
+            height: 297mm !important;
+            overflow: hidden !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           body * {
             visibility: hidden !important;
@@ -672,15 +678,21 @@ export default function AdmissionRecordsPage() {
             visibility: visible !important;
           }
           #records-print-wrapper {
-            position: absolute !important;
+            position: fixed !important;
             left: 0 !important;
             top: 0 !important;
-            width: 100% !important;
+            width: 210mm !important;
+            height: 297mm !important;
             margin: 0 !important;
-            padding: 0 !important;
+            padding: 10mm 12mm !important;
             background: #fff !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
             border: none !important;
             box-shadow: none !important;
+            box-sizing: border-box !important;
+            z-index: 99999 !important;
           }
           .no-print {
             display: none !important;
