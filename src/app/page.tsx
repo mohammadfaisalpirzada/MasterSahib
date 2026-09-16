@@ -23,43 +23,47 @@ const quickCards: QuickCard[] = [
     newUntil: '2026-12-31T23:59:59+05:00',
   },
   {
-    title: 'IGCSE 0580 Study Guide',
-    description: "Sabrina's Cambridge IGCSE Mathematics study guide with chapter-wise explanations, QR codes, and practice exercises.",
-    href: '/igcse-0580-mathematics',
-    accent: 'from-blue-500 to-indigo-600',
-    newUntil: '2026-08-31T23:59:59+05:00',
-  },
-  {
-    title: 'Sindh Teaching License (STEDA)',
-    description: 'Complete guide for the Sindh Teaching License examination — eligibility, syllabus, preparation & more.',
-    href: '/teaching-license',
-    accent: 'from-emerald-500 to-cyan-600',
-    newUntil: '2026-08-31T23:59:59+05:00',
-  },
-  {
-    title: 'Upgraded Salary Calculator',
-    description: 'Calculate upgraded salary details with a dedicated school utility.',
-    href: '/upgraded-salary-calculator',
-    accent: 'from-violet-500 to-purple-600',
-    newUntil: '2026-06-24T23:59:59+05:00',
-  },
-  {
-    title: 'GGSS',
-    description: 'Open GGSS staff and profile management workspace.',
-    href: '/ggss-nishtar-road',
-    accent: 'from-amber-500 to-orange-600',
-  },
-  {
-    title: 'Contact',
-    description: 'Get in touch quickly for support and collaboration.',
-    href: '/contact',
-    accent: 'from-emerald-500 to-teal-600',
+    title: 'Govt Educational Forms',
+    description: 'Printable official school forms: admission, no dues, bonafide, character certificate and AG payroll letters.',
+    href: '/govt-forms',
+    accent: 'from-amber-500 via-orange-500 to-red-500',
+    newUntil: '2026-12-31T23:59:59+05:00',
   },
   {
     title: 'Educational Resources',
     description: 'Open classroom utilities, lesson planning, and daily school helpers.',
     href: '/educational-resources',
     accent: 'from-fuchsia-500 to-pink-600',
+  },
+  {
+    title: 'Sindh Teaching License (STEDA)',
+    description: 'Complete guide for the Sindh Teaching License examination — eligibility, syllabus, preparation & more.',
+    href: '/teaching-license',
+    accent: 'from-emerald-500 to-cyan-600',
+  },
+  {
+    title: 'IGCSE 0580 Study Guide',
+    description: "Sabrina's Cambridge IGCSE Mathematics study guide with chapter-wise explanations, QR codes, and practice exercises.",
+    href: '/igcse-0580-mathematics',
+    accent: 'from-blue-500 to-indigo-600',
+  },
+  {
+    title: 'Upgraded Salary Calculator',
+    description: 'Calculate upgraded salary details with a dedicated school utility.',
+    href: '/upgraded-salary-calculator',
+    accent: 'from-violet-500 to-purple-600',
+  },
+  {
+    title: 'GGSS Nishtar Road',
+    description: 'Open GGSS staff, admissions and student ID card management workspace.',
+    href: '/ggss-nishtar-road',
+    accent: 'from-amber-500 to-orange-600',
+  },
+  {
+    title: 'Contact & Support',
+    description: 'Get in touch quickly for support, custom tools and collaboration.',
+    href: '/contact',
+    accent: 'from-emerald-500 to-teal-600',
   },
   {
     title: 'Pay Fixation 2008',
@@ -71,7 +75,7 @@ const quickCards: QuickCard[] = [
 
 const highlights = [
   { label: 'Fast Access', value: '1 Click' },
-  { label: 'Modules', value: '5+' },
+  { label: 'Modules', value: '8+' },
   { label: 'Daily Ready', value: '100%' },
 ];
 
@@ -125,9 +129,15 @@ export default function HomePage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-start">
                 <Link
                   href="/educational-resources"
+                  className="rounded-2xl bg-indigo-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-700"
+                >
+                  Educational Resources
+                </Link>
+                <Link
+                  href="/govt-forms"
                   className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-center text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-500"
                 >
-                  Open Educational Resources
+                  Govt Forms (Printable)
                 </Link>
                 <HomeSignIn />
               </div>
@@ -202,10 +212,11 @@ export default function HomePage() {
           <div>
             <p className="text-sm font-bold text-slate-900 dark:text-white">Quick Links</p>
             <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <Link href="/teaching-license" className="transition hover:text-slate-900 dark:hover:text-white">Sindh Teaching License (STEDA)</Link>
-              <Link href="/ggss-nishtar-road" className="transition hover:text-slate-900 dark:hover:text-white">GGSS</Link>
+              <Link href="/softwares" className="transition hover:text-slate-900 dark:hover:text-white">Softwares & AI Tools</Link>
+              <Link href="/govt-forms" className="transition hover:text-slate-900 dark:hover:text-white">Govt Educational Forms</Link>
               <Link href="/educational-resources" className="transition hover:text-slate-900 dark:hover:text-white">Educational Resources</Link>
-              <Link href="/contact" className="transition hover:text-slate-900 dark:hover:text-white">Contact</Link>
+              <Link href="/teaching-license" className="transition hover:text-slate-900 dark:hover:text-white">Sindh Teaching License (STEDA)</Link>
+              <Link href="/contact" className="transition hover:text-slate-900 dark:hover:text-white">Contact & Support</Link>
             </div>
           </div>
 

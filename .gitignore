@@ -44,5 +44,7 @@ next-env.d.ts
 
 # local AI tool caches (not part of the app)
 .opencode/
+_to_delete/
+tsconfig.idcards*.json
 
 .vercel
