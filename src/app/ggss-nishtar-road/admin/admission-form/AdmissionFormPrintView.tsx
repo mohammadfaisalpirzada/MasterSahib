@@ -1,7 +1,6 @@
 'use client';
 
 import React, { forwardRef } from 'react';
-import NextImage from 'next/image';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -217,12 +216,13 @@ export const AdmissionFormPrintView = forwardRef<
       style={{
         width: '100%',
         maxWidth: '780px',
-        minHeight: '1060px',
+        // No forced minHeight/space-between stretch here — this div has a
+        // single wrapping child, so "space-between" had no effect anyway,
+        // and forcing a tall minHeight only baked a big blank strip into
+        // the exported PDF/print when the actual content was shorter. Let
+        // the box size to its real content instead.
         margin: '0 auto',
         padding: '24px 28px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
         boxSizing: 'border-box',
         backgroundColor: '#ffffff',
       }}
@@ -245,12 +245,16 @@ export const AdmissionFormPrintView = forwardRef<
       <div className="border-b-2 border-black pb-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex h-[64px] w-[64px] flex-shrink-0 items-center justify-center">
-            <NextImage
+            {/* Plain <img>, not next/image — html2canvas captures the Next.js
+                Image optimizer's srcset unreliably (logo sometimes rendered
+                stretched/blank in the exported PDF). A direct static file is
+                simple pixel data html2canvas handles correctly every time. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/images/sindh-govt-logo-black.png"
               alt="Government of Sindh Logo"
               width={64}
               height={64}
-              priority
               className="h-full w-full object-contain"
             />
           </div>
@@ -271,12 +275,12 @@ export const AdmissionFormPrintView = forwardRef<
           </div>
 
           <div className="flex h-[64px] w-[64px] flex-shrink-0 items-center justify-center">
-            <NextImage
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/images/ggssnishtar_mastersahib.png"
               alt="GGSS Nishtar Road School Logo"
               width={64}
               height={64}
-              priority
               className="h-full w-full object-contain"
             />
           </div>

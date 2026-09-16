@@ -1154,13 +1154,17 @@ export default function AdmissionFormPage() {
             left: 0 !important;
             top: 0 !important;
             width: 210mm !important;
-            height: 297mm !important;
+            /* No forced height here — the form's real content is shorter
+               than a full A4 page, and forcing height:297mm (with only one
+               child, so justify-content had no effect) just baked a big
+               blank strip into the printed page / exported PDF. max-height
+               + overflow:hidden stays only as a safety net so an unusually
+               long address/name can never spill onto a second page. */
+            max-height: 297mm !important;
+            overflow: hidden !important;
             margin: 0 !important;
             padding: 10mm 12mm !important;
             background: #fff !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
             border: none !important;
             box-shadow: none !important;
             box-sizing: border-box !important;
