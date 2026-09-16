@@ -1016,7 +1016,11 @@ export default function AdmissionFormPage() {
       }
 
       setShowSaveSuccessAnim(true);
-      window.setTimeout(() => setShowSaveSuccessAnim(false), 2200);
+      // Saving to the live Google Sheet (plus the PDF that follows) can take
+      // a few seconds on a slow connection — give the success animation more
+      // time on screen so it doesn't disappear while the page still feels
+      // like it's working.
+      window.setTimeout(() => setShowSaveSuccessAnim(false), 4000);
 
       // Clear the local draft now that it is successfully saved to Google Sheets
       try {
