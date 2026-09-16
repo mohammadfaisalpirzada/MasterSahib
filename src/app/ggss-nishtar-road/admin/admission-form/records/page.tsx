@@ -724,13 +724,17 @@ export default function AdmissionRecordsPage() {
             left: 0 !important;
             top: 0 !important;
             width: 210mm !important;
-            height: 297mm !important;
+            /* max-height (not a fixed height) + overflow:hidden is just a
+               safety net for an unusually long field. No padding here —
+               AdmissionFormPrintView already carries its own 34px/42px
+               padding, and stacking 10mm/12mm on top of that pushed real
+               content past 297mm, so the bottom of the form (office-use
+               rows, documents footer) was being silently clipped. */
+            max-height: 297mm !important;
+            overflow: hidden !important;
             margin: 0 !important;
-            padding: 10mm 12mm !important;
+            padding: 0 !important;
             background: #fff !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
             border: none !important;
             box-shadow: none !important;
             box-sizing: border-box !important;
