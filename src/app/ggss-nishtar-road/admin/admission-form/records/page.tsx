@@ -11,6 +11,7 @@ import {
   downloadBlob,
   buildAdmissionPdfFileName,
 } from '../AdmissionFormPrintView';
+import { fileToCompressedJpegBase64 } from '../imageUtils';
 
 type AdmissionRecord = Record<string, string>;
 
@@ -123,6 +124,8 @@ export default function AdmissionRecordsPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState('');
   const [editSaveMessage, setEditSaveMessage] = useState('');
+  const [editPictureProcessing, setEditPictureProcessing] = useState(false);
+  const [editPictureError, setEditPictureError] = useState('');
 
   // Row loading states
   const [downloadingRowId, setDownloadingRowId] = useState<string | null>(null);
@@ -213,6 +216,8 @@ export default function AdmissionRecordsPage() {
     setEditRecord(null);
     setEditError('');
     setEditSaveMessage('');
+    setEditPictureError('');
+    setEditPictureProcessing(false);
     setEditLoading(true);
     try {
       const response = await fetch(`/api/ggss-admission-form/records?row=${encodeURIComponent(rowNumber)}`, { cache: 'no-store' });
@@ -232,10 +237,32 @@ export default function AdmissionRecordsPage() {
     setEditRecord(null);
     setEditError('');
     setEditSaveMessage('');
+    setEditPictureError('');
+    setEditPictureProcessing(false);
   };
 
   const handleEditFieldChange = (key: string, value: string) => {
     setEditRecord((current) => (current ? { ...current, [key]: value } : current));
+  };
+
+  // Backfills a missing/lost student photo (or replaces the existing one)
+  // straight from the records list — some older submissions saved before the
+  // photo picker was reliable ended up with no picture_base64 at all, and
+  // until now there was no way to add one without re-doing the whole form.
+  const handleEditPictureFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setEditPictureError('');
+    setEditPictureProcessing(true);
+    try {
+      const base64 = await fileToCompressedJpegBase64(file);
+      handleEditFieldChange('picture_base64', base64);
+    } catch (error) {
+      setEditPictureError(error instanceof Error ? error.message : 'Unable to process that photo.');
+    } finally {
+      setEditPictureProcessing(false);
+    }
   };
 
   const handleEditSave = async () => {
@@ -582,16 +609,31 @@ export default function AdmissionRecordsPage() {
 
             {editRecord ? (
               <div className="space-y-5">
-                {editRecord.picture_base64 ? (
-                  <div className="flex justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                <div className="flex flex-col items-center gap-2">
+                  {editRecord.picture_base64 ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={`data:image/jpeg;base64,${editRecord.picture_base64}`}
                       alt="Student"
                       className="h-28 w-24 rounded-md border border-slate-300 object-cover"
                     />
-                  </div>
-                ) : null}
+                  ) : (
+                    <div className="flex h-28 w-24 items-center justify-center rounded-md border border-dashed border-rose-300 bg-rose-50 text-center text-[10px] font-medium text-rose-500">
+                      No photo on file
+                    </div>
+                  )}
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">
+                    {editPictureProcessing ? 'Processing...' : editRecord.picture_base64 ? 'Change Photo' : 'Add Photo'}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                      className="hidden"
+                      disabled={editPictureProcessing}
+                      onChange={handleEditPictureFileChange}
+                    />
+                  </label>
+                  {editPictureError ? <p className="text-xs font-semibold text-rose-600">{editPictureError}</p> : null}
+                </div>
 
                 {DETAIL_SECTIONS.map((section) => (
                   <div key={section.title}>
