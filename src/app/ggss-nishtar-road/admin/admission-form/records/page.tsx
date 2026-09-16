@@ -10,6 +10,7 @@ import {
   generateAdmissionA4PdfBlob,
   downloadBlob,
   buildAdmissionPdfFileName,
+  buildAdmissionVerifyUrl,
 } from '../AdmissionFormPrintView';
 import { fileToCompressedJpegBase64 } from '../imageUtils';
 
@@ -118,6 +119,11 @@ export default function AdmissionRecordsPage() {
   const [viewRecord, setViewRecord] = useState<AdmissionRecord | null>(null);
   const [viewLoading, setViewLoading] = useState(false);
 
+  // Set when the view modal was opened by scanning a form's "Scan to verify"
+  // QR code (a ?verify=<row_number> link), rather than by clicking a row.
+  const [verifiedViaQr, setVerifiedViaQr] = useState(false);
+  const [verifyNotFound, setVerifyNotFound] = useState(false);
+
   // Edit modal
   const [editRecord, setEditRecord] = useState<AdmissionRecord | null>(null);
   const [editLoading, setEditLoading] = useState(false);
@@ -173,6 +179,43 @@ export default function AdmissionRecordsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated]);
 
+  // A form's printed "Scan to verify" QR code links here as
+  // ?verify=<row_number> — once the admin is logged in, jump straight to
+  // that record so staff can confirm the physical copy matches what's on
+  // file, then strip the param so a refresh/share doesn't re-trigger it.
+  useEffect(() => {
+    if (!authenticated) return;
+    const params = new URLSearchParams(window.location.search);
+    const verifyRow = params.get('verify');
+    if (!verifyRow) return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete('verify');
+    window.history.replaceState({}, '', url.toString());
+
+    (async () => {
+      setViewLoading(true);
+      try {
+        const response = await fetch(`/api/ggss-admission-form/records?row=${encodeURIComponent(verifyRow)}`, {
+          cache: 'no-store',
+        });
+        const data = await parseJsonResponse(response);
+        if (response.ok && data.success && data.record?.student_name) {
+          setVerifiedViaQr(true);
+          setVerifyNotFound(false);
+          setViewRecord(data.record);
+        } else {
+          setVerifyNotFound(true);
+        }
+      } catch {
+        setVerifyNotFound(true);
+      } finally {
+        setViewLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticated]);
+
   const filteredRecords = useMemo(() => {
     const term = search.trim().toLowerCase();
     if (!term) return records;
@@ -209,6 +252,8 @@ export default function AdmissionRecordsPage() {
   const closeViewModal = () => {
     setViewRecord(null);
     setViewLoading(false);
+    setVerifiedViaQr(false);
+    setVerifyNotFound(false);
   };
 
   const openEditModal = async (rowNumber: string) => {
@@ -375,6 +420,18 @@ export default function AdmissionRecordsPage() {
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-6xl space-y-4">
+        {verifyNotFound ? (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700">
+            ⚠️ That verification QR code doesn&apos;t match any record on file.
+            <button
+              type="button"
+              onClick={() => setVerifyNotFound(false)}
+              className="rounded-lg px-2 py-1 text-red-700 transition hover:bg-red-100"
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : null}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <Link href="/ggss-nishtar-road/admin" className="text-sm font-semibold text-[#1a3a6b] transition hover:underline">
@@ -498,6 +555,11 @@ export default function AdmissionRecordsPage() {
       {viewRecord ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 px-2 py-4 sm:px-4 sm:py-6">
           <div className="w-full max-w-4xl rounded-2xl bg-white p-3 sm:p-5 shadow-2xl">
+            {verifiedViaQr ? (
+              <div className="no-print mb-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+                ✅ Verified via QR scan — this is the official record on file for Sr No. {viewRecord.sr_no || '—'}.
+              </div>
+            ) : null}
             {/* Header: Title and sleek Icon Buttons */}
             <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
               <div>
@@ -569,6 +631,7 @@ export default function AdmissionRecordsPage() {
                 ref={printContainerRef}
                 id="admission-a4-form"
                 data={normalizeRecordToPrintData(viewRecord)}
+                verifyUrl={buildAdmissionVerifyUrl(viewRecord.row_number)}
               />
             </div>
           </div>
@@ -692,6 +755,7 @@ export default function AdmissionRecordsPage() {
           <AdmissionFormPrintView
             ref={offscreenPrintRef}
             data={normalizeRecordToPrintData(offscreenRecord)}
+            verifyUrl={buildAdmissionVerifyUrl(offscreenRecord.row_number)}
           />
         </div>
       ) : null}
