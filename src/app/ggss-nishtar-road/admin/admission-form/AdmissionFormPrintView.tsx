@@ -163,7 +163,7 @@ export async function generateAdmissionA4PdfBlob(container: HTMLElement): Promis
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <div className="my-1.5 text-center text-[12px] font-bold uppercase tracking-wider text-[#1a3a6b] underline">
+    <div className="my-[9px] text-center text-[13px] font-bold uppercase tracking-wider text-[#1a3a6b] underline">
       {children}
     </div>
   );
@@ -185,13 +185,13 @@ function Field({
   const displayVal = value && value.trim() ? value.trim() : '';
   return (
     <div
-      className={`flex items-end gap-1 ${className}`}
+      className={`flex items-end gap-[9px] ${className}`}
       style={{ flex: flex, minWidth: minWidth ?? 0 }}
     >
-      <span className="text-[10px] font-bold text-black whitespace-nowrap leading-none pb-0.5">
+      <span className="text-[12px] font-bold text-black whitespace-nowrap leading-none pb-[2px]">
         {label}:
       </span>
-      <span className="flex-1 border-b border-black px-1 text-[11px] font-semibold text-black leading-tight min-h-[17px] truncate pb-0.5 text-center">
+      <span className="flex-1 border-b border-black px-1 text-[13px] font-semibold text-black leading-tight min-h-[22px] truncate pb-[2px] text-center">
         {displayVal || '\u00A0'}
       </span>
     </div>
@@ -222,29 +222,29 @@ export const AdmissionFormPrintView = forwardRef<
         // the exported PDF/print when the actual content was shorter. Let
         // the box size to its real content instead.
         margin: '0 auto',
-        padding: '24px 28px',
+        padding: '34px 42px',
         boxSizing: 'border-box',
         backgroundColor: '#ffffff',
       }}
     >
       <div>
         {/* Top Banner: Sr No and Admission Form Box */}
-        <div className="flex items-center justify-between pb-2">
-        <div className="flex items-baseline gap-1 text-[11px] font-bold">
+        <div className="flex items-center justify-between pb-[13px]">
+        <div className="flex items-baseline gap-1.5 text-[13px] font-bold">
           <span>Sr No.</span>
-          <span className="inline-block border-b border-black px-2 text-[11.5px] font-bold text-black min-w-[65px] text-center">
+          <span className="inline-block border-b border-black px-2 text-[13px] font-bold text-black min-w-[70px] text-center">
             {data.srNo || '\u00A0'}
           </span>
         </div>
-        <div className="rounded-md border-2 border-black px-4 py-0.5 text-[12px] font-extrabold uppercase tracking-wide">
+        <div className="rounded-md border-2 border-black px-4 py-0.5 text-[13px] font-extrabold uppercase tracking-wide">
           Admission Form
         </div>
       </div>
 
       {/* School Header */}
-      <div className="border-b-2 border-black pb-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex h-[64px] w-[64px] flex-shrink-0 items-center justify-center">
+      <div className="border-b-2 border-black pb-[13px]">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex h-[76px] w-[76px] flex-shrink-0 items-center justify-center">
             {/* Plain <img>, not next/image — html2canvas captures the Next.js
                 Image optimizer's srcset unreliably (logo sometimes rendered
                 stretched/blank in the exported PDF). A direct static file is
@@ -253,34 +253,34 @@ export const AdmissionFormPrintView = forwardRef<
             <img
               src="/images/sindh-govt-logo-black.png"
               alt="Government of Sindh Logo"
-              width={64}
-              height={64}
+              width={76}
+              height={76}
               className="h-full w-full object-contain"
             />
           </div>
 
-          <div className="flex-1 text-center leading-tight">
-            <h1 className="text-[14px] font-extrabold uppercase tracking-wide text-black">
+          <div className="flex-1 text-center leading-snug">
+            <h1 className="text-[16px] font-extrabold uppercase tracking-wide text-black">
               Govt. Girls / Boys Secondary School (GG/BSS)
             </h1>
-            <p className="text-[12px] font-bold uppercase tracking-wider text-black">
+            <p className="text-[13px] font-bold uppercase tracking-wider text-black">
               Nishtar Road Campus
             </p>
-            <p className="text-[10px] text-slate-800">
+            <p className="text-[11px] text-slate-800">
               Nishtar Road, Karachi - Sindh, Pakistan
             </p>
-            <p className="text-[10px] font-bold text-black">
+            <p className="text-[11px] font-bold text-black">
               SEMIS Code : 408070227
             </p>
           </div>
 
-          <div className="flex h-[64px] w-[64px] flex-shrink-0 items-center justify-center">
+          <div className="flex h-[76px] w-[76px] flex-shrink-0 items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/ggssnishtar_mastersahib.png"
               alt="GGSS Nishtar Road School Logo"
-              width={64}
-              height={64}
+              width={76}
+              height={76}
               className="h-full w-full object-contain"
             />
           </div>
@@ -288,9 +288,9 @@ export const AdmissionFormPrintView = forwardRef<
       </div>
 
       {/* Photo box on top-right */}
-      <div className="relative mt-2">
+      <div className="relative mt-[13px]">
         <div className="absolute right-0 top-0 z-10">
-          <div className="h-[96px] w-[80px] border border-black bg-white flex items-center justify-center overflow-hidden text-center">
+          <div className="h-[112px] w-[94px] border border-black bg-white flex items-center justify-center overflow-hidden text-center">
             {photoSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -299,7 +299,7 @@ export const AdmissionFormPrintView = forwardRef<
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span className="p-1 text-[8px] font-medium leading-tight text-slate-500">
+              <span className="p-1 text-[9px] font-medium leading-tight text-slate-500">
                 Paste Recent Photograph
               </span>
             )}
@@ -307,7 +307,7 @@ export const AdmissionFormPrintView = forwardRef<
         </div>
 
         {/* Student Personal Data Section */}
-        <div className="pr-[90px] space-y-1.5">
+        <div className="pr-[104px] space-y-[9px]">
           <SectionHeading>Student Personal Data</SectionHeading>
           <div className="flex gap-3">
             <Field label="Roll No. (Allotted by office)" value={data.rollNo} flex={1} />
@@ -329,7 +329,7 @@ export const AdmissionFormPrintView = forwardRef<
       </div>
 
       {/* Previous School & Admission Details */}
-      <div className="space-y-1.5 mt-1">
+      <div className="space-y-[9px] mt-[14px]">
         <div className="flex">
           <Field label="Previous Class" value={data.previousClass} flex={1} />
         </div>
@@ -351,12 +351,12 @@ export const AdmissionFormPrintView = forwardRef<
           </div>
         ) : null}
         <div className="flex items-end gap-3">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-black whitespace-nowrap">
+          <div className="flex items-center gap-2 text-[11px] font-bold text-black whitespace-nowrap">
             <span>Nadra (B Form, CRC):</span>
-            <span className="font-semibold text-[10px]">
+            <span className="font-semibold text-[11px]">
               [{data.nadraStatus === 'Available' ? '✔' : ' '}] Available
             </span>
-            <span className="font-semibold text-[10px]">
+            <span className="font-semibold text-[11px]">
               [{data.nadraStatus === 'Not Available' ? '✔' : ' '}] Not Available
             </span>
           </div>
@@ -369,7 +369,7 @@ export const AdmissionFormPrintView = forwardRef<
 
       {/* Parents / Guardian's Personal Data */}
       <SectionHeading>Parents / Guardian&apos;s Personal Data</SectionHeading>
-      <div className="space-y-1.5">
+      <div className="space-y-[9px]">
         <div className="flex gap-3">
           <Field label="Father's Name" value={data.fatherName} flex={1.3} />
           <Field label="CNIC No" value={data.fatherCnic} flex={1} />
@@ -396,16 +396,16 @@ export const AdmissionFormPrintView = forwardRef<
       </div>
 
       {/* Parent Signature */}
-      <div className="mt-2 flex justify-end">
-        <div className="w-[220px] text-center">
-          <div className="h-[18px] border-b border-black mb-0.5" />
-          <p className="text-[10px] font-bold text-black">Parents / Guardian&apos;s Sign.</p>
+      <div className="mt-[14px] flex justify-end">
+        <div className="w-[230px] text-center">
+          <div className="h-[24px] border-b border-black mb-[2px]" />
+          <p className="text-[11px] font-bold text-black">Parents / Guardian&apos;s Sign.</p>
         </div>
       </div>
 
       {/* For Office Use Only */}
       <SectionHeading>For Office Use Only</SectionHeading>
-      <div className="space-y-1.5">
+      <div className="space-y-[9px]">
         <div className="flex gap-3">
           <Field label="Class in which admitted" value={data.officeClassAdmitted} flex={1} />
           <Field label="Date of Admission" value={data.officeAdmissionDate} flex={1} />
@@ -422,8 +422,8 @@ export const AdmissionFormPrintView = forwardRef<
       </div>
 
         {/* Documents list footer */}
-        <div className="mt-3 border-t-2 border-black pt-1.5 text-[9.5px] leading-tight text-slate-800">
-          <p className="mb-0.5 font-bold text-black">Documents to be attached along with:</p>
+        <div className="mt-[16px] border-t-2 border-black pt-[9px] text-[11px] leading-snug text-slate-800">
+          <p className="mb-[3px] font-bold text-black">Documents to be attached along with:</p>
           <p>
             1. Previous School Leaving Certificate (TC) &nbsp;&nbsp;&nbsp; 2. Father &amp; Mother CNIC Copies &nbsp;&nbsp;&nbsp; 3. Birth / Child Registration Certificate
             <br />
