@@ -906,7 +906,7 @@ export default function TakeoverPage() {
                   Sessions {savedSessions.length > 0 ? `(${savedSessions.length})` : ''}
                 </button>
                 <Link href="/ggss-nishtar-road/admin" className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-teal-400 hover:text-teal-700">
-                  ← Admin
+                  ← Back to Admin
                 </Link>
                 <button
                   type="button"

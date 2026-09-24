@@ -21,6 +21,7 @@ const educationalResourceSlugs = [
   "number-fun",
   "o-level-career-selection",
   "science-experiments",
+  "sentence-learning",
   "shape-learning",
   "spelling-bee",
   "steda-teaching-license",

@@ -11,11 +11,22 @@
 // QR code on top of the front template, at the exact spots the template
 // already reserves for them. The back template is used completely as-is —
 // no overlay, no added fields — per instruction.
+//
+// Two colour variants exist (blue = Boys, pink = Girls), picked
+// automatically from each student's own Gender field on the admission form
+// (idCardUtils.resolveGender sets data.gender when the record is loaded) —
+// no manual per-student choice here.
 
 import { getInitials, type IdCardData } from './idCardUtils';
 
-const FRONT_TEMPLATE = '/images/id-cards/front-template.png';
-const BACK_TEMPLATE = '/images/id-cards/back-template.png';
+const FRONT_TEMPLATES: Record<IdCardData['gender'], string> = {
+  boys: '/images/id-cards/boys-front-template.png',
+  girls: '/images/id-cards/girls-front-template.png',
+};
+const BACK_TEMPLATES: Record<IdCardData['gender'], string> = {
+  boys: '/images/id-cards/boys-back-template.png',
+  girls: '/images/id-cards/girls-back-template.png',
+};
 
 type FrontProps = {
   data: IdCardData;
@@ -25,7 +36,7 @@ export function IdCardFront({ data }: FrontProps) {
   return (
     <div className="id-card card-front">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={FRONT_TEMPLATE} alt="" className="card-template-img" />
+      <img src={FRONT_TEMPLATES[data.gender]} alt="" className="card-template-img" />
 
       <div className="card-photo-slot">
         {data.photoSrc ? (
@@ -54,12 +65,14 @@ export function IdCardFront({ data }: FrontProps) {
 }
 
 // Back is the school's Terms & Conditions template, unchanged — no
-// per-student data belongs on it, so it's just the image.
-export function IdCardBack() {
+// per-student data belongs on it, so it's just the matching-colour image.
+type BackProps = { gender: IdCardData['gender'] };
+
+export function IdCardBack({ gender }: BackProps) {
   return (
     <div className="id-card card-back">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={BACK_TEMPLATE} alt="Terms and Conditions" className="card-template-img" />
+      <img src={BACK_TEMPLATES[gender]} alt="Terms and Conditions" className="card-template-img" />
     </div>
   );
 }

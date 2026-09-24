@@ -29,6 +29,7 @@ type AdmissionFormData = {
   rollNo: string;
   grNo: string;
   studentName: string;
+  gender: string;
   dob: string;
   dobWords: string;
   nationality: string;
@@ -70,6 +71,7 @@ const EMPTY_FORM = (): AdmissionFormData => ({
   rollNo: '',
   grNo: '',
   studentName: '',
+  gender: '',
   dob: '',
   dobWords: '',
   nationality: 'Pakistani',
@@ -834,6 +836,7 @@ export default function AdmissionFormPage() {
         roll_no: form.rollNo,
         gr_no: form.grNo,
         student_name: form.studentName,
+        gender: form.gender,
         dob: form.dob,
         dob_words: form.dobWords,
         nationality: form.nationality,
@@ -1559,9 +1562,17 @@ export default function AdmissionFormPage() {
               </div>
 
               <div className="admission-row">
-                <div className="admission-field full">
+                <div className="admission-field" style={{ flex: 2.4 }}>
                   <label className="admission-label">Name of Student</label>
                   <input type="text" value={form.studentName} onChange={(e) => handleChange('studentName', e.target.value)} className="admission-underline" required />
+                </div>
+                <div className="admission-field">
+                  <label className="admission-label">Gender</label>
+                  <select value={form.gender} onChange={(e) => handleChange('gender', e.target.value)} className="admission-underline">
+                    <option value="">Select...</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
                 </div>
               </div>
 

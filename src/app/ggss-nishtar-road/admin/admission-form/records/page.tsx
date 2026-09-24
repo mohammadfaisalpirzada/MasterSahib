@@ -26,7 +26,7 @@ const LIST_COLUMNS: Array<{ key: string; label: string }> = [
   { key: 'whatsapp_no', label: 'WhatsApp No.' },
 ];
 
-const DETAIL_SECTIONS: Array<{ title: string; fields: Array<{ key: string; label: string }> }> = [
+const DETAIL_SECTIONS: Array<{ title: string; fields: Array<{ key: string; label: string; options?: string[] }> }> = [
   {
     title: 'Student',
     fields: [
@@ -34,6 +34,7 @@ const DETAIL_SECTIONS: Array<{ title: string; fields: Array<{ key: string; label
       { key: 'roll_no', label: 'Roll No.' },
       { key: 'gr_no', label: 'GR No.' },
       { key: 'student_name', label: 'Student Name' },
+      { key: 'gender', label: 'Gender', options: ['Male', 'Female'] },
       { key: 'dob', label: 'Date of Birth' },
       { key: 'dob_words', label: 'DOB (in words)' },
       { key: 'nationality', label: 'Nationality' },
@@ -705,12 +706,25 @@ export default function AdmissionRecordsPage() {
                       {section.fields.map((field) => (
                         <label key={field.key} className="block text-xs font-medium text-slate-600">
                           {field.label}
-                          <input
-                            type="text"
-                            value={editRecord[field.key] || ''}
-                            onChange={(event) => handleEditFieldChange(field.key, event.target.value)}
-                            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1a3a6b]"
-                          />
+                          {field.options ? (
+                            <select
+                              value={editRecord[field.key] || ''}
+                              onChange={(event) => handleEditFieldChange(field.key, event.target.value)}
+                              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1a3a6b]"
+                            >
+                              <option value="">Select...</option>
+                              {field.options.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              type="text"
+                              value={editRecord[field.key] || ''}
+                              onChange={(event) => handleEditFieldChange(field.key, event.target.value)}
+                              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#1a3a6b]"
+                            />
+                          )}
                         </label>
                       ))}
                     </div>

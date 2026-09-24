@@ -260,8 +260,8 @@ export default function IdCardsPage() {
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
         <p className="text-lg font-bold" style={{ color: '#1a3a6b' }}>Admin login required</p>
         <p className="max-w-sm text-sm text-slate-600">Sign in from the main admin panel first, then come back to this page.</p>
-        <Link href="/ggss-nishtar-road/admin" className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style={{ background: '#1a3a6b' }}>
-          Go to Admin Panel
+        <Link href="/ggss-nishtar-road/admin" className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90" style={{ background: '#1a3a6b' }}>
+          ← Back to Admin
         </Link>
       </main>
     );
@@ -271,6 +271,14 @@ export default function IdCardsPage() {
     <main className="min-h-screen bg-slate-50 pb-16">
       {/* ===================== Controls (hidden on print) ===================== */}
       <div className="no-print mx-auto max-w-6xl px-4 pt-8">
+        <div className="mb-3">
+          <Link
+            href="/ggss-nishtar-road/admin"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1a3a6b] transition hover:underline"
+          >
+            ← Back to Admin
+          </Link>
+        </div>
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-extrabold" style={{ color: '#1a3a6b' }}>Student ID Cards</h1>
           <p className="text-sm text-slate-600">
@@ -407,7 +415,7 @@ export default function IdCardsPage() {
             {pageCards.map((card) => (
               <div className="id-card-row" key={card.rowNumber}>
                 <IdCardFront data={card} />
-                <IdCardBack />
+                <IdCardBack gender={card.gender} />
               </div>
             ))}
           </div>

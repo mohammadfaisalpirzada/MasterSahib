@@ -10,6 +10,7 @@ export type AdmissionFormPrintData = {
   rollNo?: string;
   grNo?: string;
   studentName?: string;
+  gender?: string;
   dob?: string;
   dobWords?: string;
   nationality?: string;
@@ -53,6 +54,7 @@ export const normalizeRecordToPrintData = (record: Record<string, string | undef
     rollNo: record.roll_no || record.rollNo || '',
     grNo: record.gr_no || record.grNo || '',
     studentName: record.student_name || record.studentName || '',
+    gender: record.gender || '',
     dob: record.dob || '',
     dobWords: record.dob_words || record.dobWords || '',
     nationality: record.nationality || 'Pakistani',
@@ -356,6 +358,7 @@ export const AdmissionFormPrintView = forwardRef<
             <Field label="Nationality" value={data.nationality || 'Pakistani'} flex={1} />
             <Field label="Surname" value={data.surname} flex={1} />
             <Field label="Religion" value={data.religion || 'Islam'} flex={1} />
+            <Field label="Gender" value={data.gender} flex={0.8} />
           </div>
         </div>
       </div>

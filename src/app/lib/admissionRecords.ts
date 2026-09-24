@@ -43,6 +43,11 @@ export const ADMISSION_HEADER_ROW = [
   'guardian_cell',
   'academic_group',
   'elective_subject',
+  // Appended at the end (never reorder existing columns — see
+  // syncAdmissionHeaderRow in the admission-form API route) so ID-card
+  // printing can pick the right (Boys/Girls) template automatically
+  // instead of requiring a manual per-student choice every time.
+  'gender',
 ] as const;
 
 export const resolveAdmissionSpreadsheetId = (): string => {

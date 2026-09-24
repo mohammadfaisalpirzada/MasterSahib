@@ -15,6 +15,9 @@ import { buildAdmissionVerifyUrl } from '../admission-form/AdmissionFormPrintVie
 
 export type AdmissionRecord = Record<string, string>;
 
+// Which colour template a card prints on — blue for Boys, pink for Girls.
+export type CardGender = 'boys' | 'girls';
+
 export type IdCardData = {
   rowNumber: string;
   name: string;
@@ -27,7 +30,16 @@ export type IdCardData = {
   emergencyContact: string;
   photoSrc: string; // '' when no photo is on file for this student
   qrDataUrl: string; // '' until generateQrDataUrl() resolves
+  gender: CardGender;
 };
+
+// Read straight off the admission form's own "Gender" field
+// (Male/Female — see ADMISSION_HEADER_ROW in admissionRecords.ts) so the
+// right template is picked automatically, no manual per-student choice.
+// Defaults to girls only when the field is genuinely blank on an older
+// record saved before this column existed.
+export const resolveGender = (record: AdmissionRecord): CardGender =>
+  String(record.gender || '').trim().toLowerCase().startsWith('m') ? 'boys' : 'girls';
 
 // D.O.B is stored as free text on the admission form (whatever the office
 // typed) — pass it through as-is rather than trying to re-parse/reformat
@@ -79,6 +91,7 @@ export const recordToCardData = (record: AdmissionRecord, qrDataUrl: string): Id
   emergencyContact: resolveEmergencyContact(record),
   photoSrc: resolvePhotoSrc(record),
   qrDataUrl,
+  gender: resolveGender(record),
 });
 
 // Default "current" academic session label, e.g. "2026-2027" — schools here
