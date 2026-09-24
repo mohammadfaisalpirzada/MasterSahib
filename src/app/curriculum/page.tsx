@@ -416,28 +416,51 @@ function CurriculumContent() {
               
               {/* ================= CUSTOM CHAPTER COVER BANNER ================= */}
               <div className="relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl group print:border-none print:shadow-none">
-                <div
-                  className={`w-full min-h-[180px] md:min-h-[260px] bg-gradient-to-r ${gradientClass} flex flex-col justify-end p-6 md:p-8 relative text-white`}
-                >
-                  {/* MasterSahib Badge */}
-                  <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-xs font-semibold">
-                    <span className="text-emerald-400">★</span> MasterSahib Academic Series
-                  </div>
-
-                  <div className="space-y-2 relative z-10">
-                    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/10 backdrop-blur border border-white/20 text-xs font-bold uppercase tracking-wider text-slate-200">
-                      <span>{activeChapterData.currentClass?.name}</span>
-                      <span>•</span>
-                      <span>{activeChapterData.currentSubject?.name}</span>
+                {activeChapterData.chapter.bannerImage ? (
+                  <div className="relative w-full aspect-[21/9] min-h-[220px] max-h-[380px] bg-slate-900">
+                    <Image
+                      src={activeChapterData.chapter.bannerImage}
+                      alt={activeChapterData.chapter.title}
+                      fill
+                      className="object-cover"
+                      priority
+                      unoptimized
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-6 md:p-8">
+                      <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur border border-white/20 text-xs font-bold uppercase tracking-wider text-slate-200 w-fit mb-2">
+                        <span>{activeChapterData.currentClass?.name}</span>
+                        <span>•</span>
+                        <span>{activeChapterData.currentSubject?.name}</span>
+                      </div>
+                      <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-tight drop-shadow-md">
+                        {activeChapterData.chapter.title}
+                      </h1>
                     </div>
-                    <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                      {activeChapterData.chapter.title}
-                    </h1>
-                    <p className="text-xs md:text-sm text-slate-300 max-w-2xl">
-                      Standard Scheme of Studies, Learning Outcomes (SLOs), Lesson Plans, and Solved Questions under Sindh Curriculum.
-                    </p>
                   </div>
-                </div>
+                ) : (
+                  <div
+                    className={`w-full min-h-[180px] md:min-h-[260px] bg-gradient-to-r ${gradientClass} flex flex-col justify-end p-6 md:p-8 relative text-white`}
+                  >
+                    {/* MasterSahib Badge */}
+                    <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-xs font-semibold">
+                      <span className="text-emerald-400">★</span> MasterSahib Academic Series
+                    </div>
+
+                    <div className="space-y-2 relative z-10">
+                      <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/10 backdrop-blur border border-white/20 text-xs font-bold uppercase tracking-wider text-slate-200">
+                        <span>{activeChapterData.currentClass?.name}</span>
+                        <span>•</span>
+                        <span>{activeChapterData.currentSubject?.name}</span>
+                      </div>
+                      <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                        {activeChapterData.chapter.title}
+                      </h1>
+                      <p className="text-xs md:text-sm text-slate-300 max-w-2xl">
+                        Standard Scheme of Studies, Learning Outcomes (SLOs), Lesson Plans, and Solved Questions under Sindh Curriculum.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Action Toolbar for Print/Download */}

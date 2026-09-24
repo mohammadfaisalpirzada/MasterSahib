@@ -109,8 +109,26 @@ function scanPlanningFolder() {
     const subjectsData = [];
 
     for (const subjectName of subjectDirs) {
+      if (subjectName.toLowerCase() === 'banner' || subjectName.toLowerCase() === 'banners') continue;
+      
       const subjectPath = path.join(classPath, subjectName);
       const subjectKey = sanitizeKey(subjectName);
+
+      // Check if banner folder exists in subject
+      const bannerDir = path.join(subjectPath, 'banner');
+      const altBannerDir = path.join(subjectPath, 'banners');
+      const activeBannerDir = fs.existsSync(bannerDir) ? bannerDir : (fs.existsSync(altBannerDir) ? altBannerDir : null);
+      
+      let bannerFiles = [];
+      if (activeBannerDir) {
+        bannerFiles = fs.readdirSync(activeBannerDir, { withFileTypes: true })
+          .filter(f => f.isFile() && /\.(png|jpe?g|webp|svg)$/i.test(f.name))
+          .map(f => ({
+            name: f.name,
+            path: path.join(activeBannerDir, f.name),
+            cleanName: sanitizeKey(path.basename(f.name, path.extname(f.name))),
+          }));
+      }
 
       const files = fs.readdirSync(subjectPath, { withFileTypes: true })
         .filter(f => f.isFile())
@@ -131,6 +149,30 @@ function scanPlanningFolder() {
           parsedContent = parseDocx(filePath);
         }
 
+        // Match banner image
+        let matchedBannerUrl = null;
+        if (bannerFiles.length > 0) {
+          // Find matching banner by chapterKey or unit number
+          const unitMatch = baseName.match(/unit\s*([0-9]+)/i) || baseName.match(/ch(?:apter)?\s*([0-9]+)/i);
+          const unitNum = unitMatch ? unitMatch[1] : null;
+
+          const matchedFile = bannerFiles.find(b => {
+            if (b.cleanName === chapterKey) return true;
+            if (unitNum && (b.cleanName === `unit-${unitNum}` || b.cleanName === `unit${unitNum}` || b.cleanName === unitNum || b.cleanName.includes(`unit-${unitNum}`))) return true;
+            if (chapterKey.includes(b.cleanName) || b.cleanName.includes(chapterKey)) return true;
+            return false;
+          });
+
+          if (matchedFile) {
+            const destDir = path.join(process.cwd(), 'public', 'curriculum-banners', classKey, subjectKey);
+            fs.mkdirSync(destDir, { recursive: true });
+            const destPath = path.join(destDir, matchedFile.name);
+            fs.copyFileSync(matchedFile.path, destPath);
+            matchedBannerUrl = `/curriculum-banners/${classKey}/${subjectKey}/${matchedFile.name}`;
+            console.log(`Matched Banner for ${fileName} -> ${matchedBannerUrl}`);
+          }
+        }
+
         chaptersData.push({
           id: `${classKey}-${subjectKey}-${chapterKey}`,
           title: baseName.replace(/_/g, ' '),
@@ -141,8 +183,7 @@ function scanPlanningFolder() {
           isDocx: ext === '.docx',
           isPdf: ext === '.pdf',
           parsedContent,
-          // Banner slot (can be customized or uses default gradient theme)
-          bannerImage: null,
+          bannerImage: matchedBannerUrl,
           lastModified: stats.mtime.toISOString(),
         });
       }
