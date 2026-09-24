@@ -23,6 +23,13 @@ const quickCards: QuickCard[] = [
     newUntil: '2026-12-31T23:59:59+05:00',
   },
   {
+    title: '📚 Class Notes & Planning Books',
+    description: 'Panaversity-style interactive digital curriculum reader: Class ECE to XII lesson plans, solved exercises & clean PDF downloads.',
+    href: '/curriculum',
+    accent: 'from-emerald-500 via-teal-500 to-cyan-600',
+    newUntil: '2026-12-31T23:59:59+05:00',
+  },
+  {
     title: 'Govt Educational Forms',
     description: 'Printable official school forms: admission, no dues, bonafide, character certificate and AG payroll letters.',
     href: '/govt-forms',
