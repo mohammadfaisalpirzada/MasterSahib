@@ -484,7 +484,7 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     color: 'from-blue-500 to-indigo-500',
   },
   {
-    title: 'Sentence Learning (جملے سیکھیں)',
+    title: 'Sentence Learning',
     description: 'Learn and memorize 15 basic English sentences with audio, word-by-word pronunciation, sentence builder game, quiz, and printable worksheets.',
     status: 'Ready',
     href: '/educational-resources/sentence-learning',

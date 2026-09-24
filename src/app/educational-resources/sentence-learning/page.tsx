@@ -7,18 +7,17 @@ import {
   HiOutlineSparkles,
   HiOutlineArrowLeft,
   HiOutlineArrowRight,
-  HiOutlineCheckCircle,
   HiOutlineLightBulb,
   HiOutlinePrinter,
   HiOutlineRefresh,
   HiOutlinePlay,
   HiOutlinePause,
 } from 'react-icons/hi';
-import { SENTENCE_LIST, SentenceItem } from './sentenceData';
+import { SENTENCE_LIST } from './sentenceData';
 
 type Mode = 'flashcard' | 'builder' | 'quiz' | 'list' | 'worksheet';
 
-// Web Audio sound effects for instant game feedback without external files
+// Web Audio sound effects for game feedback
 function playTone(freq: number, type: OscillatorType, duration: number, startDelay = 0) {
   if (typeof window === 'undefined') return;
   try {
@@ -61,11 +60,15 @@ function playOops() {
 export default function SentenceLearningPage() {
   const [activeTab, setActiveTab] = useState<Mode>('flashcard');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [speechRate, setSpeechRate] = useState<number>(0.85); // 0.7 for slow, 0.85 for normal
-  const [showUrdu, setShowUrdu] = useState(true);
+  // Default to a calm, comfortable pace for young learners (0.72x)
+  const [speechRate, setSpeechRate] = useState<number>(0.72);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [stars, setStars] = useState(0);
+
+  // Synchronized Karaoke word highlighting state
   const [highlightedWordIdx, setHighlightedWordIdx] = useState<number | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [autoPlayStatus, setAutoPlayStatus] = useState<'idle' | 'speaking' | 'pausing'>('idle');
 
   // Builder mode state
   const [builderWords, setBuilderWords] = useState<{ id: string; word: string }[]>([]);
@@ -80,42 +83,156 @@ export default function SentenceLearningPage() {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [quizFinished, setQuizFinished] = useState(false);
 
+  // Refs for bulletproof audio + screen synchronization
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const highlightFallbackTimerRef = useRef<NodeJS.Timeout[]>([]);
+  const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const isAutoPlayingRef = useRef(isAutoPlaying);
+  isAutoPlayingRef.current = isAutoPlaying;
+
   const currentSentence = SENTENCE_LIST[currentIndex];
 
-  // Speech helper with customized rate
-  const speakText = useCallback(
-    (text: string, onEnd?: () => void) => {
+  // Stop any running speech and clear synchronization timers
+  const stopSpeech = useCallback(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    highlightFallbackTimerRef.current.forEach(clearTimeout);
+    highlightFallbackTimerRef.current = [];
+    if (autoPlayTimerRef.current) {
+      clearTimeout(autoPlayTimerRef.current);
+      autoPlayTimerRef.current = null;
+    }
+    activeUtteranceRef.current = null;
+    setIsSpeaking(false);
+    setHighlightedWordIdx(null);
+    setAutoPlayStatus('idle');
+  }, []);
+
+  // Synchronized Speech Engine: Reads sentence & lights up words in exact sync
+  const speakSentenceSynchronized = useCallback(
+    (sentence: string, onFinished?: () => void) => {
+      stopSpeech();
+
       if (typeof window === 'undefined' || !window.speechSynthesis) {
-        onEnd?.();
+        onFinished?.();
         return;
       }
-      window.speechSynthesis.cancel();
+
+      const words = sentence.trim().split(/\s+/);
+      if (words.length === 0) {
+        onFinished?.();
+        return;
+      }
+
+      // Precompute character offset boundaries for every word
+      const wordRanges: { word: string; start: number; end: number; index: number }[] = [];
+      let cursor = 0;
+      words.forEach((w, idx) => {
+        const start = sentence.indexOf(w, cursor);
+        const end = start + w.length;
+        wordRanges.push({ word: w, start, end, index: idx });
+        cursor = end;
+      });
+
+      setIsSpeaking(true);
+      setAutoPlayStatus('speaking');
+
+      // Schedule fallback word highlighting in case browser speech boundary events don't fire
+      // Calibrated timing based on word length and speech rate
+      let accumulatedMs = 80;
+      let boundaryFired = false;
+
+      highlightFallbackTimerRef.current.forEach(clearTimeout);
+      highlightFallbackTimerRef.current = [];
+
+      // Highlight the first word immediately
+      setHighlightedWordIdx(0);
+
+      words.forEach((w, i) => {
+        if (i === 0) return;
+        const prevWord = words[i - 1];
+        // Calculate duration based on character count and current rate
+        const wordDuration = Math.max(300, (prevWord.length * 68 + 190) / speechRate);
+        accumulatedMs += wordDuration;
+
+        const timer = setTimeout(() => {
+          if (!boundaryFired) {
+            setHighlightedWordIdx(i);
+          }
+        }, accumulatedMs);
+
+        highlightFallbackTimerRef.current.push(timer);
+      });
+
+      // Create browser speech utterance
       setTimeout(() => {
-        const u = new SpeechSynthesisUtterance(text);
+        const u = new SpeechSynthesisUtterance(sentence);
         u.lang = 'en-US';
         u.rate = speechRate;
         u.pitch = 1.05;
-        if (onEnd) {
-          u.onend = () => onEnd();
-          u.onerror = () => onEnd();
-        }
+
+        // Keep reference so browser doesn't garbage collect mid-sentence
+        activeUtteranceRef.current = u;
+
+        // Microsecond hardware word boundary event (supported in Chrome, Edge, Safari)
+        u.onboundary = (e) => {
+          if (e.name === 'word' || typeof e.charIndex === 'number') {
+            boundaryFired = true;
+            const found = wordRanges.find(
+              (r) => e.charIndex >= r.start && e.charIndex <= r.end + 1
+            );
+            if (found) {
+              setHighlightedWordIdx(found.index);
+            }
+          }
+        };
+
+        let handledEnd = false;
+        const handleCompletion = () => {
+          if (handledEnd) return;
+          handledEnd = true;
+
+          // Clear word highlight timers
+          highlightFallbackTimerRef.current.forEach(clearTimeout);
+          highlightFallbackTimerRef.current = [];
+
+          // Keep final word highlighted for a brief moment then reset
+          setTimeout(() => {
+            setHighlightedWordIdx(null);
+            setIsSpeaking(false);
+          }, 350);
+
+          activeUtteranceRef.current = null;
+          onFinished?.();
+        };
+
+        u.onend = handleCompletion;
+        u.onerror = handleCompletion;
+
         window.speechSynthesis.speak(u);
       }, 50);
     },
-    [speechRate]
+    [speechRate, stopSpeech]
   );
 
   // Spell out keyword letter by letter
   const spellKeyword = useCallback(
     (word: string) => {
+      stopSpeech();
       if (typeof window === 'undefined' || !window.speechSynthesis) return;
-      window.speechSynthesis.cancel();
+
       const letters = word.toUpperCase().split('');
       let i = 0;
+      setIsSpeaking(true);
+
       const sayNext = () => {
         if (i >= letters.length) {
-          setTimeout(() => speakText(`${word}!`), 250);
+          setTimeout(() => {
+            speakSentenceSynchronized(word, () => {
+              setIsSpeaking(false);
+            });
+          }, 250);
           return;
         }
         const u = new SpeechSynthesisUtterance(letters[i]);
@@ -126,11 +243,12 @@ export default function SentenceLearningPage() {
           i++;
           setTimeout(sayNext, 180);
         };
+        u.onerror = () => setIsSpeaking(false);
         window.speechSynthesis.speak(u);
       };
       sayNext();
     },
-    [speakText]
+    [speakSentenceSynchronized, stopSpeech]
   );
 
   // Setup builder words when current index or tab changes
@@ -140,7 +258,6 @@ export default function SentenceLearningPage() {
         id: `${w}-${i}-${Math.random()}`,
         word: w,
       }));
-      // Fisher-Yates shuffle
       const shuffled = [...words];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -153,39 +270,52 @@ export default function SentenceLearningPage() {
     }
   }, [currentIndex, activeTab, currentSentence]);
 
-  // Clean up auto-play timer on unmount
+  // Clean up speech and timers when component unmounts or tab switches
   useEffect(() => {
     return () => {
-      if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
+      stopSpeech();
     };
-  }, []);
+  }, [stopSpeech, activeTab]);
 
-  // Auto-play slideshow logic
+  // Auto-play slideshow logic: STRICTLY WAITS FOR VOICE TO FINISH BEFORE ADVANCING
   useEffect(() => {
     if (isAutoPlaying && activeTab === 'flashcard') {
-      speakText(currentSentence.sentence, () => {
+      // 1. Speak sentence in exact sync with screen
+      speakSentenceSynchronized(currentSentence.sentence, () => {
+        // 2. ONLY when voice has 100% finished speaking, pause comfortably before next card
+        if (!isAutoPlayingRef.current) return;
+        setAutoPlayStatus('pausing');
+
+        // Comfortable 2.4s pause so child can look at the card
         autoPlayTimerRef.current = setTimeout(() => {
-          setCurrentIndex((prev) => {
-            const next = (prev + 1) % SENTENCE_LIST.length;
-            return next;
-          });
-        }, 2200);
+          if (isAutoPlayingRef.current) {
+            setCurrentIndex((prev) => (prev + 1) % SENTENCE_LIST.length);
+          }
+        }, 2400);
       });
     } else {
-      if (autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current);
+      if (autoPlayTimerRef.current) {
+        clearTimeout(autoPlayTimerRef.current);
+        autoPlayTimerRef.current = null;
+      }
+      setAutoPlayStatus('idle');
     }
-  }, [isAutoPlaying, currentIndex, activeTab, currentSentence, speakText]);
+  }, [isAutoPlaying, currentIndex, activeTab, currentSentence, speakSentenceSynchronized]);
 
   // Handle single word tap in sentence
   const handleWordTap = (word: string, idx: number) => {
+    stopSpeech();
     playPop();
     setHighlightedWordIdx(idx);
     const cleanWord = word.replace(/[^a-zA-Z]/g, '');
-    speakText(cleanWord);
-    setTimeout(() => setHighlightedWordIdx(null), 1200);
+    const u = new SpeechSynthesisUtterance(cleanWord);
+    u.lang = 'en-US';
+    u.rate = speechRate;
+    u.pitch = 1.05;
+    u.onend = () => {
+      setTimeout(() => setHighlightedWordIdx(null), 600);
+    };
+    window.speechSynthesis.speak(u);
   };
 
   // Builder mode handlers
@@ -198,7 +328,6 @@ export default function SentenceLearningPage() {
     setBuilderWords(nextAvailable);
     setBuilderHintIdx(null);
 
-    // Check if sentence is complete
     const fullSentence = currentSentence.sentence;
     const constructed = nextSelected.map((w) => w.word).join(' ');
     if (constructed === fullSentence) {
@@ -206,10 +335,9 @@ export default function SentenceLearningPage() {
       playCorrect();
       setStars((s) => s + 1);
       setTimeout(() => {
-        speakText(`Awesome! ${fullSentence}`);
+        speakSentenceSynchronized(fullSentence);
       }, 300);
     } else if (nextAvailable.length === 0) {
-      // Finished placing all words but in wrong order
       playOops();
     }
   };
@@ -248,15 +376,12 @@ export default function SentenceLearningPage() {
   // Quiz questions generation
   const quizQuestion = useMemo(() => {
     const item = SENTENCE_LIST[quizIndex];
-    const words = item.sentence.split(' ');
-    // Pick the keyword or a prominent word to blank out
     const target = item.keyword;
     const blankSentence = item.sentence.replace(
       new RegExp(`\\b${target}\\b`, 'i'),
       '________'
     );
 
-    // Get 3 incorrect options from other sentences
     const otherKeywords = SENTENCE_LIST.filter((s) => s.id !== item.id)
       .map((s) => s.keyword)
       .sort(() => Math.random() - 0.5)
@@ -282,14 +407,15 @@ export default function SentenceLearningPage() {
       playCorrect();
       setQuizScore((s) => s + 1);
       setStars((s) => s + 1);
-      speakText(`Correct! ${quizQuestion.item.sentence}`);
+      speakSentenceSynchronized(`Correct! ${quizQuestion.item.sentence}`);
     } else {
       playOops();
-      speakText(`The answer is ${quizQuestion.correctWord}. ${quizQuestion.item.sentence}`);
+      speakSentenceSynchronized(`The answer is ${quizQuestion.correctWord}. ${quizQuestion.item.sentence}`);
     }
   };
 
   const handleNextQuiz = () => {
+    stopSpeech();
     if (quizIndex < SENTENCE_LIST.length - 1) {
       setQuizIndex((prev) => prev + 1);
       setQuizAnswered(false);
@@ -300,6 +426,7 @@ export default function SentenceLearningPage() {
   };
 
   const restartQuiz = () => {
+    stopSpeech();
     setQuizIndex(0);
     setQuizScore(0);
     setQuizAnswered(false);
@@ -320,22 +447,22 @@ export default function SentenceLearningPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-pink-100 px-3 py-0.5 text-xs font-bold text-pink-700">
-                    Ages 4-9 • Kids Sentences
+                    Ages 4-9 • Kids Learning
                   </span>
                   <span className="hidden rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-bold text-emerald-700 sm:inline-block">
-                    ✓ Grammar Perfected
+                    ✓ Clean English Grammar
                   </span>
                 </div>
                 <h1 className="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">
-                  Sentence Learning (جملے سیکھیں)
+                  Sentence Learning for Kids
                 </h1>
                 <p className="text-xs text-slate-600 sm:text-sm">
-                  15 Basic English Sentences with Audio, Urdu Meanings, Word Builder & Quiz!
+                  15 Basic English Sentences with Synchronized Voice Highlighting & Practice!
                 </p>
               </div>
             </div>
 
-            {/* Stars counter and score badge */}
+            {/* Stars counter and Voice Speed Controller */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2 shadow-sm">
                 <span className="text-xl">⭐</span>
@@ -345,15 +472,45 @@ export default function SentenceLearningPage() {
                 </div>
               </div>
 
-              {/* Speed toggle */}
-              <button
-                type="button"
-                onClick={() => setSpeechRate((r) => (r > 0.75 ? 0.7 : 0.85))}
-                className="flex items-center gap-1.5 rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100"
-                title="Change Audio Speed"
-              >
-                {speechRate <= 0.7 ? '🐢 Slow (0.7x)' : '🐰 Normal (0.85x)'}
-              </button>
+              {/* Precise voice speed button */}
+              <div className="flex items-center gap-1 rounded-2xl border border-indigo-200 bg-indigo-50/80 p-1">
+                <button
+                  type="button"
+                  onClick={() => setSpeechRate(0.65)}
+                  className={`rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
+                    speechRate === 0.65
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-indigo-700 hover:bg-indigo-100'
+                  }`}
+                  title="Very Gentle & Slow"
+                >
+                  🐢 Slow
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSpeechRate(0.72)}
+                  className={`rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
+                    speechRate === 0.72
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-indigo-700 hover:bg-indigo-100'
+                  }`}
+                  title="Recommended Clear Pace for Kids"
+                >
+                  ✨ Ideal (0.72x)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSpeechRate(0.82)}
+                  className={`rounded-xl px-2.5 py-1.5 text-xs font-bold transition ${
+                    speechRate === 0.82
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-indigo-700 hover:bg-indigo-100'
+                  }`}
+                  title="Normal Conversational Speed"
+                >
+                  🐰 Normal
+                </button>
+              </div>
             </div>
           </div>
 
@@ -361,6 +518,7 @@ export default function SentenceLearningPage() {
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
             <Link
               href="/educational-resources"
+              onClick={stopSpeech}
               className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 hover:text-indigo-600 shadow-sm"
             >
               ← Edu Resources
@@ -371,6 +529,7 @@ export default function SentenceLearningPage() {
               <button
                 type="button"
                 onClick={() => {
+                  stopSpeech();
                   setActiveTab('flashcard');
                   setIsAutoPlaying(false);
                 }}
@@ -380,12 +539,13 @@ export default function SentenceLearningPage() {
                     : 'bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                🗂️ Flashcards (یاد کریں)
+                🗂️ Flashcards
               </button>
 
               <button
                 type="button"
                 onClick={() => {
+                  stopSpeech();
                   setActiveTab('builder');
                   setIsAutoPlaying(false);
                 }}
@@ -395,12 +555,13 @@ export default function SentenceLearningPage() {
                     : 'bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                🧩 Build Sentence (جملہ جوڑیں)
+                🧩 Build Sentence
               </button>
 
               <button
                 type="button"
                 onClick={() => {
+                  stopSpeech();
                   setActiveTab('quiz');
                   setIsAutoPlaying(false);
                 }}
@@ -410,12 +571,13 @@ export default function SentenceLearningPage() {
                     : 'bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                🎯 Quiz (کوئز)
+                🎯 Quiz
               </button>
 
               <button
                 type="button"
                 onClick={() => {
+                  stopSpeech();
                   setActiveTab('list');
                   setIsAutoPlaying(false);
                 }}
@@ -425,12 +587,13 @@ export default function SentenceLearningPage() {
                     : 'bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                📋 All 15 (فہرست)
+                📋 All 15 Sentences
               </button>
 
               <button
                 type="button"
                 onClick={() => {
+                  stopSpeech();
                   setActiveTab('worksheet');
                   setIsAutoPlaying(false);
                 }}
@@ -440,14 +603,14 @@ export default function SentenceLearningPage() {
                     : 'bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                🖨️ Printable (ورک شیٹ)
+                🖨️ Printable Worksheet
               </button>
             </nav>
           </div>
         </header>
 
         {/* ========================================================================= */}
-        {/* MODE 1: FLASHCARDS (READ & LISTEN) */}
+        {/* MODE 1: FLASHCARDS (READ & LISTEN WITH SYNC HIGHLIGHT) */}
         {/* ========================================================================= */}
         {activeTab === 'flashcard' && (
           <section className="space-y-6">
@@ -464,28 +627,39 @@ export default function SentenceLearningPage() {
                   <span
                     className={`rounded-xl border px-3 py-1 text-xs font-bold uppercase tracking-wider ${currentSentence.badgeColor}`}
                   >
-                    Keyword: {currentSentence.keyword} ({currentSentence.urduKeyword})
+                    Keyword: {currentSentence.keyword}
                   </span>
                   <span className="rounded-xl bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
                     {currentSentence.category}
                   </span>
                 </div>
 
-                {/* Urdu toggle & Auto-play button */}
+                {/* Auto-play slideshow button with live status */}
                 <div className="flex items-center gap-2">
+                  {isAutoPlaying && (
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold ${
+                        autoPlayStatus === 'speaking'
+                          ? 'bg-indigo-100 text-indigo-800 animate-pulse'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {autoPlayStatus === 'speaking' ? '🔊 Reading...' : '⏳ Pausing...'}
+                    </span>
+                  )}
                   <button
                     type="button"
-                    onClick={() => setShowUrdu((v) => !v)}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50"
-                  >
-                    {showUrdu ? '👁️ Hide Urdu' : '👁️ Show Urdu'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsAutoPlaying((p) => !p)}
+                    onClick={() => {
+                      if (isAutoPlaying) {
+                        stopSpeech();
+                        setIsAutoPlaying(false);
+                      } else {
+                        setIsAutoPlaying(true);
+                      }
+                    }}
                     className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition shadow-sm ${
                       isAutoPlaying
-                        ? 'bg-rose-500 text-white hover:bg-rose-600 animate-pulse'
+                        ? 'bg-rose-500 text-white hover:bg-rose-600'
                         : 'bg-emerald-600 text-white hover:bg-emerald-700'
                     }`}
                   >
@@ -495,7 +669,7 @@ export default function SentenceLearningPage() {
                 </div>
               </div>
 
-              {/* Central Emoji and Sentence display */}
+              {/* Central Emoji and Synchronized Sentence display */}
               <div className="my-8 text-center sm:my-12">
                 <div className="inline-block transform transition hover:scale-110">
                   <span className="text-7xl sm:text-8xl drop-shadow-sm select-none">
@@ -505,50 +679,56 @@ export default function SentenceLearningPage() {
 
                 {/* Instruction note for kids */}
                 <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                  👉 Click any word to hear it pronounced!
+                  {isSpeaking
+                    ? '✨ Watch each word light up as it is spoken!'
+                    : '👉 Click any word to hear it pronounced!'}
                 </p>
 
-                {/* Large clickable word chips */}
-                <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                {/* Large clickable word chips with Synchronized Highlighting */}
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                   {currentSentence.sentence.split(' ').map((word, wIdx) => {
                     const isKey = word.toLowerCase().includes(currentSentence.keyword.toLowerCase());
                     const isHighlighted = highlightedWordIdx === wIdx;
+
                     return (
                       <button
                         key={wIdx}
                         type="button"
                         onClick={() => handleWordTap(word, wIdx)}
-                        className={`rounded-2xl px-4 py-2.5 text-2xl font-black transition-all transform hover:scale-105 active:scale-95 sm:px-6 sm:py-3.5 sm:text-4xl ${
+                        className={`relative rounded-2xl px-4 py-2.5 text-2xl font-black transition-all duration-150 transform sm:px-6 sm:py-3.5 sm:text-4xl ${
                           isHighlighted
-                            ? 'bg-amber-400 text-slate-900 shadow-lg scale-110 ring-4 ring-amber-300'
+                            ? 'bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 scale-110 shadow-2xl ring-4 ring-amber-400 z-10'
                             : isKey
-                            ? `bg-gradient-to-r ${currentSentence.gradient} text-white shadow-md shadow-pink-200 ring-2 ring-white`
-                            : 'bg-white text-slate-800 shadow-sm border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50'
+                            ? `bg-gradient-to-r ${currentSentence.gradient} text-white shadow-md shadow-pink-200 ring-2 ring-white hover:scale-105 active:scale-95`
+                            : 'bg-white text-slate-800 shadow-sm border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50 hover:scale-105 active:scale-95'
                         }`}
                       >
+                        {isHighlighted && (
+                          <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs bg-slate-900 text-white px-2 py-0.5 rounded-full font-bold shadow-md">
+                            🔊
+                          </span>
+                        )}
                         {word}
                       </button>
                     );
                   })}
                 </div>
 
-                {/* Urdu translation */}
-                {showUrdu && (
-                  <div className="mt-6 inline-block rounded-2xl bg-white/90 border border-slate-200 px-6 py-2.5 shadow-sm">
-                    <p className="text-lg font-bold text-slate-800 sm:text-2xl" dir="rtl">
-                      {currentSentence.urduTranslation}
-                    </p>
-                  </div>
-                )}
+                {/* Simple English clue/hint badge */}
+                <div className="mt-5 inline-block rounded-2xl bg-white/90 border border-slate-200 px-5 py-2 shadow-sm">
+                  <p className="text-xs font-semibold text-slate-600 sm:text-sm">
+                    💡 <strong>Meaning:</strong> {currentSentence.hint}
+                  </p>
+                </div>
 
                 {/* Grammar correction explanation badge */}
                 {currentSentence.grammarFixed && currentSentence.grammarNote && (
                   <div className="mx-auto mt-4 max-w-xl rounded-2xl bg-emerald-50 border border-emerald-200 p-3 text-left">
                     <div className="flex items-start gap-2">
-                      <span className="text-emerald-600 mt-0.5">💡</span>
+                      <span className="text-emerald-600 mt-0.5">✨</span>
                       <div>
                         <p className="text-xs font-bold text-emerald-900">
-                          English Grammar Note:
+                          Grammar Tip:
                         </p>
                         <p className="text-xs text-emerald-800">
                           {currentSentence.grammarNote}
@@ -565,12 +745,14 @@ export default function SentenceLearningPage() {
                   type="button"
                   onClick={() => {
                     playPop();
-                    speakText(currentSentence.sentence);
+                    speakSentenceSynchronized(currentSentence.sentence);
                   }}
-                  className={`flex items-center gap-2 rounded-2xl bg-gradient-to-r ${currentSentence.gradient} px-6 py-3 text-sm font-black text-white shadow-lg transition hover:brightness-105 active:scale-95`}
+                  className={`flex items-center gap-2 rounded-2xl bg-gradient-to-r ${currentSentence.gradient} px-6 py-3 text-sm font-black text-white shadow-lg transition hover:brightness-105 active:scale-95 ${
+                    isSpeaking ? 'ring-4 ring-pink-300' : ''
+                  }`}
                 >
                   <HiOutlineVolumeUp className="h-5 w-5" />
-                  🔊 Read Sentence (پورا جملہ سنیں)
+                  🔊 Read Sentence (Word-by-Word Sync)
                 </button>
 
                 <button
@@ -582,7 +764,7 @@ export default function SentenceLearningPage() {
                   className="flex items-center gap-2 rounded-2xl border-2 border-indigo-200 bg-white px-5 py-3 text-sm font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50"
                 >
                   <HiOutlineSparkles className="h-5 w-5" />
-                  🔤 Spell &quot;{currentSentence.keyword}&quot; (ہجے کریں)
+                  🔤 Spell &quot;{currentSentence.keyword}&quot;
                 </button>
               </div>
 
@@ -591,7 +773,7 @@ export default function SentenceLearningPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    playPop();
+                    stopSpeech();
                     setIsAutoPlaying(false);
                     setCurrentIndex((p) => (p === 0 ? SENTENCE_LIST.length - 1 : p - 1));
                   }}
@@ -615,7 +797,7 @@ export default function SentenceLearningPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    playPop();
+                    stopSpeech();
                     setIsAutoPlaying(false);
                     setCurrentIndex((p) => (p === SENTENCE_LIST.length - 1 ? 0 : p + 1));
                   }}
@@ -630,7 +812,7 @@ export default function SentenceLearningPage() {
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-bold text-slate-800">
-                  ⚡ Jump to Any Sentence (کسی بھی جملے پر جائیں):
+                  ⚡ Jump to Any Sentence:
                 </h2>
                 <span className="text-xs font-semibold text-slate-500">15 sentences</span>
               </div>
@@ -642,7 +824,7 @@ export default function SentenceLearningPage() {
                       key={item.id}
                       type="button"
                       onClick={() => {
-                        playPop();
+                        stopSpeech();
                         setIsAutoPlaying(false);
                         setCurrentIndex(idx);
                       }}
@@ -665,7 +847,7 @@ export default function SentenceLearningPage() {
         )}
 
         {/* ========================================================================= */}
-        {/* MODE 2: SENTENCE BUILDER / JUMLA BANAO */}
+        {/* MODE 2: SENTENCE BUILDER / WORD JUMBLE */}
         {/* ========================================================================= */}
         {activeTab === 'builder' && (
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl sm:p-10">
@@ -675,14 +857,14 @@ export default function SentenceLearningPage() {
                   Sentence #{currentSentence.id} of 15
                 </span>
                 <h2 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">
-                  🧩 Build the Sentence (جملہ ترتیب دیں)
+                  🧩 Build the Sentence
                 </h2>
                 <p className="text-xs text-slate-500">
                   Tap the words below in the correct order to make the complete sentence!
                 </p>
               </div>
 
-              {/* Urdu reference & Hint button */}
+              {/* Clue & Reset button */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -702,20 +884,20 @@ export default function SentenceLearningPage() {
               </div>
             </div>
 
-            {/* Hint Urdu preview */}
+            {/* Clue box */}
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-indigo-50/70 p-4 border border-indigo-100">
               <div className="flex items-center gap-2">
                 <span className="text-3xl">{currentSentence.emoji}</span>
                 <div>
-                  <p className="text-xs font-bold text-indigo-900">Sentence meaning in Urdu:</p>
-                  <p className="text-base font-bold text-indigo-950" dir="rtl">
-                    {currentSentence.urduTranslation}
+                  <p className="text-xs font-bold text-indigo-900">Sentence Clue:</p>
+                  <p className="text-sm font-semibold text-indigo-950">
+                    {currentSentence.hint}
                   </p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => speakText(currentSentence.sentence)}
+                onClick={() => speakSentenceSynchronized(currentSentence.sentence)}
                 className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 border border-indigo-200 shadow-sm hover:bg-indigo-50"
               >
                 🔊 Listen to sentence
@@ -757,7 +939,7 @@ export default function SentenceLearningPage() {
               <div className="my-6 rounded-3xl bg-emerald-50 border-2 border-emerald-400 p-6 text-center shadow-lg animate-bounce">
                 <span className="text-4xl">🎉 ⭐ 🥳</span>
                 <h3 className="mt-2 text-xl font-black text-emerald-800 sm:text-2xl">
-                  Shabash! Perfect Sentence!
+                  Awesome! Perfect Sentence!
                 </h3>
                 <p className="mt-1 text-sm font-bold text-emerald-900">
                   &quot;{currentSentence.sentence}&quot;
@@ -765,7 +947,7 @@ export default function SentenceLearningPage() {
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
                   <button
                     type="button"
-                    onClick={() => speakText(currentSentence.sentence)}
+                    onClick={() => speakSentenceSynchronized(currentSentence.sentence)}
                     className="rounded-2xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-700"
                   >
                     🔊 Hear Again
@@ -773,11 +955,12 @@ export default function SentenceLearningPage() {
                   <button
                     type="button"
                     onClick={() => {
+                      stopSpeech();
                       setCurrentIndex((p) => (p + 1) % SENTENCE_LIST.length);
                     }}
                     className="rounded-2xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md hover:bg-indigo-700"
                   >
-                    Next Sentence (اگلا جملہ) ➔
+                    Next Sentence ➔
                   </button>
                 </div>
               </div>
@@ -815,7 +998,10 @@ export default function SentenceLearningPage() {
             <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-4">
               <button
                 type="button"
-                onClick={() => setCurrentIndex((p) => (p === 0 ? SENTENCE_LIST.length - 1 : p - 1))}
+                onClick={() => {
+                  stopSpeech();
+                  setCurrentIndex((p) => (p === 0 ? SENTENCE_LIST.length - 1 : p - 1));
+                }}
                 className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
               >
                 ← Previous
@@ -825,7 +1011,10 @@ export default function SentenceLearningPage() {
               </span>
               <button
                 type="button"
-                onClick={() => setCurrentIndex((p) => (p + 1) % SENTENCE_LIST.length)}
+                onClick={() => {
+                  stopSpeech();
+                  setCurrentIndex((p) => (p + 1) % SENTENCE_LIST.length);
+                }}
                 className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
               >
                 Next →
@@ -873,15 +1062,15 @@ export default function SentenceLearningPage() {
                   <div className="mt-3">
                     <button
                       type="button"
-                      onClick={() => speakText(quizQuestion.sentence.replace('________', 'blank'))}
+                      onClick={() => speakSentenceSynchronized(quizQuestion.sentence.replace('________', 'blank'))}
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800"
                     >
                       <HiOutlineVolumeUp className="h-4 w-4" /> Listen to question
                     </button>
                   </div>
 
-                  <p className="mt-2 text-sm font-bold text-slate-600" dir="rtl">
-                    اردو مطلب: {quizQuestion.item.urduTranslation}
+                  <p className="mt-2 text-xs font-semibold text-slate-500">
+                    Clue: {quizQuestion.item.hint}
                   </p>
                 </div>
 
@@ -974,7 +1163,10 @@ export default function SentenceLearningPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('flashcard')}
+                    onClick={() => {
+                      stopSpeech();
+                      setActiveTab('flashcard');
+                    }}
                     className="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
                   >
                     🗂️ Go to Flashcards
@@ -996,17 +1188,18 @@ export default function SentenceLearningPage() {
                   📋 15 Basic English Sentences for Kids
                 </h2>
                 <p className="text-xs text-slate-500 sm:text-sm">
-                  Complete list with corrected grammar, Urdu translation, and instant audio playback.
+                  Complete list with correct grammar, meanings, and synchronized audio playback.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => {
+                  stopSpeech();
                   let i = 0;
                   const playNext = () => {
                     if (i >= SENTENCE_LIST.length) return;
                     setCurrentIndex(i);
-                    speakText(SENTENCE_LIST[i].sentence, () => {
+                    speakSentenceSynchronized(SENTENCE_LIST[i].sentence, () => {
                       i++;
                       setTimeout(playNext, 1200);
                     });
@@ -1049,8 +1242,8 @@ export default function SentenceLearningPage() {
                       <p className="text-lg font-black text-slate-900 sm:text-xl">
                         {item.sentence}
                       </p>
-                      <p className="text-xs font-semibold text-slate-500" dir="rtl">
-                        {item.urduTranslation}
+                      <p className="text-xs text-slate-500">
+                        Clue: {item.hint}
                       </p>
                       {item.grammarFixed && item.grammarNote && (
                         <p className="mt-1 text-[11px] text-emerald-700 italic">
@@ -1064,9 +1257,9 @@ export default function SentenceLearningPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        playPop();
+                        stopSpeech();
                         setCurrentIndex(idx);
-                        speakText(item.sentence);
+                        speakSentenceSynchronized(item.sentence);
                       }}
                       className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100"
                     >
@@ -1075,6 +1268,7 @@ export default function SentenceLearningPage() {
                     <button
                       type="button"
                       onClick={() => {
+                        stopSpeech();
                         setCurrentIndex(idx);
                         setActiveTab('flashcard');
                       }}
@@ -1109,6 +1303,7 @@ export default function SentenceLearningPage() {
               <button
                 type="button"
                 onClick={() => {
+                  stopSpeech();
                   if (typeof window !== 'undefined') window.print();
                 }}
                 className="flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-lg hover:bg-blue-700 transition"
@@ -1156,8 +1351,8 @@ export default function SentenceLearningPage() {
                           Keyword: {item.keyword}
                         </span>
                       </div>
-                      <span className="text-xs font-bold text-slate-500" dir="rtl">
-                        {item.urduTranslation}
+                      <span className="text-xs font-medium text-slate-400">
+                        {item.category}
                       </span>
                     </div>
 
