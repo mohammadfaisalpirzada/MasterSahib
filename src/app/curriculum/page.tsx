@@ -118,6 +118,298 @@ function isUrduOrSindhi(text: string): boolean {
   return matches.length >= 6 && matches.length / text.length > 0.4;
 }
 
+interface VocabItem {
+  word: string;
+  meaning: string;
+  sentence: string;
+}
+
+interface DictationItem {
+  word: string;
+  meaning: string;
+}
+
+type ChapterBlock =
+  | { type: 'header-banner'; text: string; subText?: string }
+  | { type: 'section-header'; title: string; isUrdu: boolean }
+  | { type: 'subsection-header'; title: string; isUrdu: boolean }
+  | { type: 'vocab-table'; items: VocabItem[] }
+  | { type: 'dictation-grid'; items: DictationItem[] }
+  | { type: 'pair-table'; headers: [string, string]; rows: [string, string][] }
+  | { type: 'triplet-table'; headers: [string, string, string]; rows: [string, string, string][] }
+  | { type: 'question'; text: string; isUrdu: boolean }
+  | { type: 'answer'; text: string; isUrdu: boolean }
+  | { type: 'callout'; label: string; text: string; isUrdu: boolean }
+  | { type: 'bullet'; text: string; isUrdu: boolean }
+  | { type: 'heading'; text: string; isUrdu: boolean }
+  | { type: 'paragraph'; text: string; isUrdu: boolean }
+  | { type: 'divider' };
+
+function cleanHeading(text: string): string {
+  return text.replace(/^[■●◆★►▶]\s*/, '').trim();
+}
+
+function parseChapterBlocks(content?: Array<{ text: string; isHeading?: boolean; isBullet?: boolean }>): ChapterBlock[] {
+  if (!content || !Array.isArray(content)) return [];
+  const blocks: ChapterBlock[] = [];
+  let i = 0;
+  while (i < content.length) {
+    const p = content[i];
+    const text = (p.text || '').trim();
+    if (!text) {
+      i++;
+      continue;
+    }
+
+    if (/^[―\-_=]{3,}$/.test(text)) {
+      blocks.push({ type: 'divider' });
+      i++;
+      continue;
+    }
+
+    if (/^THE MASTER SAHIB EDUCATIONAL SERIES/i.test(text)) {
+      blocks.push({
+        type: 'header-banner',
+        text: 'The Master Sahib Educational Series',
+        subText: text.replace(/^THE MASTER SAHIB EDUCATIONAL SERIES\s*/i, '').trim(),
+      });
+      i++;
+      continue;
+    }
+
+    if (/^[■●◆★]\s+[0-9]+[\.\)]/i.test(text) || /^[■●◆★]\s+[A-Z\u0600-\u06FF]/i.test(text)) {
+      const title = cleanHeading(text);
+      const isUrdu = isUrduOrSindhi(title);
+      blocks.push({ type: 'section-header', title, isUrdu });
+      i++;
+
+      // Check if this section is DICTATION WORDS
+      if (/DICTATION\s+WORDS/i.test(title)) {
+        while (i < content.length && /^(Word|Meaning|Urdu Meaning|الفاظ|معنی)$/i.test(content[i].text.trim())) {
+          i++;
+        }
+        const dictItems: DictationItem[] = [];
+        while (i < content.length) {
+          const itemText = (content[i].text || '').trim();
+          if (
+            /^[■●◆★►▶]/i.test(itemText) ||
+            /^[―\-_=]{3,}$/.test(itemText) ||
+            /^(Q[0-9]+[\.:\)]|Q[\.:\)]|Question)/i.test(itemText)
+          ) {
+            break;
+          }
+          if (itemText) {
+            const word = itemText;
+            const meaning =
+              i + 1 < content.length && !/^[■●◆★►▶]/.test(content[i + 1].text)
+                ? content[i + 1].text.trim()
+                : '';
+            dictItems.push({ word, meaning });
+            i += 2;
+          } else {
+            i++;
+          }
+        }
+        if (dictItems.length > 0) {
+          blocks.push({ type: 'dictation-grid', items: dictItems });
+        }
+        continue;
+      }
+
+      // Check if this section is VOCABULARY: WORDS, URDU MEANINGS & USE IN SENTENCES
+      if (/WORDS.*(?:MEANING|URDU).*(?:SENTENCE|USE)/i.test(title) || /VOCABULARY/i.test(title)) {
+        if (i < content.length && /^(Word|الفاظ)$/i.test(content[i].text.trim())) {
+          i++;
+          if (i < content.length && /(Meaning|معنی)/i.test(content[i].text.trim())) i++;
+          if (i < content.length && /(Sentence|جملے|جملہ)/i.test(content[i].text.trim())) i++;
+        }
+
+        const vocabItems: VocabItem[] = [];
+        while (i < content.length) {
+          const itemText = (content[i].text || '').trim();
+          if (
+            /^[■●◆★►▶]/i.test(itemText) ||
+            /^[―\-_=]{3,}$/.test(itemText) ||
+            /^(Q[0-9]+[\.:\)]|Q[\.:\)]|Question)/i.test(itemText)
+          ) {
+            break;
+          }
+          if (itemText) {
+            const word = itemText;
+            const meaning =
+              i + 1 < content.length && !/^[■●◆★►▶]/.test(content[i + 1].text)
+                ? content[i + 1].text.trim()
+                : '';
+            const sentence =
+              i + 2 < content.length && !/^[■●◆★►▶]/.test(content[i + 2].text)
+                ? content[i + 2].text.trim()
+                : '';
+            vocabItems.push({ word, meaning, sentence });
+            i += 3;
+          } else {
+            i++;
+          }
+        }
+        if (vocabItems.length > 0) {
+          blocks.push({ type: 'vocab-table', items: vocabItems });
+        }
+        continue;
+      }
+
+      continue;
+    }
+
+    if (/^[►▶]\s+/i.test(text)) {
+      const title = cleanHeading(text);
+      const isUrdu = isUrduOrSindhi(title);
+      blocks.push({ type: 'subsection-header', title, isUrdu });
+      i++;
+
+      if (
+        /Words\s*&\s*(Opposites|Antonyms|Synonyms)|Masculine\s*&\s*Feminine|Singular\s*&\s*Plural/i.test(title)
+      ) {
+        let h1 = 'Word';
+        let h2 = 'Meaning / Opposite';
+        if (i < content.length && /^(Word|Masculine|Singular)/i.test(content[i].text.trim())) {
+          h1 = content[i].text.trim();
+          i++;
+          if (
+            i < content.length &&
+            /^(Opposite|Antonym|Synonym|Feminine|Plural)/i.test(content[i].text.trim())
+          ) {
+            h2 = content[i].text.trim();
+            i++;
+          }
+        }
+        const pairs: [string, string][] = [];
+        while (i < content.length) {
+          const itemText = (content[i].text || '').trim();
+          if (
+            /^[■●◆★►▶]/i.test(itemText) ||
+            /^[―\-_=]{3,}$/.test(itemText) ||
+            /^(Q[0-9]+[\.:\)]|Q[\.:\)]|Question)/i.test(itemText)
+          ) {
+            break;
+          }
+          if (itemText) {
+            const col1 = itemText;
+            const col2 =
+              i + 1 < content.length && !/^[■●◆★►▶]/.test(content[i + 1].text)
+                ? content[i + 1].text.trim()
+                : '';
+            pairs.push([col1, col2]);
+            i += 2;
+          } else {
+            i++;
+          }
+        }
+        if (pairs.length > 0) {
+          blocks.push({ type: 'pair-table', headers: [h1, h2], rows: pairs });
+        }
+        continue;
+      }
+
+      if (/Forms\s+of\s+Verbs/i.test(title)) {
+        let h1 = 'Present (1st Form)';
+        let h2 = 'Past (2nd Form)';
+        let h3 = 'Past Participle (3rd Form)';
+        if (i < content.length && /Present/i.test(content[i].text.trim())) {
+          h1 = content[i].text.trim();
+          i++;
+          if (i < content.length && /Past/i.test(content[i].text.trim())) {
+            h2 = content[i].text.trim();
+            i++;
+          }
+          if (i < content.length && /Participle/i.test(content[i].text.trim())) {
+            h3 = content[i].text.trim();
+            i++;
+          }
+        }
+        const triplets: [string, string, string][] = [];
+        while (i < content.length) {
+          const itemText = (content[i].text || '').trim();
+          if (
+            /^[■●◆★►▶]/i.test(itemText) ||
+            /^[―\-_=]{3,}$/.test(itemText) ||
+            /^(Q[0-9]+[\.:\)]|Q[\.:\)]|Question)/i.test(itemText)
+          ) {
+            break;
+          }
+          if (itemText) {
+            const col1 = itemText;
+            const col2 =
+              i + 1 < content.length && !/^[■●◆★►▶]/.test(content[i + 1].text)
+                ? content[i + 1].text.trim()
+                : '';
+            const col3 =
+              i + 2 < content.length && !/^[■●◆★►▶]/.test(content[i + 2].text)
+                ? content[i + 2].text.trim()
+                : '';
+            triplets.push([col1, col2, col3]);
+            i += 3;
+          } else {
+            i++;
+          }
+        }
+        if (triplets.length > 0) {
+          blocks.push({ type: 'triplet-table', headers: [h1, h2, h3], rows: triplets });
+        }
+        continue;
+      }
+
+      continue;
+    }
+
+    if (/^(Q[0-9]+[\.:\)]|Q[\.:\)]|Question\s*[0-9]*[\.:\)])/i.test(text)) {
+      blocks.push({ type: 'question', text, isUrdu: isUrduOrSindhi(text) });
+      i++;
+      continue;
+    }
+
+    if (/^(Ans[0-9]*[\.:\)]|Answer[\.:\)])/i.test(text)) {
+      blocks.push({
+        type: 'answer',
+        text: text.replace(/^(Ans[0-9]*[\.:\)]|Answer[\.:\)])\s*/i, '').trim(),
+        isUrdu: isUrduOrSindhi(text),
+      });
+      i++;
+      continue;
+    }
+
+    if (/^(Central Idea|Note|Moral|Rule|Key Point)[\.:\s]/i.test(text)) {
+      const match = text.match(/^(Central Idea|Note|Moral|Rule|Key Point)[\.:\s]*(.*)/i);
+      blocks.push({
+        type: 'callout',
+        label: match ? match[1] : 'Important Highlight',
+        text: match && match[2] ? match[2].trim() : text,
+        isUrdu: isUrduOrSindhi(text),
+      });
+      i++;
+      continue;
+    }
+
+    if (p.isBullet || /^[\u2022\u25CF\-\*]\s+/.test(text)) {
+      blocks.push({
+        type: 'bullet',
+        text: text.replace(/^[\u2022\u25CF\-\*]\s+/, ''),
+        isUrdu: isUrduOrSindhi(text),
+      });
+      i++;
+      continue;
+    }
+
+    if (p.isHeading) {
+      blocks.push({ type: 'heading', text, isUrdu: isUrduOrSindhi(text) });
+      i++;
+      continue;
+    }
+
+    blocks.push({ type: 'paragraph', text, isUrdu: isUrduOrSindhi(text) });
+    i++;
+  }
+  return blocks;
+}
+
 function extractUnitNumber(title: string): number | null {
   const match = title.match(/(?:unit|chapter|lesson|part|ch|u)[\s\-_.:#]*([0-9]+)/i);
   if (match && match[1]) {
@@ -194,9 +486,9 @@ const THEME_STYLES = {
     sidebarChapterBadgeActive: 'bg-white/20 text-white',
     sidebarChapterBadgeInactive: 'bg-blue-100/80 text-blue-700 font-bold',
     card: 'bg-white border border-indigo-100/80 shadow-xl shadow-indigo-100/40 text-slate-900 rounded-3xl',
-    sectionHeader: 'bg-gradient-to-r from-blue-50 to-indigo-50/60 border-l-4 border-blue-600 text-blue-950 shadow-sm',
+    sectionHeader: 'bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-blue-50/90 border border-blue-200/80 text-blue-950 shadow-sm',
     sectionTitle: 'text-blue-950 font-black',
-    subSectionHeader: 'bg-blue-50/60 border border-blue-200/80 text-blue-900 font-bold',
+    subSectionHeader: 'bg-blue-50/80 border border-blue-200/80 text-blue-950 font-bold',
     questionBox: 'bg-blue-50/60 border border-blue-200/80 text-blue-950 shadow-sm',
     questionBadge: 'bg-blue-600 text-white font-bold',
     questionText: 'text-slate-900 font-bold',
@@ -226,9 +518,9 @@ const THEME_STYLES = {
     sidebarChapterBadgeActive: 'bg-white/20 text-white',
     sidebarChapterBadgeInactive: 'bg-slate-800 text-slate-400',
     card: 'bg-slate-900/90 border-slate-800 shadow-2xl text-slate-100',
-    sectionHeader: 'bg-blue-950/40 border-blue-500 text-blue-200',
+    sectionHeader: 'bg-gradient-to-r from-slate-900 via-blue-950/40 to-slate-900 border border-slate-800 text-blue-200 shadow-sm',
     sectionTitle: 'text-white font-extrabold',
-    subSectionHeader: 'bg-slate-800/80 border-slate-700 text-blue-300 font-bold',
+    subSectionHeader: 'bg-slate-800/80 border border-slate-700 text-blue-300 font-bold',
     questionBox: 'bg-slate-950/60 border-blue-500/40 text-slate-100 shadow-sm',
     questionBadge: 'bg-blue-500/20 text-blue-400 font-bold',
     questionText: 'text-white font-bold',
@@ -258,9 +550,9 @@ const THEME_STYLES = {
     sidebarChapterBadgeActive: 'bg-white/20 text-white',
     sidebarChapterBadgeInactive: 'bg-[#E0D4C2] text-[#5C4D3E]',
     card: 'bg-[#FFFDF9] border-[#E8DEC8] shadow-xl text-[#2D261E]',
-    sectionHeader: 'bg-[#F3EAD7] border-[#A87B4F] text-[#3D2C1B]',
+    sectionHeader: 'bg-gradient-to-r from-[#F6EFE0] via-[#EFE5D3] to-[#F6EFE0] border border-[#D8C7B0] text-[#3D2C1B] shadow-sm',
     sectionTitle: 'text-[#241A10] font-extrabold',
-    subSectionHeader: 'bg-[#F0E6D2] border-[#D8C7B0] text-[#4A3722] font-bold',
+    subSectionHeader: 'bg-[#F0E6D2] border border-[#D8C7B0] text-[#4A3722] font-bold',
     questionBox: 'bg-[#F6EFE0] border-[#D6C2A7] text-[#2D261E] shadow-sm',
     questionBadge: 'bg-[#8B5E34] text-white font-bold',
     questionText: 'text-[#241A10] font-bold',
@@ -449,6 +741,11 @@ function CurriculumContent() {
     return `${minutes} min read`;
   }, [activeChapterData]);
 
+  // Structured Chapter Blocks (Vocab tables, Dictation grids, Headings, Q&A)
+  const parsedBlocks = useMemo(() => {
+    return parseChapterBlocks(activeChapterData?.chapter?.parsedContent?.content);
+  }, [activeChapterData]);
+
   // Search results
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -618,29 +915,29 @@ function CurriculumContent() {
           >
             {/* Top Mode Tabs: Class Notes vs Lesson Planning */}
             <div className={`p-3 border-b ${styles.sidebarHeader} space-y-3`}>
-              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/60 dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-800">
+              <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-inner">
                 <button
                   onClick={() => setActiveTab('notes')}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
                     activeTab === 'notes'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'opacity-70 hover:opacity-100'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 font-extrabold ring-1 ring-blue-400/50'
+                      : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 border border-slate-200 dark:border-slate-700 shadow-sm'
                   }`}
                 >
-                  <HiBookOpen className="w-4 h-4" />
-                  <span>Class Notes</span>
+                  <HiBookOpen className={`w-4 h-4 ${activeTab === 'notes' ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
+                  <span className={activeTab === 'notes' ? 'text-white' : 'text-slate-800 dark:text-slate-100'}>Class Notes</span>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('planning')}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
                     activeTab === 'planning'
-                      ? 'bg-emerald-600 text-white shadow-md'
-                      : 'opacity-70 hover:opacity-100'
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25 font-extrabold ring-1 ring-emerald-400/50'
+                      : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 border border-slate-200 dark:border-slate-700 shadow-sm'
                   }`}
                 >
-                  <HiOutlineClipboardList className="w-4 h-4" />
-                  <span>Planning</span>
+                  <HiOutlineClipboardList className={`w-4 h-4 ${activeTab === 'planning' ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`} />
+                  <span className={activeTab === 'planning' ? 'text-white' : 'text-slate-800 dark:text-slate-100'}>Planning</span>
                 </button>
               </div>
 
@@ -896,162 +1193,291 @@ function CurriculumContent() {
                   </div>
                 </div>
 
-                {activeChapterData.chapter.parsedContent &&
-                activeChapterData.chapter.parsedContent.content.length > 0 ? (
+                {parsedBlocks && parsedBlocks.length > 0 ? (
                   <div className={`space-y-4 ${themeTextSizeClasses} text-left`} dir="ltr">
-                    {activeChapterData.chapter.parsedContent.content.map((p, idx) => {
-                      const text = p.text;
-                      const isUrdu = isUrduOrSindhi(text);
+                    {parsedBlocks.map((block, idx) => {
+                      // Top educational series banner
+                      if (block.type === 'header-banner') {
+                        return (
+                          <div key={idx} className="text-center py-2 border-b border-slate-200 dark:border-slate-800 mb-6">
+                            <span className="text-[11px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 block">
+                              {block.text}
+                            </span>
+                            {block.subText && (
+                              <span className="text-xs font-semibold opacity-75 block mt-0.5">
+                                {block.subText}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      }
 
                       // Separator / Divider line
-                      if (/^[―\-_=]{3,}$/.test(text)) {
+                      if (block.type === 'divider') {
                         return <hr key={idx} className={`my-6 ${styles.divider} print:border-slate-300`} />;
                       }
 
-                      // Main Section Header (e.g., ■ 1. LESSON SUMMARY, ■ 2. WORDS, URDU MEANINGS...)
-                      if (/^[■●◆★]\s+[0-9]+[\.\)]/i.test(text) || /^[■●◆★]\s+[A-Z\u0600-\u06FF]/i.test(text)) {
+                      // Main Section Header (e.g. 1. LESSON SUMMARY, 2. WORDS, URDU MEANINGS...)
+                      if (block.type === 'section-header') {
                         return (
                           <div
                             key={idx}
-                            className={`mt-8 mb-4 p-3.5 md:p-4 rounded-2xl ${styles.sectionHeader} border-l-4 text-center print:bg-slate-100 print:border-slate-800`}
+                            className={`mt-10 mb-5 p-3.5 sm:p-4 rounded-2xl ${styles.sectionHeader} text-center print:bg-slate-100 print:border-slate-800 shadow-sm`}
                           >
-                            <h2 className={`font-extrabold ${styles.sectionTitle} print:text-black text-base md:text-xl flex items-center justify-center gap-2 ${isUrdu ? 'font-urdu' : ''}`} dir={isUrdu ? 'rtl' : 'ltr'}>
-                              <span>📘</span>
-                              <span>{text.replace(/^[■●◆★]\s+/, '')}</span>
+                            <h2
+                              className={`font-black ${styles.sectionTitle} print:text-black text-base sm:text-lg md:text-xl tracking-wide uppercase ${
+                                block.isUrdu ? 'font-urdu' : ''
+                              }`}
+                              dir={block.isUrdu ? 'rtl' : 'ltr'}
+                            >
+                              {block.title}
                             </h2>
                           </div>
                         );
                       }
 
-                      // Subsection Header (e.g. ► Part A: ..., ► Part B: ...)
-                      if (/^[►▶]\s+/i.test(text)) {
+                      // Subsection Header (e.g. Part A: ..., Part B: ...)
+                      if (block.type === 'subsection-header') {
                         return (
                           <div
                             key={idx}
-                            className={`mt-6 mb-3 px-4 py-2.5 rounded-xl ${styles.subSectionHeader} border text-center font-bold text-sm md:text-base print:bg-slate-50 print:text-black flex items-center justify-center gap-2`}
-                            dir={isUrdu ? 'rtl' : 'ltr'}
+                            className={`mt-6 mb-3 px-4 py-2.5 rounded-xl ${styles.subSectionHeader} text-center font-bold text-sm sm:text-base print:bg-slate-50 print:text-black`}
+                            dir={block.isUrdu ? 'rtl' : 'ltr'}
                           >
-                            <span>📌</span>
-                            <span>{text.replace(/^[►▶]\s+/, '')}</span>
+                            <h3 className={block.isUrdu ? 'font-urdu' : ''}>{block.title}</h3>
                           </div>
                         );
                       }
 
-                      // Header Line from top of notes (e.g. THE MASTER SAHIB EDUCATIONAL SERIES...)
-                      if (/^THE MASTER SAHIB EDUCATIONAL SERIES/i.test(text)) {
+                      // Structured Vocabulary Table: Words, Urdu Meanings & Sentences
+                      if (block.type === 'vocab-table') {
                         return (
-                          <div key={idx} className="text-center py-2 border-b border-slate-200 dark:border-slate-800 mb-6">
-                            <span className="text-[11px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 block">
-                              The Master Sahib Educational Series
-                            </span>
-                            <span className="text-xs font-semibold opacity-75 block mt-0.5">
-                              {text.replace(/^THE MASTER SAHIB EDUCATIONAL SERIES\s*/i, '')}
-                            </span>
+                          <div key={idx} className="my-6 space-y-3">
+                            {/* Desktop & Tablet Table View */}
+                            <div className="hidden sm:block overflow-hidden rounded-2xl border border-blue-200/80 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-900/90">
+                              <table className="w-full text-left border-collapse">
+                                <thead>
+                                  <tr className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white text-xs md:text-sm font-bold uppercase tracking-wider">
+                                    <th className="py-3 px-4 w-[26%] text-left">Word</th>
+                                    <th className="py-3 px-4 w-[28%] text-right font-urdu text-sm md:text-base">اردو معنی (Urdu Meaning)</th>
+                                    <th className="py-3 px-4 w-[46%] text-left">Use in Sentence</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800 text-sm md:text-base">
+                                  {block.items.map((item, itemIdx) => (
+                                    <tr
+                                      key={itemIdx}
+                                      className={`transition-colors ${
+                                        itemIdx % 2 === 0
+                                          ? 'bg-transparent'
+                                          : 'bg-blue-50/40 dark:bg-slate-800/30'
+                                      } hover:bg-blue-50/80 dark:hover:bg-slate-800/60`}
+                                    >
+                                      <td className="py-3 px-4 font-bold text-blue-900 dark:text-blue-300 align-top">
+                                        {item.word}
+                                      </td>
+                                      <td className="py-3 px-4 font-urdu text-right text-emerald-800 dark:text-emerald-400 font-medium text-base md:text-lg align-top" dir="rtl">
+                                        {item.meaning}
+                                      </td>
+                                      <td className="py-3 px-4 text-slate-800 dark:text-slate-200 leading-relaxed align-top">
+                                        {item.sentence}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            {/* Mobile Cards View */}
+                            <div className="sm:hidden space-y-2.5">
+                              {block.items.map((item, itemIdx) => (
+                                <div
+                                  key={itemIdx}
+                                  className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-blue-100 dark:border-slate-800 shadow-sm space-y-2"
+                                >
+                                  <div className="flex items-baseline justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-2">
+                                    <span className="font-extrabold text-base text-blue-950 dark:text-blue-200">
+                                      {item.word}
+                                    </span>
+                                    <span className="font-urdu text-base font-semibold text-emerald-700 dark:text-emerald-400" dir="rtl">
+                                      {item.meaning}
+                                    </span>
+                                  </div>
+                                  {item.sentence && (
+                                    <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed border border-slate-200/60 dark:border-slate-700/60">
+                                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-0.5">
+                                        Sentence:
+                                      </span>
+                                      <span>{item.sentence}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Structured Dictation Words Grid
+                      if (block.type === 'dictation-grid') {
+                        return (
+                          <div key={idx} className="my-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                            {block.items.map((item, dIdx) => (
+                              <div
+                                key={dIdx}
+                                className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-blue-300 transition"
+                              >
+                                <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                                  {item.word}
+                                </span>
+                                <span className="font-urdu text-emerald-700 dark:text-emerald-400 text-base font-medium" dir="rtl">
+                                  {item.meaning}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+
+                      // Grammar 2-column Pair Table (Antonyms, Synonyms, Gender, Plural)
+                      if (block.type === 'pair-table') {
+                        return (
+                          <div key={idx} className="my-5 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs md:text-sm font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                                  <th className="py-2.5 px-4 w-1/2 text-left">{block.headers[0]}</th>
+                                  <th className="py-2.5 px-4 w-1/2 text-left">{block.headers[1]}</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm md:text-base">
+                                {block.rows.map((row, rIdx) => (
+                                  <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-transparent' : 'bg-slate-50/50 dark:bg-slate-800/30'}>
+                                    <td className="py-2.5 px-4 font-semibold text-slate-900 dark:text-slate-100">{row[0]}</td>
+                                    <td className="py-2.5 px-4 text-slate-700 dark:text-slate-300">{row[1]}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      }
+
+                      // Grammar 3-column Triplet Table (Forms of Verbs)
+                      if (block.type === 'triplet-table') {
+                        return (
+                          <div key={idx} className="my-5 overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
+                            <table className="w-full text-left border-collapse min-w-[500px]">
+                              <thead>
+                                <tr className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs md:text-sm font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                                  <th className="py-2.5 px-4 w-1/3 text-left">{block.headers[0]}</th>
+                                  <th className="py-2.5 px-4 w-1/3 text-left">{block.headers[1]}</th>
+                                  <th className="py-2.5 px-4 w-1/3 text-left">{block.headers[2]}</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm md:text-base">
+                                {block.rows.map((row, rIdx) => (
+                                  <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-transparent' : 'bg-slate-50/50 dark:bg-slate-800/30'}>
+                                    <td className="py-2.5 px-4 font-semibold text-blue-900 dark:text-blue-300">{row[0]}</td>
+                                    <td className="py-2.5 px-4 font-medium text-slate-800 dark:text-slate-200">{row[1]}</td>
+                                    <td className="py-2.5 px-4 font-medium text-slate-800 dark:text-slate-200">{row[2]}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         );
                       }
 
                       // Question Detection (e.g. Q1:, Q. 1, Question 1:)
-                      if (/^(Q[0-9]+[\.:\)]|Q[\.:\)]|Question\s*[0-9]*[\.:\)])/i.test(text)) {
+                      if (block.type === 'question') {
                         return (
                           <div
                             key={idx}
                             className={`mt-6 p-4 rounded-2xl ${styles.questionBox} border space-y-1.5 print:bg-slate-50 print:border-slate-300 text-left`}
-                            dir={isUrdu ? 'rtl' : 'ltr'}
+                            dir={block.isUrdu ? 'rtl' : 'ltr'}
                           >
                             <span className={`inline-block px-2.5 py-0.5 rounded-full ${styles.questionBadge} text-xs uppercase tracking-wider mb-1`}>
                               ❓ Question
                             </span>
-                            <p className={`${styles.questionText} print:text-black text-sm md:text-base leading-snug ${isUrdu ? 'text-right font-urdu' : 'text-left'}`}>
-                              {text}
+                            <p className={`${styles.questionText} print:text-black text-sm md:text-base leading-snug ${block.isUrdu ? 'text-right font-urdu' : 'text-left'}`}>
+                              {block.text}
                             </p>
                           </div>
                         );
                       }
 
                       // Answer Detection (e.g. Ans:, Answer:, Ans 1:)
-                      if (/^(Ans[0-9]*[\.:\)]|Answer[\.:\)])/i.test(text)) {
+                      if (block.type === 'answer') {
                         return (
                           <div
                             key={idx}
                             className={`p-4 rounded-2xl ${styles.answerBox} border-l-4 space-y-1.5 print:bg-slate-50 print:border-emerald-700 text-left`}
-                            dir={isUrdu ? 'rtl' : 'ltr'}
+                            dir={block.isUrdu ? 'rtl' : 'ltr'}
                           >
                             <span className={`inline-block px-2.5 py-0.5 rounded-full ${styles.answerBadge} text-xs uppercase tracking-wider mb-1`}>
                               💡 Answer
                             </span>
-                            <p className={`${styles.answerText} print:text-black leading-relaxed ${isUrdu ? 'text-right font-urdu text-base md:text-lg' : 'text-left'}`}>
-                              {text.replace(/^(Ans[0-9]*[\.:\)]|Answer[\.:\)])\s*/i, '')}
+                            <p className={`${styles.answerText} print:text-black leading-relaxed ${block.isUrdu ? 'text-right font-urdu text-base md:text-lg' : 'text-left'}`}>
+                              {block.text}
                             </p>
                           </div>
                         );
                       }
 
                       // Central Idea / Note / Moral Callout Box
-                      if (/^(Central Idea|Note|Moral|Rule|Key Point)[\.:\s]/i.test(text)) {
+                      if (block.type === 'callout') {
                         return (
                           <div
                             key={idx}
                             className={`p-4 rounded-2xl ${styles.calloutBox} border-l-4 space-y-1 my-3 text-left`}
-                            dir={isUrdu ? 'rtl' : 'ltr'}
+                            dir={block.isUrdu ? 'rtl' : 'ltr'}
                           >
                             <span className={`font-bold flex items-center gap-1.5 text-xs ${styles.calloutBadge} uppercase tracking-wider`}>
-                              <HiOutlineSparkles className="w-4 h-4" /> Important Highlight
+                              <HiOutlineSparkles className="w-4 h-4" /> {block.label}
                             </span>
-                            <p className={`${styles.calloutText} print:text-black leading-relaxed ${isUrdu ? 'text-right font-urdu' : 'text-left'}`}>
-                              {text}
+                            <p className={`${styles.calloutText} print:text-black leading-relaxed ${block.isUrdu ? 'text-right font-urdu' : 'text-left'}`}>
+                              {block.text}
                             </p>
                           </div>
                         );
                       }
 
                       // Standard Bullet or Numbered item
-                      if (p.isBullet || /^[\u2022\u25CF\-\*]\s+/.test(text)) {
+                      if (block.type === 'bullet') {
                         return (
-                          <div key={idx} className={`flex items-start gap-3 pl-2 py-1 ${isUrdu ? 'flex-row-reverse text-right' : 'text-left'}`} dir={isUrdu ? 'rtl' : 'ltr'}>
+                          <div key={idx} className={`flex items-start gap-3 pl-2 py-1 ${block.isUrdu ? 'flex-row-reverse text-right' : 'text-left'}`} dir={block.isUrdu ? 'rtl' : 'ltr'}>
                             <span className={`${styles.bulletDot} mt-1 text-sm`}>●</span>
-                            <p className={`flex-1 ${styles.paragraph} print:text-black ${isUrdu ? 'font-urdu text-right' : 'text-left'}`}>
-                              {text.replace(/^[\u2022\u25CF\-\*]\s+/, '')}
+                            <p className={`flex-1 ${styles.paragraph} print:text-black ${block.isUrdu ? 'font-urdu text-right' : 'text-left'}`}>
+                              {block.text}
                             </p>
                           </div>
                         );
                       }
 
                       // Generic Heading
-                      if (p.isHeading) {
+                      if (block.type === 'heading') {
                         return (
                           <h3
                             key={idx}
-                            className={`text-base md:text-lg font-bold ${styles.sectionTitle} text-center border-b ${styles.divider} print:border-slate-300 pb-2 pt-5 flex items-center justify-center gap-2`}
-                            dir={isUrdu ? 'rtl' : 'ltr'}
+                            className={`text-base md:text-lg font-bold ${styles.sectionTitle} text-center border-b ${styles.divider} print:border-slate-300 pb-2 pt-5`}
+                            dir={block.isUrdu ? 'rtl' : 'ltr'}
                           >
-                            <span>📌</span>
-                            <span>{text}</span>
+                            <span className={block.isUrdu ? 'font-urdu' : ''}>{block.text}</span>
                           </h3>
                         );
                       }
 
-                      // Pure Urdu Line
-                      if (isUrdu) {
-                        return (
-                          <p
-                            key={idx}
-                            className={`${styles.paragraph} print:text-black text-right font-urdu text-base md:text-lg leading-relaxed`}
-                            dir="rtl"
-                          >
-                            {text}
-                          </p>
-                        );
-                      }
-
-                      // Standard Book Paragraph (Strictly Left-to-Right for English)
+                      // Standard Book Paragraph
                       return (
                         <p
                           key={idx}
-                          className={`${styles.paragraph} print:text-black text-left text-sm md:text-base leading-relaxed`}
-                          dir="ltr"
+                          className={`${styles.paragraph} print:text-black ${
+                            block.isUrdu ? 'text-right font-urdu text-base md:text-lg' : 'text-left text-sm md:text-base'
+                          } leading-relaxed`}
+                          dir={block.isUrdu ? 'rtl' : 'ltr'}
                         >
-                          {text}
+                          {block.text}
                         </p>
                       );
                     })}
