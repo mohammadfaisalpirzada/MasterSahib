@@ -180,36 +180,36 @@ function getBestDefaultChapter(chapters: Chapter[]): Chapter | null {
 
 const THEME_STYLES = {
   light: {
-    container: 'bg-slate-100 text-slate-900',
-    header: 'bg-white/95 border-slate-200 text-slate-800 shadow-sm',
-    headerButton: 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200',
-    sidebar: 'bg-white border-slate-200 text-slate-800',
-    sidebarHeader: 'bg-slate-50 border-slate-200',
-    sidebarSelect: 'bg-slate-50 border-slate-300 text-slate-900 focus:ring-blue-500',
-    sidebarSearch: 'bg-slate-50 border-slate-300 text-slate-900 placeholder:text-slate-400',
-    sidebarSubjectActive: 'bg-blue-600 text-white shadow',
-    sidebarSubjectInactive: 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200',
-    sidebarChapterActive: 'bg-blue-600 text-white font-semibold shadow-md',
-    sidebarChapterInactive: 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
+    container: 'bg-[#f4f7fb] text-slate-900',
+    header: 'bg-white/95 border-b border-slate-200/80 text-slate-800 shadow-sm',
+    headerButton: 'bg-slate-100/80 border-slate-200 text-slate-700 hover:bg-blue-50 hover:text-blue-700',
+    sidebar: 'bg-white border-r border-slate-200/80 text-slate-800',
+    sidebarHeader: 'bg-gradient-to-b from-blue-50/60 to-white border-b border-slate-200/80',
+    sidebarSelect: 'bg-slate-50/90 border border-slate-300/80 text-slate-900 focus:ring-2 focus:ring-blue-500 shadow-sm',
+    sidebarSearch: 'bg-slate-50/90 border border-slate-300/80 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 shadow-sm',
+    sidebarSubjectActive: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20',
+    sidebarSubjectInactive: 'bg-blue-50/60 text-slate-700 hover:bg-blue-100/70 border border-blue-100/80',
+    sidebarChapterActive: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-md shadow-blue-500/20',
+    sidebarChapterInactive: 'text-slate-700 hover:bg-blue-50/70 hover:text-blue-900 border border-transparent',
     sidebarChapterBadgeActive: 'bg-white/20 text-white',
-    sidebarChapterBadgeInactive: 'bg-slate-200 text-slate-600',
-    card: 'bg-white border-slate-200 shadow-xl text-slate-900',
-    sectionHeader: 'bg-blue-50/80 border-blue-600 text-blue-950',
-    sectionTitle: 'text-blue-950 font-extrabold',
-    subSectionHeader: 'bg-slate-100 border-slate-300 text-slate-900 font-bold',
-    questionBox: 'bg-blue-50/70 border-blue-200 text-blue-950 shadow-sm',
+    sidebarChapterBadgeInactive: 'bg-blue-100/80 text-blue-700 font-bold',
+    card: 'bg-white border border-indigo-100/80 shadow-xl shadow-indigo-100/40 text-slate-900 rounded-3xl',
+    sectionHeader: 'bg-gradient-to-r from-blue-50 to-indigo-50/60 border-l-4 border-blue-600 text-blue-950 shadow-sm',
+    sectionTitle: 'text-blue-950 font-black',
+    subSectionHeader: 'bg-blue-50/60 border border-blue-200/80 text-blue-900 font-bold',
+    questionBox: 'bg-blue-50/60 border border-blue-200/80 text-blue-950 shadow-sm',
     questionBadge: 'bg-blue-600 text-white font-bold',
     questionText: 'text-slate-900 font-bold',
-    answerBox: 'bg-emerald-50/80 border-emerald-500 text-emerald-950 shadow-sm',
+    answerBox: 'bg-emerald-50/70 border-l-4 border-emerald-500 text-emerald-950 shadow-sm',
     answerBadge: 'bg-emerald-600 text-white font-bold',
     answerText: 'text-slate-800',
-    calloutBox: 'bg-amber-50/90 border-amber-500 text-amber-950 shadow-sm',
+    calloutBox: 'bg-amber-50/80 border-l-4 border-amber-500 text-amber-950 shadow-sm',
     calloutBadge: 'text-amber-800 font-bold',
     calloutText: 'text-slate-900 font-medium',
     bulletDot: 'text-blue-600 font-bold',
     paragraph: 'text-slate-800 leading-relaxed',
-    divider: 'border-slate-200',
-    navButton: 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50 shadow-sm',
+    divider: 'border-slate-200/80',
+    navButton: 'bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 text-slate-800 shadow-sm',
   },
   dark: {
     container: 'bg-slate-950 text-slate-100',
@@ -814,7 +814,13 @@ function CurriculumContent() {
         )}
 
         {/* ================= MAIN DIGITAL BOOK READER CANVAS ================= */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 space-y-6 text-left" dir="ltr">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 space-y-6 text-left relative" dir="ltr">
+          {readerTheme === 'light' && (
+            <>
+              <div className="fixed -left-20 top-20 h-80 w-80 rounded-full bg-indigo-200/30 blur-3xl pointer-events-none -z-10" />
+              <div className="fixed right-[-60px] top-1/3 h-96 w-96 rounded-full bg-cyan-200/30 blur-3xl pointer-events-none -z-10" />
+            </>
+          )}
           
           {activeChapterData.chapter ? (
             <article className="max-w-4xl mx-auto space-y-8 text-left" dir="ltr">
