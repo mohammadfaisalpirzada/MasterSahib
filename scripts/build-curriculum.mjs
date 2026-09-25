@@ -12,27 +12,47 @@ function sanitizeKey(str) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+function detectResourceType(fileName) {
+  const lower = fileName.toLowerCase();
+  if (
+    lower.includes('plan') ||
+    lower.includes('planner') ||
+    lower.includes('scheme') ||
+    lower.includes('syllabus') ||
+    lower.includes('term planning') ||
+    lower.includes('annual') ||
+    lower.includes('template')
+  ) {
+    return 'planning';
+  }
+  return 'notes';
+}
+
+function getStandardClassName(className) {
+  const map = {
+    'Class ECE': 'Class ECE (Early Childhood)',
+    'Class I': 'Class 1 (Grade I)',
+    'Class II': 'Class 2 (Grade II)',
+    'Class III': 'Class 3 (Grade III)',
+    'Class IV': 'Class 4 (Grade IV)',
+    'Class V': 'Class 5 (Grade V)',
+    'Class VI': 'Class 6 (Grade VI)',
+    'Class VII': 'Class 7 (Grade VII)',
+    'Class VIII': 'Class 8 (Grade VIII)',
+    'Class IX': 'Class 9 (Matric Part 1)',
+    'Class X': 'Class 10 (Matric Part 2)',
+    'Class XI-XII': 'Class 11-12 (Intermediate)',
+    'General Templates': 'General Curriculum Templates',
+  };
+  return map[className] || className;
+}
+
 // Function to extract text and structure from a DOCX file using PowerShell .NET Zip reader
 function parseDocx(filePath) {
   try {
     const escapedPath = filePath.replace(/'/g, "''");
-    const psCommand = `
-      Add-Type -AssemblyName System.IO.Compression.FileSystem
-      $zip = [System.IO.Compression.ZipFile]::OpenRead('${escapedPath}')
-      $entry = $zip.Entries | Where-Object { $_.FullName -eq 'word/document.xml' }
-      if ($entry) {
-        $stream = $entry.Open()
-        $reader = New-Object System.IO.StreamReader($stream)
-        $xml = $reader.ReadToEnd()
-        $reader.Close()
-        $stream.Close()
-        $zip.Dispose()
-        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-        Write-Output $xml
-      } else {
-        $zip.Dispose()
-      }
-    `;
+    const psCommand = `Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead('${escapedPath}'); $entry = $zip.GetEntry('word/document.xml'); if ($entry) { $s = $entry.Open(); $r = New-Object System.IO.StreamReader($s, [System.Text.Encoding]::UTF8); $txt = $r.ReadToEnd(); $r.Close(); $s.Close(); $zip.Dispose(); [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Write-Output $txt } else { $zip.Dispose() }`;
+    
     const xml = execSync(`powershell -NoProfile -Command "${psCommand}"`, {
       encoding: 'utf8',
       maxBuffer: 50 * 1024 * 1024,
@@ -42,23 +62,29 @@ function parseDocx(filePath) {
     if (!xml || xml.trim().length === 0) return null;
 
     // Parse paragraphs and tables from XML
-    // Split by <w:p ...> or <w:p>
     const pRegex = /<w:p(?:\s[^>]*)?>([\s\S]*?)<\/w:p>/g;
     const paragraphs = [];
     let pMatch;
     while ((pMatch = pRegex.exec(xml)) !== null) {
       const pXml = pMatch[1];
-      // Extract text inside <w:t> tags
       const tRegex = /<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g;
       let textParts = [];
       let tMatch;
       while ((tMatch = tRegex.exec(pXml)) !== null) {
         textParts.push(tMatch[1]);
       }
-      const fullText = textParts.join('').trim();
+      let fullText = textParts.join('').trim();
+      fullText = fullText
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'");
+
       if (fullText.length > 0) {
         // Detect if it's a heading or bullet point
         const isHeading = /<w:pStyle\s+w:val="Heading[1-4]"/i.test(pXml) || 
+                          /^[■●►◆★]\s+/.test(fullText) ||
                           /^[0-9]+[\.\)]\s+[A-Z\u0600-\u06FF]/.test(fullText) ||
                           /^(UNIT|CHAPTER|LESSON|SECTION|PART)\s+[0-9A-Z]/i.test(fullText);
         const isBullet = /<w:numPr>/i.test(pXml) || /^[\u2022\u25CF\-\*]\s+/.test(fullText);
@@ -103,7 +129,7 @@ function scanPlanningFolder() {
 
     // Also check for root files inside class folder
     const directFiles = fs.readdirSync(classPath, { withFileTypes: true })
-      .filter(d => d.isFile())
+      .filter(d => d.isFile() && !d.name.startsWith('.') && !['desktop.ini', 'thumbs.db'].includes(d.name.toLowerCase()) && ['.docx', '.pdf', '.doc'].includes(path.extname(d.name).toLowerCase()))
       .map(d => d.name);
 
     const subjectsData = [];
@@ -131,7 +157,7 @@ function scanPlanningFolder() {
       }
 
       const files = fs.readdirSync(subjectPath, { withFileTypes: true })
-        .filter(f => f.isFile())
+        .filter(f => f.isFile() && !f.name.startsWith('.') && !['desktop.ini', 'thumbs.db'].includes(f.name.toLowerCase()) && ['.docx', '.pdf', '.doc'].includes(path.extname(f.name).toLowerCase()))
         .map(f => f.name);
 
       const chaptersData = [];
@@ -152,14 +178,18 @@ function scanPlanningFolder() {
         // Match banner image
         let matchedBannerUrl = null;
         if (bannerFiles.length > 0) {
-          // Find matching banner by chapterKey or unit number
-          const unitMatch = baseName.match(/unit\s*([0-9]+)/i) || baseName.match(/ch(?:apter)?\s*([0-9]+)/i);
+          const unitMatch = baseName.match(/unit\s*([0-9]+)/i) || baseName.match(/ch(?:apter)?\s*([0-9]+)/i) || baseName.match(/\b([0-9]+)\b/);
           const unitNum = unitMatch ? unitMatch[1] : null;
 
           const matchedFile = bannerFiles.find(b => {
-            if (b.cleanName === chapterKey) return true;
-            if (unitNum && (b.cleanName === `unit-${unitNum}` || b.cleanName === `unit${unitNum}` || b.cleanName === unitNum || b.cleanName.includes(`unit-${unitNum}`))) return true;
-            if (chapterKey.includes(b.cleanName) || b.cleanName.includes(chapterKey)) return true;
+            const bName = b.cleanName.toLowerCase();
+            if (bName === chapterKey) return true;
+            if (unitNum) {
+              if (bName === `unit-${unitNum}` || bName === `unit${unitNum}` || bName === unitNum) return true;
+              if (bName.endsWith(`-ch${unitNum}`) || bName.endsWith(`_ch${unitNum}`) || bName.includes(`ch${unitNum}`) || bName.includes(`ch-${unitNum}`)) return true;
+              if (bName.includes(`unit-${unitNum}`) || bName.includes(`unit${unitNum}`) || bName.endsWith(`-${unitNum}`)) return true;
+            }
+            if (chapterKey.includes(bName) || bName.includes(chapterKey)) return true;
             return false;
           });
 
@@ -173,6 +203,8 @@ function scanPlanningFolder() {
           }
         }
 
+        const resourceType = detectResourceType(fileName);
+
         chaptersData.push({
           id: `${classKey}-${subjectKey}-${chapterKey}`,
           title: baseName.replace(/_/g, ' '),
@@ -182,6 +214,7 @@ function scanPlanningFolder() {
           sizeFormatted: `${(stats.size / 1024).toFixed(1)} KB`,
           isDocx: ext === '.docx',
           isPdf: ext === '.pdf',
+          resourceType,
           parsedContent,
           bannerImage: matchedBannerUrl,
           lastModified: stats.mtime.toISOString(),
@@ -214,6 +247,8 @@ function scanPlanningFolder() {
           parsedContent = parseDocx(filePath);
         }
 
+        const resourceType = detectResourceType(fileName);
+
         generalChapters.push({
           id: `${classKey}-general-${chapterKey}`,
           title: baseName.replace(/_/g, ' '),
@@ -223,6 +258,7 @@ function scanPlanningFolder() {
           sizeFormatted: `${(stats.size / 1024).toFixed(1)} KB`,
           isDocx: ext === '.docx',
           isPdf: ext === '.pdf',
+          resourceType,
           parsedContent,
           bannerImage: null,
           lastModified: stats.mtime.toISOString(),
@@ -242,6 +278,7 @@ function scanPlanningFolder() {
       classesData.push({
         id: classKey,
         name: className,
+        standardName: getStandardClassName(className),
         subjectCount: subjectsData.length,
         totalFiles: subjectsData.reduce((acc, s) => acc + s.chapterCount, 0),
         subjects: subjectsData,
