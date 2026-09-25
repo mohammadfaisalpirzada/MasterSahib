@@ -62,19 +62,19 @@ type ClassItem = {
 };
 
 const BANNER_GRADIENTS: Record<string, string> = {
-  english: 'from-blue-900 via-indigo-950 to-slate-950',
-  mathematics: 'from-emerald-900 via-teal-950 to-slate-950',
-  urdu: 'from-amber-900 via-orange-950 to-slate-950',
-  sindhi: 'from-rose-900 via-pink-950 to-slate-950',
-  science: 'from-cyan-900 via-sky-950 to-slate-950',
-  computer: 'from-violet-900 via-purple-950 to-slate-950',
-  'computer-science': 'from-violet-900 via-purple-950 to-slate-950',
-  islamiat: 'from-teal-900 via-emerald-950 to-slate-950',
-  'social-studies': 'from-amber-800 via-stone-900 to-slate-950',
-  biology: 'from-green-900 via-emerald-950 to-slate-950',
-  chemistry: 'from-fuchsia-900 via-purple-950 to-slate-950',
-  physics: 'from-blue-950 via-cyan-950 to-slate-950',
-  default: 'from-slate-900 via-indigo-950 to-slate-950',
+  english: 'from-blue-600 via-indigo-600 to-blue-700',
+  mathematics: 'from-emerald-600 via-teal-600 to-cyan-700',
+  urdu: 'from-amber-600 via-orange-600 to-amber-700',
+  sindhi: 'from-rose-600 via-pink-600 to-rose-700',
+  science: 'from-cyan-600 via-sky-600 to-blue-600',
+  computer: 'from-violet-600 via-purple-600 to-indigo-700',
+  'computer-science': 'from-violet-600 via-purple-600 to-indigo-700',
+  islamiat: 'from-teal-600 via-emerald-600 to-teal-700',
+  'social-studies': 'from-amber-600 via-yellow-600 to-orange-600',
+  biology: 'from-green-600 via-emerald-600 to-teal-700',
+  chemistry: 'from-fuchsia-600 via-purple-600 to-pink-600',
+  physics: 'from-blue-600 via-cyan-600 to-indigo-700',
+  default: 'from-blue-600 via-indigo-600 to-purple-600',
 };
 
 const SUBJECT_ICONS: Record<string, string> = {
