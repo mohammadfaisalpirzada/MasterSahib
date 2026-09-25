@@ -219,6 +219,7 @@ export default function HomePage() {
           <div>
             <p className="text-sm font-bold text-slate-900 dark:text-white">Quick Links</p>
             <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <Link href="/curriculum" className="transition hover:text-slate-900 dark:hover:text-white font-medium text-emerald-600 dark:text-emerald-400">Class Notes & Books</Link>
               <Link href="/softwares" className="transition hover:text-slate-900 dark:hover:text-white">Softwares & AI Tools</Link>
               <Link href="/govt-forms" className="transition hover:text-slate-900 dark:hover:text-white">Govt Educational Forms</Link>
               <Link href="/educational-resources" className="transition hover:text-slate-900 dark:hover:text-white">Educational Resources</Link>

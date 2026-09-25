@@ -168,7 +168,7 @@ export default function Navbar() {
       <nav className="mx-auto flex w-full max-w-[1700px] items-center justify-between gap-4 px-3 py-3 sm:px-6 lg:px-10">
         <Link
           href="/"
-          className="flex min-w-0 items-center gap-2 rounded-xl px-2 py-1 transition hover:bg-white/10"
+          className="flex shrink-0 items-center gap-2.5 rounded-xl px-2 py-1 transition hover:bg-white/10"
           aria-label="Go to home page"
         >
           <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/10">
@@ -180,13 +180,13 @@ export default function Navbar() {
               className="h-full w-full scale-110 object-contain"
             />
           </span>
-          <div className="min-w-0">
-            <p className="truncate text-base font-extrabold leading-tight sm:text-xl">TheMasterSahib</p>
-            <p className="hidden truncate text-xs text-indigo-100 sm:block">Learn. Build. Grow.</p>
+          <div className="shrink-0">
+            <p className="whitespace-nowrap text-base font-extrabold leading-tight sm:text-xl">TheMasterSahib</p>
+            <p className="hidden whitespace-nowrap text-xs text-indigo-100 sm:block">Learn. Build. Grow.</p>
           </div>
         </Link>
 
-        <ul className="hidden items-center gap-1 lg:flex">
+        <ul className="hidden items-center gap-1 xl:gap-1.5 lg:flex shrink-0">
           {desktopMainItems.map((item) => {
             const isOpen = openDesktopDropdown === item.href;
             const isActive = isItemActive(item);
@@ -195,7 +195,7 @@ export default function Navbar() {
               return (
                 <li
                   key={item.href}
-                  className="relative pb-2 -mb-2"
+                  className="relative pb-2 -mb-2 shrink-0"
                   onMouseEnter={() => setOpenDesktopDropdown(item.href)}
                   onMouseLeave={() => setOpenDesktopDropdown((current) => (current === item.href ? null : current))}
                 >
@@ -208,7 +208,7 @@ export default function Navbar() {
                   >
                     <Link
                       href={item.href}
-                      className="px-3 py-2"
+                      className="px-3 py-2 whitespace-nowrap"
                     >
                       {item.desktopLabel ?? item.label}
                     </Link>
@@ -256,16 +256,16 @@ export default function Navbar() {
             }
 
             return (
-              <li key={item.href}>
+              <li key={item.href} className="shrink-0">
                 <Link
                   href={item.href}
-                  className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition ${
                     isActive
                       ? 'bg-white text-indigo-700 shadow-sm'
                       : 'text-indigo-50 hover:bg-white/15 hover:text-white'
                   }`}
                 >
-                  {item.label}
+                  {item.desktopLabel ?? item.label}
                 </Link>
               </li>
             );
