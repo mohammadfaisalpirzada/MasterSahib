@@ -23,7 +23,7 @@ export default function AppShell({ children }: AppShellProps) {
 
   const isGgssRoute = safePathname.startsWith('/ggss-nishtar-road') || safePathname.startsWith('/teachers-data') || safePathname.startsWith('/staff-data') || isGgssDomain;
   const isKidsLearningRoute = ['/educational-resources/fun-learning'].some((p) => safePathname === p);
-  const isCurriculumRoute = safePathname.startsWith('/curriculum') || safePathname.startsWith('/class-notes');
+  const isCurriculumRoute = safePathname.startsWith('/curriculum') || safePathname.startsWith('/class-notes') || safePathname.startsWith('/class_notes');
   const showBackToGlobal = safePathname !== '/' && !isGgssDomain && !isAuthSignInRoute && !isKidsLearningRoute && !isCurriculumRoute;
 
   return (

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
-export default function ClassNotesPage() {
-  redirect('/curriculum');
+export default function ClassNotesHyphenRedirect() {
+  redirect('/class_notes');
 }

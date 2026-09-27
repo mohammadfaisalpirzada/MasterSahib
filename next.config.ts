@@ -16,6 +16,16 @@ const nextConfig: NextConfig = {
         destination: '/courses/ai-for-all',
         permanent: true,
       },
+      {
+        source: '/curriculum',
+        destination: '/class_notes',
+        permanent: true,
+      },
+      {
+        source: '/class-notes',
+        destination: '/class_notes',
+        permanent: true,
+      },
     ];
   },
   async rewrites() {

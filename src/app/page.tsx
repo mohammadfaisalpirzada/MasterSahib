@@ -27,7 +27,7 @@ const quickCards: QuickCard[] = [
   {
     title: 'Class Notes & Planning Books',
     description: 'Interactive digital curriculum reader: Class ECE to XII lesson plans, solved exercises & clean PDF downloads.',
-    href: '/curriculum',
+    href: '/class_notes',
     accent: 'from-emerald-500 via-teal-500 to-cyan-600',
     icon: '📚',
     newUntil: '2026-12-31T23:59:59+05:00',
@@ -153,7 +153,7 @@ export default function HomePage() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-start pt-2">
                 <Link
-                  href="/curriculum"
+                  href="/class_notes"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-indigo-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-300"
                 >
                   <span>📚</span> Class Notes & Books
@@ -245,7 +245,7 @@ export default function HomePage() {
           <div>
             <p className="text-sm font-bold text-slate-900">Quick Links</p>
             <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
-              <Link href="/curriculum" className="font-semibold text-blue-600 hover:text-blue-800 transition">Class Notes & Books</Link>
+              <Link href="/class_notes" className="font-semibold text-blue-600 hover:text-blue-800 transition">Class Notes & Books</Link>
               <Link href="/softwares" className="hover:text-slate-900 transition">Softwares & AI Tools</Link>
               <Link href="/govt-forms" className="hover:text-slate-900 transition">Govt Educational Forms</Link>
               <Link href="/educational-resources" className="hover:text-slate-900 transition">Educational Resources</Link>

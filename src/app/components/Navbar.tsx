@@ -43,7 +43,7 @@ const navItems: NavItem[] = [
   {
     label: 'Class Notes & Books',
     desktopLabel: 'Class Notes',
-    href: '/curriculum',
+    href: '/class_notes',
   },
   { label: 'Courses', href: '/courses/ai-for-all' },
   { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },

@@ -70,6 +70,7 @@ const govtFormSlugs = [
 // staff/admin/stipend routes, /api, /auth, /my-presentations, /audience)
 const staticRoutes = [
   "",
+  "/class_notes",
   "/educational-resources",
   "/igcse-0580-mathematics",
   "/teaching-license",
