@@ -19,6 +19,7 @@ const educationalResourceSlugs = [
   "math-practice",
   "math-secondary",
   "number-fun",
+  "numbers-in-words",
   "o-level-career-selection",
   "science-experiments",
   "sentence-learning",

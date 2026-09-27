@@ -494,6 +494,17 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     icon: '📝',
     color: 'from-fuchsia-500 to-pink-500',
   },
+  {
+    title: 'Numbers in Words (1 to 100)',
+    description: 'Master number spellings from 1 to 100. Learn key building blocks (1 to 19, Tens 20 to 100, tricky spellings like forty & fifteen) with audio, spelling games, quizzes, and printable worksheets.',
+    status: 'Ready',
+    href: '/educational-resources/numbers-in-words',
+    addedOn: '2026-09-27',
+    ageGroup: '5-11',
+    category: 'kids',
+    icon: '🔢',
+    color: 'from-amber-500 to-orange-500',
+  },
 ];
 
 const getAddedTimestamp = (item: EducationalResourceItem, index: number) => {

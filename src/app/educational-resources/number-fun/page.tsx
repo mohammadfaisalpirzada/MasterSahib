@@ -70,7 +70,9 @@ export default function NumberFunPage() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <Link href="/educational-resources" className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">← Back</Link>
           <h1 className="text-3xl font-black text-slate-900 sm:text-4xl">🔢 Numbers 1–100</h1>
-          <div className="w-20" />
+          <Link href="/educational-resources/numbers-in-words" className="rounded-2xl border border-amber-300 bg-amber-50 px-3.5 py-2 text-xs font-bold text-amber-800 shadow-sm transition hover:bg-amber-100">
+            📝 In Words (Spellings) ➔
+          </Link>
         </div>
 
         <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
