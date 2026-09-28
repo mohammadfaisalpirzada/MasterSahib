@@ -4,11 +4,13 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import NextImage from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import QRCode from 'qrcode';
 import {
   AdmissionFormPrintView,
   generateAdmissionA4PdfBlob,
   downloadBlob,
   buildAdmissionPdfFileName,
+  buildAdmissionVerifyUrl,
 } from './AdmissionFormPrintView';
 // Shared image helpers (HEIC conversion, crop, compression) live in
 // ./imageUtils so the admin records edit tool can reuse the exact same
@@ -252,20 +254,45 @@ export default function AdmissionFormPage() {
 
   const printViewRef = useRef<HTMLDivElement>(null);
   const [downloadingPdfManual, setDownloadingPdfManual] = useState(false);
+  const [savedVerifyUrl, setSavedVerifyUrl] = useState('');
+  const [savedQrCodeDataUrl, setSavedQrCodeDataUrl] = useState('');
 
-  const generateAdmissionPdfBlob = async (): Promise<Blob> => {
+  // Pre-generate QR code as soon as serial number or name is ready
+  useEffect(() => {
+    let cancelled = false;
+    const url = savedVerifyUrl || (form.srNo ? buildAdmissionVerifyUrl(undefined, form.srNo) : '');
+    if (!url) return;
+    QRCode.toDataURL(url, { width: 160, margin: 0, errorCorrectionLevel: 'M' })
+      .then((dataUrl) => {
+        if (!cancelled) setSavedQrCodeDataUrl(dataUrl);
+      })
+      .catch((err) => {
+        console.warn('QR code generation error:', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [savedVerifyUrl, form.srNo]);
+
+  const generateAdmissionPdfBlob = async (qrUrl?: string): Promise<Blob> => {
     if (!printViewRef.current) {
       throw new Error('Could not find printable form container.');
     }
-    return generateAdmissionA4PdfBlob(printViewRef.current);
+    const finalQr = qrUrl || savedQrCodeDataUrl;
+    return generateAdmissionA4PdfBlob(printViewRef.current, { qrDataUrl: finalQr || undefined });
   };
 
   const handleManualDownloadPdf = async () => {
     if (!printViewRef.current) return;
     setDownloadingPdfManual(true);
     try {
+      const verifyUrl = savedVerifyUrl || (form.srNo ? buildAdmissionVerifyUrl(undefined, form.srNo) : '');
+      let qrDataUrl = savedQrCodeDataUrl;
+      if (verifyUrl && !qrDataUrl) {
+        qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 160, margin: 0, errorCorrectionLevel: 'M' });
+      }
       const fileName = buildAdmissionPdfFileName(form.studentName);
-      const blob = await generateAdmissionA4PdfBlob(printViewRef.current);
+      const blob = await generateAdmissionA4PdfBlob(printViewRef.current, { qrDataUrl: qrDataUrl || undefined });
       downloadBlob(blob, fileName);
     } catch (err) {
       console.error('PDF generation error:', err);
@@ -899,12 +926,31 @@ export default function AdmissionFormPage() {
         // non-blocking
       }
 
-      setSaveMessage('Saved to student records sheet successfully. Preparing PDF...');
+      setSaveMessage('Saved to student records sheet successfully. Preparing PDF with verification QR...');
 
       // Best-effort: the record is already safely saved above, so a PDF hiccup
       // here should never look like the save itself failed.
       try {
-        const pdfBlob = await generateAdmissionPdfBlob();
+        const rowNumber = data.rowNumber ? String(data.rowNumber) : undefined;
+        const srNo = data.srNo || form.srNo;
+        const verifyUrl = buildAdmissionVerifyUrl(rowNumber, srNo);
+
+        let finalQrDataUrl = savedQrCodeDataUrl;
+        if (verifyUrl) {
+          try {
+            finalQrDataUrl = await QRCode.toDataURL(verifyUrl, {
+              width: 160,
+              margin: 0,
+              errorCorrectionLevel: 'M',
+            });
+            setSavedVerifyUrl(verifyUrl);
+            setSavedQrCodeDataUrl(finalQrDataUrl);
+          } catch (qrErr) {
+            console.warn('QR generation error during save:', qrErr);
+          }
+        }
+
+        const pdfBlob = await generateAdmissionPdfBlob(finalQrDataUrl);
         const fileName = buildAdmissionPdfFileName(form.studentName);
         downloadBlob(pdfBlob, fileName);
         setSaveMessage(
@@ -1011,8 +1057,7 @@ export default function AdmissionFormPage() {
             padding: 0 !important;
             background: #fff !important;
             width: 210mm !important;
-            height: 297mm !important;
-            overflow: hidden !important;
+            overflow: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
@@ -1024,24 +1069,13 @@ export default function AdmissionFormPage() {
             visibility: visible !important;
           }
           #admission-form-a4-print-target {
-            position: fixed !important;
+            display: block !important;
+            position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 210mm !important;
-            /* No forced height here — the form's real content is shorter
-               than a full A4 page, and forcing height:297mm (with only one
-               child, so justify-content had no effect) just baked a big
-               blank strip into the printed page / exported PDF. max-height
-               + overflow:hidden stays only as a safety net so an unusually
-               long address/name can never spill onto a second page.
-               No padding here either — AdmissionFormPrintView already has
-               its own 34px/42px padding; adding 10mm/12mm on top of that
-               was double-counted margin that pushed the real content past
-               297mm, so the bottom (e.g. "For Office Use Only") was being
-               silently clipped by overflow:hidden. */
-            max-height: 297mm !important;
-            overflow: hidden !important;
-            margin: 0 !important;
+            overflow: visible !important;
+            margin: 0 auto !important;
             padding: 0 !important;
             background: #fff !important;
             border: none !important;
@@ -2031,7 +2065,10 @@ export default function AdmissionFormPage() {
               data={{
                 ...form,
                 pictureBase64: picturePreview || undefined,
+                qrCodeDataUrl: savedQrCodeDataUrl || undefined,
               }}
+              verifyUrl={savedVerifyUrl || (form.srNo ? buildAdmissionVerifyUrl(undefined, form.srNo) : undefined)}
+              qrCodeDataUrl={savedQrCodeDataUrl || undefined}
             />
           </div>
         </div>

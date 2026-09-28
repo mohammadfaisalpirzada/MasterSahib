@@ -37,22 +37,44 @@ export async function GET(request: NextRequest) {
     if (singleRowParam) {
       // Single-record detail fetch — includes picture_base64, used by the view/edit screen.
       const rowNumber = Number(singleRowParam);
-      if (!Number.isFinite(rowNumber) || rowNumber < 2) {
-        return NextResponse.json({ success: false, message: 'Invalid record reference.' }, { status: 400 });
+      if (Number.isFinite(rowNumber) && rowNumber >= 2) {
+        const rows = await getQuizRowsFromSheet({
+          spreadsheetId,
+          range: `${toQuotedAdmissionSheetName()}!A${rowNumber}:AZ${rowNumber}`,
+        });
+        const row = rows[0] || [];
+        if (row.length) {
+          const record: Record<string, string> = { row_number: String(rowNumber) };
+          ADMISSION_HEADER_ROW.forEach((key, colIndex) => {
+            record[key] = String(row[colIndex] ?? '').trim();
+          });
+          return NextResponse.json({ success: true, record });
+        }
       }
-      const rows = await getQuizRowsFromSheet({
+
+      // If not a pure row number (e.g. "2026/20"), search by sr_no
+      const allRows = await getQuizRowsFromSheet({
         spreadsheetId,
-        range: `${toQuotedAdmissionSheetName()}!A${rowNumber}:AZ${rowNumber}`,
+        range: `${toQuotedAdmissionSheetName()}!A:AZ`,
       });
-      const row = rows[0] || [];
-      if (!row.length) {
-        return NextResponse.json({ success: false, message: 'Record not found.' }, { status: 404 });
+      const headerRow = (allRows[0] || []).map((cell) => String(cell ?? '').trim());
+      const srIndex = headerRow.indexOf('sr_no');
+      const targetSr = singleRowParam.trim().toLowerCase();
+      if (srIndex >= 0) {
+        for (let i = 1; i < allRows.length; i += 1) {
+          const row = allRows[i];
+          const cellSr = String(row[srIndex] ?? '').trim().toLowerCase();
+          if (cellSr && cellSr === targetSr) {
+            const record: Record<string, string> = { row_number: String(i + 1) };
+            headerRow.forEach((key, colIndex) => {
+              record[key] = String(row[colIndex] ?? '').trim();
+            });
+            return NextResponse.json({ success: true, record });
+          }
+        }
       }
-      const record: Record<string, string> = { row_number: String(rowNumber) };
-      ADMISSION_HEADER_ROW.forEach((key, colIndex) => {
-        record[key] = String(row[colIndex] ?? '').trim();
-      });
-      return NextResponse.json({ success: true, record });
+
+      return NextResponse.json({ success: false, message: 'Record not found.' }, { status: 404 });
     }
 
     const rows = await getQuizRowsFromSheet({

@@ -192,13 +192,23 @@ export async function POST(request: NextRequest) {
       return String(values[key] ?? '').trim();
     });
 
-    await appendQuizRowToSheet({
+    const appendResult = await appendQuizRowToSheet({
       spreadsheetId,
       range: `${toQuotedSheetName(ADMISSION_TAB_NAME)}!A1`,
       values: rowValues,
     });
 
-    return NextResponse.json({ success: true, submittedAt });
+    const updatedRange =
+      (appendResult as { updates?: { updatedRange?: string } } | undefined)?.updates?.updatedRange || '';
+    const match = updatedRange.match(/!A(\d+)/i) || updatedRange.match(/(\d+):[A-Z]+(\d+)/i);
+    const rowNumber = match ? match[1] : undefined;
+
+    return NextResponse.json({
+      success: true,
+      submittedAt,
+      rowNumber,
+      srNo: values.sr_no || undefined,
+    });
   } catch (error) {
     return NextResponse.json(
       { success: false, message: error instanceof Error ? error.message : 'Unable to save admission form.' },

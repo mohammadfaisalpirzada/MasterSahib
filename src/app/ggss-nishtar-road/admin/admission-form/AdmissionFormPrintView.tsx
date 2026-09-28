@@ -46,6 +46,7 @@ export type AdmissionFormPrintData = {
   pictureBase64?: string;
   academicGroup?: string;
   electiveSubject?: string;
+  qrCodeDataUrl?: string;
 };
 
 export const normalizeRecordToPrintData = (record: Record<string, string | undefined>): AdmissionFormPrintData => {
@@ -90,6 +91,7 @@ export const normalizeRecordToPrintData = (record: Record<string, string | undef
     pictureBase64: record.picture_base64 || record.pictureBase64 || '',
     academicGroup: record.academic_group || record.academicGroup || '',
     electiveSubject: record.elective_subject || record.electiveSubject || '',
+    qrCodeDataUrl: record.qr_code_data_url || record.qrCodeDataUrl || '',
   };
 };
 
@@ -101,13 +103,17 @@ export const buildAdmissionPdfFileName = (studentName?: string): string => {
   return `${cleaned || 'Admission_Form'}.pdf`;
 };
 
-// Deep-links to the records page's own admin-gated view for a saved row —
+// Deep-links to the records page's own view for a record —
 // scanning the printed form's QR code opens this record straight in the
-// admin records screen (login already required there) so staff can confirm
+// records screen (login already required there) so staff can confirm
 // the printed copy matches what's actually on file.
-export const buildAdmissionVerifyUrl = (rowNumber?: string) => {
-  if (!rowNumber || typeof window === 'undefined') return undefined;
-  return `${window.location.origin}/ggss-nishtar-road/admin/admission-form/records?verify=${encodeURIComponent(rowNumber)}`;
+export const buildAdmissionVerifyUrl = (rowNumber?: string, srNo?: string) => {
+  if (typeof window === 'undefined') return undefined;
+  const target = rowNumber ? String(rowNumber).trim() : srNo ? String(srNo).trim() : '';
+  if (!target) {
+    return `${window.location.origin}/ggss-nishtar-road/admin/admission-form/records`;
+  }
+  return `${window.location.origin}/ggss-nishtar-road/admin/admission-form/records?verify=${encodeURIComponent(target)}`;
 };
 
 export const downloadBlob = (blob: Blob, fileName: string) => {
@@ -121,7 +127,26 @@ export const downloadBlob = (blob: Blob, fileName: string) => {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 };
 
-export async function generateAdmissionA4PdfBlob(container: HTMLElement): Promise<Blob> {
+export async function generateAdmissionA4PdfBlob(
+  container: HTMLElement,
+  options?: { qrDataUrl?: string }
+): Promise<Blob> {
+  // If an updated QR code data URL was supplied, guarantee the DOM has it
+  if (options?.qrDataUrl) {
+    const qrImg = container.querySelector<HTMLImageElement>('img[data-qr="true"]');
+    if (qrImg) {
+      qrImg.src = options.qrDataUrl;
+    } else {
+      const qrBox = container.querySelector<HTMLElement>('[data-qr-box="true"]');
+      if (qrBox) {
+        qrBox.innerHTML = `
+          <img src="${options.qrDataUrl}" alt="Verification QR code" data-qr="true" style="height:42px;width:42px;object-fit:contain;margin:0 auto;display:block;" />
+          <p style="margin-top:1px;font-size:7px;font-weight:600;text-transform:uppercase;line-height:1;letter-spacing:0.025em;color:#475569;text-align:center;">Scan to verify</p>
+        `;
+      }
+    }
+  }
+
   const images = Array.from(container.querySelectorAll('img'));
   await Promise.all(
     images.map(
@@ -212,35 +237,61 @@ function Field({
 
 export const AdmissionFormPrintView = forwardRef<
   HTMLDivElement,
-  { data: AdmissionFormPrintData; className?: string; id?: string; verifyUrl?: string }
->(function AdmissionFormPrintView({ data, className = '', id, verifyUrl }, ref) {
+  {
+    data: AdmissionFormPrintData;
+    className?: string;
+    id?: string;
+    verifyUrl?: string;
+    qrCodeDataUrl?: string;
+  }
+>(function AdmissionFormPrintView({ data, className = '', id, verifyUrl, qrCodeDataUrl: passedQrDataUrl }, ref) {
   const photoSrc = data.pictureBase64
     ? data.pictureBase64.startsWith('data:')
       ? data.pictureBase64
       : `data:image/jpeg;base64,${data.pictureBase64}`
     : null;
 
-  // The QR only appears once a record has a verifyUrl (i.e. it has already
-  // been saved and has a row number) — a still-being-filled draft has
-  // nothing yet to verify against, so it stays off that view.
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(
+    passedQrDataUrl || data.qrCodeDataUrl || null
+  );
+
   useEffect(() => {
-    let cancelled = false;
-    if (!verifyUrl) {
+    if (passedQrDataUrl) {
+      setQrDataUrl(passedQrDataUrl);
+      return;
+    }
+    if (data.qrCodeDataUrl) {
+      setQrDataUrl(data.qrCodeDataUrl);
+      return;
+    }
+
+    const targetUrl =
+      verifyUrl ||
+      buildAdmissionVerifyUrl(undefined, data.srNo || data.studentName);
+
+    if (!targetUrl) {
       setQrDataUrl(null);
       return;
     }
-    QRCode.toDataURL(verifyUrl, { width: 160, margin: 0, errorCorrectionLevel: 'M' })
+
+    let cancelled = false;
+    QRCode.toDataURL(targetUrl, {
+      width: 160,
+      margin: 0,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#000000', light: '#ffffff' },
+    })
       .then((url) => {
         if (!cancelled) setQrDataUrl(url);
       })
       .catch(() => {
         if (!cancelled) setQrDataUrl(null);
       });
+
     return () => {
       cancelled = true;
     };
-  }, [verifyUrl]);
+  }, [verifyUrl, data.qrCodeDataUrl, passedQrDataUrl, data.srNo, data.studentName]);
 
   return (
     <div
@@ -432,17 +483,24 @@ export const AdmissionFormPrintView = forwardRef<
 
       {/* Parent Signature + verification QR */}
       <div className="mt-[14px] flex items-end justify-between">
-        {qrDataUrl ? (
-          <div className="text-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qrDataUrl} alt="Verification QR code" className="h-[42px] w-[42px]" />
-            <p className="mt-[1px] text-[7px] font-semibold uppercase leading-none tracking-wide text-slate-600">
-              Scan to verify
-            </p>
-          </div>
-        ) : (
-          <div />
-        )}
+        <div data-qr-box="true" className="text-center min-w-[42px] min-h-[42px]">
+          {qrDataUrl ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={qrDataUrl}
+                alt="Verification QR code"
+                data-qr="true"
+                className="h-[42px] w-[42px] object-contain mx-auto"
+              />
+              <p className="mt-[1px] text-[7px] font-semibold uppercase leading-none tracking-wide text-slate-600 text-center">
+                Scan to verify
+              </p>
+            </>
+          ) : (
+            <div className="h-[42px] w-[42px]" />
+          )}
+        </div>
         <div className="w-[230px] text-center">
           <div className="h-[24px] border-b border-black mb-[2px]" />
           <p className="text-[11px] font-bold text-black">Parents / Guardian&apos;s Sign.</p>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { FiPrinter, FiEye, FiEdit2, FiX } from 'react-icons/fi';
 import { FaFilePdf } from 'react-icons/fa';
+import QRCode from 'qrcode';
 import {
   AdmissionFormPrintView,
   normalizeRecordToPrintData,
@@ -142,6 +143,36 @@ export default function AdmissionRecordsPage() {
   const printContainerRef = useRef<HTMLDivElement>(null);
   const offscreenPrintRef = useRef<HTMLDivElement>(null);
   const [offscreenRecord, setOffscreenRecord] = useState<AdmissionRecord | null>(null);
+  const [printRecordState, setPrintRecordState] = useState<AdmissionRecord | null>(null);
+  const [printQrDataUrl, setPrintQrDataUrl] = useState<string>('');
+
+  const [adminPassword, setAdminPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminPassword.trim()) return;
+    setIsLoggingIn(true);
+    setLoginError('');
+    try {
+      const response = await fetch('/api/staff-records/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminPassword }),
+      });
+      const data = await parseJsonResponse(response);
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Incorrect password.');
+      }
+      setAuthenticated(true);
+      setAdminPassword('');
+    } catch (err) {
+      setLoginError(err instanceof Error ? err.message : 'Login failed.');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   useEffect(() => {
     const checkSession = async () => {
@@ -335,14 +366,31 @@ export default function AdmissionRecordsPage() {
     }
   };
 
-  const handlePrintRecord = (record: AdmissionRecord) => {
+  const handlePrintRecord = async (record: AdmissionRecord) => {
     const previousTitle = document.title;
     const studentName = (record.student_name || 'Student').trim();
     document.title = `${studentName} - Admission Form`;
-    window.print();
-    window.setTimeout(() => {
-      document.title = previousTitle;
-    }, 1000);
+
+    const verifyUrl = buildAdmissionVerifyUrl(record.row_number, record.sr_no);
+    let qrDataUrl = '';
+    if (verifyUrl) {
+      try {
+        qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 160, margin: 0, errorCorrectionLevel: 'M' });
+      } catch (err) {
+        console.warn('QR error:', err);
+      }
+    }
+
+    setPrintRecordState(record);
+    setPrintQrDataUrl(qrDataUrl);
+
+    // Give React time to render the standalone print root
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.title = previousTitle;
+      }, 1000);
+    }, 150);
   };
 
   const handleDownloadPdf = async (record: AdmissionRecord) => {
@@ -350,8 +398,17 @@ export default function AdmissionRecordsPage() {
     if (!targetEl) return;
     setDownloadingPdf(true);
     try {
+      const verifyUrl = buildAdmissionVerifyUrl(record.row_number, record.sr_no);
+      let qrDataUrl = '';
+      if (verifyUrl) {
+        try {
+          qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 160, margin: 0, errorCorrectionLevel: 'M' });
+        } catch (err) {
+          console.warn('QR error:', err);
+        }
+      }
       const fileName = buildAdmissionPdfFileName(record.student_name);
-      const blob = await generateAdmissionA4PdfBlob(targetEl);
+      const blob = await generateAdmissionA4PdfBlob(targetEl, { qrDataUrl: qrDataUrl || undefined });
       downloadBlob(blob, fileName);
     } catch (error) {
       console.error('PDF generation error:', error);
@@ -363,12 +420,12 @@ export default function AdmissionRecordsPage() {
 
   const handleRowPrint = async (record: AdmissionRecord) => {
     setPrintingRowId(record.row_number);
-    const full = await ensureFullRecord(record);
-    setViewRecord(full);
-    setPrintingRowId(null);
-    setTimeout(() => {
-      handlePrintRecord(full);
-    }, 120);
+    try {
+      const full = await ensureFullRecord(record);
+      await handlePrintRecord(full);
+    } finally {
+      setPrintingRowId(null);
+    }
   };
 
   const handleRowDownloadPdf = async (record: AdmissionRecord) => {
@@ -376,10 +433,19 @@ export default function AdmissionRecordsPage() {
     try {
       const full = await ensureFullRecord(record);
       setOffscreenRecord(full);
-      await new Promise<void>((res) => setTimeout(res, 180));
+      const verifyUrl = buildAdmissionVerifyUrl(full.row_number, full.sr_no);
+      let qrDataUrl = '';
+      if (verifyUrl) {
+        try {
+          qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 160, margin: 0, errorCorrectionLevel: 'M' });
+        } catch (err) {
+          console.warn('QR error:', err);
+        }
+      }
+      await new Promise<void>((res) => setTimeout(res, 60));
       if (offscreenPrintRef.current) {
         const fileName = buildAdmissionPdfFileName(full.student_name);
-        const blob = await generateAdmissionA4PdfBlob(offscreenPrintRef.current);
+        const blob = await generateAdmissionA4PdfBlob(offscreenPrintRef.current, { qrDataUrl: qrDataUrl || undefined });
         downloadBlob(blob, fileName);
       }
     } catch (error) {
@@ -402,17 +468,48 @@ export default function AdmissionRecordsPage() {
   if (!authenticated) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-        <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <p className="mb-2 text-sm font-bold text-slate-800">Admin access only</p>
-          <p className="mb-4 text-xs text-slate-500">
-            Please login from the Admin Dashboard first — the admission-desk password does not open this page.
-          </p>
-          <Link
-            href="/ggss-nishtar-road/admin"
-            className="inline-block rounded-xl bg-[#1a3a6b] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#132c52]"
-          >
-            Go to Admin Dashboard
-          </Link>
+        <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 text-center">
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1a3a6b]/10 text-[#1a3a6b]">
+              <span className="text-2xl">🔐</span>
+            </div>
+            <p className="text-base font-bold text-slate-900">Admin Access Required</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Enter Admin Password to verify and view student admission records.
+            </p>
+          </div>
+
+          <form onSubmit={handleAdminLogin} className="space-y-3">
+            <div>
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="Enter Admin Password"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#1a3a6b]"
+                autoFocus
+              />
+            </div>
+            {loginError ? (
+              <p className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700">{loginError}</p>
+            ) : null}
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full rounded-xl bg-[#1a3a6b] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#132c52] disabled:opacity-60"
+            >
+              {isLoggingIn ? 'Verifying...' : 'Login & View Record'}
+            </button>
+          </form>
+
+          <div className="mt-4 text-center">
+            <Link
+              href="/ggss-nishtar-road/admin"
+              className="text-xs text-slate-500 transition hover:text-slate-800"
+            >
+              ← Back to Admin Dashboard
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -774,10 +871,26 @@ export default function AdmissionRecordsPage() {
         </div>
       ) : null}
 
+      {/* Dedicated Top-Level Print Target (Outside any modal or scroll container) */}
+      <div id="records-standalone-print-root">
+        {printRecordState ? (
+          <AdmissionFormPrintView
+            data={normalizeRecordToPrintData(printRecordState)}
+            verifyUrl={buildAdmissionVerifyUrl(printRecordState.row_number, printRecordState.sr_no)}
+            qrCodeDataUrl={printQrDataUrl || undefined}
+          />
+        ) : null}
+      </div>
+
       <style>{`
         @page {
           size: A4 portrait;
           margin: 0;
+        }
+        @media screen {
+          #records-standalone-print-root {
+            display: none !important;
+          }
         }
         @media print {
           html, body {
@@ -785,40 +898,34 @@ export default function AdmissionRecordsPage() {
             padding: 0 !important;
             background: #fff !important;
             width: 210mm !important;
-            height: 297mm !important;
-            overflow: hidden !important;
+            overflow: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
           body * {
             visibility: hidden !important;
           }
-          #records-print-wrapper,
-          #records-print-wrapper * {
+          #records-standalone-print-root,
+          #records-standalone-print-root * {
             visibility: visible !important;
           }
-          #records-print-wrapper {
-            position: fixed !important;
+          #records-standalone-print-root {
+            display: block !important;
+            position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 210mm !important;
-            /* max-height (not a fixed height) + overflow:hidden is just a
-               safety net for an unusually long field. No padding here —
-               AdmissionFormPrintView already carries its own 34px/42px
-               padding, and stacking 10mm/12mm on top of that pushed real
-               content past 297mm, so the bottom of the form (office-use
-               rows, documents footer) was being silently clipped. */
-            max-height: 297mm !important;
-            overflow: hidden !important;
-            margin: 0 !important;
+            overflow: visible !important;
+            margin: 0 auto !important;
             padding: 0 !important;
             background: #fff !important;
             border: none !important;
             box-shadow: none !important;
             box-sizing: border-box !important;
-            z-index: 99999 !important;
+            z-index: 9999999 !important;
           }
-          .no-print {
+          .no-print,
+          #records-print-wrapper {
             display: none !important;
           }
         }

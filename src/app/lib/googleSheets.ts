@@ -223,7 +223,7 @@ export const appendQuizRowToSheet = async (options: QuizSheetAppendOptions) => {
   const spreadsheetId = resolveSpreadsheetId(options.spreadsheetId);
   const sheets = getGoogleSheetsClient();
 
-  await sheets.spreadsheets.values.append({
+  const response = await sheets.spreadsheets.values.append({
     spreadsheetId,
     range: options.range,
     valueInputOption: 'USER_ENTERED',
@@ -232,6 +232,8 @@ export const appendQuizRowToSheet = async (options: QuizSheetAppendOptions) => {
       values: [[...options.values]],
     },
   });
+
+  return response.data;
 };
 
 export const updateQuizRowInSheet = async (options: QuizSheetUpdateOptions) => {
