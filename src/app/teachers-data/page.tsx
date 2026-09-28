@@ -722,6 +722,23 @@ export default function StaffRecordPage() {
               </button>
             ) : null}
           </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-teal-50/70 p-3 rounded-xl border border-teal-200/60">
+            <div>
+              <p className="text-xs font-bold text-teal-900">
+                📝 اساتذہ کا ذاتی کوائف و تقرری فارم (14 Columns Form)
+              </p>
+              <p className="text-[11px] text-teal-700">
+                صرف اپنے پرسنل نمبر کے ذریعے تصدیق کریں، ریکارڈ دیکھیں اور ضرورت پڑنے پر تبدیلی کریں۔
+              </p>
+            </div>
+            <a
+              href="/teacher-personal-form"
+              className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition whitespace-nowrap"
+            >
+              فارم کھولیں (Open Form) →
+            </a>
+          </div>
         </div>
 
         {loading ? <p className="rounded-xl bg-white p-4 text-sm text-slate-600">Loading secure staff directory...</p> : null}

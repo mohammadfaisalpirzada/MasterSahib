@@ -17,6 +17,14 @@ type QuickCard = {
 
 const quickCards: QuickCard[] = [
   {
+    title: 'Teacher Personal Data Form',
+    description: 'اساتذہ کا ذاتی کوائف و تقرری فارم — تصدیق بذریعہ پرسنل نمبر (PID) اور کوائف میں محفوظ تبدیلی۔',
+    href: '/teacher-personal-form',
+    accent: 'from-teal-600 via-emerald-600 to-cyan-700',
+    icon: '📝',
+    newUntil: '2026-12-31T23:59:59+05:00',
+  },
+  {
     title: 'MasterSahib Softwares',
     description: 'Explore proprietary AI software suites, MasterSahib Video Editor (MSVE), and innovative digital tools.',
     href: '/softwares',
