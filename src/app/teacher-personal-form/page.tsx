@@ -36,6 +36,7 @@ export default function TeacherPersonalFormPage() {
   // Verified record & Session state
   const [viewToken, setViewToken] = useState<string>('');
   const [record, setRecord] = useState<TeacherRecordData | null>(null);
+  const [showPidInView, setShowPidInView] = useState(false);
 
   // Edit Security Re-verification Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -386,6 +387,8 @@ export default function TeacherPersonalFormPage() {
                               onClick={() => {
                                 setSelectedRowNumber(t.rowNumber);
                                 setIsDropdownOpen(false);
+                                setPersonalNumberInput('');
+                                setShowPassword(false);
                                 setVerifyError('');
                               }}
                               className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm flex items-center justify-between hover:bg-teal-50/80 transition ${
@@ -411,18 +414,19 @@ export default function TeacherPersonalFormPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="block text-sm font-semibold text-slate-700">
-                    پرسنل نمبر درج کریں (Enter Personal Number / PID) <span className="text-rose-500">*</span>
+                    پاس ورڈ / پرسنل نمبر درج کریں (Enter Password) <span className="text-rose-500">*</span>
                   </label>
-                  <span className="text-xs text-teal-600 font-medium">
-                    (آپ کا پاس ورڈ آپ کا پرسنل نمبر ہے)
+                  <span className="text-xs text-slate-400 font-medium">
+                    (Password Required)
                   </span>
                 </div>
 
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="مثال: 10455151"
+                    placeholder=""
                     value={personalNumberInput}
+                    autoComplete="new-password"
                     onChange={(e) => {
                       setPersonalNumberInput(e.target.value);
                       setVerifyError('');
@@ -544,7 +548,21 @@ export default function TeacherPersonalFormPage() {
                       <div className="text-[11px] uppercase tracking-wider text-teal-200 font-semibold">
                         پرسنل نمبر (PID No)
                       </div>
-                      <div className="text-lg font-mono font-bold">{record.pid_no || '—'}</div>
+                      <div className="text-lg font-mono font-bold flex items-center sm:justify-end gap-2 mt-0.5">
+                        <span>{showPidInView ? (record.pid_no || '—') : '••••••••'}</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowPidInView(!showPidInView)}
+                          className="text-teal-200 hover:text-white p-1 rounded transition"
+                          title={showPidInView ? 'Hide Personal Number' : 'Show Personal Number'}
+                        >
+                          {showPidInView ? (
+                            <HiOutlineEyeOff className="w-4 h-4" />
+                          ) : (
+                            <HiOutlineEye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
                       <div className="text-[11px] text-teal-200 font-mono mt-0.5">
                         CNIC: {record.cnic_no || '—'}
                       </div>
@@ -597,11 +615,28 @@ export default function TeacherPersonalFormPage() {
 
                     {/* PID No */}
                     <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80">
-                      <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        5. PID No. (پرسنل نمبر)
+                      <div className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                        <span>5. PID No. (پرسنل نمبر)</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowPidInView(!showPidInView)}
+                          className="text-teal-700 hover:text-teal-900 text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                        >
+                          {showPidInView ? (
+                            <>
+                              <HiOutlineEyeOff className="w-3.5 h-3.5" />
+                              <span>چھپائیں (Hide)</span>
+                            </>
+                          ) : (
+                            <>
+                              <HiOutlineEye className="w-3.5 h-3.5" />
+                              <span>دیکھیں (Show)</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                       <div className="text-sm font-mono font-bold text-teal-700 mt-1">
-                        {record.pid_no || '—'}
+                        {showPidInView ? (record.pid_no || '—') : '••••••••'}
                       </div>
                     </div>
 
@@ -1019,8 +1054,9 @@ export default function TeacherPersonalFormPage() {
                   <div className="relative">
                     <input
                       type={showReverifyPassword ? 'text' : 'password'}
-                      placeholder="اپنا پرسنل نمبر لکھیں"
+                      placeholder=""
                       value={reverifyPasswordInput}
+                      autoComplete="new-password"
                       onChange={(e) => {
                         setReverifyPasswordInput(e.target.value);
                         setReverifyError('');
