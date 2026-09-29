@@ -4,6 +4,7 @@ import AppShell from "./components/AppShell";
 import { Providers } from "./providers";
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import GoogleAdsense from "./components/GoogleAdsense";
+import { getCurrentTheme, getThemeCssVariables } from "@/lib/theme";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://themastersahib.com"),
@@ -98,10 +99,21 @@ export default function RootLayout({
 }>) {
   const gaId = process.env.GOOGLE_ANALYTICS_ID || '';
   const adsenseId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_PUB || '';
+  const activeTheme = getCurrentTheme();
+  const themeCss = getThemeCssVariables(activeTheme);
+  const themeCssRules = Object.entries(themeCss)
+    .map(([key, value]) => `${key}: ${value};`)
+    .join(' ');
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <style
+          id="ms-centralized-theme"
+          dangerouslySetInnerHTML={{
+            __html: `:root { ${themeCssRules} }`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -112,7 +124,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-[#f4f7fb] text-slate-900">
+      <body className="min-h-screen text-slate-900 transition-colors duration-300">
         <GoogleAnalytics gaId={gaId} />
         {adsenseId && <GoogleAdsense publisherId={adsenseId} />}
         <Providers>

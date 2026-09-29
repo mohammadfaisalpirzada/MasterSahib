@@ -9,6 +9,7 @@ import { HiChevronDown, HiOutlineMenuAlt3, HiOutlineMoon, HiOutlineSun, HiOutlin
 
 import { educationalResourceNavLinks } from '@/app/lib/educationalResources';
 import { govtFormNavLinks } from '@/app/lib/govtForms';
+import { getCurrentTheme } from '@/lib/theme';
 
 type NavItem = {
   label: string;
@@ -59,6 +60,11 @@ const navItems: NavItem[] = [
     href: '/govt-forms',
     children: govtFormNavLinks,
   },
+  {
+    label: 'Teacher Personal Form',
+    desktopLabel: 'Teacher Form',
+    href: '/teacher-personal-form',
+  },
   { label: 'Contact', href: '/contact' },
 ];
 
@@ -76,6 +82,7 @@ const desktopMoreItems = [
 ];
 
 export default function Navbar() {
+  const theme = getCurrentTheme();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openDesktopDropdown, setOpenDesktopDropdown] = useState<string | null>(null);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
@@ -163,7 +170,7 @@ export default function Navbar() {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-40 w-full border-b border-indigo-300/40 bg-gradient-to-r from-indigo-700 via-indigo-600 to-cyan-600 text-white shadow-lg"
+      className={`sticky top-0 z-40 w-full border-b border-white/15 bg-gradient-to-r ${theme.navGradient} text-white shadow-md transition-colors duration-300`}
     >
       <nav className="mx-auto flex w-full max-w-[1700px] items-center justify-between gap-4 px-3 py-3 sm:px-6 lg:px-10">
         <Link
