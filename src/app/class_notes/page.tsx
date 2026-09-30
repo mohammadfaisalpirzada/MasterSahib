@@ -1123,31 +1123,49 @@ function CurriculumContent() {
             <article className="max-w-4xl mx-auto space-y-8 text-left" dir="ltr">
               
               {/* ================= E-BOOK CHAPTER HEADER & BANNER ================= */}
-              <div className="relative rounded-3xl overflow-hidden border border-slate-300 dark:border-slate-800 shadow-2xl group print:border-none print:shadow-none">
-                {activeChapterData.chapter.bannerImage ? (
-                  <div className="relative w-full aspect-[21/9] min-h-[220px] max-h-[360px] bg-slate-900">
+              {activeChapterData.chapter.bannerImage ? (
+                <div className="space-y-4 print:space-y-2">
+                  {/* Clean full-width banner graphic without cropping or text overlap */}
+                  <div className="w-full overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl bg-slate-950 print:border-none print:shadow-none">
                     <Image
                       src={activeChapterData.chapter.bannerImage}
                       alt={activeChapterData.chapter.title}
-                      fill
-                      className="object-cover"
+                      width={1200}
+                      height={500}
+                      className="w-full h-auto object-contain block"
                       priority
                       unoptimized
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-6 md:p-8 text-center items-center">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 backdrop-blur border border-white/20 text-xs font-bold uppercase tracking-wider text-slate-200 w-fit mb-2">
+                  </div>
+
+                  {/* Dedicated title and metadata card directly below banner */}
+                  <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 md:p-8 shadow-md backdrop-blur-sm space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
                         <span>{activeChapterData.currentClass?.standardName || activeChapterData.currentClass?.name}</span>
                         <span>•</span>
                         <span>{activeChapterData.currentSubject?.name}</span>
                         <span>•</span>
-                        <span className="text-emerald-400">{readingTime}</span>
+                        <span className="text-emerald-600 dark:text-emerald-400">{readingTime}</span>
                       </div>
-                      <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-white leading-tight drop-shadow-md text-center max-w-2xl mx-auto">
-                        {activeChapterData.chapter.title}
-                      </h1>
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        ★ MasterSahib Academic Series
+                      </span>
                     </div>
+
+                    <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                      {activeChapterData.chapter.title}
+                    </h1>
+
+                    <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
+                      {activeTab === 'notes'
+                        ? 'Standard Scheme of Studies, Learning Outcomes (SLOs), Lesson Summaries, and Solved Textbook Exercises.'
+                        : 'Comprehensive Lesson Planning, Term Syllabus Scheme, and Teacher Pedagogical Guides.'}
+                    </p>
                   </div>
-                ) : (
+                </div>
+              ) : (
+                <div className="relative rounded-3xl overflow-hidden border border-slate-300 dark:border-slate-800 shadow-2xl group print:border-none print:shadow-none">
                   <div
                     className={`w-full min-h-[190px] md:min-h-[250px] bg-gradient-to-r ${gradientClass} flex flex-col justify-end p-6 md:p-8 relative text-white text-center items-center`}
                   >
@@ -1173,8 +1191,8 @@ function CurriculumContent() {
                       </p>
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* ================= CHAPTER CONTENT: BOOK-STYLE READER ================= */}
               <div className={`rounded-3xl p-6 md:p-10 lg:p-12 space-y-6 ${styles.card} border print:bg-white print:text-black print:border-none print:shadow-none print:p-0 text-left`} dir="ltr">

@@ -207,7 +207,7 @@ export default function HomePage() {
   });
 
   return (
-    <main className="min-h-screen transition-colors duration-300" style={{ backgroundColor: theme.bgMain }}>
+    <main className="min-h-screen bg-[var(--ms-bg-main)] text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <WorkshopBannerCarousel />
 
       {/* Top Quick Contact & Status Bar (Light/Sober Cool Palette) */}
@@ -359,20 +359,26 @@ export default function HomePage() {
       </section>
 
       {/* All Tools Section with Category Filter Tabs */}
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest" style={{ color: theme.primary }}>
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: theme.primary }}></span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/60 bg-sky-50/90 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-sky-800 shadow-sm dark:border-sky-800/80 dark:bg-sky-950/70 dark:text-sky-300">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-500"></span>
+              </span>
               Directory of Educational Tools
             </div>
-            <h2 className="mt-1 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
-              Academic & Teacher Tools
+            <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl lg:text-4xl">
+              Academic & Teacher <span className="bg-gradient-to-r from-sky-600 via-teal-600 to-indigo-600 bg-clip-text text-transparent dark:from-sky-400 dark:via-teal-300 dark:to-indigo-300">Tools</span>
             </h2>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              All digital learning software, school utilities, and teacher tools in one unified workspace.
+            </p>
           </div>
 
           {/* Category Filter Tabs - Touch friendly for Mobile */}
-          <div className="flex flex-wrap gap-1.5 rounded-2xl border border-slate-200/80 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-wrap gap-1.5 rounded-2xl border border-slate-200/90 bg-white/90 p-1.5 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
             {(
               [
                 { id: 'all', label: 'All Tools' },
@@ -386,12 +392,11 @@ export default function HomePage() {
                 <button
                   key={tab.id}
                   onClick={() => setSelectedCategory(tab.id)}
-                  className={`rounded-xl px-3 py-1.5 text-xs font-bold transition min-h-[36px] ${
+                  className={`rounded-xl px-3.5 py-2 text-xs font-bold transition min-h-[38px] ${
                     active
-                      ? 'text-white shadow-sm'
+                      ? 'bg-gradient-to-r from-sky-600 to-teal-600 text-white shadow-md'
                       : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                   }`}
-                  style={active ? { backgroundColor: theme.primary } : undefined}
                 >
                   {tab.label}
                 </button>
@@ -401,7 +406,7 @@ export default function HomePage() {
         </div>
 
         {/* Tools Grid: 1 column on mobile, 2 on small tablet, 3 on tablet, 4 on desktop */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredTools.map((tool) => {
             const showNewBadge = Boolean(tool.newUntil) && now <= new Date(tool.newUntil as string).getTime();
 
@@ -409,26 +414,49 @@ export default function HomePage() {
               <Link
                 key={tool.title}
                 href={tool.href}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/90 bg-white/95 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-sky-300 hover:shadow-xl hover:shadow-sky-500/10 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-sky-700 dark:hover:shadow-black/40 backdrop-blur-sm"
               >
+                {/* Top expanding gradient accent line */}
+                <div
+                  className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${tool.accent} opacity-80 transition-all duration-300 group-hover:h-1.5 group-hover:opacity-100`}
+                />
+
+                {/* Ambient corner radial hover glow */}
+                <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-gradient-to-br from-sky-400/15 via-teal-400/10 to-transparent blur-2xl transition-all duration-300 group-hover:scale-150 group-hover:opacity-100" />
+
+                {/* Badge with live pulsing dot for NEW */}
                 {showNewBadge || tool.badge ? (
-                  <span
-                    className="absolute right-4 top-4 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-sm"
-                    style={{
-                      backgroundColor: showNewBadge ? '#ef4444' : theme.badgeBg,
-                      color: showNewBadge ? '#ffffff' : theme.badgeText,
-                    }}
-                  >
-                    {showNewBadge ? 'NEW' : tool.badge}
-                  </span>
+                  <div className="absolute right-4 top-4 z-10">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-sm ${
+                        showNewBadge
+                          ? 'bg-rose-500 text-white shadow-rose-200 dark:shadow-none'
+                          : 'border border-sky-200/60 bg-sky-50 text-sky-800 dark:border-sky-800/60 dark:bg-sky-950/80 dark:text-sky-300'
+                      }`}
+                    >
+                      {showNewBadge ? (
+                        <>
+                          <span className="relative flex h-1.5 w-1.5">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+                          </span>
+                          NEW
+                        </>
+                      ) : (
+                        tool.badge
+                      )}
+                    </span>
+                  </div>
                 ) : null}
 
-                <div>
-                  <div className="mb-3 flex items-center gap-2.5">
-                    <span className="text-2xl">{tool.icon}</span>
-                    <div className={`h-1.5 flex-1 rounded-full bg-gradient-to-r ${tool.accent}`} />
+                {/* Card Content */}
+                <div className="relative z-10">
+                  {/* 3D-styled app icon tile with hover scaling */}
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-50 to-slate-100 p-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-md dark:border-slate-700/80 dark:from-slate-800 dark:to-slate-800/60">
+                    <span className="text-2xl filter drop-shadow-sm">{tool.icon}</span>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition">
+
+                  <h3 className="text-base font-bold text-slate-900 transition-colors duration-200 group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">
                     {tool.title}
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
@@ -436,12 +464,15 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div
-                  className="mt-5 inline-flex items-center text-xs font-bold transition group-hover:translate-x-1"
-                  style={{ color: theme.primary }}
-                >
-                  Open Tool
-                  <span className="ml-1">→</span>
+                {/* Sleek interactive card footer */}
+                <div className="relative z-10 mt-6 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800/80">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    {tool.category === 'teacher' ? 'Teacher Tool' : tool.category === 'academic' ? 'Academic' : 'Software'}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-sky-600 transition-all duration-200 group-hover:gap-1.5 group-hover:text-sky-700 dark:text-sky-400 dark:group-hover:text-sky-300">
+                    Open
+                    <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">→</span>
+                  </span>
                 </div>
               </Link>
             );

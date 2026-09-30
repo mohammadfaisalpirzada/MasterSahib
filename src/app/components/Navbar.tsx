@@ -130,6 +130,21 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains('dark'));
+
+    // If user has not set a manual override, listen to screen/device brightness changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleSystemChange = (e: MediaQueryListEvent) => {
+      try {
+        if (!localStorage.getItem('ms-theme')) {
+          const systemDark = e.matches;
+          setIsDark(systemDark);
+          document.documentElement.classList.toggle('dark', systemDark);
+        }
+      } catch {}
+    };
+
+    mediaQuery.addEventListener('change', handleSystemChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemChange);
   }, []);
 
   const toggleTheme = () => {
