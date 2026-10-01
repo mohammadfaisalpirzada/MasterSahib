@@ -123,11 +123,6 @@ export default function Footer() {
             </h3>
             <ul className="mt-3.5 space-y-2 text-xs">
               <li>
-                <Link href="/teacher-personal-form" className="font-semibold text-slate-700 hover:text-teal-600 dark:text-slate-300 dark:hover:text-teal-400 transition flex items-center gap-1.5">
-                  <span>📝</span> Teacher Personal Data Form
-                </Link>
-              </li>
-              <li>
                 <Link href="/govt-forms" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition flex items-center gap-1.5">
                   <span>📋</span> Printable Govt School Forms
                 </Link>

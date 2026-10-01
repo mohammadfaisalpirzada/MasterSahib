@@ -60,11 +60,6 @@ const navItems: NavItem[] = [
     href: '/govt-forms',
     children: govtFormNavLinks,
   },
-  {
-    label: 'Teacher Personal Form',
-    desktopLabel: 'Teacher Form',
-    href: '/teacher-personal-form',
-  },
   { label: 'Contact', href: '/contact' },
 ];
 

@@ -61,7 +61,6 @@ if (fs.existsSync(nextConfigPath)) {
 
 // 3. Check Core Tools Readiness
 const requiredTools = [
-  { name: 'Teacher Personal Data Form', file: 'src/app/teacher-personal-form/page.tsx' },
   { name: 'MasterSahib Video Editor (MSVE)', file: 'src/app/softwares/page.tsx' },
   { name: 'Student ID Card Studio', file: 'src/app/ggss-nishtar-road/admin/id-cards/page.tsx' },
   { name: 'Class Notes & Books', file: 'src/app/class_notes/page.tsx' },

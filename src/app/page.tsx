@@ -32,16 +32,6 @@ type QuickCard = {
 
 const allTools: QuickCard[] = [
   {
-    title: 'Teacher Personal Data Form',
-    description: 'اساتذہ کا ذاتی کوائف و تقرری فارم — تصدیق بذریعہ پرسنل نمبر (PID) اور کوائف میں محفوظ تبدیلی۔',
-    href: '/teacher-personal-form',
-    accent: 'from-teal-600 via-emerald-600 to-cyan-700',
-    icon: '📝',
-    category: 'teacher',
-    badge: 'Latest Tool',
-    newUntil: '2026-12-31T23:59:59+05:00',
-  },
-  {
     title: 'MasterSahib Video Editor (MSVE)',
     description: 'Proprietary AI Video Merger, Sequence Audio/Video Editor & Social SEO Studio for educators and creators.',
     href: '/softwares/video-editor',
@@ -288,13 +278,13 @@ export default function HomePage() {
               {/* Action Buttons - Touch friendly on mobile (>= 44px) */}
               <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:justify-start pt-2">
                 <Link
-                  href="/teacher-personal-form"
+                  href="/govt-forms"
                   className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                   style={{
                     backgroundColor: theme.primary,
                   }}
                 >
-                  <span>📝</span> Teacher Personal Form
+                  <span>📋</span> Govt School Forms
                   <HiOutlineArrowRight className="h-4 w-4" />
                 </Link>
 
