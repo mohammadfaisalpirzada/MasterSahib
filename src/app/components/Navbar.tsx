@@ -331,14 +331,24 @@ export default function Navbar() {
                   </Link>
                 ))}
                 {canAccessPresentations ? (
-                  <Link
-                    href="/my-presentations"
-                    className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                      isActiveRoute('/my-presentations') ? 'bg-slate-100 dark:bg-slate-800' : ''
-                    }`}
-                  >
-                    My Presentations
-                  </Link>
+                  <>
+                    <Link
+                      href="/client-projects"
+                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
+                        isActiveRoute('/client-projects') ? 'bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400' : ''
+                      }`}
+                    >
+                      💼 Client Projects
+                    </Link>
+                    <Link
+                      href="/my-presentations"
+                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
+                        isActiveRoute('/my-presentations') ? 'bg-slate-100 dark:bg-slate-800' : ''
+                      }`}
+                    >
+                      My Presentations
+                    </Link>
+                  </>
                 ) : null}
               </div>
             </div>
@@ -494,13 +504,22 @@ export default function Navbar() {
               </Link>
 
               {canAccessPresentations ? (
-                <Link
-                  href="/my-presentations"
-                  className="mt-3 block rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-base font-semibold text-white transition hover:bg-white/20"
-                  onClick={() => setIsMobileOpen(false)}
-                >
-                  My Presentations
-                </Link>
+                <>
+                  <Link
+                    href="/client-projects"
+                    className="mt-3 block rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-base font-semibold text-white transition hover:bg-white/20"
+                    onClick={() => setIsMobileOpen(false)}
+                  >
+                    💼 Client Projects
+                  </Link>
+                  <Link
+                    href="/my-presentations"
+                    className="mt-3 block rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-base font-semibold text-white transition hover:bg-white/20"
+                    onClick={() => setIsMobileOpen(false)}
+                  >
+                    My Presentations
+                  </Link>
+                </>
               ) : null}
 
               {status === 'loading' ? (
