@@ -7,7 +7,7 @@ import { HiOutlineDownload, HiOutlinePrinter } from 'react-icons/hi';
 /* ─── Website Topics with images ─── */
 type WsTopic = { id: string; label: string; icon: string; words: string[]; images?: string[] };
 const WEBSITE_TOPICS: WsTopic[] = [
-  { id: 'shapes', label: 'Shapes', icon: '⭐', words: ['Circle', 'Heart', 'Star', 'Triangle', 'Cone', 'Oval', 'Rectangle', 'Square'], images: ['⭕', '❤️', '⭐', '🔺', '🔶', '🥚', '▬', '🟩'] },
+  { id: 'shapes', label: 'Shapes', icon: '⭐', words: ['Circle', 'Rectangle', 'Oval', 'Heart', 'Pentagon', 'Octagon', 'Square', 'Triangle', 'Star', 'Cone', 'Diamond', 'Rhombus', 'Hexagon', 'Crescent', 'Semicircle', 'Trapezoid', 'Parallelogram', 'Cross', 'Arrow'], images: ['⭕', '▭', '🥚', '❤️', '⬟', '🛑', '🟩', '🔺', '⭐', '🍦', '💎', '💠', '⬡', '🌙', '🌗', '⏢', '▱', '➕', '➡️'] },
   { id: 'colors', label: 'Colors', icon: '🌈', words: ['Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Pink', 'Purple', 'Brown'], images: ['🔴', '🔵', '🟢', '🟡', '🟠', '🩷', '🟣', '🟤'] },
   { id: 'animals', label: 'Animals', icon: '🦁', words: ['Cat', 'Dog', 'Lion', 'Tiger', 'Fox', 'Monkey', 'Horse', 'Elephant', 'Rabbit', 'Giraffe', 'Zebra', 'Cow'], images: ['🐱', '🐶', '🦁', '🐯', '🦊', '🐵', '🐴', '🐘', '🐰', '🦒', '🦓', '🐄'] },
   { id: 'birds', label: 'Birds', icon: '🦜', words: ['Parrot', 'Peacock', 'Sparrow', 'Crow', 'Penguin', 'Eagle', 'Pigeon', 'Owl'], images: ['🦜', '🦚', '🐦', '🐦‍⬛', '🐧', '🦅', '🕊️', '🦉'] },

@@ -37,7 +37,7 @@ const createToken = (data: Omit<TokenPayload, 'iat'>): string => {
   return `${payload}.${hmacSign(payload)}`;
 };
 
-export const verifyToken = (token: string): TokenPayload | null => {
+const verifyToken = (token: string): TokenPayload | null => {
   try {
     const lastDot = token.lastIndexOf('.');
     if (lastDot === -1) return null;

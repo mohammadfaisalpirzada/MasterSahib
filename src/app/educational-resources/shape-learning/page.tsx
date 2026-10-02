@@ -4,6 +4,6 @@ import { useRouter } from 'next/navigation';
 
 export default function OldShapeLearningPage() {
   const router = useRouter();
-  useEffect(() => { router.replace('/educational-resources/fun-learning'); }, [router]);
+  useEffect(() => { router.replace('/educational-resources/fun-learning?tab=shapes'); }, [router]);
   return null;
 }

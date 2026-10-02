@@ -117,12 +117,12 @@ const RELIGION_OPTIONS = ['Islam', 'Christianity', 'Hinduism', 'Other'];
 const NATIONALITY_OPTIONS = ['Pakistani', 'Other'];
 
 // BSEK / Sindh Govt SSC Groups & Electives (for Class IX and X)
-export const ACADEMIC_GROUPS = [
+const ACADEMIC_GROUPS = [
   'Science',
   'General (Arts)',
 ] as const;
 
-export const ELECTIVE_OPTIONS: Record<string, string[]> = {
+const ELECTIVE_OPTIONS: Record<string, string[]> = {
   Science: ['Biology', 'Computer Science'],
   'General (Arts)': ['General Science', 'Civics', 'Economics', 'Education', 'Islamic Studies (Elective)', 'Other'],
 };
