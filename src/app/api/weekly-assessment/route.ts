@@ -10,7 +10,6 @@ export async function GET() {
   const activeTheme = getCurrentTheme(weekNumber);
 
   const coreTools = [
-    { name: 'Teacher Personal Data Form', path: '/teacher-personal-form', status: 'operational', priority: 'high' },
     { name: 'MasterSahib Video Editor (MSVE)', path: '/softwares/video-editor', status: 'operational', priority: 'high' },
     { name: 'Student ID Card Studio', path: '/ggss-nishtar-road/admin/id-cards', status: 'operational', priority: 'high' },
     { name: 'Timetable Generator', path: '/educational-resources/timetable-generator', status: 'operational', priority: 'high' },

@@ -1,0 +1,81 @@
+{
+  "shaheen_school": {
+    "id": "shaheen_school",
+    "slug": "shaheen_school",
+    "title": "Shaheen GGSS Campus School Bihar Colony — SSB Booklet 2025–2026",
+    "clientName": "Shaheen GGSS Campus School (Bihar Colony)",
+    "category": "Government School SSB Transformation & Audit Booklet",
+    "description": "Comprehensive 13-page color booklet documenting infrastructure overhaul, classroom renovation, furniture carpentry, electrical/solar installations, and final audit.",
+    "totalPages": 13,
+    "accessKey": "shaheen2026",
+    "watermarkText": "PREVIEW ONLY • THE MASTER SAHIB • CLIENT REVIEW — DO NOT REPRODUCE",
+    "createdAt": "2026-10-01",
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Page 01: Cover Page & Formal Identification",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-01.png"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Page 02: Headmistress & Administrative Office Renovation",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-02.png"
+      },
+      {
+        "pageNumber": 3,
+        "title": "Page 03: Introduction & Profile",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-03.png"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Page 04: Main Entrance Gate & Courtyard",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-04.png"
+      },
+      {
+        "pageNumber": 5,
+        "title": "Page 05: Classrooms Plaster & Paint",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-05.png"
+      },
+      {
+        "pageNumber": 6,
+        "title": "Page 06: Student Desks & Furniture",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-06.png"
+      },
+      {
+        "pageNumber": 7,
+        "title": "Page 07: Steel Almirahs & Office Storage Cabinets Refurbishment",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-07.png"
+      },
+      {
+        "pageNumber": 8,
+        "title": "Page 08: Washrooms & Sanitation",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-08.png"
+      },
+      {
+        "pageNumber": 9,
+        "title": "Page 09: Ventilation & Solar Power",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-09.png"
+      },
+      {
+        "pageNumber": 10,
+        "title": "Page 10: Cleaning Materials & Sanitation Supplies Inventory",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-10.png"
+      },
+      {
+        "pageNumber": 11,
+        "title": "Page 11: Corridors, Stationery & Official Sign-Off",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-11.png"
+      },
+      {
+        "pageNumber": 12,
+        "title": "Page 12: Campus Life & Institutional Directory",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-12.png"
+      },
+      {
+        "pageNumber": 13,
+        "title": "Page 13: Consolidated SSB Expenditure & Final Audit",
+        "imageSrc": "/projects-view/shaheen_school/pages/page-13.png"
+      }
+    ]
+  }
+}

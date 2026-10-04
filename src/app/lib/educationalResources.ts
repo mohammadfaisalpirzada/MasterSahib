@@ -235,7 +235,7 @@ export const educationalResourceItems: EducationalResourceItem[] = [
   },
   {
     title: 'Shape Learning Fun',
-    description: 'Learn shapes like circle, heart, star, triangle, cone, oval, rectangle, square with colors and sounds. Ages 3-4.',
+    description: 'Learn 20 shapes like circle, rectangle, oval, heart, pentagon, octagon, square, triangle, star, cone, diamond, rhombus, hexagon, crescent and more with interactive pronunciation, spelling, and quizzes. Ages 3-6.',
     status: 'Ready',
     href: '/educational-resources/fun-learning?tab=shapes',
     addedOn: '2026-06-24',
