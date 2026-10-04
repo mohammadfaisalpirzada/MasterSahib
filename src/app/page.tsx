@@ -220,11 +220,11 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 text-xs font-semibold sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <span
-              className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-[11px] font-bold shadow-sm"
               style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
             >
-              <HiOutlineSparkles className="h-3 w-3" />
-              Weekly Theme: {theme.name}
+              <HiOutlineSparkles className="h-3.5 w-3.5" />
+              The Master Sahib Academic Series
             </span>
           </div>
 

@@ -16,7 +16,7 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors">
-      {/* Top Banner with Quick Actions & Weekly Theme Notice */}
+      {/* Top Banner with Quick Actions */}
       <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-4 dark:border-slate-800/80 dark:bg-slate-950/50 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
           <div className="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
@@ -25,10 +25,10 @@ export default function Footer() {
               style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
             >
               <HiOutlineSparkles className="h-3 w-3" />
-              Theme: {theme.name}
+              The Master Sahib Portal
             </span>
             <span className="hidden sm:inline">•</span>
-            <span className="hidden sm:inline">Weekly Fresh Sober Cool Colors</span>
+            <span className="hidden sm:inline">SLO Based Educational Resources</span>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-semibold">

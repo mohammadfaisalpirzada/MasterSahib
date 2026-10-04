@@ -142,10 +142,10 @@ export const COOL_SOBER_PALETTES: ThemePalette[] = [
 ];
 
 /**
- * Set to a palette ID (e.g., 'arctic-glacier') to lock in a specific theme,
+ * Set to a palette ID (e.g., 'calm-sage') to lock in a specific theme,
  * or leave null to let it automatically rotate week-by-week.
  */
-export const MANUAL_THEME_OVERRIDE: string | null = null;
+export const MANUAL_THEME_OVERRIDE: string | null = 'calm-sage';
 
 /**
  * Calculates current ISO 8601 week number (1 - 53).
