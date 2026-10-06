@@ -131,3 +131,19 @@ Root cause found by reading the actual components:
 ### 4. Items Skipped / Deferred
 - Full `npm run build` was skipped locally as instructed due to known local bus errors; Vercel remote build performed full static generation and prerendering successfully.
 - No destructive alterations made to existing authentication, databases, or third-party APIs.
+
+
+## [2026-10-06, later same day] SEO visibility follow-up — Google Search Console actions
+
+User reported "master sahib" / "the master sahib" searches weren't surfacing the site, and asked me to handle it directly (signed into Search Console themselves in the browser pane; I then drove it with their permission).
+
+Findings from Search Console (sc-domain:themastersahib.com, verified property already existed from before):
+- Site IS indexed and getting some traffic: 48 clicks / 1.11k impressions in the last 30 days, average position 7.6. Most clicks come from long-tail govt-forms queries ("employee master file creation form", "no dues certificate", etc.), not the brand name itself.
+- The exact query "master sahib" does show the site (1 click, 4 impressions in 30 days) — so it's not literally invisible, just ranking weakly for that specific 2-word phrase. This is a generic-phrase ranking problem (an Urdu/English common phrase, not a unique brand token) that needs time, consistent content and backlinks, not a quick technical fix.
+- **Sitemap had never been submitted to Search Console** despite sitemap.xml being live and correct for weeks — submitted https://themastersahib.com/sitemap.xml just now.
+- Requested fresh indexing of the homepage directly via URL Inspection.
+- Page Indexing report breakdown of the 16 not-indexed pages: 5 correctly blocked by robots.txt (admin/staff/stipend — intentional), 3 "page with redirect" (expected), 2 "alternative page with proper canonical" (expected/fine), 3 "crawled - currently not indexed" (Google chose not to, no action available), and **3 real 404s**: /teaching-tools/exit-ticket and /teaching-tools/fun-learning (two query variants) — leftover links from before the section was renamed to /educational-resources. Fixed with a wildcard redirect in next.config.ts (commit 14faac2).
+
+Still needs the user's own action, not something I can do: a stronger ranking for the bare brand-name search ("master sahib") is primarily a matter of backlinks and consistent brand mentions elsewhere (social profiles, directories, Google Business Profile if applicable) — Search Console submission/indexing alone won't move position 7.6 to position 1 quickly. If the user shares social media links, structured-data `sameAs` entries can be added to help Google associate the phrase with the site as an entity.
+
+Note: hit a `node_modules/next` corruption from an earlier failed `npm install next@16.3.8` attempt this same day (see the dependency-upgrade section above) — `npx tsc` now fails with "Cannot find module 'next'" in this sandboxed environment. This does NOT affect the committed source (package.json/package-lock.json untouched, verified) or the real Vercel build (which installs fresh). A future run should just run a clean `npm install` here first if it needs local typechecking to work again.
