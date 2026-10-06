@@ -1,5 +1,42 @@
 # AI Improvement Log
 
+
+## [2026-10-06] First Device-Access Run: Security Verification + Fixed the Recurring "Loading..." Homepage Bug
+
+### 1. Context
+This is the first time the weekly autonomous caretaker scheduled task actually got local device access and could reach C:\projects\master_sahib (every run from 2026-09-16 through 2026-10-06 earlier today was cloud-only and blocked — see website-auto-improvement.md in project memory for the full trail). Six+ weeks of cloud-only audits had flagged two recurring items; this run finally had the code access needed to resolve them.
+
+### 2. Security audit follow-up (CRITICAL item from security-audit.md, now RESOLVED)
+Verified server-side auth gating on all previously-flagged sensitive routes by reading the actual route handlers (not just the client pages):
+- `/api/staff-records` (GET directory mode) only ever returns name + row id — no CNIC/salary. The POST that returns a full record requires the correct per-employee PID to match first.
+- `/api/staff-records/admin` (full records with CNIC/salary) requires `requireAdminSession()` — a signed, httpOnly, secure, sameSite session cookie checked server-side — before returning any data. Same pattern for `/api/ggss-staff-portal?action=records` (HMAC-signed token, admin role required) and `/api/ggss-stipend` (`requireSession()` cookie check, class-scoped visibility for non-admins).
+- The admin/staff-portal/stipend pages themselves are client components with no data baked into their initial HTML — they only render data after a successful login sets the session cookie and the gated API calls succeed.
+- Conclusion: no active data leak. The routes are protected by real server-side session/token checks, not just "hidden via robots.txt" as feared. Updating security-audit.md in project memory to close this out.
+- Not re-verified this run (lower priority, no signal of a problem): CSP/HSTS response headers, `npm audit`, git history for accidentally committed secrets. Still worth a future pass but no longer blocking.
+
+### 3. Fixed: recurring "Loading ideas..." / "Live Visitors —" stuck-looking homepage widgets (confirmed by cloud WebFetch snapshots 5+ times over 5 weeks)
+Root cause found by reading the actual components:
+- `HomePadletBoard.tsx` (homepage Community Idea Padlet) initialized its `pins` state with 3 hardcoded seed ideas *and* a `padletLoading = true` flag — so the very first server-rendered HTML (what WebFetch and any non-hydrated snapshot sees) showed the "Loading ideas..." banner stacked on top of old seed content at the same time. Confusing, looked broken, not actually broken for real users (hydration fixes it within ~1s), but still bad SSR output and not what WebFetch was repeatedly flagging as a false alarm — it's a real (minor) rendering bug now fixed.
+  - Fix: `pins` now starts empty; the loading banner shows alone until the real fetch resolves, and the 3 seed ideas now only appear as an explicit *error fallback* if `/api/padlet` fails, not as default content shown during normal loading.
+- `HomeVisitorCount.tsx` (homepage Live Visitors counter) had an empty `catch` block with no retry — a single transient failure of the Sheets-backed `/api/visitor-count` call left it showing "—" for the rest of that pageview, forever, with zero recovery.
+  - Fix: added one retry after a 1.5s delay before giving up. Still shows "—" on a genuine outage (by design, non-critical metric), but now survives a one-off blip.
+- Both fixes verified with a scoped `npx tsc --noEmit` against just these two files (full-project typecheck still OOMs on this machine as previously documented — not a new problem).
+- Could NOT fully confirm from this run whether the underlying `/api/padlet` and `/api/visitor-count` endpoints (Google Sheets-backed) are themselves ever actually erroring in production — `/api/*` is robots-disallowed so WebFetch can't probe it, and the device shell's own network egress is allowlisted and blocks themastersahib.com outbound (same restriction as the cloud container, confirmed via curl exit 56 / proxy 403 blocked-by-allowlist). The code is now correct either way (graceful fallback + retry instead of silent permanent "—"/double-loading state); if a future run has broader egress it could directly hit those two endpoints to confirm the Sheets backend itself is healthy.
+
+### 3b. Minor hygiene
+- Added `tsconfig.check*.json` to `.gitignore` — several stray scratch typecheck configs (`tsconfig.check.json`, `tsconfig.check2.json`, `tsconfig.check3.json`, and this run's `tsconfig.check4.json`) have been accumulating in the repo root from past verification runs (device delete permission was never granted, so they can't be cleaned up, only ignored going forward).
+
+### 4. Noted but deliberately left for a future run (needs human decision or more time)
+- Sitemap lastmod date appeared "frozen" across weeks while URL count fluctuated (69–81) in prior cloud-only audits — now explained, not a bug: `sitemap.ts` is a static Next.js metadata route (`lastModified: new Date()` evaluated once per build/deploy, not per request), so the date reflects the last deploy time and the count reflects whatever routes existed in that deploy. No fix needed.
+- CSP/HSTS header audit, `npm audit`, and a git-history secret scan from security-audit.md remain open but low-priority now that the critical data-exposure question is resolved.
+- No new feature added this run — scope was intentionally kept to the two confirmed bugs plus the security verification, given this was the first run with real device access after a long blocked streak. Next run can pick up a small feature addition.
+
+### 5. Deployment
+- Committed: `fix(homepage): resolve stuck Loading/Live-Visitors widgets, verify staff-data auth gating` (see git log for hash).
+- Deployed via `vercel --prod` from C:\projects\master_sahib.
+- Live verification: see result appended by the deploy step below.
+
+
 ## [2026-09-29] Weekly Assessment, Centralized Sober-Cool Theme Architecture, Mobile-Priority Tools Directory & 100% Security Hardening
 
 ### 1. Context & User Objectives
