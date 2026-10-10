@@ -78,6 +78,12 @@ function calculateReadTime(text: string): string {
   return `${minutes} min read`;
 }
 
+function isDecorativeLine(line: string): boolean {
+  const trimmed = line.trim();
+  if (!trimmed) return false;
+  return /^[=\-_*#~`|]{3,}$/.test(trimmed);
+}
+
 function parseTextFile(rawContent: string, fallbackTitle: string): {
   title: string;
   content: string;
@@ -85,76 +91,67 @@ function parseTextFile(rawContent: string, fallbackTitle: string): {
   date: string;
   author: string;
 } {
-  const lines = rawContent.split(/\r?\n/);
+  const lines = rawContent.split(/\r\n|\r|\n/);
   let title = '';
   let category = 'Educational Update';
   let date = '';
   let author = 'The Master Sahib';
-  let bodyLines: string[] = [];
+  const bodyLines: string[] = [];
+  let foundTitle = false;
 
-  let firstLineExtracted = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
 
-  if (rawContent.includes('---')) {
-    const parts = rawContent.split(/---/);
-    const headerPart = parts[0];
-    const bodyPart = parts.slice(1).join('---');
+    if (isDecorativeLine(trimmed)) {
+      continue;
+    }
 
-    for (const line of headerPart.split(/\r?\n/)) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-      if (trimmed.toLowerCase().startsWith('title:')) {
-        title = trimmed.slice(6).trim();
-        firstLineExtracted = true;
-      } else if (trimmed.toLowerCase().startsWith('category:')) {
-        category = trimmed.slice(9).trim();
-      } else if (trimmed.toLowerCase().startsWith('date:')) {
-        date = trimmed.slice(5).trim();
-      } else if (trimmed.toLowerCase().startsWith('author:')) {
-        author = trimmed.slice(7).trim();
-      } else if (!firstLineExtracted) {
-        title = trimmed;
-        firstLineExtracted = true;
+    if (!trimmed) {
+      if (foundTitle) {
+        bodyLines.push('');
+      }
+      continue;
+    }
+
+    // Check key: value metadata patterns (e.g. Category : ..., Date: ..., Author: ..., Title: ...)
+    const colonMatch = trimmed.match(/^([a-zA-Z\s]+)\s*:\s*(.+)$/);
+    if (colonMatch) {
+      const key = colonMatch[1].trim().toLowerCase();
+      const val = colonMatch[2].trim();
+      if (key === 'title') {
+        title = val;
+        foundTitle = true;
+        continue;
+      }
+      if (key === 'category') {
+        category = val;
+        continue;
+      }
+      if (key === 'date') {
+        date = val;
+        continue;
+      }
+      if (key === 'author') {
+        author = val;
+        continue;
+      }
+      if (key === 'platform' || key === 'website') {
+        continue;
       }
     }
-    bodyLines = bodyPart.split(/\r?\n/);
-  } else {
-    // No '---' separator:
-    let isParsingHeaders = true;
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed && !firstLineExtracted) continue;
 
-      if (!firstLineExtracted) {
-        if (trimmed.toLowerCase().startsWith('title:')) {
-          title = trimmed.slice(6).trim();
-        } else {
-          title = trimmed;
-        }
-        firstLineExtracted = true;
-      } else {
-        if (isParsingHeaders && trimmed.toLowerCase().startsWith('category:')) {
-          category = trimmed.slice(9).trim();
-        } else if (isParsingHeaders && trimmed.toLowerCase().startsWith('date:')) {
-          date = trimmed.slice(5).trim();
-        } else if (isParsingHeaders && trimmed.toLowerCase().startsWith('author:')) {
-          author = trimmed.slice(7).trim();
-        } else {
-          isParsingHeaders = false;
-          bodyLines.push(line);
-        }
-      }
+    if (!foundTitle) {
+      title = trimmed;
+      foundTitle = true;
+    } else {
+      bodyLines.push(line);
     }
   }
-
-  if (!title) {
-    title = fallbackTitle;
-  }
-
-  const content = bodyLines.join('\n').trim();
 
   return {
-    title,
-    content,
+    title: title || fallbackTitle,
+    content: bodyLines.join('\n').trim(),
     category,
     date: date || new Date().toISOString().split('T')[0],
     author,
