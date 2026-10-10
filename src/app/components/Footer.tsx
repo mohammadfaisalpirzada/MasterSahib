@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { FaWhatsapp } from 'react-icons/fa';
-import { HiOutlineMail, HiOutlinePhone, HiOutlineSparkles, HiOutlineArrowUp } from 'react-icons/hi';
+import { HiOutlineMail, HiOutlinePhone, HiOutlineArrowUp } from 'react-icons/hi';
 import { getCurrentTheme } from '@/lib/theme';
 
 export default function Footer() {
@@ -24,7 +24,7 @@ export default function Footer() {
               className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide"
               style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
             >
-              <HiOutlineSparkles className="h-3 w-3" />
+              <span>★</span>
               The Master Sahib Portal
             </span>
             <span className="hidden sm:inline">•</span>
@@ -88,6 +88,11 @@ export default function Footer() {
               🚀 Latest AI & Softwares
             </h3>
             <ul className="mt-3.5 space-y-2 text-xs">
+              <li>
+                <Link href="/master_blogs" className="font-bold text-sky-700 hover:text-sky-900 dark:text-sky-300 dark:hover:text-white transition flex items-center gap-1.5">
+                  <span>📢</span> Master Blogs &amp; Posters
+                </Link>
+              </li>
               <li>
                 <Link href="/softwares/video-editor" className="font-semibold text-slate-700 hover:text-sky-600 dark:text-slate-300 dark:hover:text-sky-400 transition flex items-center gap-1.5">
                   <span>🎬</span> MasterSahib Video Editor (MSVE)

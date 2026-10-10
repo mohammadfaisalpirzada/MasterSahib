@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   HiArrowRight, HiCheck, HiGlobeAlt, HiOutlineAcademicCap,
-  HiOutlineLightningBolt, HiOutlineSparkles, HiPhone,
+  HiOutlineLightningBolt, HiPhone,
 } from 'react-icons/hi';
 import { FaWhatsapp } from 'react-icons/fa';
 
@@ -39,12 +39,12 @@ export default function CoursePage() {
         <div className="mt-5 flex flex-col items-start gap-5">
           <span className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] text-cyan-200">10 AI courses · One-to-one sessions</span>
           <div className="inline-flex max-w-3xl items-center gap-3 rounded-3xl border border-white/15 bg-white/10 px-6 py-5 shadow-2xl backdrop-blur-xl sm:px-8 sm:py-6">
-            <HiOutlineSparkles className="h-7 w-7 shrink-0 text-amber-300 sm:h-9 sm:w-9" />
+            <HiOutlineLightningBolt className="h-7 w-7 shrink-0 text-amber-300 sm:h-9 sm:w-9" />
             <h1 className="bg-gradient-to-r from-cyan-200 via-white to-amber-200 bg-clip-text text-2xl font-black leading-[1.15] text-transparent sm:text-4xl">AI Courses in one place.</h1>
           </div>
         </div>
         <p className="mt-4 max-w-2xl leading-7 text-slate-300">Practical, hands-on AI courses for teachers, coordinators and professionals — pick a single tool or master the complete system, without needing any technical background.</p>
-        <div className="mt-6 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-slate-200"><span className="flex items-center gap-2"><HiOutlineSparkles className="text-cyan-300" /> 10 AI courses</span><span className="flex items-center gap-2"><HiGlobeAlt className="text-cyan-300" /> Live online, one-to-one</span><span className="flex items-center gap-2"><HiOutlineAcademicCap className="text-cyan-300" /> Beginner friendly</span></div>
+        <div className="mt-6 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-slate-200"><span className="flex items-center gap-2"><HiOutlineLightningBolt className="text-cyan-300" /> 10 AI courses</span><span className="flex items-center gap-2"><HiGlobeAlt className="text-cyan-300" /> Live online, one-to-one</span><span className="flex items-center gap-2"><HiOutlineAcademicCap className="text-cyan-300" /> Beginner friendly</span></div>
         <div className="mt-8 flex flex-wrap gap-3">
           <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3 font-black text-slate-950"><FaWhatsapp /> WhatsApp to Enroll</a>
           <a href={PHONE_TEL} className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/[.08] px-6 py-3 font-black text-white backdrop-blur"><HiPhone /> Call Now</a>

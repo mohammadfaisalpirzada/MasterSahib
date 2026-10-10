@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   HiArrowRight, HiCheckCircle, HiLockClosed, HiMail, HiOutlineAcademicCap,
-  HiOutlineLightningBolt, HiOutlineSparkles, HiPhone, HiShieldCheck,
+  HiOutlineLightningBolt, HiPhone, HiShieldCheck,
 } from 'react-icons/hi';
 import { FaWhatsapp } from 'react-icons/fa';
 
@@ -116,7 +116,7 @@ export default function CoursesPage() {
               <article key={course.title} className="flex flex-col rounded-3xl border border-white/10 bg-white/[.06] p-6 shadow-2xl backdrop-blur-xl transition hover:-translate-y-1 hover:border-cyan-300/30">
                 <div className="flex items-center gap-2">
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-cyan-300">
-                    <HiOutlineSparkles className="h-5 w-5" />
+                    <HiOutlineAcademicCap className="h-5 w-5" />
                   </span>
                   <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-cyan-200">{course.tag}</span>
                 </div>

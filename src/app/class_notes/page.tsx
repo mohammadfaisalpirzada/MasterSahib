@@ -13,7 +13,6 @@ import {
   HiOutlineArrowLeft,
   HiOutlineArrowRight,
   HiOutlineDocumentText,
-  HiOutlineSparkles,
   HiOutlineClipboardList,
   HiOutlineEye,
 } from 'react-icons/hi';
@@ -1452,7 +1451,7 @@ function CurriculumContent() {
                             dir={block.isUrdu ? 'rtl' : 'ltr'}
                           >
                             <span className={`font-bold flex items-center gap-1.5 text-xs ${styles.calloutBadge} uppercase tracking-wider`}>
-                              <HiOutlineSparkles className="w-4 h-4" /> {block.label}
+                              <span>📌</span> {block.label}
                             </span>
                             <p className={`${styles.calloutText} print:text-black leading-relaxed ${block.isUrdu ? 'text-right font-urdu' : 'text-left'}`}>
                               {block.text}

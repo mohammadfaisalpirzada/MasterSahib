@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   HiOutlineVolumeUp,
-  HiOutlineSparkles,
   HiOutlineArrowLeft,
   HiOutlineArrowRight,
   HiOutlineLightBulb,
@@ -763,7 +762,6 @@ export default function SentenceLearningPage() {
                   }}
                   className="flex items-center gap-2 rounded-2xl border-2 border-indigo-200 bg-white px-5 py-3 text-sm font-bold text-indigo-700 shadow-sm transition hover:bg-indigo-50"
                 >
-                  <HiOutlineSparkles className="h-5 w-5" />
                   🔤 Spell &quot;{currentSentence.keyword}&quot;
                 </button>
               </div>

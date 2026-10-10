@@ -8,7 +8,6 @@ import {
   HiPlus,
   HiPrinter,
   HiRefresh,
-  HiSparkles,
   HiTrash,
   HiUpload,
 } from 'react-icons/hi';
@@ -584,7 +583,7 @@ export default function TimetableGenerator() {
               disabled={isGenerating}
               className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-700 to-cyan-600 px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isGenerating ? <HiRefresh className="h-4 w-4 animate-spin" /> : <HiSparkles className="h-4 w-4" />}
+              {isGenerating ? <HiRefresh className="h-4 w-4 animate-spin" /> : <span>⏰</span>}
               {isGenerating ? 'Generating...' : 'Generate Smart Timetable'}
             </button>
             <button

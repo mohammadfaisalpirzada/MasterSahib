@@ -5,12 +5,12 @@ import Link from 'next/link';
 import {
   HiOutlineMail,
   HiOutlinePhone,
-  HiOutlineSparkles,
   HiOutlineArrowRight,
   HiOutlineCheckCircle,
 } from 'react-icons/hi';
 import { FaWhatsapp } from 'react-icons/fa';
 import WorkshopBannerCarousel from './components/WorkshopBannerCarousel';
+import HomeMasterBlogsBanner from './components/HomeMasterBlogsBanner';
 import HomeSignIn from './components/HomeSignIn';
 import HomeVisitorCount from './components/HomeVisitorCount';
 import HomePadletBoard from './components/HomePadletBoard';
@@ -31,6 +31,16 @@ type QuickCard = {
 };
 
 const allTools: QuickCard[] = [
+  {
+    title: 'Master Blogs & Information Posters',
+    description: 'Explore latest educational articles, Sindh Govt circulars, STEDA licensing updates & infographic posters.',
+    href: '/master_blogs',
+    accent: 'from-cyan-600 via-teal-600 to-emerald-600',
+    icon: '📢',
+    category: 'latest',
+    badge: 'New Portal',
+    newUntil: '2026-12-31T23:59:59+05:00',
+  },
   {
     title: 'MasterSahib Video Editor (MSVE)',
     description: 'Proprietary AI Video Merger, Sequence Audio/Video Editor & Social SEO Studio for educators and creators.',
@@ -199,6 +209,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[var(--ms-bg-main)] text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <WorkshopBannerCarousel />
+      <HomeMasterBlogsBanner />
 
       {/* Top Quick Contact & Status Bar (Light/Sober Cool Palette) */}
       <div
@@ -213,7 +224,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-[11px] font-bold shadow-sm"
               style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
             >
-              <HiOutlineSparkles className="h-3.5 w-3.5" />
+              <span>★</span>
               The Master Sahib Academic Series
             </span>
           </div>
@@ -255,7 +266,7 @@ export default function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1.15fr,0.85fr] lg:items-center">
             <div className="space-y-4 text-center sm:text-left">
               <div className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-bold tracking-wide shadow-sm" style={{ borderColor: theme.borderSubtle, backgroundColor: theme.badgeBg, color: theme.badgeText }}>
-                <HiOutlineSparkles className="h-4 w-4" />
+                <span>★</span>
                 MasterSahib Digital Workspace
               </div>
 
