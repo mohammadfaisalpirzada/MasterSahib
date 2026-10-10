@@ -91,7 +91,8 @@ function parseTextFile(rawContent: string, fallbackTitle: string): {
   let date = '';
   let author = 'The Master Sahib';
   let bodyLines: string[] = [];
-  let isParsingHeaders = true;
+
+  let firstLineExtracted = false;
 
   if (rawContent.includes('---')) {
     const parts = rawContent.split(/---/);
@@ -103,30 +104,33 @@ function parseTextFile(rawContent: string, fallbackTitle: string): {
       if (!trimmed) continue;
       if (trimmed.toLowerCase().startsWith('title:')) {
         title = trimmed.slice(6).trim();
+        firstLineExtracted = true;
       } else if (trimmed.toLowerCase().startsWith('category:')) {
         category = trimmed.slice(9).trim();
       } else if (trimmed.toLowerCase().startsWith('date:')) {
         date = trimmed.slice(5).trim();
       } else if (trimmed.toLowerCase().startsWith('author:')) {
         author = trimmed.slice(7).trim();
+      } else if (!firstLineExtracted) {
+        title = trimmed;
+        firstLineExtracted = true;
       }
     }
     bodyLines = bodyPart.split(/\r?\n/);
   } else {
     // No '---' separator:
-    // First non-empty line is the Title!
-    let firstLineFound = false;
+    let isParsingHeaders = true;
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed && !firstLineFound) continue;
+      if (!trimmed && !firstLineExtracted) continue;
 
-      if (!firstLineFound) {
+      if (!firstLineExtracted) {
         if (trimmed.toLowerCase().startsWith('title:')) {
           title = trimmed.slice(6).trim();
         } else {
           title = trimmed;
         }
-        firstLineFound = true;
+        firstLineExtracted = true;
       } else {
         if (isParsingHeaders && trimmed.toLowerCase().startsWith('category:')) {
           category = trimmed.slice(9).trim();
@@ -161,6 +165,25 @@ export function getAllBlogPosts(isAdmin: boolean = false): BlogPost[] {
   try {
     if (!fs.existsSync(BLOGS_DIR)) {
       fs.mkdirSync(BLOGS_DIR, { recursive: true });
+    }
+
+    // Auto-sync from Local Google Drive folder if available
+    const LOCAL_DRIVE_DIR = 'G:\\My Drive\\the_master_sahib\\master_blogs';
+    if (fs.existsSync(LOCAL_DRIVE_DIR)) {
+      try {
+        const driveFiles = fs.readdirSync(LOCAL_DRIVE_DIR);
+        driveFiles.forEach((file: string) => {
+          const srcPath = path.join(LOCAL_DRIVE_DIR, file);
+          const destPath = path.join(BLOGS_DIR, file);
+          try {
+            if (!fs.existsSync(destPath) || fs.statSync(srcPath).mtimeMs > fs.statSync(destPath).mtimeMs) {
+              fs.copyFileSync(srcPath, destPath);
+            }
+          } catch {}
+        });
+      } catch (e) {
+        console.error('Error auto-syncing from G: Drive:', e);
+      }
     }
 
     const files = fs.readdirSync(BLOGS_DIR);

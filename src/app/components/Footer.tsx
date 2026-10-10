@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { FaWhatsapp } from 'react-icons/fa';
-import { HiOutlineMail, HiOutlinePhone, HiOutlineArrowUp } from 'react-icons/hi';
+import { HiOutlineMail, HiOutlinePhone, HiOutlineArrowUp, HiOutlineNewspaper } from 'react-icons/hi';
 import { getCurrentTheme } from '@/lib/theme';
 
 export default function Footer() {
@@ -90,7 +90,7 @@ export default function Footer() {
             <ul className="mt-3.5 space-y-2 text-xs">
               <li>
                 <Link href="/master_blogs" className="font-bold text-sky-700 hover:text-sky-900 dark:text-sky-300 dark:hover:text-white transition flex items-center gap-1.5">
-                  <span>📢</span> Master Blogs &amp; Posters
+                  <HiOutlineNewspaper className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" /> Master Blogs &amp; Posters
                 </Link>
               </li>
               <li>

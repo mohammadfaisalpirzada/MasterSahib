@@ -36,7 +36,7 @@ const allTools: QuickCard[] = [
     description: 'Explore latest educational articles, Sindh Govt circulars, STEDA licensing updates & infographic posters.',
     href: '/master_blogs',
     accent: 'from-cyan-600 via-teal-600 to-emerald-600',
-    icon: '📢',
+    icon: '📰',
     category: 'latest',
     badge: 'New Portal',
     newUntil: '2026-12-31T23:59:59+05:00',

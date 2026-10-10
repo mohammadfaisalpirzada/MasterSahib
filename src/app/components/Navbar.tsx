@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
     href: '/class_notes',
   },
   {
-    label: '📢 Master Blogs',
+    label: 'Master Blogs',
     desktopLabel: 'Blogs',
     href: '/master_blogs',
   },

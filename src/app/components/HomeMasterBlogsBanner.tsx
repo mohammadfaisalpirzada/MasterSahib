@@ -12,6 +12,10 @@ import {
   HiOutlineStop,
   HiOutlineX,
   HiOutlineDownload,
+  HiOutlineNewspaper,
+  HiOutlineBookOpen,
+  HiOutlineCalendar,
+  HiOutlineClock,
 } from 'react-icons/hi';
 import { FaWhatsapp } from 'react-icons/fa';
 import { getCurrentTheme } from '@/lib/theme';
@@ -49,7 +53,7 @@ export default function HomeMasterBlogsBanner() {
 
   const handleWhatsAppShare = (post: BlogPost) => {
     const url = typeof window !== 'undefined' ? `${window.location.origin}/master_blogs` : '';
-    const text = `📢 *The Master Sahib Educational Update*\n📌 *${post.title}*\n📅 ${post.date}\n\n📖 Read full article & view poster:\n${url}`;
+    const text = `*The Master Sahib Educational Update*\n\n*${post.title}*\nDate: ${post.date}\n\nRead full article & view poster:\n${url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
   };
 
@@ -113,7 +117,7 @@ export default function HomeMasterBlogsBanner() {
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold shadow-sm"
               style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
             >
-              <span>📢</span>
+              <HiOutlineNewspaper className="h-4 w-4" />
               Latest Educational Poster &amp; Blog
             </span>
             <span className="hidden text-xs font-medium text-slate-500 sm:inline">
@@ -194,10 +198,16 @@ export default function HomeMasterBlogsBanner() {
             {/* Right: Bold Title, Summary & Quick Action Buttons */}
             <div className="flex flex-col justify-between space-y-4">
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-                  <span>📅 {currentPost.date}</span>
+                <div className="flex items-center gap-3 text-xs font-bold text-slate-500 dark:text-slate-400">
+                  <span className="flex items-center gap-1">
+                    <HiOutlineCalendar className="h-3.5 w-3.5" />
+                    {currentPost.date}
+                  </span>
                   <span>•</span>
-                  <span>⏱️ {currentPost.readTime}</span>
+                  <span className="flex items-center gap-1">
+                    <HiOutlineClock className="h-3.5 w-3.5" />
+                    {currentPost.readTime}
+                  </span>
                 </div>
 
                 {/* Bold Title */}
@@ -230,7 +240,8 @@ export default function HomeMasterBlogsBanner() {
                   className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
                   style={{ backgroundColor: theme.primary }}
                 >
-                  <span>📖 پورا بلاگ پڑھیں</span>
+                  <HiOutlineBookOpen className="h-4 w-4" />
+                  <span>پورا بلاگ پڑھیں</span>
                   <HiOutlineArrowRight className="h-4 w-4" />
                 </Link>
 
