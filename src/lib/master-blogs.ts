@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import { google } from 'googleapis';
+import { Readable } from 'stream';
 
 export const MASTER_ADMIN_EMAILS = [
   'mohammadfaisalpirzada@gmail.com',
@@ -26,6 +28,8 @@ export type BlogPost = {
   order: number;
   readTime: string;
   isUrdu: boolean;
+  driveFileId?: string;
+  textDriveFileId?: string;
 };
 
 export type BlogMetadataStore = {
@@ -35,6 +39,7 @@ export type BlogMetadataStore = {
   overrides: Record<string, Partial<BlogPost>>;
 };
 
+export const MASTER_BLOGS_FOLDER_ID = '1Pl3pR3BPIcCZ2-pC9LbQNzDPDMbfKF6u';
 const BLOGS_DIR = path.join(process.cwd(), 'public', 'master_blogs');
 const METADATA_FILE = path.join(process.cwd(), 'src', 'data', 'master_blogs_metadata.json');
 
@@ -114,7 +119,6 @@ function parseTextFile(rawContent: string, fallbackTitle: string): {
       continue;
     }
 
-    // Check key: value metadata patterns (e.g. Category : ..., Date: ..., Author: ..., Title: ...)
     const colonMatch = trimmed.match(/^([a-zA-Z\s]+)\s*:\s*(.+)$/);
     if (colonMatch) {
       const key = colonMatch[1].trim().toLowerCase();
@@ -158,13 +162,188 @@ function parseTextFile(rawContent: string, fallbackTitle: string): {
   };
 }
 
-export function getAllBlogPosts(isAdmin: boolean = false): BlogPost[] {
+function getGoogleDriveClient() {
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.replace(/^"|"$/g, '').trim();
+  const key = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/^"|"$/g, '').replace(/\\n/g, '\n');
+
+  if (!email || !key) return null;
+
+  const auth = new google.auth.JWT({
+    email,
+    key,
+    scopes: ['https://www.googleapis.com/auth/drive'],
+  });
+
+  return google.drive({ version: 'v3', auth });
+}
+
+// Fetch posts directly from Google Drive cloud folder
+async function fetchGoogleDriveBlogPosts(metadata: BlogMetadataStore): Promise<BlogPost[]> {
+  const drive = getGoogleDriveClient();
+  if (!drive) return [];
+
+  try {
+    const res = await drive.files.list({
+      q: `'${MASTER_BLOGS_FOLDER_ID}' in parents and trashed = false`,
+      fields: 'files(id, name, mimeType, modifiedTime)',
+      orderBy: 'modifiedTime desc',
+      pageSize: 100,
+    });
+
+    const files = res.data.files || [];
+    if (files.length === 0) return [];
+
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'];
+    const textExtensions = ['.txt', '.md'];
+
+    const imageFiles = files.filter(
+      (f) =>
+        f.mimeType?.startsWith('image/') ||
+        imageExtensions.some((ext) => f.name?.toLowerCase().endsWith(ext))
+    );
+
+    const textFiles = files.filter(
+      (f) =>
+        f.mimeType?.startsWith('text/') ||
+        textExtensions.some((ext) => f.name?.toLowerCase().endsWith(ext))
+    );
+
+    const posts: BlogPost[] = [];
+
+    for (const img of imageFiles) {
+      if (!img.id || !img.name) continue;
+      const baseName = path.parse(img.name).name;
+      const id = baseName.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+      const matchingTxt = textFiles.find(
+        (t) => t.name && path.parse(t.name).name.toLowerCase() === baseName.toLowerCase()
+      );
+
+      let textContent = '';
+      if (matchingTxt?.id) {
+        try {
+          const textRes = await drive.files.get(
+            { fileId: matchingTxt.id, alt: 'media' },
+            { responseType: 'text' }
+          );
+          textContent = String(textRes.data);
+        } catch (err) {
+          console.error(`Error reading ${matchingTxt.name} from Google Drive:`, err);
+        }
+      }
+
+      const defaultTitle = baseName.replace(/^[0-9]+[_-]/, '').replace(/[_-]+/g, ' ');
+      const parsed = textContent
+        ? parseTextFile(textContent, defaultTitle)
+        : {
+            title: defaultTitle,
+            content: 'Master Sahib official infographic & educational poster.',
+            category: 'Educational Poster',
+            date: img.modifiedTime ? img.modifiedTime.split('T')[0] : new Date().toISOString().split('T')[0],
+            author: 'The Master Sahib',
+          };
+
+      const isUrdu = detectIsUrdu(`${parsed.title} ${parsed.content}`);
+      const cleanExcerpt = parsed.content
+        .replace(/^[#*-•\s]+/gm, '')
+        .replace(/\n+/g, ' ')
+        .trim()
+        .slice(0, 180);
+
+      const isHidden = metadata.hiddenIds.includes(id);
+      const isPinned = metadata.pinnedIds.includes(id);
+      const customOrderIndex = metadata.customOrder.indexOf(id);
+
+      posts.push({
+        id,
+        filename: img.name,
+        title: parsed.title,
+        content: parsed.content || parsed.title,
+        excerpt: cleanExcerpt || parsed.title,
+        imageUrl: `/api/master-blogs/${img.id}`,
+        date: parsed.date,
+        category: parsed.category,
+        author: parsed.author,
+        pinned: isPinned,
+        hidden: isHidden,
+        order: customOrderIndex !== -1 ? customOrderIndex : 9999,
+        readTime: calculateReadTime(parsed.content || parsed.title),
+        isUrdu,
+        driveFileId: img.id ?? undefined,
+        textDriveFileId: matchingTxt?.id ?? undefined,
+      });
+    }
+
+    // Standalone text files without an image
+    const textOnlyFiles = textFiles.filter(
+      (t) =>
+        t.name &&
+        !imageFiles.some(
+          (img) => img.name && path.parse(img.name).name.toLowerCase() === path.parse(t.name!).name.toLowerCase()
+        )
+    );
+
+    for (const txt of textOnlyFiles) {
+      if (!txt.id || !txt.name) continue;
+      const baseName = path.parse(txt.name).name;
+      const id = baseName.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+
+      let textContent = '';
+      try {
+        const textRes = await drive.files.get(
+          { fileId: txt.id, alt: 'media' },
+          { responseType: 'text' }
+        );
+        textContent = String(textRes.data);
+      } catch {}
+
+      const defaultTitle = baseName.replace(/^[0-9]+[_-]/, '').replace(/[_-]+/g, ' ');
+      const parsed = parseTextFile(textContent, defaultTitle);
+      const isUrdu = detectIsUrdu(`${parsed.title} ${parsed.content}`);
+      const cleanExcerpt = parsed.content
+        .replace(/^[#*-•\s]+/gm, '')
+        .replace(/\n+/g, ' ')
+        .trim()
+        .slice(0, 180);
+
+      const isHidden = metadata.hiddenIds.includes(id);
+      const isPinned = metadata.pinnedIds.includes(id);
+      const customOrderIndex = metadata.customOrder.indexOf(id);
+
+      posts.push({
+        id,
+        filename: txt.name,
+        title: parsed.title,
+        content: parsed.content,
+        excerpt: cleanExcerpt || parsed.title,
+        imageUrl: '/images/main_logo.png',
+        date: parsed.date,
+        category: parsed.category,
+        author: parsed.author,
+        pinned: isPinned,
+        hidden: isHidden,
+        order: customOrderIndex !== -1 ? customOrderIndex : 9999,
+        readTime: calculateReadTime(parsed.content),
+        isUrdu,
+        driveFileId: undefined,
+        textDriveFileId: txt.id ?? undefined,
+      });
+    }
+
+    return posts;
+  } catch (error) {
+    console.error('Error fetching Google Drive blog posts:', error);
+    return [];
+  }
+}
+
+// Fallback to local files
+function fetchLocalBlogPosts(metadata: BlogMetadataStore): BlogPost[] {
   try {
     if (!fs.existsSync(BLOGS_DIR)) {
       fs.mkdirSync(BLOGS_DIR, { recursive: true });
     }
 
-    // Auto-sync from Local Google Drive folder if available
+    // Auto-sync from Local Google Drive folder on Windows if available
     const LOCAL_DRIVE_DIR = 'G:\\My Drive\\the_master_sahib\\master_blogs';
     if (fs.existsSync(LOCAL_DRIVE_DIR)) {
       try {
@@ -191,7 +370,6 @@ export function getAllBlogPosts(isAdmin: boolean = false): BlogPost[] {
       imageExtensions.includes(path.extname(file).toLowerCase())
     );
 
-    const metadata = getMetadataStore();
     const posts: BlogPost[] = [];
 
     imageFiles.forEach((imgFile: string) => {
@@ -199,7 +377,6 @@ export function getAllBlogPosts(isAdmin: boolean = false): BlogPost[] {
       const id = baseName.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
       const imgPath = `/master_blogs/${imgFile}`;
 
-      // Check if paired text file exists (.txt or .md)
       let textContent = '';
       const matchingTxt = files.find(
         (f: string) =>
@@ -243,7 +420,7 @@ export function getAllBlogPosts(isAdmin: boolean = false): BlogPost[] {
       const isPinned = metadata.pinnedIds.includes(id);
       const customOrderIndex = metadata.customOrder.indexOf(id);
 
-      const post: BlogPost = {
+      posts.push({
         id,
         filename: imgFile,
         title: parsed.title,
@@ -258,63 +435,29 @@ export function getAllBlogPosts(isAdmin: boolean = false): BlogPost[] {
         order: customOrderIndex !== -1 ? customOrderIndex : 9999,
         readTime: calculateReadTime(parsed.content || parsed.title),
         isUrdu,
-      };
-
-      posts.push(post);
-    });
-
-    // Also look for standalone text files without images
-    const textOnlyFiles = files.filter(
-      (f: string) =>
-        textExtensions.includes(path.extname(f).toLowerCase()) &&
-        !imageFiles.some(
-          (img: string) => path.parse(img).name.toLowerCase() === path.parse(f).name.toLowerCase()
-        )
-    );
-
-    textOnlyFiles.forEach((txtFile: string) => {
-      const baseName = path.parse(txtFile).name;
-      const id = baseName.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
-      let textContent = '';
-      try {
-        textContent = fs.readFileSync(path.join(BLOGS_DIR, txtFile), 'utf-8');
-      } catch {}
-
-      const defaultTitle = baseName.replace(/^[0-9]+[_-]/, '').replace(/[_-]+/g, ' ');
-      const parsed = parseTextFile(textContent, defaultTitle);
-      const isUrdu = detectIsUrdu(`${parsed.title} ${parsed.content}`);
-      const cleanExcerpt = parsed.content
-        .replace(/^[#*-•\s]+/gm, '')
-        .replace(/\n+/g, ' ')
-        .trim()
-        .slice(0, 180);
-
-      const isHidden = metadata.hiddenIds.includes(id);
-      const isPinned = metadata.pinnedIds.includes(id);
-      const customOrderIndex = metadata.customOrder.indexOf(id);
-
-      posts.push({
-        id,
-        filename: txtFile,
-        title: parsed.title,
-        content: parsed.content,
-        excerpt: cleanExcerpt || parsed.title,
-        imageUrl: '/images/main_logo.png',
-        date: parsed.date,
-        category: parsed.category,
-        author: parsed.author,
-        pinned: isPinned,
-        hidden: isHidden,
-        order: customOrderIndex !== -1 ? customOrderIndex : 9999,
-        readTime: calculateReadTime(parsed.content),
-        isUrdu,
       });
     });
 
-    // Sort posts:
-    // 1. Pinned posts first
-    // 2. Custom order (if set)
-    // 3. Date descending
+    return posts;
+  } catch (err) {
+    console.error('Error in fetchLocalBlogPosts:', err);
+    return [];
+  }
+}
+
+export async function getAllBlogPosts(isAdmin: boolean = false): Promise<BlogPost[]> {
+  try {
+    const metadata = getMetadataStore();
+
+    // 1. Try fetching live from Google Drive first
+    let posts = await fetchGoogleDriveBlogPosts(metadata);
+
+    // 2. If Google Drive returned no posts or is not reachable, fallback to local storage
+    if (posts.length === 0) {
+      posts = fetchLocalBlogPosts(metadata);
+    }
+
+    // 3. Sort: pinned first -> custom order -> date descending
     posts.sort((a, b) => {
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
@@ -322,7 +465,7 @@ export function getAllBlogPosts(isAdmin: boolean = false): BlogPost[] {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
 
-    // If not admin, filter out hidden posts
+    // 4. Filter hidden if not admin
     if (!isAdmin) {
       return posts.filter((p) => !p.hidden);
     }
@@ -331,5 +474,75 @@ export function getAllBlogPosts(isAdmin: boolean = false): BlogPost[] {
   } catch (error) {
     console.error('Error fetching blog posts:', error);
     return [];
+  }
+}
+
+// Upload new post to Google Drive folder when uploaded from Web Admin
+export async function uploadBlogPostToDrive(params: {
+  imageBuffer?: Buffer;
+  imageFilename?: string;
+  imageMimeType?: string;
+  textContent: string;
+  textFilename: string;
+}): Promise<{ imageDriveId?: string; textDriveId?: string }> {
+  const drive = getGoogleDriveClient();
+  if (!drive) return {};
+
+  const result: { imageDriveId?: string; textDriveId?: string } = {};
+
+  try {
+    // Upload Text File to Drive
+    const textStream = Readable.from([params.textContent]);
+    const textUpload = await drive.files.create({
+      requestBody: {
+        name: params.textFilename,
+        parents: [MASTER_BLOGS_FOLDER_ID],
+      },
+      media: {
+        mimeType: 'text/plain',
+        body: textStream,
+      },
+      fields: 'id',
+    });
+    result.textDriveId = textUpload.data.id ?? undefined;
+
+    // Upload Image File to Drive if provided
+    if (params.imageBuffer && params.imageFilename) {
+      const imageStream = Readable.from([params.imageBuffer]);
+      const imageUpload = await drive.files.create({
+        requestBody: {
+          name: params.imageFilename,
+          parents: [MASTER_BLOGS_FOLDER_ID],
+        },
+        media: {
+          mimeType: params.imageMimeType || 'image/png',
+          body: imageStream,
+        },
+        fields: 'id',
+      });
+      result.imageDriveId = imageUpload.data.id ?? undefined;
+    }
+  } catch (err) {
+    console.error('Error uploading blog post to Google Drive:', err);
+  }
+
+  return result;
+}
+
+// Delete post from Google Drive
+export async function deleteBlogPostFromDrive(fileIds: (string | undefined)[]): Promise<void> {
+  const drive = getGoogleDriveClient();
+  if (!drive) return;
+
+  for (const id of fileIds) {
+    if (!id) continue;
+    try {
+      await drive.files.update({
+        fileId: id,
+        requestBody: { trashed: true },
+      });
+    } catch (err) {
+      console.error(`Error trashing Drive file ${id}:`, err);
+    }
   }
 }

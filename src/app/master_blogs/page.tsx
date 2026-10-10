@@ -135,19 +135,24 @@ export default function MasterBlogsPage() {
     }
   };
 
-  const handleDeletePost = async (postId: string, title: string, e: React.MouseEvent) => {
+  const handleDeletePost = async (post: BlogPost, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to delete "${title}"?`)) return;
+    if (!window.confirm(`Are you sure you want to delete "${post.title}"?`)) return;
 
     try {
       const res = await fetch('/api/master-blogs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', postId }),
+        body: JSON.stringify({
+          action: 'delete',
+          postId: post.id,
+          driveFileId: post.driveFileId,
+          textDriveFileId: post.textDriveFileId,
+        }),
       });
       if (res.ok) {
         showToast('Post deleted successfully');
-        if (activePost?.id === postId) setActivePost(null);
+        if (activePost?.id === post.id) setActivePost(null);
         fetchBlogs();
       } else {
         showToast('Delete failed');
@@ -613,7 +618,7 @@ export default function MasterBlogsPage() {
                         {/* Delete Post */}
                         <button
                           type="button"
-                          onClick={(e) => handleDeletePost(post.id, post.title, e)}
+                          onClick={(e) => handleDeletePost(post, e)}
                           title="Delete Post"
                           className="rounded-lg p-1.5 text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
                         >

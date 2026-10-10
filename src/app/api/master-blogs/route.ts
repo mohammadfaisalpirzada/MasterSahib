@@ -8,6 +8,8 @@ import {
   getMetadataStore,
   saveMetadataStore,
   isMasterAdminEmail,
+  uploadBlogPostToDrive,
+  deleteBlogPostFromDrive,
 } from '@/lib/master-blogs';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +18,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const isAdmin = isMasterAdminEmail(session?.user?.email);
-    const posts = getAllBlogPosts(isAdmin);
+    const posts = await getAllBlogPosts(isAdmin);
 
     return NextResponse.json({
       posts,
@@ -43,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     const contentType = request.headers.get('content-type') || '';
 
-    // Handling Multipart Form Data Upload
+    // Handling Multipart Form Data Upload (Web Admin Interface)
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
       const imageFile = formData.get('image') as File | null;
@@ -75,30 +77,46 @@ export async function POST(request: NextRequest) {
       const timestamp = Date.now();
       const baseFilename = `${timestamp}-${safeSlug}`;
 
-      // Save Image if present
+      // Save Image locally if present
       let imageFilename = '';
+      let imageBuffer: Buffer | undefined;
+      let imageMimeType: string | undefined;
+
       if (imageFile) {
         const ext = path.extname(imageFile.name) || '.jpg';
         imageFilename = `${baseFilename}${ext}`;
-        const buffer = Buffer.from(await imageFile.arrayBuffer());
-        fs.writeFileSync(path.join(blogsDir, imageFilename), buffer);
+        imageMimeType = imageFile.type || 'image/jpeg';
+        imageBuffer = Buffer.from(await imageFile.arrayBuffer());
+        fs.writeFileSync(path.join(blogsDir, imageFilename), imageBuffer);
       }
 
-      // Save Text File with First Line as Title
+      // Save Text File locally
       const textFilename = `${baseFilename}.txt`;
       const textFileContent = `${title.trim()}\nCategory: ${category}\nDate: ${date}\nAuthor: ${author}\n---\n${content.trim()}`;
       fs.writeFileSync(path.join(blogsDir, textFilename), textFileContent, 'utf-8');
 
+      // Upload to Google Drive Cloud folder too so both local and Drive stay in sync
+      await uploadBlogPostToDrive({
+        imageBuffer,
+        imageFilename,
+        imageMimeType,
+        textContent: textFileContent,
+        textFilename,
+      });
+
+      const updatedPosts = await getAllBlogPosts(true);
+      const newPost = updatedPosts.find((p) => p.filename.startsWith(baseFilename) || p.title === title.trim());
+
       return NextResponse.json({
         success: true,
-        message: 'Blog & Poster published successfully!',
-        post: getAllBlogPosts(true).find((p) => p.filename.startsWith(baseFilename)),
+        message: 'Blog & Poster published successfully to website & Google Drive!',
+        post: newPost,
       });
     }
 
     // Handling JSON Action Requests (Hide, Pin, Reorder, Delete)
     const body = await request.json();
-    const { action, postId, order } = body;
+    const { action, postId, order, driveFileId, textDriveFileId } = body;
     const metadata = getMetadataStore();
 
     if (action === 'toggle-visibility' && postId) {
@@ -137,18 +155,22 @@ export async function POST(request: NextRequest) {
             try {
               fs.unlinkSync(path.join(blogsDir, file));
             } catch (err) {
-              console.error(`Error deleting file ${file}:`, err);
+              console.error(`Error deleting local file ${file}:`, err);
             }
           }
         });
       }
-      // Also clean from metadata
+
+      // Also trash from Google Drive
+      await deleteBlogPostFromDrive([driveFileId, textDriveFileId]);
+
+      // Clean from metadata
       metadata.hiddenIds = metadata.hiddenIds.filter((id) => id !== postId);
       metadata.pinnedIds = metadata.pinnedIds.filter((id) => id !== postId);
       metadata.customOrder = metadata.customOrder.filter((id) => id !== postId);
       saveMetadataStore(metadata);
 
-      return NextResponse.json({ success: true, message: 'Post deleted successfully' });
+      return NextResponse.json({ success: true, message: 'Post deleted successfully from website and Drive' });
     }
 
     return NextResponse.json({ error: 'Invalid action requested' }, { status: 400 });
