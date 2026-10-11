@@ -158,7 +158,7 @@ export default function Footer() {
             <ul className="mt-3.5 space-y-2 text-xs">
               <li>
                 <Link href="/class_notes" className="font-semibold text-slate-700 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition">
-                  📖 Class Notes & Books (ECE-XII)
+                  📖 STBB Notes (ECE-XII)
                 </Link>
               </li>
               <li>

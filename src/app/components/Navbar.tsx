@@ -42,8 +42,8 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    label: 'Class Notes & Books',
-    desktopLabel: 'Class Notes',
+    label: 'STBB Notes',
+    desktopLabel: 'STBB Notes',
     href: '/class_notes',
   },
   {

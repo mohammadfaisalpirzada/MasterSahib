@@ -71,7 +71,7 @@ const allTools: QuickCard[] = [
     badge: 'Popular',
   },
   {
-    title: 'Class Notes & Planning Books',
+    title: 'STBB Notes & Planning Books',
     description: 'Interactive digital curriculum reader: Class ECE to XII lesson plans, solved exercises & clean PDF downloads.',
     href: '/class_notes',
     accent: 'from-emerald-500 via-teal-500 to-cyan-600',
@@ -316,7 +316,7 @@ export default function HomePage() {
                     color: theme.badgeText,
                   }}
                 >
-                  <span>📚</span> Class Books (ECE-XII)
+                  <span>📚</span> STBB Notes (ECE-XII)
                 </Link>
 
                 <HomeSignIn />
