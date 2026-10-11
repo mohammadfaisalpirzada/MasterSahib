@@ -49,6 +49,7 @@ export default function MasterBlogsPage() {
   // Drag and Drop
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [detectedOrientations, setDetectedOrientations] = useState<Record<string, 'portrait' | 'landscape' | 'square'>>({});
 
   // Upload Form State
   const [uploadTitle, setUploadTitle] = useState('');
@@ -435,52 +436,74 @@ export default function MasterBlogsPage() {
                   } ${draggedItemIndex === index ? 'opacity-40 ring-2 ring-cyan-500' : ''}`}
                 >
                   {/* Poster Image Container */}
-                  <div
-                    className="relative aspect-[16/9] w-full cursor-pointer overflow-hidden bg-slate-950"
-                    onClick={() => setActivePost(post)}
-                  >
-                    <Image
-                      src={post.imageUrl}
-                      alt={post.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-contain transition-transform duration-500 group-hover:scale-105"
-                      unoptimized
-                    />
+                  {(() => {
+                    const postOrientation = detectedOrientations[post.id] || post.orientation || 'portrait';
+                    const isPortrait = postOrientation === 'portrait';
+                    const isLandscape = postOrientation === 'landscape';
 
-                    {/* Top Badges */}
-                    <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-                      <span
-                        className="rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-white shadow-md backdrop-blur"
-                        style={{ backgroundColor: theme.primary }}
+                    return (
+                      <div
+                        className={`relative w-full cursor-pointer overflow-hidden border-b border-slate-100 bg-slate-100/70 transition-all duration-300 dark:border-slate-800 dark:bg-slate-800/40 ${
+                          isPortrait ? 'aspect-[3/4]' : isLandscape ? 'aspect-[16/9]' : 'aspect-square'
+                        }`}
+                        onClick={() => setActivePost(post)}
                       >
-                        {post.category}
-                      </span>
-                      {post.pinned && (
-                        <span className="flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-black text-white shadow-md">
-                          <FaThumbtack className="h-2.5 w-2.5" /> Pinned
-                        </span>
-                      )}
-                      {post.hidden && (
-                        <span className="rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-black text-white shadow-md">
-                          Hidden
-                        </span>
-                      )}
-                    </div>
+                        <Image
+                          src={post.imageUrl}
+                          alt={post.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-contain p-1 transition-transform duration-500 group-hover:scale-[1.02]"
+                          onLoad={(e) => {
+                            const img = e.currentTarget;
+                            if (img.naturalWidth && img.naturalHeight) {
+                              const o =
+                                img.naturalHeight > img.naturalWidth * 1.12
+                                  ? 'portrait'
+                                  : img.naturalWidth > img.naturalHeight * 1.12
+                                  ? 'landscape'
+                                  : 'square';
+                              setDetectedOrientations((prev) => ({ ...prev, [post.id]: o }));
+                            }
+                          }}
+                          unoptimized
+                        />
 
-                    {/* Expand Poster Icon Overlay */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLightboxImage(post.imageUrl);
-                      }}
-                      aria-label="View Full Poster"
-                      className="absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white backdrop-blur transition hover:scale-110 hover:bg-black/90"
-                    >
-                      <HiOutlineArrowsExpand className="h-5 w-5" />
-                    </button>
-                  </div>
+                        {/* Top Badges */}
+                        <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+                          <span
+                            className="rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-white shadow-md backdrop-blur-md"
+                            style={{ backgroundColor: theme.primary }}
+                          >
+                            {post.category}
+                          </span>
+                          {post.pinned && (
+                            <span className="flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-black text-white shadow-md">
+                              <FaThumbtack className="h-2.5 w-2.5" /> Pinned
+                            </span>
+                          )}
+                          {post.hidden && (
+                            <span className="rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-black text-white shadow-md">
+                              Hidden
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Expand Poster Icon Overlay */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLightboxImage(post.imageUrl);
+                          }}
+                          aria-label="View Full Poster"
+                          className="absolute bottom-3 right-3 grid h-8 w-8 place-items-center rounded-full bg-slate-900/80 text-white shadow-md backdrop-blur transition hover:scale-110 hover:bg-slate-900"
+                        >
+                          <HiOutlineArrowsExpand className="h-4 w-4" />
+                        </button>
+                      </div>
+                    );
+                  })()}
 
                   {/* Card Body */}
                   <div className="flex flex-1 flex-col p-5">
@@ -667,21 +690,37 @@ export default function MasterBlogsPage() {
             {/* Scrollable Modal Content */}
             <div className="flex-1 overflow-y-auto p-6">
               {/* Poster Image */}
-              <div
-                className="relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded-2xl bg-black"
-                onClick={() => setLightboxImage(activePost.imageUrl)}
-              >
-                <Image
-                  src={activePost.imageUrl}
-                  alt={activePost.title}
-                  fill
-                  className="object-contain"
-                  unoptimized
-                />
-                <div className="absolute bottom-2 right-2 rounded-full bg-black/60 px-3 py-1 text-xs text-white backdrop-blur flex items-center gap-1">
-                  <HiOutlineArrowsExpand className="h-3.5 w-3.5" /> Click to Zoom Poster
-                </div>
-              </div>
+              {(() => {
+                const modalOrientation =
+                  detectedOrientations[activePost.id] || activePost.orientation || 'portrait';
+                const isModalPortrait = modalOrientation === 'portrait';
+                const isModalLandscape = modalOrientation === 'landscape';
+
+                return (
+                  <div
+                    className={`group relative mx-auto cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100/70 shadow-md transition hover:shadow-lg dark:border-slate-700/80 dark:bg-slate-800/40 ${
+                      isModalPortrait
+                        ? 'max-w-[420px] aspect-[3/4]'
+                        : isModalLandscape
+                        ? 'w-full aspect-[16/9]'
+                        : 'max-w-[420px] aspect-square'
+                    }`}
+                    onClick={() => setLightboxImage(activePost.imageUrl)}
+                  >
+                    <Image
+                      src={activePost.imageUrl}
+                      alt={activePost.title}
+                      fill
+                      className="object-contain p-1 transition-transform duration-500 group-hover:scale-[1.02]"
+                      unoptimized
+                    />
+                    <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-slate-900/85 px-3 py-1 text-xs font-bold text-white shadow-md backdrop-blur-md transition group-hover:scale-105 group-hover:bg-slate-900">
+                      <HiOutlineArrowsExpand className="h-3.5 w-3.5" />
+                      <span>Click to Zoom HD Poster</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Bold Title */}
               <h2

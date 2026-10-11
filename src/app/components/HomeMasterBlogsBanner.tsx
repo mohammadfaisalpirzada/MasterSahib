@@ -28,6 +28,7 @@ export default function HomeMasterBlogsBanner() {
   const [loading, setLoading] = useState(true);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
+  const [detectedOrientations, setDetectedOrientations] = useState<Record<string, 'portrait' | 'landscape' | 'square'>>({});
 
   useEffect(() => {
     fetch('/api/master-blogs')
@@ -42,6 +43,9 @@ export default function HomeMasterBlogsBanner() {
   if (loading || posts.length === 0) return null;
 
   const currentPost = posts[currentIndex];
+  const activeOrientation = detectedOrientations[currentPost.id] || currentPost.orientation || 'portrait';
+  const isPortrait = activeOrientation === 'portrait';
+  const isLandscape = activeOrientation === 'landscape';
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % posts.length);
@@ -163,10 +167,24 @@ export default function HomeMasterBlogsBanner() {
 
         {/* Featured Showcase Card */}
         <div className="overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 transition duration-300">
-          <div className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr] items-center p-5 sm:p-7">
+          <div
+            className={`grid gap-6 lg:gap-8 items-center p-5 sm:p-7 ${
+              isPortrait
+                ? 'lg:grid-cols-[360px,1fr] xl:grid-cols-[410px,1fr]'
+                : isLandscape
+                ? 'lg:grid-cols-[1.15fr,0.85fr]'
+                : 'lg:grid-cols-[380px,1fr]'
+            }`}
+          >
             {/* Left: HD Poster Display */}
             <div
-              className="group relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded-2xl bg-slate-950 shadow-inner"
+              className={`group relative mx-auto w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100/70 shadow-md transition-all duration-300 hover:shadow-xl dark:border-slate-700/80 dark:bg-slate-800/40 ${
+                isPortrait
+                  ? 'max-w-[330px] sm:max-w-[360px] lg:max-w-none aspect-[3/4]'
+                  : isLandscape
+                  ? 'aspect-[16/9]'
+                  : 'max-w-[380px] aspect-square'
+              }`}
               onClick={() => setLightboxImage(currentPost.imageUrl)}
             >
               <Image
@@ -174,14 +192,26 @@ export default function HomeMasterBlogsBanner() {
                 alt={currentPost.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 55vw"
-                className="object-contain transition-transform duration-500 group-hover:scale-105"
+                className="object-contain p-1 transition-transform duration-500 group-hover:scale-[1.02]"
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  if (img.naturalWidth && img.naturalHeight) {
+                    const o =
+                      img.naturalHeight > img.naturalWidth * 1.12
+                        ? 'portrait'
+                        : img.naturalWidth > img.naturalHeight * 1.12
+                        ? 'landscape'
+                        : 'square';
+                    setDetectedOrientations((prev) => ({ ...prev, [currentPost.id]: o }));
+                  }
+                }}
                 unoptimized
               />
 
               {/* Category Pill */}
               <div className="absolute left-3 top-3">
                 <span
-                  className="rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide text-white shadow-lg backdrop-blur"
+                  className="rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide text-white shadow-md backdrop-blur-md"
                   style={{ backgroundColor: theme.primary }}
                 >
                   {currentPost.category}
@@ -189,7 +219,7 @@ export default function HomeMasterBlogsBanner() {
               </div>
 
               {/* Zoom Trigger Button */}
-              <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1.5 text-xs font-bold text-white backdrop-blur transition group-hover:bg-black/90">
+              <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-slate-900/85 px-3 py-1.5 text-xs font-bold text-white shadow-md backdrop-blur-md transition group-hover:scale-105 group-hover:bg-slate-900">
                 <HiOutlineArrowsExpand className="h-4 w-4" />
                 <span>Zoom Poster</span>
               </div>

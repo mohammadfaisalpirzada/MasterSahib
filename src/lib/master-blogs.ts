@@ -30,6 +30,9 @@ export type BlogPost = {
   isUrdu: boolean;
   driveFileId?: string;
   textDriveFileId?: string;
+  width?: number;
+  height?: number;
+  orientation: 'portrait' | 'landscape' | 'square';
 };
 
 export type BlogMetadataStore = {
@@ -87,6 +90,35 @@ function isDecorativeLine(line: string): boolean {
   const trimmed = line.trim();
   if (!trimmed) return false;
   return /^[=\-_*#~`|]{3,}$/.test(trimmed);
+}
+
+function getImageDimensionsFromBuffer(buffer: Buffer): { width: number; height: number } | null {
+  if (!buffer || buffer.length < 24) return null;
+  // PNG
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) {
+    return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+  }
+  // JPEG
+  if (buffer[0] === 0xff && buffer[1] === 0xd8) {
+    let offset = 2;
+    while (offset < buffer.length - 8) {
+      if (buffer[offset] !== 0xff) break;
+      const marker = buffer[offset + 1];
+      if (marker === 0xc0 || marker === 0xc2) {
+        return { height: buffer.readUInt16BE(offset + 5), width: buffer.readUInt16BE(offset + 7) };
+      }
+      const len = buffer.readUInt16BE(offset + 2);
+      offset += 2 + len;
+    }
+  }
+  return null;
+}
+
+export function resolveOrientation(width?: number | null, height?: number | null): 'portrait' | 'landscape' | 'square' {
+  if (!width || !height) return 'portrait';
+  if (height > width * 1.12) return 'portrait';
+  if (width > height * 1.12) return 'landscape';
+  return 'square';
 }
 
 function parseTextFile(rawContent: string, fallbackTitle: string): {
@@ -185,7 +217,7 @@ async function fetchGoogleDriveBlogPosts(metadata: BlogMetadataStore): Promise<B
   try {
     const res = await drive.files.list({
       q: `'${MASTER_BLOGS_FOLDER_ID}' in parents and trashed = false`,
-      fields: 'files(id, name, mimeType, modifiedTime)',
+      fields: 'files(id, name, mimeType, modifiedTime, imageMediaMetadata)',
       orderBy: 'modifiedTime desc',
       pageSize: 100,
     });
@@ -253,6 +285,11 @@ async function fetchGoogleDriveBlogPosts(metadata: BlogMetadataStore): Promise<B
       const isPinned = metadata.pinnedIds.includes(id);
       const customOrderIndex = metadata.customOrder.indexOf(id);
 
+      const imgMeta = (img as { imageMediaMetadata?: { width?: number; height?: number } }).imageMediaMetadata;
+      const width = imgMeta?.width ?? undefined;
+      const height = imgMeta?.height ?? undefined;
+      const orientation = resolveOrientation(width, height);
+
       posts.push({
         id,
         filename: img.name,
@@ -270,6 +307,9 @@ async function fetchGoogleDriveBlogPosts(metadata: BlogMetadataStore): Promise<B
         isUrdu,
         driveFileId: img.id ?? undefined,
         textDriveFileId: matchingTxt?.id ?? undefined,
+        width,
+        height,
+        orientation,
       });
     }
 
@@ -326,6 +366,7 @@ async function fetchGoogleDriveBlogPosts(metadata: BlogMetadataStore): Promise<B
         isUrdu,
         driveFileId: undefined,
         textDriveFileId: txt.id ?? undefined,
+        orientation: 'portrait',
       });
     }
 
@@ -420,6 +461,18 @@ function fetchLocalBlogPosts(metadata: BlogMetadataStore): BlogPost[] {
       const isPinned = metadata.pinnedIds.includes(id);
       const customOrderIndex = metadata.customOrder.indexOf(id);
 
+      let width: number | undefined;
+      let height: number | undefined;
+      try {
+        const buf = fs.readFileSync(path.join(BLOGS_DIR, imgFile));
+        const dims = getImageDimensionsFromBuffer(buf);
+        if (dims) {
+          width = dims.width;
+          height = dims.height;
+        }
+      } catch {}
+      const orientation = resolveOrientation(width, height);
+
       posts.push({
         id,
         filename: imgFile,
@@ -435,6 +488,9 @@ function fetchLocalBlogPosts(metadata: BlogMetadataStore): BlogPost[] {
         order: customOrderIndex !== -1 ? customOrderIndex : 9999,
         readTime: calculateReadTime(parsed.content || parsed.title),
         isUrdu,
+        width,
+        height,
+        orientation,
       });
     });
 
