@@ -16,6 +16,7 @@ import {
   HiOutlineBookOpen,
   HiOutlineCalendar,
   HiOutlineClock,
+  HiOutlineShare,
 } from 'react-icons/hi';
 import { FaWhatsapp } from 'react-icons/fa';
 import { getCurrentTheme } from '@/lib/theme';
@@ -53,6 +54,50 @@ export default function HomeMasterBlogsBanner() {
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + posts.length) % posts.length);
+  };
+
+  const handleSmartShare = async (post: BlogPost, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/master_blogs?post=${post.id}`
+      : 'https://themastersahib.com/master_blogs';
+    const shareText = `*${post.title}*\n${post.category} • ${post.date}\n\n${post.excerpt}\n\nRead full article & view HD poster:\n${shareUrl}`;
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          const res = await fetch(post.imageUrl);
+          const blob = await res.blob();
+          const ext = post.imageUrl.toLowerCase().includes('.png') ? 'png' : 'jpg';
+          const mime = blob.type || (ext === 'png' ? 'image/png' : 'image/jpeg');
+          const file = new File([blob], `${post.id}-poster.${ext}`, { type: mime });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: post.title,
+              text: shareText,
+              files: [file],
+            });
+            return;
+          }
+        } catch {
+          // fallback if file attachment not supported
+        }
+
+        await navigator.share({
+          title: post.title,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      }
+    } catch (err) {
+      if ((err as Error)?.name === 'AbortError') return;
+    }
+
+    // Direct WhatsApp fallback with link and formatted text
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleWhatsAppShare = (post: BlogPost) => {
@@ -217,6 +262,18 @@ export default function HomeMasterBlogsBanner() {
                   {currentPost.category}
                 </span>
               </div>
+
+              {/* Transparent Share Button on Image */}
+              <button
+                type="button"
+                onClick={(e) => handleSmartShare(currentPost, e)}
+                title="Share Poster & Text"
+                aria-label="Share Poster & Text"
+                className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-black/45 px-3 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur-md border border-white/25 transition-all duration-300 hover:bg-black/75 hover:scale-105 active:scale-95"
+              >
+                <HiOutlineShare className="h-4 w-4 text-white" />
+                <span className="text-xs">Share</span>
+              </button>
 
               {/* Zoom Trigger Button */}
               <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-slate-900/85 px-3 py-1.5 text-xs font-bold text-white shadow-md backdrop-blur-md transition group-hover:scale-105 group-hover:bg-slate-900">

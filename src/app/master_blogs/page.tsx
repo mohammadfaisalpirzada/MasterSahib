@@ -200,6 +200,51 @@ export default function MasterBlogsPage() {
     }
   };
 
+  // Smart Share: shares image file + formatted text via Web Share API or falls back to WhatsApp
+  const handleSmartShare = async (post: BlogPost, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/master_blogs?post=${post.id}`
+      : 'https://themastersahib.com/master_blogs';
+    const shareText = `*${post.title}*\n${post.category} • ${post.date}\n\n${post.excerpt}\n\nRead full article & view HD poster:\n${shareUrl}`;
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          const res = await fetch(post.imageUrl);
+          const blob = await res.blob();
+          const ext = post.imageUrl.toLowerCase().includes('.png') ? 'png' : 'jpg';
+          const mime = blob.type || (ext === 'png' ? 'image/png' : 'image/jpeg');
+          const file = new File([blob], `${post.id}-poster.${ext}`, { type: mime });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: post.title,
+              text: shareText,
+              files: [file],
+            });
+            return;
+          }
+        } catch {
+          // fallback if file attachment not supported
+        }
+
+        await navigator.share({
+          title: post.title,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      }
+    } catch (err) {
+      if ((err as Error)?.name === 'AbortError') return;
+    }
+
+    // Direct WhatsApp fallback with link and formatted text
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+  };
+
   // WhatsApp Share Helper
   const handleWhatsAppShare = (post: BlogPost, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -489,6 +534,18 @@ export default function MasterBlogsPage() {
                           )}
                         </div>
 
+                        {/* Transparent Modern Share Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleSmartShare(post, e)}
+                          title="Share Poster & Text"
+                          aria-label="Share Poster & Text"
+                          className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-xs font-bold text-white shadow-lg backdrop-blur-md border border-white/25 transition-all duration-300 hover:bg-black/75 hover:scale-105 active:scale-95"
+                        >
+                          <HiOutlineShare className="h-3.5 w-3.5 text-white" />
+                          <span className="text-[11px]">Share</span>
+                        </button>
+
                         {/* Expand Poster Icon Overlay */}
                         <button
                           type="button"
@@ -714,6 +771,18 @@ export default function MasterBlogsPage() {
                       className="object-contain p-1 transition-transform duration-500 group-hover:scale-[1.02]"
                       unoptimized
                     />
+                    {/* Transparent Modern Share Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleSmartShare(activePost, e)}
+                      title="Share Poster & Text"
+                      aria-label="Share Poster & Text"
+                      className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-black/45 px-3 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur-md border border-white/25 transition-all duration-300 hover:bg-black/75 hover:scale-105 active:scale-95"
+                    >
+                      <HiOutlineShare className="h-4 w-4 text-white" />
+                      <span>Share Poster &amp; Text</span>
+                    </button>
+
                     <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 rounded-full bg-slate-900/85 px-3 py-1 text-xs font-bold text-white shadow-md backdrop-blur-md transition group-hover:scale-105 group-hover:bg-slate-900">
                       <HiOutlineArrowsExpand className="h-3.5 w-3.5" />
                       <span>Click to Zoom HD Poster</span>
