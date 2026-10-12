@@ -24,10 +24,14 @@ import {
   HiOutlineCalendar,
   HiOutlineClock,
   HiOutlineInformationCircle,
+  HiOutlineChatAlt2,
 } from 'react-icons/hi';
 import { FaWhatsapp, FaFacebookF, FaThumbtack } from 'react-icons/fa';
 import { getCurrentTheme } from '@/lib/theme';
 import type { BlogPost } from '@/lib/master-blogs';
+import BlogShareModal from '@/app/components/BlogShareModal';
+import BlogReactionsAndComments from '@/app/components/BlogReactionsAndComments';
+import { openWhatsAppShare, copyBlogShareText } from '@/lib/blog-share';
 
 export default function MasterBlogsPage() {
   const theme = getCurrentTheme();
@@ -42,9 +46,11 @@ export default function MasterBlogsPage() {
   // Modals & Active states
   const [activePost, setActivePost] = useState<BlogPost | null>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [shareModalPost, setShareModalPost] = useState<BlogPost | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [interactionsMap, setInteractionsMap] = useState<Record<string, { totalReactions: number; commentsCount: number }>>({});
 
   // Drag and Drop
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
@@ -78,6 +84,16 @@ export default function MasterBlogsPage() {
     } finally {
       setLoading(false);
     }
+
+    try {
+      const intRes = await fetch('/api/master-blogs/interactions', { cache: 'no-store' });
+      if (intRes.ok) {
+        const intData = await intRes.json();
+        if (intData.success && intData.summary) {
+          setInteractionsMap(intData.summary);
+        }
+      }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -200,57 +216,17 @@ export default function MasterBlogsPage() {
     }
   };
 
-  // Smart Share: shares image file + formatted text via Web Share API or falls back to WhatsApp
-  const handleSmartShare = async (post: BlogPost, e: React.MouseEvent) => {
+  // Smart Share: opens comprehensive BlogShareModal with WhatsApp, HD image, services & contact
+  const handleSmartShare = (post: BlogPost, e: React.MouseEvent) => {
     e.stopPropagation();
-    const shareUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}/master_blogs?post=${post.id}`
-      : 'https://themastersahib.com/master_blogs';
-    const shareText = `*${post.title}*\n${post.category} • ${post.date}\n\n${post.excerpt}\n\nRead full article & view HD poster:\n${shareUrl}`;
-
-    try {
-      if (typeof navigator !== 'undefined' && navigator.share) {
-        try {
-          const res = await fetch(post.imageUrl);
-          const blob = await res.blob();
-          const ext = post.imageUrl.toLowerCase().includes('.png') ? 'png' : 'jpg';
-          const mime = blob.type || (ext === 'png' ? 'image/png' : 'image/jpeg');
-          const file = new File([blob], `${post.id}-poster.${ext}`, { type: mime });
-
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              title: post.title,
-              text: shareText,
-              files: [file],
-            });
-            return;
-          }
-        } catch {
-          // fallback if file attachment not supported
-        }
-
-        await navigator.share({
-          title: post.title,
-          text: shareText,
-          url: shareUrl,
-        });
-        return;
-      }
-    } catch (err) {
-      if ((err as Error)?.name === 'AbortError') return;
-    }
-
-    // Direct WhatsApp fallback with link and formatted text
-    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    setShareModalPost(post);
   };
 
-  // WhatsApp Share Helper
+  // WhatsApp Share Helper: directly opens WhatsApp with complete post text, services, and contact info
   const handleWhatsAppShare = (post: BlogPost, e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/master_blogs?post=${post.id}` : '';
-    const text = `*The Master Sahib Educational Update*\n\n*${post.title}*\nDate: ${post.date}\nCategory: ${post.category}\n\nRead full article & view poster:\n${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+    openWhatsAppShare(post);
+    showToast('Opening WhatsApp with post, services & contact...');
   };
 
   // Facebook Share
@@ -260,12 +236,11 @@ export default function MasterBlogsPage() {
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
   };
 
-  // Copy Formatted Text
-  const handleCopyText = (post: BlogPost, e: React.MouseEvent) => {
+  // Copy Formatted Text: copies complete post text, services, contact, and website
+  const handleCopyText = async (post: BlogPost, e: React.MouseEvent) => {
     e.stopPropagation();
-    const fullText = `*${post.title}*\n${post.date} | ${post.category}\n\n${post.content}\n\n— The Master Sahib (https://themastersahib.com)`;
-    navigator.clipboard.writeText(fullText);
-    showToast('Text copied to clipboard!');
+    await copyBlogShareText(post);
+    showToast('پوسٹ، خدمات اور رابطہ کاپی ہو گیا!');
   };
 
   // Audio Text-to-Speech
@@ -599,8 +574,36 @@ export default function MasterBlogsPage() {
                       {post.excerpt}
                     </p>
 
+                    {/* Reactions & Comments Badges */}
+                    <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                      <button
+                        type="button"
+                        onClick={() => setActivePost(post)}
+                        className="flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 transition hover:bg-slate-100 dark:hover:bg-slate-800"
+                        title="View reactions & leave your response"
+                      >
+                        <span className="flex items-center -space-x-1">
+                          <span className="text-sm">👍</span>
+                          <span className="text-sm">❤️</span>
+                          <span className="text-sm">😢</span>
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                          {interactionsMap[post.id]?.totalReactions || 0}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActivePost(post)}
+                        className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-[11px] font-bold text-slate-600 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+                      >
+                        <HiOutlineChatAlt2 className="h-3.5 w-3.5 text-indigo-500" />
+                        <span>{interactionsMap[post.id]?.commentsCount || 0} Comments</span>
+                      </button>
+                    </div>
+
                     {/* Action Buttons Toolbar */}
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
                       {/* Read More Button */}
                       <button
                         type="button"
@@ -817,17 +820,32 @@ export default function MasterBlogsPage() {
               >
                 {activePost.content}
               </div>
+
+              {/* Facebook-style Reactions (👍 ❤️ 😢) & Comments */}
+              <BlogReactionsAndComments
+                postId={activePost.id}
+                postTitle={activePost.title}
+                isAdmin={isAdmin}
+                onToast={showToast}
+              />
             </div>
 
             {/* Modal Footer with Actions */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/50">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => handleSmartShare(activePost, e)}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-indigo-700"
+                >
+                  <HiOutlineShare className="h-4 w-4" /> Share Post &amp; Services
+                </button>
                 <button
                   type="button"
                   onClick={(e) => handleWhatsAppShare(activePost, e)}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:opacity-90"
                 >
-                  <FaWhatsapp className="h-4 w-4" /> Share on WhatsApp
+                  <FaWhatsapp className="h-4 w-4" /> WhatsApp
                 </button>
                 <button
                   type="button"
@@ -991,6 +1009,14 @@ export default function MasterBlogsPage() {
           </div>
         </div>
       )}
+
+      {/* Blog Share Modal with WhatsApp, HD Image, Services & Contact */}
+      <BlogShareModal
+        post={shareModalPost}
+        isOpen={Boolean(shareModalPost)}
+        onClose={() => setShareModalPost(null)}
+        onToast={showToast}
+      />
     </main>
   );
 }

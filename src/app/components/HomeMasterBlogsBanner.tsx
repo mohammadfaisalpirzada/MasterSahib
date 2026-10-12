@@ -17,10 +17,13 @@ import {
   HiOutlineCalendar,
   HiOutlineClock,
   HiOutlineShare,
+  HiOutlineChatAlt2,
 } from 'react-icons/hi';
 import { FaWhatsapp } from 'react-icons/fa';
 import { getCurrentTheme } from '@/lib/theme';
 import type { BlogPost } from '@/lib/master-blogs';
+import BlogShareModal from './BlogShareModal';
+import { openWhatsAppShare } from '@/lib/blog-share';
 
 export default function HomeMasterBlogsBanner() {
   const theme = getCurrentTheme();
@@ -28,8 +31,16 @@ export default function HomeMasterBlogsBanner() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [shareModalPost, setShareModalPost] = useState<BlogPost | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
   const [detectedOrientations, setDetectedOrientations] = useState<Record<string, 'portrait' | 'landscape' | 'square'>>({});
+  const [interactionsMap, setInteractionsMap] = useState<Record<string, { totalReactions: number; commentsCount: number }>>({});
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   useEffect(() => {
     fetch('/api/master-blogs')
@@ -39,6 +50,15 @@ export default function HomeMasterBlogsBanner() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    fetch('/api/master-blogs/interactions')
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (data.success && data.summary) {
+          setInteractionsMap(data.summary);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   if (loading || posts.length === 0) return null;
@@ -56,54 +76,14 @@ export default function HomeMasterBlogsBanner() {
     setCurrentIndex((prev) => (prev - 1 + posts.length) % posts.length);
   };
 
-  const handleSmartShare = async (post: BlogPost, e: React.MouseEvent) => {
+  const handleSmartShare = (post: BlogPost, e: React.MouseEvent) => {
     e.stopPropagation();
-    const shareUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}/master_blogs?post=${post.id}`
-      : 'https://themastersahib.com/master_blogs';
-    const shareText = `*${post.title}*\n${post.category} • ${post.date}\n\n${post.excerpt}\n\nRead full article & view HD poster:\n${shareUrl}`;
-
-    try {
-      if (typeof navigator !== 'undefined' && navigator.share) {
-        try {
-          const res = await fetch(post.imageUrl);
-          const blob = await res.blob();
-          const ext = post.imageUrl.toLowerCase().includes('.png') ? 'png' : 'jpg';
-          const mime = blob.type || (ext === 'png' ? 'image/png' : 'image/jpeg');
-          const file = new File([blob], `${post.id}-poster.${ext}`, { type: mime });
-
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              title: post.title,
-              text: shareText,
-              files: [file],
-            });
-            return;
-          }
-        } catch {
-          // fallback if file attachment not supported
-        }
-
-        await navigator.share({
-          title: post.title,
-          text: shareText,
-          url: shareUrl,
-        });
-        return;
-      }
-    } catch (err) {
-      if ((err as Error)?.name === 'AbortError') return;
-    }
-
-    // Direct WhatsApp fallback with link and formatted text
-    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    setShareModalPost(post);
   };
 
   const handleWhatsAppShare = (post: BlogPost) => {
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/master_blogs` : '';
-    const text = `*The Master Sahib Educational Update*\n\n*${post.title}*\nDate: ${post.date}\n\nRead full article & view poster:\n${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+    openWhatsAppShare(post);
+    showToast('Opening WhatsApp with post, services & contact...');
   };
 
   const handleSpeak = (post: BlogPost) => {
@@ -155,6 +135,21 @@ export default function HomeMasterBlogsBanner() {
               </a>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Blog Share Modal with WhatsApp, HD Image, Services & Contact */}
+      <BlogShareModal
+        post={shareModalPost}
+        isOpen={Boolean(shareModalPost)}
+        onClose={() => setShareModalPost(null)}
+        onToast={showToast}
+      />
+
+      {/* Floating Toast Notice */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-2xl backdrop-blur border border-slate-700 animate-fadeIn">
+          {toastMessage}
         </div>
       )}
 
@@ -354,6 +349,22 @@ export default function HomeMasterBlogsBanner() {
                   {speaking ? <HiOutlineStop className="h-4 w-4" /> : <HiOutlineVolumeUp className="h-4 w-4" />}
                   <span>{speaking ? 'Stop' : 'تحریر سنیں'}</span>
                 </button>
+
+                {/* Reactions & Comments Shortcut */}
+                <Link
+                  href={`/master_blogs?post=${currentPost.id}`}
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-indigo-600 dark:hover:bg-slate-700"
+                >
+                  <span className="flex items-center -space-x-1">
+                    <span>👍</span>
+                    <span>❤️</span>
+                    <span>😢</span>
+                  </span>
+                  <span>{interactionsMap[currentPost.id]?.totalReactions || 0}</span>
+                  <span className="text-slate-300 dark:text-slate-600">|</span>
+                  <HiOutlineChatAlt2 className="h-4 w-4 text-indigo-500" />
+                  <span>{interactionsMap[currentPost.id]?.commentsCount || 0} تبصرے</span>
+                </Link>
               </div>
             </div>
           </div>
