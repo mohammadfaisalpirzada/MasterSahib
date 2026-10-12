@@ -22,7 +22,9 @@ import {
 import { FaWhatsapp } from 'react-icons/fa';
 import { getCurrentTheme } from '@/lib/theme';
 import type { BlogPost } from '@/lib/master-blogs';
+import type { BlogReactions } from '@/lib/blog-interactions';
 import BlogShareModal from './BlogShareModal';
+import BlogReactionBar from './BlogReactionBar';
 import { openWhatsAppShare } from '@/lib/blog-share';
 
 export default function HomeMasterBlogsBanner() {
@@ -35,7 +37,9 @@ export default function HomeMasterBlogsBanner() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
   const [detectedOrientations, setDetectedOrientations] = useState<Record<string, 'portrait' | 'landscape' | 'square'>>({});
-  const [interactionsMap, setInteractionsMap] = useState<Record<string, { totalReactions: number; commentsCount: number }>>({});
+  const [interactionsMap, setInteractionsMap] = useState<
+    Record<string, { reactions?: BlogReactions; totalReactions: number; commentsCount: number }>
+  >({});
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -313,6 +317,18 @@ export default function HomeMasterBlogsBanner() {
                 >
                   {currentPost.excerpt}
                 </p>
+
+                {/* 3D Facebook-Style Emoji Reactions Bar on Featured Banner */}
+                <div className="pt-3">
+                  <BlogReactionBar
+                    postId={currentPost.id}
+                    postTitle={currentPost.title}
+                    initialReactions={interactionsMap[currentPost.id]?.reactions}
+                    commentsCount={interactionsMap[currentPost.id]?.commentsCount}
+                    onCommentClick={() => (window.location.href = `/master_blogs?post=${currentPost.id}`)}
+                    onToast={showToast}
+                  />
+                </div>
               </div>
 
               {/* Action Buttons Row */}
@@ -349,22 +365,6 @@ export default function HomeMasterBlogsBanner() {
                   {speaking ? <HiOutlineStop className="h-4 w-4" /> : <HiOutlineVolumeUp className="h-4 w-4" />}
                   <span>{speaking ? 'Stop' : 'تحریر سنیں'}</span>
                 </button>
-
-                {/* Reactions & Comments Shortcut */}
-                <Link
-                  href={`/master_blogs?post=${currentPost.id}`}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-indigo-600 dark:hover:bg-slate-700"
-                >
-                  <span className="flex items-center -space-x-1">
-                    <span>👍</span>
-                    <span>❤️</span>
-                    <span>😢</span>
-                  </span>
-                  <span>{interactionsMap[currentPost.id]?.totalReactions || 0}</span>
-                  <span className="text-slate-300 dark:text-slate-600">|</span>
-                  <HiOutlineChatAlt2 className="h-4 w-4 text-indigo-500" />
-                  <span>{interactionsMap[currentPost.id]?.commentsCount || 0} تبصرے</span>
-                </Link>
               </div>
             </div>
           </div>

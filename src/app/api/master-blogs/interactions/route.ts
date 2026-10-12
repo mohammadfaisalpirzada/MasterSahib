@@ -8,6 +8,7 @@ import {
   updatePostReaction,
   addPostComment,
   deletePostComment,
+  loadInteractionsFromGSheetOnce,
   ReactionType,
 } from '@/lib/blog-interactions';
 
@@ -15,6 +16,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // Ensure historical data from Google Sheet is initialized
+    await loadInteractionsFromGSheetOnce().catch(() => {});
+
     const { searchParams } = new URL(request.url);
     const postId = searchParams.get('postId');
 
@@ -37,7 +41,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Return summary for all posts (for grid counters)
+    // Return summary for all posts (for grid and home counters)
     const summary = getAllPostsInteractionsSummary();
     return NextResponse.json({
       success: true,
@@ -52,7 +56,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, postId } = body;
+    const { action, postId, postTitle } = body;
 
     if (!postId || typeof postId !== 'string') {
       return NextResponse.json({ success: false, error: 'postId is required' }, { status: 400 });
@@ -67,7 +71,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Invalid reaction type' }, { status: 400 });
       }
 
-      const updatedReactions = updatePostReaction(postId, reactionType, previousReaction);
+      const updatedReactions = updatePostReaction(
+        postId,
+        reactionType,
+        previousReaction,
+        postTitle
+      );
+
       return NextResponse.json({
         success: true,
         postId,
@@ -87,7 +97,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Comment is too long (max 1000 characters)' }, { status: 400 });
       }
 
-      const newComment = addPostComment(postId, author, content);
+      const newComment = addPostComment(postId, author, content, postTitle);
       const postData = getPostInteractions(postId);
 
       return NextResponse.json({

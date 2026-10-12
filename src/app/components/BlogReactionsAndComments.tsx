@@ -7,7 +7,8 @@ import {
   HiOutlinePaperAirplane,
   HiOutlineUser,
 } from 'react-icons/hi';
-import type { ReactionType, BlogReactions, BlogComment } from '@/lib/blog-interactions';
+import BlogReactionBar from './BlogReactionBar';
+import type { BlogComment } from '@/lib/blog-interactions';
 
 interface BlogReactionsAndCommentsProps {
   postId: string;
@@ -16,69 +17,12 @@ interface BlogReactionsAndCommentsProps {
   onToast?: (msg: string) => void;
 }
 
-const EMOJI_REACTIONS: Array<{
-  type: ReactionType;
-  emoji: string;
-  label: string;
-  urduLabel: string;
-  colorClass: string;
-  bgClass: string;
-}> = [
-  {
-    type: 'like',
-    emoji: '👍',
-    label: 'Like',
-    urduLabel: 'پسند',
-    colorClass: 'text-blue-600 dark:text-blue-400',
-    bgClass: 'hover:bg-blue-50 dark:hover:bg-blue-950/40 border-blue-200 dark:border-blue-800',
-  },
-  {
-    type: 'love',
-    emoji: '❤️',
-    label: 'Love',
-    urduLabel: 'محبت',
-    colorClass: 'text-rose-600 dark:text-rose-400',
-    bgClass: 'hover:bg-rose-50 dark:hover:bg-rose-950/40 border-rose-200 dark:border-rose-800',
-  },
-  {
-    type: 'sad',
-    emoji: '😢',
-    label: 'Sad',
-    urduLabel: 'افسوس',
-    colorClass: 'text-amber-600 dark:text-amber-400',
-    bgClass: 'hover:bg-amber-50 dark:hover:bg-amber-950/40 border-amber-200 dark:border-amber-800',
-  },
-  {
-    type: 'clap',
-    emoji: '👏',
-    label: 'Clap',
-    urduLabel: 'شاباش',
-    colorClass: 'text-emerald-600 dark:text-emerald-400',
-    bgClass: 'hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800',
-  },
-  {
-    type: 'insightful',
-    emoji: '💡',
-    label: 'Helpful',
-    urduLabel: 'معلومات',
-    colorClass: 'text-amber-500 dark:text-amber-300',
-    bgClass: 'hover:bg-amber-50 dark:hover:bg-amber-950/40 border-amber-200 dark:border-amber-800',
-  },
-];
-
 export default function BlogReactionsAndComments({
   postId,
+  postTitle = '',
   isAdmin = false,
   onToast,
 }: BlogReactionsAndCommentsProps) {
-  const [reactions, setReactions] = useState<BlogReactions>({
-    like: 0,
-    love: 0,
-    sad: 0,
-    clap: 0,
-    insightful: 0,
-  });
-  const [userReaction, setUserReaction] = useState<ReactionType | null>(null);
   const [comments, setComments] = useState<BlogComment[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -87,73 +31,20 @@ export default function BlogReactionsAndComments({
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Load interactions from API and user reaction from localStorage
+  // Load comments from API
   useEffect(() => {
     if (!postId) return;
 
-    // Load saved user reaction from localStorage
-    try {
-      const saved = localStorage.getItem(`mb_reaction_${postId}`) as ReactionType | null;
-      if (saved) setUserReaction(saved);
-    } catch {}
-
-    // Fetch live reactions and comments from API
     fetch(`/api/master-blogs/interactions?postId=${encodeURIComponent(postId)}`)
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
-        if (data.success) {
-          if (data.reactions) setReactions(data.reactions);
-          if (Array.isArray(data.comments)) setComments(data.comments);
+        if (data.success && Array.isArray(data.comments)) {
+          setComments(data.comments);
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [postId]);
-
-  // Handle Emoji Reaction click
-  const handleReact = async (type: ReactionType) => {
-    const isSame = userReaction === type;
-    const newReaction = isSame ? null : type;
-    const prevReaction = userReaction;
-
-    // Optimistic UI update
-    setUserReaction(newReaction);
-    setReactions((prev) => {
-      const updated = { ...prev };
-      if (prevReaction && updated[prevReaction] !== undefined) {
-        updated[prevReaction] = Math.max(0, updated[prevReaction] - 1);
-      }
-      if (newReaction && updated[newReaction] !== undefined) {
-        updated[newReaction] = (updated[newReaction] || 0) + 1;
-      }
-      return updated;
-    });
-
-    // Save to localStorage
-    try {
-      if (newReaction) {
-        localStorage.setItem(`mb_reaction_${postId}`, newReaction);
-      } else {
-        localStorage.removeItem(`mb_reaction_${postId}`);
-      }
-    } catch {}
-
-    // Sync with API
-    try {
-      await fetch('/api/master-blogs/interactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'react',
-          postId,
-          reactionType: newReaction,
-          previousReaction: prevReaction,
-        }),
-      });
-    } catch {
-      // Revert if error
-    }
-  };
 
   // Handle Comment Submission
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -168,6 +59,7 @@ export default function BlogReactionsAndComments({
         body: JSON.stringify({
           action: 'comment',
           postId,
+          postTitle,
           author: author.trim() || 'Reader',
           content: content.trim(),
         }),
@@ -177,7 +69,7 @@ export default function BlogReactionsAndComments({
       if (data.success && data.comments) {
         setComments(data.comments);
         setContent('');
-        if (onToast) onToast('آپ کا تبصرہ کامیابی کے ساتھ شامل ہو گیا!');
+        if (onToast) onToast('آپ کا تبصرہ کامیابی کے ساتھ گوگل شیٹ میں محفوظ ہو گیا!');
       } else {
         if (onToast) onToast(data.error || 'تبصرہ بھیجنے میں خرابی ہوئی');
       }
@@ -213,76 +105,30 @@ export default function BlogReactionsAndComments({
     }
   };
 
-  const totalReactionsCount =
-    (reactions.like || 0) +
-    (reactions.love || 0) +
-    (reactions.sad || 0) +
-    (reactions.clap || 0) +
-    (reactions.insightful || 0);
-
   return (
     <div className="mt-8 border-t border-slate-200/90 pt-6 dark:border-slate-800">
       {/* ─────────────────────────────────────────────────────────────
-          1. Facebook-Style Emoji Reactions Section
+          1. 3D Facebook-Style Emoji Reactions Bar
          ───────────────────────────────────────────────────────────── */}
-      <div className="rounded-3xl border border-slate-200/80 bg-slate-50/70 p-4 sm:p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 pb-3 dark:border-slate-800/60">
-          <div className="flex items-center gap-2">
-            <span className="text-base font-black text-slate-900 dark:text-white">
-              Reactions / تاثرات
-            </span>
-            <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-              {totalReactionsCount}
-            </span>
-          </div>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            Click emoji to react / اپنا تاثر منتخب کریں
-          </span>
-        </div>
-
-        {/* Reaction Buttons Row */}
-        <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
-          {EMOJI_REACTIONS.map((item) => {
-            const count = reactions[item.type] || 0;
-            const isSelected = userReaction === item.type;
-
-            return (
-              <button
-                key={item.type}
-                type="button"
-                onClick={() => handleReact(item.type)}
-                className={`group flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-bold transition-all duration-200 active:scale-95 ${
-                  isSelected
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm dark:border-indigo-400 dark:bg-indigo-950/60 dark:text-indigo-200 ring-2 ring-indigo-400/30'
-                    : `border-slate-200 bg-white text-slate-700 shadow-xs dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200 ${item.bgClass}`
-                }`}
-                title={`${item.label} (${item.urduLabel})`}
-              >
-                <span className="text-lg transition-transform group-hover:scale-125">
-                  {item.emoji}
-                </span>
-                <span className="font-semibold">{item.label}</span>
-                {count > 0 && (
-                  <span
-                    className={`rounded-full px-1.5 py-0.5 text-[11px] font-black ${
-                      isSelected
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                    }`}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+      <div className="mb-6">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Reactions / اپنا تاثر دیں (Like, Love, Sad, Clap):
+        </p>
+        <BlogReactionBar
+          postId={postId}
+          postTitle={postTitle}
+          commentsCount={comments.length}
+          onToast={onToast}
+        />
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
           2. Comments & Discussion Section
          ───────────────────────────────────────────────────────────── */}
-      <div className="mt-6 rounded-3xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div
+        id="comments-section"
+        className="rounded-3xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      >
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <HiOutlineChatAlt2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
@@ -294,7 +140,7 @@ export default function BlogReactionsAndComments({
             </span>
           </div>
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            Open Discussion
+            Saved to Google Sheets
           </span>
         </div>
 

@@ -27,11 +27,13 @@ import {
   HiOutlineChatAlt2,
 } from 'react-icons/hi';
 import { FaWhatsapp, FaFacebookF, FaThumbtack } from 'react-icons/fa';
-import { getCurrentTheme } from '@/lib/theme';
 import type { BlogPost } from '@/lib/master-blogs';
+import type { BlogReactions } from '@/lib/blog-interactions';
 import BlogShareModal from '@/app/components/BlogShareModal';
+import BlogReactionBar from '@/app/components/BlogReactionBar';
 import BlogReactionsAndComments from '@/app/components/BlogReactionsAndComments';
 import { openWhatsAppShare, copyBlogShareText } from '@/lib/blog-share';
+import { getCurrentTheme } from '@/lib/theme';
 
 export default function MasterBlogsPage() {
   const theme = getCurrentTheme();
@@ -50,7 +52,9 @@ export default function MasterBlogsPage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
-  const [interactionsMap, setInteractionsMap] = useState<Record<string, { totalReactions: number; commentsCount: number }>>({});
+  const [interactionsMap, setInteractionsMap] = useState<
+    Record<string, { reactions?: BlogReactions; totalReactions: number; commentsCount: number }>
+  >({});
 
   // Drag and Drop
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
@@ -574,36 +578,21 @@ export default function MasterBlogsPage() {
                       {post.excerpt}
                     </p>
 
-                    {/* Reactions & Comments Badges */}
-                    <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                      <button
-                        type="button"
-                        onClick={() => setActivePost(post)}
-                        className="flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 transition hover:bg-slate-100 dark:hover:bg-slate-800"
-                        title="View reactions & leave your response"
-                      >
-                        <span className="flex items-center -space-x-1">
-                          <span className="text-sm">👍</span>
-                          <span className="text-sm">❤️</span>
-                          <span className="text-sm">😢</span>
-                        </span>
-                        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                          {interactionsMap[post.id]?.totalReactions || 0}
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setActivePost(post)}
-                        className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-[11px] font-bold text-slate-600 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
-                      >
-                        <HiOutlineChatAlt2 className="h-3.5 w-3.5 text-indigo-500" />
-                        <span>{interactionsMap[post.id]?.commentsCount || 0} Comments</span>
-                      </button>
+                    {/* Interactive 3D Emoji Reactions & Comments Bar on every card */}
+                    <div className="mt-3 border-t border-slate-100/80 pt-2 dark:border-slate-800/80">
+                      <BlogReactionBar
+                        postId={post.id}
+                        postTitle={post.title}
+                        initialReactions={interactionsMap[post.id]?.reactions}
+                        commentsCount={interactionsMap[post.id]?.commentsCount}
+                        onCommentClick={() => setActivePost(post)}
+                        compact
+                        onToast={showToast}
+                      />
                     </div>
 
                     {/* Action Buttons Toolbar */}
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
                       {/* Read More Button */}
                       <button
                         type="button"
