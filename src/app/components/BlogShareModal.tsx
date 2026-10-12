@@ -17,6 +17,7 @@ import {
   formatBlogShareText,
   openWhatsAppShare,
   copyBlogShareText,
+  sharePostToWhatsApp,
   MASTER_CONTACT_PHONE,
   MASTER_SERVICES_LINE,
 } from '@/lib/blog-share';
@@ -51,9 +52,13 @@ export default function BlogShareModal({
     }
   };
 
-  const handleWhatsApp = () => {
-    openWhatsAppShare(post);
-    if (onToast) onToast('Opening WhatsApp with post, services & contact...');
+  const handleWhatsApp = async () => {
+    setIsSharingImage(true);
+    try {
+      await sharePostToWhatsApp(post, undefined, onToast);
+    } finally {
+      setIsSharingImage(false);
+    }
   };
 
   const handleFacebook = () => {
@@ -185,12 +190,13 @@ export default function BlogShareModal({
           </div>
         </div>
 
-        {/* Primary Action 1: WhatsApp (Text + Services + Contact + Link) */}
+        {/* Primary Action 1: WhatsApp (Image + Text Together) */}
         <div className="mt-4 space-y-2.5">
           <button
             type="button"
             onClick={handleWhatsApp}
-            className="group flex w-full items-center justify-between rounded-2xl bg-[#25D366] px-4 py-3.5 text-left text-white shadow-md transition-all hover:bg-[#20ba59] hover:shadow-lg active:scale-[0.99]"
+            disabled={isSharingImage}
+            className="group flex w-full items-center justify-between rounded-2xl bg-[#25D366] px-4 py-3.5 text-left text-white shadow-md transition-all hover:bg-[#20ba59] hover:shadow-lg active:scale-[0.99] disabled:opacity-60"
           >
             <div className="flex items-center gap-3">
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
@@ -198,19 +204,19 @@ export default function BlogShareModal({
               </div>
               <div>
                 <p className="text-sm font-black leading-tight text-white">
-                  Share on WhatsApp (Full Post + Services)
+                  {isSharingImage ? 'Preparing Image & Text...' : 'Share on WhatsApp (Image + Text Together)'}
                 </p>
                 <p className="text-xs text-white/90">
-                  ساری تحریر، خدمات، فون نمبر اور لنک ایک ساتھ جائے گا
+                  تصویر اور نیچے ساری تحریر ایک ساتھ جائے گی
                 </p>
               </div>
             </div>
-            <span className="rounded-lg bg-white/20 px-2 py-1 text-[11px] font-bold text-white group-hover:bg-white/30">
-              Open
+            <span className="rounded-lg bg-white/20 px-2.5 py-1 text-[11px] font-bold text-white group-hover:bg-white/30">
+              WhatsApp
             </span>
           </button>
 
-          {/* Primary Action 2: Share HD Image Poster (With Auto-Copied Caption) */}
+          {/* Primary Action 2: Share via Other Apps */}
           <button
             type="button"
             onClick={handleShareImageWithCaption}
@@ -219,19 +225,19 @@ export default function BlogShareModal({
           >
             <div className="flex items-center gap-3">
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
-                <HiOutlinePhotograph className="h-6 w-6 text-white" />
+                <HiOutlineShare className="h-6 w-6 text-white" />
               </div>
               <div>
                 <p className="text-sm font-black leading-tight text-white">
-                  {isSharingImage ? 'Preparing Poster...' : 'Share HD Image Poster'}
+                  Share via Other Apps (All Apps)
                 </p>
                 <p className="text-xs text-white/90">
-                  پوسٹر شیئر ہوگا اور کیپشن خودکار طریقے سے کاپی ہو جائے گا
+                  فیس بک، ٹیلی گرام، میسنجر یا دیگر ایپس پر شیئر کریں
                 </p>
               </div>
             </div>
-            <span className="rounded-lg bg-white/20 px-2 py-1 text-[11px] font-bold text-white group-hover:bg-white/30">
-              Share Image
+            <span className="rounded-lg bg-white/20 px-2.5 py-1 text-[11px] font-bold text-white group-hover:bg-white/30">
+              Share
             </span>
           </button>
         </div>

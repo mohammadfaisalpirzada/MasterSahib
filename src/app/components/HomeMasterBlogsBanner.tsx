@@ -25,7 +25,7 @@ import type { BlogPost } from '@/lib/master-blogs';
 import type { BlogReactions } from '@/lib/blog-interactions';
 import BlogShareModal from './BlogShareModal';
 import BlogReactionBar from './BlogReactionBar';
-import { openWhatsAppShare } from '@/lib/blog-share';
+import { sharePostToWhatsApp, openWhatsAppShare } from '@/lib/blog-share';
 
 export default function HomeMasterBlogsBanner() {
   const theme = getCurrentTheme();
@@ -85,9 +85,8 @@ export default function HomeMasterBlogsBanner() {
     setShareModalPost(post);
   };
 
-  const handleWhatsAppShare = (post: BlogPost) => {
-    openWhatsAppShare(post);
-    showToast('Opening WhatsApp with post, services & contact...');
+  const handleWhatsAppShare = async (post: BlogPost) => {
+    await sharePostToWhatsApp(post, undefined, showToast);
   };
 
   const handleSpeak = (post: BlogPost) => {

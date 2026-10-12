@@ -32,7 +32,7 @@ import type { BlogReactions } from '@/lib/blog-interactions';
 import BlogShareModal from '@/app/components/BlogShareModal';
 import BlogReactionBar from '@/app/components/BlogReactionBar';
 import BlogReactionsAndComments from '@/app/components/BlogReactionsAndComments';
-import { openWhatsAppShare, copyBlogShareText } from '@/lib/blog-share';
+import { sharePostToWhatsApp, openWhatsAppShare, copyBlogShareText } from '@/lib/blog-share';
 import { getCurrentTheme } from '@/lib/theme';
 
 export default function MasterBlogsPage() {
@@ -226,11 +226,10 @@ export default function MasterBlogsPage() {
     setShareModalPost(post);
   };
 
-  // WhatsApp Share Helper: directly opens WhatsApp with complete post text, services, and contact info
-  const handleWhatsAppShare = (post: BlogPost, e: React.MouseEvent) => {
+  // WhatsApp Share Helper: shares poster image and complete post text together
+  const handleWhatsAppShare = async (post: BlogPost, e: React.MouseEvent) => {
     e.stopPropagation();
-    openWhatsAppShare(post);
-    showToast('Opening WhatsApp with post, services & contact...');
+    await sharePostToWhatsApp(post, undefined, showToast);
   };
 
   // Facebook Share
