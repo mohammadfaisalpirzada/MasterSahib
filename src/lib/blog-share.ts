@@ -1,10 +1,56 @@
-import { BlogPost, extractMeaningfulExcerpt } from '@/lib/master-blogs';
+import type { BlogPost } from '@/lib/master-blogs';
 
 export const MASTER_SERVICES_LINE =
   'Educational Consultancy • Teacher Training • Curriculum Development • School Management & Web Solutions';
 
 export const MASTER_CONTACT_PHONE = '+92 345 8340669';
 export const MASTER_WEBSITE_URL = 'https://themastersahib.com';
+
+function detectIsUrduText(text: string): boolean {
+  const urduArabicRegex = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+  return urduArabicRegex.test(text);
+}
+
+export function extractMeaningfulExcerpt(content: string, isUrdu?: boolean): string {
+  if (!content) return '';
+  const lines = content.split(/\r\n|\r|\n/);
+  const candidates: string[] = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    if (/^[=\-_*#~`|]{3,}$/.test(line)) continue;
+    // Skip metadata lines, section headers, and dividers
+    if (/^(category|date|author|platform|website|authority)\s*:/i.test(line)) continue;
+    if (/^part\s*\d+/i.test(line) || /^حصہ\s*\d+/i.test(line)) continue;
+    if (/^(english|urdu)\s+(essay|overview|guide|reflection|details)/i.test(line)) continue;
+    if (/^[#*•\s=-]+$/.test(line)) continue;
+
+    const cleanLine = line.replace(/^[#*•\-\s]+/, '').trim();
+    if (cleanLine.length >= 25) {
+      candidates.push(cleanLine);
+    }
+  }
+
+  if (candidates.length === 0) {
+    return content.slice(0, 180).trim();
+  }
+
+  if (isUrdu) {
+    const urduCandidate = candidates.find((c) => detectIsUrduText(c));
+    if (urduCandidate) {
+      return urduCandidate.length > 240 ? `${urduCandidate.slice(0, 237)}...` : urduCandidate;
+    }
+  } else {
+    const enCandidate = candidates.find((c) => !detectIsUrduText(c));
+    if (enCandidate) {
+      return enCandidate.length > 240 ? `${enCandidate.slice(0, 237)}...` : enCandidate;
+    }
+  }
+
+  const first = candidates[0];
+  return first.length > 240 ? `${first.slice(0, 237)}...` : first;
+}
 
 /**
  * Formats a clean, professional, and dignified promotional message for WhatsApp & social sharing.
