@@ -121,6 +121,47 @@ export function resolveOrientation(width?: number | null, height?: number | null
   return 'square';
 }
 
+export function extractMeaningfulExcerpt(content: string, isUrdu?: boolean): string {
+  if (!content) return '';
+  const lines = content.split(/\r\n|\r|\n/);
+  const candidates: string[] = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    if (isDecorativeLine(line)) continue;
+    // Skip metadata lines, section headers, and dividers
+    if (/^(category|date|author|platform|website|authority)\s*:/i.test(line)) continue;
+    if (/^part\s*\d+/i.test(line) || /^حصہ\s*\d+/i.test(line)) continue;
+    if (/^(english|urdu)\s+(essay|overview|guide|reflection|details)/i.test(line)) continue;
+    if (/^[#*•\s=-]+$/.test(line)) continue;
+
+    const cleanLine = line.replace(/^[#*•\-\s]+/, '').trim();
+    if (cleanLine.length >= 25) {
+      candidates.push(cleanLine);
+    }
+  }
+
+  if (candidates.length === 0) {
+    return content.slice(0, 180).trim();
+  }
+
+  if (isUrdu) {
+    const urduCandidate = candidates.find((c) => detectIsUrdu(c));
+    if (urduCandidate) {
+      return urduCandidate.length > 240 ? `${urduCandidate.slice(0, 237)}...` : urduCandidate;
+    }
+  } else {
+    const enCandidate = candidates.find((c) => !detectIsUrdu(c));
+    if (enCandidate) {
+      return enCandidate.length > 240 ? `${enCandidate.slice(0, 237)}...` : enCandidate;
+    }
+  }
+
+  const first = candidates[0];
+  return first.length > 240 ? `${first.slice(0, 237)}...` : first;
+}
+
 function parseTextFile(rawContent: string, fallbackTitle: string): {
   title: string;
   content: string;
@@ -130,11 +171,12 @@ function parseTextFile(rawContent: string, fallbackTitle: string): {
 } {
   const lines = rawContent.split(/\r\n|\r|\n/);
   let title = '';
+  let secondaryTitle = '';
   let category = 'Educational Update';
   let date = '';
   let author = 'The Master Sahib';
   const bodyLines: string[] = [];
-  let foundTitle = false;
+  let inHeaderSection = true;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -145,7 +187,7 @@ function parseTextFile(rawContent: string, fallbackTitle: string): {
     }
 
     if (!trimmed) {
-      if (foundTitle) {
+      if (title && !inHeaderSection) {
         bodyLines.push('');
       }
       continue;
@@ -157,7 +199,6 @@ function parseTextFile(rawContent: string, fallbackTitle: string): {
       const val = colonMatch[2].trim();
       if (key === 'title') {
         title = val;
-        foundTitle = true;
         continue;
       }
       if (key === 'category') {
@@ -172,21 +213,38 @@ function parseTextFile(rawContent: string, fallbackTitle: string): {
         author = val;
         continue;
       }
-      if (key === 'platform' || key === 'website') {
+      if (key === 'platform' || key === 'website' || key === 'authority') {
         continue;
       }
     }
 
-    if (!foundTitle) {
+    // Skip section headers like "PART 1: ...", "PART 2: ..."
+    if (/^part\s*\d+/i.test(trimmed) || /^حصہ\s*\d+/i.test(trimmed)) {
+      inHeaderSection = false;
+      continue;
+    }
+
+    if (/^(english|urdu)\s+(essay|overview|guide|reflection|details)/i.test(trimmed)) {
+      inHeaderSection = false;
+      continue;
+    }
+
+    if (!title) {
       title = trimmed;
-      foundTitle = true;
+    } else if (inHeaderSection && !secondaryTitle && (detectIsUrdu(trimmed) !== detectIsUrdu(title))) {
+      secondaryTitle = trimmed;
     } else {
+      inHeaderSection = false;
       bodyLines.push(line);
     }
   }
 
+  const resolvedTitle = secondaryTitle
+    ? `${title} | ${secondaryTitle}`
+    : (title || fallbackTitle);
+
   return {
-    title: title || fallbackTitle,
+    title: resolvedTitle,
     content: bodyLines.join('\n').trim(),
     category,
     date: date || new Date().toISOString().split('T')[0],
@@ -275,11 +333,7 @@ async function fetchGoogleDriveBlogPosts(metadata: BlogMetadataStore): Promise<B
           };
 
       const isUrdu = detectIsUrdu(`${parsed.title} ${parsed.content}`);
-      const cleanExcerpt = parsed.content
-        .replace(/^[#*-•\s]+/gm, '')
-        .replace(/\n+/g, ' ')
-        .trim()
-        .slice(0, 180);
+      const cleanExcerpt = extractMeaningfulExcerpt(parsed.content, isUrdu);
 
       const isHidden = metadata.hiddenIds.includes(id);
       const isPinned = metadata.pinnedIds.includes(id);
@@ -339,11 +393,7 @@ async function fetchGoogleDriveBlogPosts(metadata: BlogMetadataStore): Promise<B
       const defaultTitle = baseName.replace(/^[0-9]+[_-]/, '').replace(/[_-]+/g, ' ');
       const parsed = parseTextFile(textContent, defaultTitle);
       const isUrdu = detectIsUrdu(`${parsed.title} ${parsed.content}`);
-      const cleanExcerpt = parsed.content
-        .replace(/^[#*-•\s]+/gm, '')
-        .replace(/\n+/g, ' ')
-        .trim()
-        .slice(0, 180);
+      const cleanExcerpt = extractMeaningfulExcerpt(parsed.content, isUrdu);
 
       const isHidden = metadata.hiddenIds.includes(id);
       const isPinned = metadata.pinnedIds.includes(id);
@@ -451,11 +501,7 @@ function fetchLocalBlogPosts(metadata: BlogMetadataStore): BlogPost[] {
           };
 
       const isUrdu = detectIsUrdu(`${parsed.title} ${parsed.content}`);
-      const cleanExcerpt = parsed.content
-        .replace(/^[#*-•\s]+/gm, '')
-        .replace(/\n+/g, ' ')
-        .trim()
-        .slice(0, 180);
+      const cleanExcerpt = extractMeaningfulExcerpt(parsed.content, isUrdu);
 
       const isHidden = metadata.hiddenIds.includes(id);
       const isPinned = metadata.pinnedIds.includes(id);

@@ -190,6 +190,16 @@ export default function BlogShareModal({
           </div>
         </div>
 
+        {/* Helper Callout for WhatsApp Auto-Copy */}
+        <div className="mt-3 rounded-2xl bg-emerald-50/90 p-3 text-xs text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/60">
+          <div className="flex items-start gap-2">
+            <span className="font-bold text-emerald-700 dark:text-emerald-300">واٹس ایپ رہنمائی:</span>
+            <p className="text-[11px] leading-relaxed text-emerald-900 dark:text-emerald-200">
+              شیئر کے بٹن پر کلک کرتے ہی تحریر خود بخود کاپی ہو جاتی ہے۔ اگر واٹس ایپ تصویر کے نیچے کیپشن نہ دکھائے تو چیٹ میں صرف <strong>Paste (پیسٹ)</strong> کر دیں۔
+            </p>
+          </div>
+        </div>
+
         {/* Primary Action 1: WhatsApp (Image + Text Together) */}
         <div className="mt-4 space-y-2.5">
           <button
@@ -204,10 +214,10 @@ export default function BlogShareModal({
               </div>
               <div>
                 <p className="text-sm font-black leading-tight text-white">
-                  {isSharingImage ? 'Preparing Image & Text...' : 'Share on WhatsApp (Image + Text Together)'}
+                  {isSharingImage ? 'Preparing Image & Text...' : 'Share on WhatsApp (تصویر اور تحریر واٹس ایپ پر)'}
                 </p>
                 <p className="text-xs text-white/90">
-                  تصویر اور نیچے ساری تحریر ایک ساتھ جائے گی
+                  تحریر خود بخود کاپی ہو جائے گی، چیٹ میں ضرورت پڑنے پر Paste کر دیں
                 </p>
               </div>
             </div>
@@ -216,16 +226,44 @@ export default function BlogShareModal({
             </span>
           </button>
 
-          {/* Primary Action 2: Share via Other Apps */}
+          {/* Primary Action 2: Copy Full Text Button */}
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="group flex w-full items-center justify-between rounded-2xl bg-slate-800 px-4 py-3 text-left text-white shadow-md transition-all hover:bg-slate-900 hover:shadow-lg active:scale-[0.99] dark:bg-slate-800 dark:hover:bg-slate-700"
+          >
+            <div className="flex items-center gap-3">
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-white/10">
+                {copied ? (
+                  <HiOutlineCheck className="h-5 w-5 text-emerald-400" />
+                ) : (
+                  <HiOutlineClipboardCopy className="h-5 w-5 text-white" />
+                )}
+              </div>
+              <div>
+                <p className="text-sm font-black leading-tight text-white">
+                  {copied ? 'Copied to Clipboard! (تحریر کاپی ہو گئی)' : 'Copy Full WhatsApp Caption (مکمل تحریر کاپی کریں)'}
+                </p>
+                <p className="text-xs text-white/80">
+                  پوسٹ کا مکمل متن، خلاصہ، ویب سائٹ لنک اور رابطہ
+                </p>
+              </div>
+            </div>
+            <span className="rounded-lg bg-white/20 px-2.5 py-1 text-[11px] font-bold text-white group-hover:bg-white/30">
+              {copied ? 'Copied!' : 'Copy'}
+            </span>
+          </button>
+
+          {/* Primary Action 3: Share via Other Apps */}
           <button
             type="button"
             onClick={handleShareImageWithCaption}
             disabled={isSharingImage}
-            className="group flex w-full items-center justify-between rounded-2xl bg-indigo-600 px-4 py-3.5 text-left text-white shadow-md transition-all hover:bg-indigo-700 hover:shadow-lg active:scale-[0.99] disabled:opacity-60"
+            className="group flex w-full items-center justify-between rounded-2xl bg-indigo-600 px-4 py-3 text-left text-white shadow-md transition-all hover:bg-indigo-700 hover:shadow-lg active:scale-[0.99] disabled:opacity-60"
           >
             <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
-                <HiOutlineShare className="h-6 w-6 text-white" />
+              <div className="grid h-9 w-9 place-items-center rounded-xl bg-white/20">
+                <HiOutlineShare className="h-5 w-5 text-white" />
               </div>
               <div>
                 <p className="text-sm font-black leading-tight text-white">
@@ -244,25 +282,6 @@ export default function BlogShareModal({
 
         {/* Secondary Action Buttons Grid */}
         <div className="mt-3 grid grid-cols-2 gap-2.5">
-          {/* Copy Full Text */}
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-          >
-            {copied ? (
-              <>
-                <HiOutlineCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
-              </>
-            ) : (
-              <>
-                <HiOutlineClipboardCopy className="h-4 w-4" />
-                <span>Copy Full Text</span>
-              </>
-            )}
-          </button>
-
           {/* Download HD Poster */}
           <button
             type="button"
@@ -272,30 +291,28 @@ export default function BlogShareModal({
             <HiOutlineDownload className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             <span>Download Poster</span>
           </button>
-        </div>
 
-        {/* Facebook Share Button */}
-        <div className="mt-2.5">
+          {/* Facebook Share Button */}
           <button
             type="button"
             onClick={handleFacebook}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700"
+            className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2.5 text-xs font-bold text-white transition hover:bg-blue-700"
           >
             <FaFacebookF className="h-3.5 w-3.5" />
-            <span>Share on Facebook</span>
+            <span>Facebook Share</span>
           </button>
         </div>
 
         {/* Services & Contact Banner */}
         <div className="mt-4 rounded-2xl bg-amber-50/80 p-3.5 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-200 border border-amber-200/60 dark:border-amber-800/50">
           <p className="font-black text-amber-950 dark:text-amber-100">
-            💼 Master Sahib Professional Services Included in Message:
+            Master Sahib Professional Services Included in Message:
           </p>
           <p className="mt-1 leading-relaxed text-[11px] text-amber-800 dark:text-amber-300">
             {MASTER_SERVICES_LINE}
           </p>
           <p className="mt-1.5 font-bold text-[11px] text-amber-950 dark:text-amber-200">
-            📞 Contact / WhatsApp: {MASTER_CONTACT_PHONE}
+            Contact / WhatsApp: {MASTER_CONTACT_PHONE}
           </p>
         </div>
 

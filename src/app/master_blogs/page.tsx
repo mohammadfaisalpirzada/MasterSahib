@@ -243,7 +243,7 @@ export default function MasterBlogsPage() {
   const handleCopyText = async (post: BlogPost, e: React.MouseEvent) => {
     e.stopPropagation();
     await copyBlogShareText(post);
-    showToast('پوسٹ، خدمات اور رابطہ کاپی ہو گیا!');
+    showToast('تحریر کاپی ہو گئی! واٹس ایپ میں تصویر کے ساتھ Paste کر دیں');
   };
 
   // Audio Text-to-Speech

@@ -1,4 +1,4 @@
-import type { BlogPost } from '@/lib/master-blogs';
+import { BlogPost, extractMeaningfulExcerpt } from '@/lib/master-blogs';
 
 export const MASTER_SERVICES_LINE =
   'Educational Consultancy • Teacher Training • Curriculum Development • School Management & Web Solutions';
@@ -11,7 +11,7 @@ export const MASTER_WEBSITE_URL = 'https://themastersahib.com';
  * Strictly emoji-free in accordance with editorial standards.
  * Contains:
  * - Post title, category, date
- * - Content summary / excerpt
+ * - Cohesive content summary / excerpt
  * - Direct link to post & HD poster
  * - Professional Services by Master Sahib
  * - Direct contact & WhatsApp
@@ -21,12 +21,7 @@ export function formatBlogShareText(post: BlogPost, origin?: string): string {
   const base = origin || (typeof window !== 'undefined' ? window.location.origin : MASTER_WEBSITE_URL);
   const postUrl = `${base}/master_blogs?post=${encodeURIComponent(post.id)}`;
 
-  const cleanExcerpt = (post.excerpt || post.content || '')
-    .replace(/[#*`_~]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  const shortSummary = cleanExcerpt.length > 280 ? `${cleanExcerpt.slice(0, 277)}...` : cleanExcerpt;
+  const summary = extractMeaningfulExcerpt(post.content || post.excerpt || '', post.isUrdu);
 
   const lines = [
     `*THE MASTER SAHIB | Educational Series*`,
@@ -34,17 +29,17 @@ export function formatBlogShareText(post: BlogPost, origin?: string): string {
     `*${post.title}*`,
     `Category: ${post.category}  |  Date: ${post.date}`,
     ``,
-    shortSummary ? `*Summary:*\n${shortSummary}\n` : '',
+    summary ? `*خلاصہ / Overview:*\n${summary}\n` : '',
     `*Read Full Article & HD Poster:*`,
     `${postUrl}`,
     ``,
-    `─────────────────────────`,
+    `-----------------------------------------`,
     `*Professional Services by Master Sahib:*`,
     `${MASTER_SERVICES_LINE}`,
     ``,
     `*Direct Contact & WhatsApp:* ${MASTER_CONTACT_PHONE} (Muhammad Faisal Peerzada)`,
     `*Official Website:* ${MASTER_WEBSITE_URL}`,
-    `─────────────────────────`,
+    `-----------------------------------------`,
   ].filter(Boolean);
 
   return lines.join('\n');
@@ -110,10 +105,21 @@ export async function sharePostToWhatsApp(
 ): Promise<boolean> {
   const shareText = formatBlogShareText(post, origin);
 
-  // 1. Try Native Web Share API with File attachment (Mobile WhatsApp & supported OS)
+  // 1. ALWAYS copy caption to clipboard upfront so user can paste it anywhere
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareText);
+    }
+  } catch (err) {
+    console.warn('Initial clipboard copy failed:', err);
+  }
+
+  // 2. Try Native Web Share API with File attachment (Mobile WhatsApp & supported OS)
   try {
     if (typeof navigator !== 'undefined' && navigator.share) {
-      if (onToast) onToast('تصویر اور تحریر واٹس ایپ کے لیے تیار ہو رہی ہے...');
+      if (onToast) {
+        onToast('تحریر کاپی ہو گئی ہے! اگر تصویر کے ساتھ کیپشن نہ آئے تو واٹس ایپ پر Paste کر دیں');
+      }
 
       const imgRes = await fetch(post.imageUrl);
       if (imgRes.ok) {
@@ -134,7 +140,6 @@ export async function sharePostToWhatsApp(
             title: post.title,
             text: shareText,
           });
-          if (onToast) onToast('تصویر اور تحریر واٹس ایپ کے ساتھ شیئر ہو گئی!');
           return true;
         }
       }
@@ -147,13 +152,8 @@ export async function sharePostToWhatsApp(
     console.warn('Native file share failed, switching to desktop helper:', err);
   }
 
-  // 2. Desktop Fallback (WhatsApp Web / PC Browser):
+  // 3. Desktop Fallback (WhatsApp Web / PC Browser):
   try {
-    // Copy caption text to clipboard
-    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(shareText);
-    }
-
     // Try copying image to clipboard for instant Ctrl+V paste into WhatsApp Web
     try {
       const imgRes = await fetch(post.imageUrl);
@@ -185,7 +185,7 @@ export async function sharePostToWhatsApp(
     window.open(waUrl, '_blank', 'noopener,noreferrer');
 
     if (onToast) {
-      onToast('تصویر ڈاؤنلوڈ اور کیپشن کاپی ہو گیا! واٹس ایپ میں تصویر کے ساتھ بھیجیں');
+      onToast('تحریر کاپی اور تصویر ڈاؤنلوڈ ہو گئی! واٹس ایپ میں تصویر کے ساتھ Paste کر دیں');
     }
     return true;
   } catch {
