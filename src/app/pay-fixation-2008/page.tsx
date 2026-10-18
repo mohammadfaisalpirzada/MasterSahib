@@ -240,6 +240,18 @@ export default function DistrictEastTeachersPage() {
 
       <section className="de-notice"><b>Subject:</b> Clarification for Pay Fixation of Teachers Appointed as per Recruitment Policy, 2008<br/><span>Reference: SO(P-I)/PP/2-435/2026 dated 27 July 2026</span></section>
 
+      <section className="de-notice" style={{ background: '#0f172a', color: '#f8fafc', borderColor: '#0284c7', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+        <div>
+          <strong style={{ color: '#38bdf8', fontSize: '15px' }}>Official Sukkur IBA PST &amp; JST Test Result 2008 Gazette (35 Pages)</strong>
+          <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '2px' }}>
+            Search your Name, Seat Number, or CNIC across all 35 pages and print your official newspaper result page. Compiled by Master Sahib.
+          </div>
+        </div>
+        <a href="/iba-result-2008" style={{ background: '#10b981', color: '#052e16', fontWeight: 700, padding: '9px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', whiteSpace: 'nowrap' }}>
+          Search &amp; Print 2008 Result Gazette &rarr;
+        </a>
+      </section>
+
       {isAdmin && <section className="de-stats">
         <div><strong>{records.length}</strong><span>Total Records</span></div>
         <div><strong>{money(totals.arrears)}</strong><span>Total Arrears</span></div>

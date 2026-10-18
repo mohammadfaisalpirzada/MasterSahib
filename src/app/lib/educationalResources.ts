@@ -505,6 +505,16 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     icon: '🔢',
     color: 'from-amber-500 to-orange-500',
   },
+  {
+    title: 'IBA PST & JST Result 2008 Gazette',
+    description: 'Official Sukkur IBA PST & JST Test Result 2008 (Daily Kawish) — Search your Name, Seat Number, or CNIC across all 35 pages, zoom clearly, and print your exact official page.',
+    status: 'Ready',
+    href: '/iba-result-2008',
+    addedOn: '2026-10-18',
+    ageGroup: 'general',
+    category: 'teachers',
+    color: 'from-cyan-600 to-blue-600',
+  },
 ];
 
 const getAddedTimestamp = (item: EducationalResourceItem, index: number) => {
