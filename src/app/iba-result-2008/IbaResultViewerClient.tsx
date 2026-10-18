@@ -53,10 +53,27 @@ interface SearchHit {
   matchIndex: number;
 }
 
+const PRIVATE_OWNER_QUERY_TERMS = [
+  'peerzada',
+  'pirzada',
+  'peerzado',
+  'pirzado',
+  '129050',
+  '4210113754699',
+  'kiffayat',
+  'kifayat',
+  'm.faisal',
+  'm faisal',
+  'mohammad faisal',
+  'muhammad faisal',
+];
+
 export default function IbaResultViewerClient({
   searchIndex,
+  isOwner = false,
 }: {
   searchIndex: IbaResultSearchIndex;
+  isOwner?: boolean;
 }) {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -118,6 +135,11 @@ export default function IbaResultViewerClient({
     const q = searchQuery.trim().toLowerCase();
     if (q.length < 2) return [];
 
+    // Block any search query targeting Mohammad Faisal Peerzada's record unless logged in as mohammadfaisalpirzada@gmail.com
+    if (!isOwner && PRIVATE_OWNER_QUERY_TERMS.some((term) => q.includes(term))) {
+      return [];
+    }
+
     const tokens = q.split(/\s+/).filter(Boolean);
     const hits: SearchHit[] = [];
 
@@ -150,7 +172,7 @@ export default function IbaResultViewerClient({
       if (hits.length >= 120) break;
     }
     return hits;
-  }, [searchQuery, searchIndex.pages, selectedDistrict, selectedCategory]);
+  }, [searchQuery, searchIndex.pages, selectedDistrict, selectedCategory, isOwner]);
 
   // Matches on the currently opened page
   const currentPageMatches = useMemo<OcrLine[]>(() => {
