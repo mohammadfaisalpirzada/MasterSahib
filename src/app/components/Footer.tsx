@@ -147,6 +147,11 @@ export default function Footer() {
                   📑 Pay Fixation 2008 Records
                 </Link>
               </li>
+              <li>
+                <Link href="/iba-result-2008" className="font-semibold text-cyan-700 hover:text-cyan-900 dark:text-cyan-400 dark:hover:text-white transition">
+                  📜 IBA PST &amp; JST Result 2008 Gazette
+                </Link>
+              </li>
             </ul>
           </div>
 

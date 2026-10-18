@@ -32,6 +32,16 @@ type QuickCard = {
 
 const allTools: QuickCard[] = [
   {
+    title: 'Sukkur IBA PST & JST Result 2008 Gazette',
+    description: 'Search your Name, Father Name, Seat Number, or CNIC across all 70 official newspaper tables, zoom clearly, and print your exact official page.',
+    href: '/iba-result-2008',
+    accent: 'from-cyan-600 via-blue-600 to-indigo-600',
+    icon: '📜',
+    category: 'latest',
+    badge: 'Official Gazette',
+    newUntil: '2026-12-31T23:59:59+05:00',
+  },
+  {
     title: 'Master Blogs & Information Posters',
     description: 'Explore latest educational articles, Sindh Govt circulars, STEDA licensing updates & infographic posters.',
     href: '/master_blogs',

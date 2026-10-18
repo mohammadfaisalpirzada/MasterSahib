@@ -84,6 +84,7 @@ const staticRoutes = [
   "/courses/ai-for-all",
   "/padlet",
   "/pay-fixation-2008",
+  "/iba-result-2008",
   "/ggss-nishtar-road",
   "/govt-forms",
 ];
