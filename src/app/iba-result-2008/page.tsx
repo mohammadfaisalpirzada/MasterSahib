@@ -48,12 +48,21 @@ export const metadata: Metadata = {
     url: 'https://themastersahib.com/iba-result-2008',
     siteName: 'The Master Sahib',
     type: 'website',
+    images: [
+      {
+        url: 'https://themastersahib.com/images/iba-result-2008-og.png',
+        width: 1200,
+        height: 630,
+        alt: 'Sukkur IBA PST & JST Test Result 2008 Congratulations — Compiled by Master Sahib',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'IBA Result 2008 Congratulations — Sukkur IBA PST & JST Official Gazette',
     description:
       'Search your Name, Seat Number, or CNIC across all 70 official pages of the 2008 Sukkur IBA PST & JST Result and print your official page.',
+    images: ['https://themastersahib.com/images/iba-result-2008-og.png'],
   },
   alternates: {
     canonical: 'https://themastersahib.com/iba-result-2008',
