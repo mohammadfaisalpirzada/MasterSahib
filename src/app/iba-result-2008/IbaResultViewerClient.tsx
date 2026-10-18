@@ -15,6 +15,7 @@ import {
   HiOutlineFilter,
   HiOutlineX,
 } from 'react-icons/hi';
+import { getCurrentTheme } from '@/lib/theme';
 
 export interface OcrLine {
   t: string;
@@ -75,6 +76,7 @@ export default function IbaResultViewerClient({
   searchIndex: IbaResultSearchIndex;
   isOwner?: boolean;
 }) {
+  const theme = getCurrentTheme();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('All');
@@ -84,6 +86,7 @@ export default function IbaResultViewerClient({
   const [activeHighlight, setActiveHighlight] = useState<OcrLine | null>(null);
   const [loadingPage, setLoadingPage] = useState<boolean>(true);
   const [loadError, setLoadError] = useState<string>('');
+  const [showMobileDirectory, setShowMobileDirectory] = useState<boolean>(false);
 
   // Pan & Magnifier state
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -103,6 +106,7 @@ export default function IbaResultViewerClient({
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const viewerSectionRef = useRef<HTMLElement | null>(null);
   const loadedImageRef = useRef<HTMLImageElement | null>(null);
 
   const totalPages = searchIndex.totalPages;
@@ -110,6 +114,19 @@ export default function IbaResultViewerClient({
   const currentPageMeta = useMemo(() => {
     return searchIndex.pages.find((p) => p.pageNumber === currentPage) || searchIndex.pages[0];
   }, [searchIndex.pages, currentPage]);
+
+  // Auto-fit zoom on mobile screens on initial mount so the single-table page fits cleanly without overflowing
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const vw = window.innerWidth;
+      if (vw < 640) {
+        const pageW = currentPageMeta?.width || 695;
+        const fitScale = Math.max(0.48, Math.min(1.0, Number(((vw - 36) / pageW).toFixed(2))));
+        setZoom(fitScale);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // All unique districts across the 70 pages
   const allDistricts = useMemo(() => {
@@ -177,6 +194,9 @@ export default function IbaResultViewerClient({
   // Matches on the currently opened page
   const currentPageMatches = useMemo<OcrLine[]>(() => {
     const q = searchQuery.trim().toLowerCase();
+    if (!isOwner && PRIVATE_OWNER_QUERY_TERMS.some((term) => q.includes(term))) {
+      return [];
+    }
     if (q.length < 2) return activeHighlight ? [activeHighlight] : [];
     const tokens = q.split(/\s+/).filter(Boolean);
     const matches = currentPageMeta.lines.filter((line) => {
@@ -187,7 +207,7 @@ export default function IbaResultViewerClient({
       return [activeHighlight, ...matches];
     }
     return matches;
-  }, [searchQuery, currentPageMeta, activeHighlight]);
+  }, [searchQuery, currentPageMeta, activeHighlight, isOwner]);
 
   // Draw the current page image + highlight boxes onto protected HTML5 Canvas
   const drawCanvas = useCallback(() => {
@@ -213,7 +233,7 @@ export default function IbaResultViewerClient({
           activeHighlight.y === match.y &&
           activeHighlight.t === match.t;
 
-        const padX = 14;
+        const padX = 12;
         const padY = 8;
         const rx = Math.max(0, match.x - padX);
         const ry = Math.max(0, match.y - padY);
@@ -221,24 +241,23 @@ export default function IbaResultViewerClient({
         const rh = Math.max(24, match.h + padY * 2);
 
         ctx.save();
-        ctx.fillStyle = isPrimary ? 'rgba(250, 204, 21, 0.42)' : 'rgba(56, 189, 248, 0.30)';
+        ctx.fillStyle = isPrimary ? 'rgba(250, 204, 21, 0.42)' : 'rgba(13, 148, 136, 0.28)';
         ctx.fillRect(rx, ry, rw, rh);
 
         ctx.lineWidth = isPrimary ? 4 : 2.5;
-        ctx.strokeStyle = isPrimary ? '#dc2626' : '#0284c7';
+        ctx.strokeStyle = isPrimary ? '#dc2626' : '#0f766e';
         ctx.strokeRect(rx, ry, rw, rh);
 
         if (isPrimary) {
-          // Draw a bold pointer badge on the left of the row
           const badgeW = 115;
-          const badgeH = 26;
-          const bx = Math.max(4, rx - badgeW - 6);
-          const by = ry + (rh - badgeH) / 2;
+          const badgeH = 24;
+          const bx = Math.max(6, rx);
+          const by = Math.max(4, ry - badgeH - 2);
           ctx.fillStyle = '#dc2626';
           ctx.fillRect(bx, by, badgeW, badgeH);
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 14px Arial, sans-serif';
-          ctx.fillText('FOUND HERE', bx + 10, by + 18);
+          ctx.font = 'bold 13px Arial, sans-serif';
+          ctx.fillText('FOUND HERE', bx + 10, by + 17);
         }
         ctx.restore();
       }
@@ -324,20 +343,40 @@ export default function IbaResultViewerClient({
     }
   }, [loadingPage, drawCanvas]);
 
+  // Fit-to-screen helper for mobile and desktop
+  const handleFitZoom = () => {
+    const container = scrollContainerRef.current;
+    const pageW = currentPageMeta?.width || 695;
+    if (container) {
+      const availW = Math.max(280, container.clientWidth - 24);
+      const nextZoom = Math.max(0.45, Math.min(1.4, Number((availW / pageW).toFixed(2))));
+      setZoom(nextZoom);
+    } else {
+      setZoom(0.75);
+    }
+  };
+
   // When user clicks a search result: jump to that page, zoom in clearly, and scroll to the exact row
   const handleSelectHit = (hit: SearchHit) => {
-    const newZoom = Math.max(zoom, 1.55);
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const newZoom = isMobile ? Math.max(zoom, 1.15) : Math.max(zoom, 1.45);
     setZoom(newZoom);
     setActiveHighlight(hit.line);
+
+    // On mobile, smoothly scroll down to the viewer section so the teacher immediately sees their highlighted row
+    if (isMobile && viewerSectionRef.current) {
+      viewerSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     if (hit.pageNumber !== currentPage) {
       setCurrentPage(hit.pageNumber);
       setTimeout(() => {
         scrollToHighlight(hit.line, newZoom);
-      }, 320);
+      }, 340);
     } else {
       setTimeout(() => {
         scrollToHighlight(hit.line, newZoom);
-      }, 60);
+      }, 80);
     }
   };
 
@@ -347,7 +386,6 @@ export default function IbaResultViewerClient({
     const img = loadedImageRef.current;
     if (!canvas || !img) return;
 
-    // Create a clean high-resolution image of the current page (including attribution footer)
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = img.naturalWidth;
     tempCanvas.height = img.naturalHeight;
@@ -356,7 +394,6 @@ export default function IbaResultViewerClient({
 
     tCtx.drawImage(img, 0, 0);
 
-    // If there is an active highlight, optionally outline it subtly so the teacher can spot their row on paper too
     if (activeHighlight) {
       const padX = 12;
       const padY = 6;
@@ -484,7 +521,7 @@ export default function IbaResultViewerClient({
     setLensPos((prev) => ({ ...prev, visible: false }));
   };
 
-  // Keyboard navigation
+  // Prevent Ctrl+S bulk save
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
@@ -495,61 +532,79 @@ export default function IbaResultViewerClient({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  const displayWidth = Math.round((currentPageMeta?.width || 1374) * zoom);
-  const displayHeight = Math.round((currentPageMeta?.height || 2094) * zoom);
+  const displayWidth = Math.round((currentPageMeta?.width || 695) * zoom);
+  const displayHeight = Math.round((currentPageMeta?.height || 2140) * zoom);
 
   return (
     <div
       onContextMenu={(e) => e.preventDefault()}
-      className="min-h-screen select-none bg-slate-950 text-slate-100"
+      className="min-h-screen select-none pb-12"
+      style={{ backgroundColor: theme.bgMain, color: theme.textPrimary }}
     >
-      {/* Top Official Banner */}
-      <header className="border-b border-slate-800 bg-slate-900/95 px-4 py-4 shadow-lg backdrop-blur">
-        <div className="mx-auto flex max-w-[1600px] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      {/* Top Light & Sober Official Hero Section matching MasterSahib global theme */}
+      <header
+        className="border-b px-3 py-4 shadow-sm sm:px-6 sm:py-5"
+        style={{ backgroundColor: theme.bgCard, borderColor: theme.borderSubtle }}
+      >
+        <div className="mx-auto flex max-w-[1550px] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300 border border-cyan-500/30">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider sm:text-xs"
+                style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
+              >
                 <HiOutlineShieldCheck className="h-4 w-4" />
-                Official Newspaper Gazette Archive (2008)
+                Official 2008 Newspaper Gazette
               </span>
-              <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-300 border border-amber-500/30">
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-800 sm:text-xs">
                 Compiled by Master Sahib | www.themastersahib.com
               </span>
             </div>
-            <h1 className="mt-1.5 text-xl font-black tracking-tight text-white sm:text-2xl">
-              Sukkur IBA PST &amp; JST Test Result 2008 — Searchable Official Record
+            <h1
+              className="mt-2 text-xl font-black tracking-tight sm:text-2xl lg:text-3xl"
+              style={{ color: theme.textPrimary }}
+            >
+              Sukkur IBA PST &amp; JST Test Result 2008 — Searchable Gazette
             </h1>
-            <p className="mt-0.5 text-xs text-slate-400 sm:text-sm">
-              Search your Name, Father/Husband Name, Seat Number (e.g. BDN, DAD, HYD, KHI, LRK, NSH, SGR), or CNIC across all 70 pages and print your exact official page.
+            <p className="mt-1 text-xs leading-relaxed sm:text-sm" style={{ color: theme.textSecondary }}>
+              Heartiest Congratulations to Batch 2008 Teachers! Search your Name, Father Name, Seat Number (BDN, DAD, HYD, KHI, LRK, NSH, SGR), or CNIC across all 70 pages, zoom clearly, and print your official page.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 pt-1 lg:pt-0">
             <button
               onClick={handlePrintCurrentPage}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-md transition hover:bg-emerald-400"
+              className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm transition hover:opacity-95"
+              style={{ backgroundColor: theme.primary }}
             >
               <HiOutlinePrinter className="h-5 w-5" />
-              Print This Page (#{currentPage})
+              Print Page #{currentPage} (A4)
             </button>
             <Link
               href="/pay-fixation-2008"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
+              className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-xl border bg-white px-3.5 py-2.5 text-xs font-bold shadow-sm transition hover:bg-slate-50"
+              style={{ borderColor: theme.borderSubtle, color: theme.textPrimary }}
             >
-              <HiOutlineDocumentText className="h-4 w-4 text-cyan-400" />
+              <HiOutlineDocumentText className="h-4 w-4" style={{ color: theme.primary }} />
               2008 Pay Fixation Portal
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Main Content Layout: Left Search & Directory Panel + Right High-Zoom Official Canvas Viewer */}
-      <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-4 p-3 sm:p-4 lg:grid-cols-12">
+      {/* Main Content Layout: Mobile-First Search & Controls + High-Clarity Light Canvas Viewer */}
+      <div className="mx-auto grid max-w-[1550px] grid-cols-1 gap-4 p-3 sm:p-5 lg:grid-cols-12">
         {/* Left Sidebar: Global Search + District Filter + Page Directory */}
         <aside className="flex flex-col gap-4 lg:col-span-4 xl:col-span-3">
           {/* Global Search Card */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl">
-            <label className="block text-xs font-bold uppercase tracking-wider text-cyan-400">
+          <div
+            className="rounded-2xl border p-4 shadow-sm"
+            style={{ backgroundColor: theme.bgCard, borderColor: theme.borderSubtle }}
+          >
+            <label
+              className="block text-xs font-bold uppercase tracking-wider"
+              style={{ color: theme.primary }}
+            >
               Search All 70 Official Pages
             </label>
             <div className="relative mt-2">
@@ -558,8 +613,9 @@ export default function IbaResultViewerClient({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Type Name, Seat No, or CNIC..."
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 py-2.5 pl-10 pr-9 text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400"
+                placeholder="Enter Name, Seat No, or CNIC..."
+                className="w-full rounded-xl border bg-slate-50/70 py-2.5 pl-10 pr-9 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:bg-white focus:ring-2"
+                style={{ borderColor: theme.borderSubtle }}
               />
               {searchQuery && (
                 <button
@@ -567,7 +623,7 @@ export default function IbaResultViewerClient({
                     setSearchQuery('');
                     setActiveHighlight(null);
                   }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                   title="Clear search"
                 >
                   <HiOutlineX className="h-4 w-4" />
@@ -576,15 +632,16 @@ export default function IbaResultViewerClient({
             </div>
 
             {/* Category & District Filters */}
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-2 gap-2.5">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400">
+                <label className="block text-[11px] font-bold text-slate-600">
                   Category (PST / JST)
                 </label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-400"
+                  className="mt-1 w-full rounded-xl border bg-slate-50/70 px-2.5 py-2 text-xs font-semibold text-slate-800 outline-none focus:bg-white"
+                  style={{ borderColor: theme.borderSubtle }}
                 >
                   <option value="All">All Categories</option>
                   <option value="PST">PST (Primary)</option>
@@ -592,8 +649,8 @@ export default function IbaResultViewerClient({
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400">
-                  District Filter
+                <label className="block text-[11px] font-bold text-slate-600">
+                  Select District
                 </label>
                 <select
                   value={selectedDistrict}
@@ -605,7 +662,8 @@ export default function IbaResultViewerClient({
                       if (firstMatch) setCurrentPage(firstMatch.pageNumber);
                     }
                   }}
-                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-400"
+                  className="mt-1 w-full rounded-xl border bg-slate-50/70 px-2.5 py-2 text-xs font-semibold text-slate-800 outline-none focus:bg-white"
+                  style={{ borderColor: theme.borderSubtle }}
                 >
                   {allDistricts.map((d) => (
                     <option key={d} value={d}>
@@ -620,18 +678,23 @@ export default function IbaResultViewerClient({
             {searchQuery.trim().length >= 2 && (
               <div className="mt-4">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-300">
+                  <span className="font-bold text-slate-800">
                     Matching Records ({searchResults.length}{searchResults.length >= 120 ? '+' : ''})
                   </span>
-                  <span className="text-[11px] text-cyan-400">Click row to open page &amp; zoom</span>
+                  <span className="text-[11px] font-semibold" style={{ color: theme.primary }}>
+                    Tap row to open &amp; zoom
+                  </span>
                 </div>
 
                 {searchResults.length === 0 ? (
-                  <div className="mt-2 rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs text-slate-400">
-                    No direct OCR match for &ldquo;{searchQuery}&rdquo;. Because old 2008 newspaper print can have faint letters, try searching by only the first name, father name, first 6 digits of CNIC, or select your District below to inspect the page directly.
+                  <div
+                    className="mt-2 rounded-xl border p-3 text-xs leading-relaxed text-slate-600"
+                    style={{ backgroundColor: theme.bgCardMuted, borderColor: theme.borderSubtle }}
+                  >
+                    No direct OCR match for &ldquo;{searchQuery}&rdquo;. Try searching by only your first name, father name, first 6 digits of CNIC, or select your District above to browse the page directly.
                   </div>
                 ) : (
-                  <div className="mt-2 max-h-[340px] space-y-1.5 overflow-y-auto pr-1">
+                  <div className="mt-2 max-h-[280px] sm:max-h-[340px] space-y-2 overflow-y-auto pr-1">
                     {searchResults.map((hit, idx) => {
                       const isSelected =
                         currentPage === hit.pageNumber &&
@@ -641,24 +704,27 @@ export default function IbaResultViewerClient({
                         <button
                           key={`${hit.pageNumber}-${hit.matchIndex}-${idx}`}
                           onClick={() => handleSelectHit(hit)}
-                          className={`w-full rounded-xl border p-2.5 text-left transition ${
+                          className={`w-full rounded-xl border p-2.5 text-left transition shadow-sm ${
                             isSelected
-                              ? 'border-amber-400 bg-amber-500/15 text-white'
-                              : 'border-slate-800 bg-slate-950/80 text-slate-200 hover:border-cyan-500/50 hover:bg-slate-800/70'
+                              ? 'border-amber-500 bg-amber-50/90 ring-2 ring-amber-400/50'
+                              : 'border-slate-200 bg-white hover:border-teal-500 hover:bg-slate-50'
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="rounded bg-cyan-500/20 px-2 py-0.5 text-[11px] font-bold text-cyan-300">
+                            <span
+                              className="rounded-md px-2 py-0.5 text-[11px] font-bold"
+                              style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
+                            >
                               Page {hit.pageNumber} of {totalPages}
                             </span>
-                            <span className="truncate text-[11px] font-medium text-slate-400">
+                            <span className="truncate text-[11px] font-bold text-slate-600">
                               {hit.districts.join(', ')}
                             </span>
                           </div>
-                          <p className="mt-1.5 line-clamp-2 font-mono text-xs text-slate-100">
+                          <p className="mt-1.5 line-clamp-2 font-mono text-xs font-semibold text-slate-900">
                             {hit.line.t}
                           </p>
-                          <p className="mt-1 text-[10px] text-slate-400">
+                          <p className="mt-1 text-[10px] font-medium text-slate-500">
                             {hit.category} • {hit.editionDate} (Kawish Page {hit.newspaperPage})
                           </p>
                         </button>
@@ -670,17 +736,31 @@ export default function IbaResultViewerClient({
             )}
           </div>
 
-          {/* Page-by-Page Directory Card */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl">
+          {/* Page-by-Page Directory Card (Collapsible on Mobile for clean screen space) */}
+          <div
+            className="rounded-2xl border p-4 shadow-sm"
+            style={{ backgroundColor: theme.bgCard, borderColor: theme.borderSubtle }}
+          >
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-300">
-                <HiOutlineFilter className="h-4 w-4 text-cyan-400" />
+              <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-800">
+                <HiOutlineFilter className="h-4 w-4" style={{ color: theme.primary }} />
                 Page-Wise Index ({filteredPages.length} Pages)
               </span>
-              <span className="text-[11px] text-slate-400">Sorted by Edition &amp; Page</span>
+              <button
+                type="button"
+                onClick={() => setShowMobileDirectory((v) => !v)}
+                className="rounded-lg border px-2.5 py-1 text-[11px] font-bold lg:hidden"
+                style={{ borderColor: theme.borderSubtle, color: theme.primary }}
+              >
+                {showMobileDirectory ? 'Hide List' : 'Show All Pages'}
+              </button>
             </div>
 
-            <div className="mt-2.5 max-h-[380px] space-y-1.5 overflow-y-auto pr-1">
+            <div
+              className={`mt-2.5 max-h-[340px] space-y-1.5 overflow-y-auto pr-1 ${
+                showMobileDirectory ? 'block' : 'hidden lg:block'
+              }`}
+            >
               {filteredPages.map((p) => {
                 const active = p.pageNumber === currentPage;
                 return (
@@ -689,30 +769,30 @@ export default function IbaResultViewerClient({
                     onClick={() => {
                       setCurrentPage(p.pageNumber);
                       setActiveHighlight(null);
+                      setShowMobileDirectory(false);
                     }}
                     className={`flex w-full items-start justify-between gap-2 rounded-xl border p-2.5 text-left transition ${
                       active
-                        ? 'border-cyan-400 bg-cyan-500/15 text-white shadow'
-                        : 'border-slate-800/90 bg-slate-950/60 text-slate-300 hover:border-slate-700 hover:bg-slate-800/60'
+                        ? 'border-teal-600 bg-teal-50/80 shadow-sm'
+                        : 'border-slate-200/80 bg-slate-50/50 hover:border-slate-300 hover:bg-white'
                     }`}
                   >
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <span
-                          className={`inline-flex h-5 items-center rounded px-1.5 text-[11px] font-bold ${
-                            active ? 'bg-cyan-400 text-slate-950' : 'bg-slate-800 text-slate-300'
-                          }`}
+                          className="inline-flex h-5 items-center rounded px-1.5 text-[11px] font-bold text-white"
+                          style={{ backgroundColor: active ? theme.primary : '#475569' }}
                         >
                           Page {String(p.pageNumber).padStart(2, '0')}
                         </span>
-                        <span className="text-[11px] font-semibold text-amber-300">
+                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
                           {p.category.startsWith('JST') ? 'JST' : 'PST'}
                         </span>
-                        <span className="text-[11px] text-slate-400">
-                          {p.editionDate} (Kawish P.{p.newspaperPage})
+                        <span className="text-[11px] font-medium text-slate-500">
+                          {p.editionDate} (P.{p.newspaperPage})
                         </span>
                       </div>
-                      <p className="mt-1 truncate text-xs font-medium text-slate-200">
+                      <p className="mt-1 truncate text-xs font-bold text-slate-800">
                         District: {p.districts.join(', ')}
                       </p>
                     </div>
@@ -724,40 +804,47 @@ export default function IbaResultViewerClient({
         </aside>
 
         {/* Right Main Viewer Area */}
-        <section className="flex flex-col gap-3 lg:col-span-8 xl:col-span-9">
-          {/* Viewer Control Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3 shadow-xl">
-            {/* Page Navigation */}
-            <div className="flex items-center gap-2">
+        <section ref={viewerSectionRef} className="flex flex-col gap-3 lg:col-span-8 xl:col-span-9">
+          {/* Mobile & Desktop Friendly Control Toolbar */}
+          <div
+            className="flex flex-col gap-3 rounded-2xl border p-3 sm:px-4 sm:py-3 shadow-sm xl:flex-row xl:items-center xl:justify-between"
+            style={{ backgroundColor: theme.bgCard, borderColor: theme.borderSubtle }}
+          >
+            {/* Row 1: Page Navigation */}
+            <div className="flex items-center justify-between gap-2 sm:justify-start">
               <button
                 onClick={() => {
                   setCurrentPage((p) => Math.max(1, p - 1));
                   setActiveHighlight(null);
                 }}
                 disabled={currentPage <= 1}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-700 disabled:opacity-40"
+                className="inline-flex items-center gap-1 rounded-xl border bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:opacity-40"
+                style={{ borderColor: theme.borderSubtle }}
               >
                 <HiOutlineChevronLeft className="h-4 w-4" />
                 Prev
               </button>
 
-              <div className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs font-bold">
-                <span className="text-slate-400">Page</span>
+              <div
+                className="flex flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-xl border bg-slate-50 px-2.5 py-1.5 text-xs font-bold"
+                style={{ borderColor: theme.borderSubtle }}
+              >
+                <span className="hidden sm:inline text-slate-500">Page</span>
                 <select
                   value={currentPage}
                   onChange={(e) => {
                     setCurrentPage(Number(e.target.value));
                     setActiveHighlight(null);
                   }}
-                  className="bg-transparent font-bold text-cyan-300 outline-none"
+                  className="max-w-[190px] sm:max-w-[260px] truncate bg-transparent font-bold outline-none"
+                  style={{ color: theme.primary }}
                 >
                   {searchIndex.pages.map((p) => (
-                    <option key={p.pageNumber} value={p.pageNumber} className="bg-slate-900 text-white">
-                      {p.pageNumber} — {p.districts.join(', ')} (Kawish P.{p.newspaperPage})
+                    <option key={p.pageNumber} value={p.pageNumber} className="bg-white text-slate-900">
+                      Page {p.pageNumber} of {totalPages} — {p.districts.join(', ')}
                     </option>
                   ))}
                 </select>
-                <span className="text-slate-400">of {totalPages}</span>
               </div>
 
               <button
@@ -766,124 +853,151 @@ export default function IbaResultViewerClient({
                   setActiveHighlight(null);
                 }}
                 disabled={currentPage >= totalPages}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-700 disabled:opacity-40"
+                className="inline-flex items-center gap-1 rounded-xl border bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:opacity-40"
+                style={{ borderColor: theme.borderSubtle }}
               >
                 Next
                 <HiOutlineChevronRight className="h-4 w-4" />
               </button>
             </div>
 
-            {/* High-Clarity Zoom Controls for Teachers */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                onClick={() => setZoom((z) => Math.max(0.6, Number((z - 0.25).toFixed(2))))}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700"
-                title="Zoom Out"
-              >
-                <HiOutlineZoomOut className="h-4 w-4" />
-              </button>
-
-              {[
-                { label: 'Fit', val: 0.75 },
-                { label: '100%', val: 1.0 },
-                { label: '150%', val: 1.5 },
-                { label: '200%', val: 2.0 },
-                { label: '250%', val: 2.5 },
-                { label: '300%', val: 3.0 },
-              ].map((preset) => (
+            {/* Row 2: High-Clarity Zoom Controls & Print */}
+            <div className="flex flex-wrap items-center justify-between gap-1.5 sm:justify-start">
+              <div className="flex flex-wrap items-center gap-1">
                 <button
-                  key={preset.label}
-                  onClick={() => setZoom(preset.val)}
-                  className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
-                    Math.abs(zoom - preset.val) < 0.08
-                      ? 'bg-cyan-500 text-slate-950'
-                      : 'border border-slate-700 bg-slate-950 text-slate-300 hover:bg-slate-800'
-                  }`}
+                  onClick={() => setZoom((z) => Math.max(0.45, Number((z - 0.2).toFixed(2))))}
+                  className="inline-flex items-center rounded-xl border bg-white p-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+                  style={{ borderColor: theme.borderSubtle }}
+                  title="Zoom Out"
                 >
-                  {preset.label}
+                  <HiOutlineZoomOut className="h-4 w-4" />
                 </button>
-              ))}
 
-              <button
-                onClick={() => setZoom((z) => Math.min(3.5, Number((z + 0.25).toFixed(2))))}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700"
-                title="Zoom In"
-              >
-                <HiOutlineZoomIn className="h-4 w-4" />
-              </button>
+                <button
+                  onClick={handleFitZoom}
+                  className="rounded-lg border bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                  style={{ borderColor: theme.borderSubtle }}
+                >
+                  Fit Screen
+                </button>
 
-              <button
-                onClick={() => setMagnifierEnabled((m) => !m)}
-                className={`ml-1 inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition ${
-                  magnifierEnabled
-                    ? 'border-amber-400 bg-amber-500 text-slate-950'
-                    : 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700'
-                }`}
-                title="Toggle Magnifier Lens to inspect small print"
-              >
-                <HiOutlineSearch className="h-4 w-4" />
-                {magnifierEnabled ? 'Magnifier ON' : 'Magnifier Lens'}
-              </button>
+                {[
+                  { label: '100%', val: 1.0 },
+                  { label: '150%', val: 1.5 },
+                  { label: '200%', val: 2.0 },
+                  { label: '250%', val: 2.5 },
+                ].map((preset) => {
+                  const isActive = Math.abs(zoom - preset.val) < 0.08;
+                  return (
+                    <button
+                      key={preset.label}
+                      onClick={() => setZoom(preset.val)}
+                      className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
+                        isActive
+                          ? 'text-white shadow-sm'
+                          : 'border bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                      style={
+                        isActive
+                          ? { backgroundColor: theme.primary }
+                          : { borderColor: theme.borderSubtle }
+                      }
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
 
-              <button
-                onClick={handlePrintCurrentPage}
-                className="ml-1 inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:bg-emerald-400"
-              >
-                <HiOutlinePrinter className="h-4 w-4" />
-                Print Page
-              </button>
+                <button
+                  onClick={() => setZoom((z) => Math.min(3.2, Number((z + 0.2).toFixed(2))))}
+                  className="inline-flex items-center rounded-xl border bg-white p-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+                  style={{ borderColor: theme.borderSubtle }}
+                  title="Zoom In"
+                >
+                  <HiOutlineZoomIn className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setMagnifierEnabled((m) => !m)}
+                  className={`hidden sm:inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition ${
+                    magnifierEnabled
+                      ? 'border-amber-500 bg-amber-400 text-slate-950 shadow-sm'
+                      : 'bg-white text-slate-700 hover:bg-slate-50'
+                  }`}
+                  style={!magnifierEnabled ? { borderColor: theme.borderSubtle } : undefined}
+                  title="Toggle Magnifier Lens to inspect small print"
+                >
+                  <HiOutlineSearch className="h-4 w-4" />
+                  {magnifierEnabled ? 'Lens ON' : 'Lens'}
+                </button>
+
+                <button
+                  onClick={handlePrintCurrentPage}
+                  className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:opacity-95"
+                  style={{ backgroundColor: theme.primary }}
+                >
+                  <HiOutlinePrinter className="h-4 w-4" />
+                  Print
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Current Page Info Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-800/80 bg-slate-900/60 px-4 py-2 text-xs text-slate-300">
-            <div>
-              <span className="font-bold text-white">{currentPageMeta.title}</span>
-              <span className="ml-2 text-slate-400">
-                • Drag with mouse/finger to pan around the zoomed page
+          <div
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3.5 py-2 text-xs"
+            style={{ backgroundColor: theme.bgCardMuted, borderColor: theme.borderSubtle }}
+          >
+            <div className="min-w-0">
+              <span className="font-bold text-slate-900">{currentPageMeta.title}</span>
+              <span className="ml-2 hidden sm:inline text-slate-600">
+                • Swipe or drag to move around when zoomed in
               </span>
             </div>
             <div className="flex items-center gap-3">
               {currentPageMatches.length > 0 && (
-                <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 font-bold text-amber-300 border border-amber-500/40">
+                <span className="rounded-full border border-red-300 bg-red-50 px-2.5 py-0.5 font-bold text-red-700">
                   {currentPageMatches.length} highlighted match(es) on this page
                 </span>
               )}
-              <span className="font-semibold text-cyan-300">
-                Compiled by Master Sahib | www.themastersahib.com
+              <span className="font-bold" style={{ color: theme.primary }}>
+                Compiled by Master Sahib
               </span>
             </div>
           </div>
 
-          {/* Scrollable High-Zoom Canvas Container */}
+          {/* Scrollable High-Zoom Light Canvas Container */}
           <div
             ref={scrollContainerRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUpOrLeave}
             onMouseLeave={handleMouseUpOrLeave}
-            className={`relative h-[78vh] w-full overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-2 sm:p-4 shadow-2xl ${
+            className={`relative h-[74vh] sm:h-[80vh] w-full overflow-auto rounded-2xl border bg-slate-200/70 p-2 sm:p-4 shadow-inner ${
               isDragging ? 'cursor-grabbing' : 'cursor-grab'
             }`}
+            style={{ borderColor: theme.borderSubtle, WebkitOverflowScrolling: 'touch' }}
           >
             {loadingPage && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm">
-                <HiOutlineRefresh className="h-10 w-10 animate-spin text-cyan-400" />
-                <p className="mt-3 text-sm font-bold text-white">
-                  Loading Official High-Resolution Page {currentPage} of {totalPages}...
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm">
+                <HiOutlineRefresh className="h-10 w-10 animate-spin" style={{ color: theme.primary }} />
+                <p className="mt-3 text-sm font-bold text-slate-900">
+                  Loading Official Gazette Page {currentPage} of {totalPages}...
                 </p>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs font-medium text-slate-500">
                   Compiled by Master Sahib • www.themastersahib.com
                 </p>
               </div>
             )}
 
             {loadError && (
-              <div className="my-12 mx-auto max-w-md rounded-2xl border border-rose-500/40 bg-rose-950/30 p-6 text-center">
-                <p className="text-sm font-bold text-rose-300">{loadError}</p>
+              <div className="my-12 mx-auto max-w-md rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center shadow-sm">
+                <p className="text-sm font-bold text-rose-800">{loadError}</p>
                 <button
                   onClick={() => setCurrentPage((p) => p)}
-                  className="mt-4 rounded-xl bg-rose-500 px-4 py-2 text-xs font-bold text-white"
+                  className="mt-4 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white"
                 >
                   Retry Loading Page
                 </button>
@@ -903,19 +1017,19 @@ export default function IbaResultViewerClient({
                   width: `${displayWidth}px`,
                   height: `${displayHeight}px`,
                 }}
-                className="block rounded-lg bg-white shadow-2xl"
+                className="block rounded-xl border border-slate-300 bg-white shadow-lg"
               />
 
               {/* Subtle non-intrusive security watermark overlay */}
-              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between overflow-hidden p-10 opacity-15">
-                <div className="flex justify-between text-lg font-black uppercase tracking-widest text-slate-700">
+              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between overflow-hidden p-6 sm:p-10 opacity-10">
+                <div className="flex justify-between text-xs sm:text-base font-black uppercase tracking-widest text-slate-800">
                   <span>www.themastersahib.com</span>
                   <span>Compiled by Master Sahib</span>
                 </div>
-                <div className="flex justify-center -rotate-12 text-3xl font-black uppercase tracking-widest text-slate-700">
+                <div className="flex justify-center -rotate-12 text-lg sm:text-2xl font-black uppercase tracking-widest text-slate-800">
                   Compiled by Master Sahib • www.themastersahib.com
                 </div>
-                <div className="flex justify-between text-lg font-black uppercase tracking-widest text-slate-700">
+                <div className="flex justify-between text-xs sm:text-base font-black uppercase tracking-widest text-slate-800">
                   <span>Compiled by Master Sahib</span>
                   <span>www.themastersahib.com</span>
                 </div>
@@ -925,18 +1039,18 @@ export default function IbaResultViewerClient({
             {/* Floating Magnifier Lens when enabled */}
             {magnifierEnabled && lensPos.visible && loadedImageRef.current && (
               <div
-                className="pointer-events-none fixed z-50 overflow-hidden rounded-full border-4 border-amber-400 bg-white shadow-2xl"
+                className="pointer-events-none fixed z-50 overflow-hidden rounded-full border-4 border-amber-500 bg-white shadow-2xl"
                 style={{
-                  width: '260px',
-                  height: '260px',
-                  left: `${lensPos.x - 130}px`,
-                  top: `${lensPos.y - 160}px`,
+                  width: '250px',
+                  height: '250px',
+                  left: `${lensPos.x - 125}px`,
+                  top: `${lensPos.y - 155}px`,
                   backgroundImage: `url(${canvasRef.current?.toDataURL('image/jpeg', 0.9)})`,
                   backgroundRepeat: 'no-repeat',
-                  backgroundSize: `${loadedImageRef.current.naturalWidth * 2.6}px ${
-                    loadedImageRef.current.naturalHeight * 2.6
+                  backgroundSize: `${loadedImageRef.current.naturalWidth * 2.5}px ${
+                    loadedImageRef.current.naturalHeight * 2.5
                   }px`,
-                  backgroundPosition: `${-lensPos.imgX * 2.6 + 130}px ${-lensPos.imgY * 2.6 + 130}px`,
+                  backgroundPosition: `${-lensPos.imgX * 2.5 + 125}px ${-lensPos.imgY * 2.5 + 125}px`,
                 }}
               />
             )}
