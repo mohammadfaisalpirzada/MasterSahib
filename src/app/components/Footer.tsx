@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { FaWhatsapp } from 'react-icons/fa';
-import { HiOutlineMail, HiOutlinePhone, HiOutlineSparkles, HiOutlineArrowUp } from 'react-icons/hi';
+import { HiOutlineMail, HiOutlinePhone, HiOutlineArrowUp, HiOutlineNewspaper } from 'react-icons/hi';
 import { getCurrentTheme } from '@/lib/theme';
 
 export default function Footer() {
@@ -28,7 +28,7 @@ export default function Footer() {
             <span
               className="inline-flex items-center gap-1.5 rounded-full border border-[#88E788] bg-white px-3 py-1 text-[11px] font-bold tracking-wide text-slate-900 shadow-sm"
             >
-              <HiOutlineSparkles className="h-3.5 w-3.5 text-[#88E788]" />
+              <span className="text-[#88E788]">★</span>
               The Master Sahib Portal
             </span>
             <span className="hidden sm:inline">•</span>
@@ -93,6 +93,11 @@ export default function Footer() {
             </h3>
             <ul className="mt-3.5 space-y-2 text-xs">
               <li>
+                <Link href="/master_blogs" className="font-bold text-sky-700 hover:text-sky-900 dark:text-sky-300 dark:hover:text-white transition flex items-center gap-1.5">
+                  <HiOutlineNewspaper className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" /> Master Blogs &amp; Posters
+                </Link>
+              </li>
+              <li>
                 <Link href="/softwares/video-editor" className="font-semibold text-slate-700 hover:text-sky-600 dark:text-slate-300 dark:hover:text-sky-400 transition flex items-center gap-1.5">
                   <span>🎬</span> MasterSahib Video Editor (MSVE)
                 </Link>
@@ -146,6 +151,11 @@ export default function Footer() {
                   📑 Pay Fixation 2008 Records
                 </Link>
               </li>
+              <li>
+                <Link href="/iba-result-2008" className="font-semibold text-cyan-700 hover:text-cyan-900 dark:text-cyan-400 dark:hover:text-white transition">
+                  📜 IBA PST &amp; JST Result 2008 Gazette
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -157,7 +167,7 @@ export default function Footer() {
             <ul className="mt-3.5 space-y-2 text-xs">
               <li>
                 <Link href="/class_notes" className="font-semibold text-slate-700 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition">
-                  📖 Class Notes & Books (ECE-XII)
+                  📖 STBB Notes (ECE-XII)
                 </Link>
               </li>
               <li>

@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import {
   HiOutlineArrowLeft,
-  HiOutlineSparkles,
   HiOutlineVideoCamera,
   HiOutlineDeviceMobile,
   HiOutlineCheckCircle,
@@ -990,7 +989,7 @@ export default function VideoEditorSoftwarePage() {
               disabled={isGeneratingAi}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3 text-xs font-bold text-white shadow-md transition hover:bg-indigo-500 disabled:opacity-50"
             >
-              <HiOutlineSparkles className="h-4 w-4" />
+              <HiOutlineLightningBolt className="h-4 w-4 text-amber-400" />
               <span>{isGeneratingAi ? 'Writing Storyboard...' : 'Generate Script'}</span>
             </button>
           </div>

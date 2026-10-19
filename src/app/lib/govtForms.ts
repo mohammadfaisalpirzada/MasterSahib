@@ -348,6 +348,17 @@ export const govtFormItems: GovtFormItem[] = [
     icon: '🩺',
     color: 'from-rose-500 to-red-600',
   },
+  {
+    title: 'Sukkur IBA PST & JST Result 2008 Gazette',
+    description:
+      'Official 2008 Daily Kawish Gazette for PST & JST teachers across Sindh — search your Name, Seat Number, or CNIC across all 70 single-table pages and print your official record.',
+    status: 'Ready',
+    href: '/iba-result-2008',
+    showInNavbar: true,
+    addedOn: '2026-10-18',
+    audience: 'teacher',
+    color: 'from-cyan-600 to-blue-700',
+  },
 ];
 
 const addedTimestamp = (item: GovtFormItem, index: number) => {

@@ -2,7 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  HiOutlineSparkles,
   HiOutlineVideoCamera,
   HiOutlineDeviceMobile,
   HiOutlineShare,
@@ -110,7 +109,7 @@ export default function SoftwaresHubPage() {
         <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-12 sm:px-6 lg:px-8 lg:pt-16">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700 shadow-sm backdrop-blur">
-              <HiOutlineSparkles className="h-4 w-4 text-indigo-600" />
+              <span>🚀</span>
               MasterSahib Proprietary Applications
             </div>
 

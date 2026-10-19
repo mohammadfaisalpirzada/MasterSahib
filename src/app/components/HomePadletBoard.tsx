@@ -78,7 +78,9 @@ const ensureUniquePadletPins = (items: PadletPin[]): PadletPin[] => {
 const HOME_PADLET_LIMIT = 4;
 
 export default function HomePadletBoard() {
-  const [pins, setPins] = useState<PadletPin[]>(defaultPins);
+  // Start empty (not pre-seeded) so the brief loading state and the real
+  // fetched/fallback data never render at the same time — see AI_IMPROVEMENT_LOG.md 2026-10-06.
+  const [pins, setPins] = useState<PadletPin[]>([]);
   const [ideaAuthor, setIdeaAuthor] = useState('');
   const [ideaText, setIdeaText] = useState('');
   const [ideaError, setIdeaError] = useState('');
@@ -99,6 +101,8 @@ export default function HomePadletBoard() {
         setPins(ensureUniquePadletPins(data.items));
       } catch (error) {
         setIdeaError(error instanceof Error ? error.message : 'Unable to load ideas.');
+        // Fall back to sample ideas so the board never looks empty/broken if the sheet is unreachable.
+        setPins(defaultPins);
       } finally {
         setPadletLoading(false);
       }

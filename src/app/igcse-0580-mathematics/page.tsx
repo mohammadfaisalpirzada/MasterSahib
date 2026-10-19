@@ -10,7 +10,6 @@ import {
   HiChevronDown,
   HiClock,
   HiPlay,
-  HiSparkles,
 } from 'react-icons/hi2';
 import LiveQuestionSession from './LiveQuestionSession';
 
@@ -181,7 +180,7 @@ export default function IGCSE0580Page() {
           <div className="mt-12 grid items-end gap-10 lg:grid-cols-[1fr_340px]">
             <div>
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[.18em] text-cyan-200">
-                <HiSparkles className="h-4 w-4" /> Personal learning space
+                <span>📐</span> Personal learning space
               </div>
               <h1 className="max-w-4xl text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
                 Mathematics, made

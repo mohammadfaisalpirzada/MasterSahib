@@ -5,12 +5,12 @@ import Link from 'next/link';
 import {
   HiOutlineMail,
   HiOutlinePhone,
-  HiOutlineSparkles,
   HiOutlineArrowRight,
   HiOutlineCheckCircle,
 } from 'react-icons/hi';
 import { FaWhatsapp } from 'react-icons/fa';
 import WorkshopBannerCarousel from './components/WorkshopBannerCarousel';
+import HomeMasterBlogsBanner from './components/HomeMasterBlogsBanner';
 import HomeSignIn from './components/HomeSignIn';
 import HomeVisitorCount from './components/HomeVisitorCount';
 import HomePadletBoard from './components/HomePadletBoard';
@@ -31,6 +31,26 @@ type QuickCard = {
 };
 
 const allTools: QuickCard[] = [
+  {
+    title: 'Sukkur IBA PST & JST Result 2008 Gazette',
+    description: 'Search your Name, Father Name, Seat Number, or CNIC across all 70 official newspaper tables, zoom clearly, and print your exact official page.',
+    href: '/iba-result-2008',
+    accent: 'from-cyan-600 via-blue-600 to-indigo-600',
+    icon: '📜',
+    category: 'latest',
+    badge: 'Official Gazette',
+    newUntil: '2026-12-31T23:59:59+05:00',
+  },
+  {
+    title: 'Master Blogs & Information Posters',
+    description: 'Explore latest educational articles, Sindh Govt circulars, STEDA licensing updates & infographic posters.',
+    href: '/master_blogs',
+    accent: 'from-cyan-600 via-teal-600 to-emerald-600',
+    icon: '📰',
+    category: 'latest',
+    badge: 'New Portal',
+    newUntil: '2026-12-31T23:59:59+05:00',
+  },
   {
     title: 'MasterSahib Video Editor (MSVE)',
     description: 'Proprietary AI Video Merger, Sequence Audio/Video Editor & Social SEO Studio for educators and creators.',
@@ -61,7 +81,7 @@ const allTools: QuickCard[] = [
     badge: 'Popular',
   },
   {
-    title: 'Class Notes & Planning Books',
+    title: 'STBB Notes & Planning Books',
     description: 'Interactive digital curriculum reader: Class ECE to XII lesson plans, solved exercises & clean PDF downloads.',
     href: '/class_notes',
     accent: 'from-emerald-500 via-teal-500 to-cyan-600',
@@ -199,6 +219,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[var(--ms-bg-main)] text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <WorkshopBannerCarousel />
+      <HomeMasterBlogsBanner />
 
       {/* Top Quick Contact & Status Bar (#88E788, #B788E7, #E788B8 & White Palette) */}
       <div
@@ -214,7 +235,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-[11px] font-bold shadow-sm"
               style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
             >
-              <HiOutlineSparkles className="h-3.5 w-3.5 text-[#88E788]" />
+              <span className="text-[#88E788]">★</span>
               The Master Sahib Academic Series
             </span>
           </div>
@@ -312,7 +333,7 @@ export default function HomePage() {
                   href="/class_notes"
                   className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#E788B8] bg-white px-4 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#E788B8]/20 dark:bg-slate-800 dark:text-white"
                 >
-                  <span>📚</span> Class Books (ECE-XII)
+                  <span>📚</span> STBB Notes (ECE-XII)
                 </Link>
 
                 <HomeSignIn />

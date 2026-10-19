@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   HiOutlineVolumeUp,
-  HiOutlineSparkles,
   HiOutlineArrowLeft,
   HiOutlineArrowRight,
   HiOutlineLightBulb,
@@ -851,7 +850,6 @@ export default function NumbersInWordsPage() {
                   }}
                   className="flex items-center gap-2 rounded-2xl border-2 border-amber-300 bg-white px-5 py-3 text-sm font-bold text-amber-800 shadow-sm transition hover:bg-amber-50"
                 >
-                  <HiOutlineSparkles className="h-5 w-5" />
                   🔤 Spell Letter-by-Letter
                 </button>
               </div>

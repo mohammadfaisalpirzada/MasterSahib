@@ -13,7 +13,6 @@ import {
   HiOutlineArrowLeft,
   HiOutlineArrowRight,
   HiOutlineDocumentText,
-  HiOutlineSparkles,
   HiOutlineClipboardList,
   HiOutlineEye,
 } from 'react-icons/hi';
@@ -816,7 +815,7 @@ function CurriculumContent() {
             </Link>
             <span className="opacity-40">/</span>
             <span className="font-bold flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
-              <HiBookOpen className="w-4 h-4" /> Digital Books & Planning
+              <HiBookOpen className="w-4 h-4" /> STBB Notes
             </span>
             <span className="opacity-40 hidden sm:inline">/</span>
             <span className="font-semibold hidden sm:inline opacity-90">
@@ -925,7 +924,7 @@ function CurriculumContent() {
                   }`}
                 >
                   <HiBookOpen className={`w-4 h-4 ${activeTab === 'notes' ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
-                  <span className={activeTab === 'notes' ? 'text-white' : 'text-slate-800 dark:text-slate-100'}>Class Notes</span>
+                  <span className={activeTab === 'notes' ? 'text-white' : 'text-slate-800 dark:text-slate-100'}>STBB Notes</span>
                 </button>
 
                 <button
@@ -1101,7 +1100,7 @@ function CurriculumContent() {
             {/* Sidebar Footer */}
             <div className={`p-3 border-t ${styles.sidebarHeader} text-center`}>
               <span className="text-[11px] opacity-70 block font-medium">
-                MasterSahib Digital Book Series
+                MasterSahib STBB Notes & Books
               </span>
               <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
                 Sindh Textbook & Curriculum Aligned
@@ -1452,7 +1451,7 @@ function CurriculumContent() {
                             dir={block.isUrdu ? 'rtl' : 'ltr'}
                           >
                             <span className={`font-bold flex items-center gap-1.5 text-xs ${styles.calloutBadge} uppercase tracking-wider`}>
-                              <HiOutlineSparkles className="w-4 h-4" /> {block.label}
+                              <span>📌</span> {block.label}
                             </span>
                             <p className={`${styles.calloutText} print:text-black leading-relaxed ${block.isUrdu ? 'text-right font-urdu' : 'text-left'}`}>
                               {block.text}
@@ -1585,7 +1584,7 @@ function CurriculumContent() {
 
 export default function ClassNotesPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center opacity-60">Loading MasterSahib Digital Books...</div>}>
+    <Suspense fallback={<div className="p-8 text-center opacity-60">Loading MasterSahib STBB Notes...</div>}>
       <CurriculumContent />
     </Suspense>
   );

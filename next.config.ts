@@ -30,6 +30,14 @@ const nextConfig: NextConfig = {
         destination: '/class_notes',
         permanent: true,
       },
+      {
+        // Old URL structure before the educational-resources rename.
+        // Google Search Console flagged /teaching-tools/exit-ticket and
+        // /teaching-tools/fun-learning as 404s — see AI_IMPROVEMENT_LOG.md 2026-10-06.
+        source: '/teaching-tools/:slug*',
+        destination: '/educational-resources/:slug*',
+        permanent: true,
+      },
     ];
   },
   async rewrites() {
