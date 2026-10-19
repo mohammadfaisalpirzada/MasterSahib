@@ -26,7 +26,7 @@ import {
   HiOutlineInformationCircle,
   HiOutlineChatAlt2,
 } from 'react-icons/hi';
-import { FaWhatsapp, FaFacebookF, FaThumbtack } from 'react-icons/fa';
+import { FaWhatsapp, FaFacebookF, FaThumbtack, FaYoutube, FaPlay } from 'react-icons/fa';
 import type { BlogPost } from '@/lib/master-blogs';
 import type { BlogReactions } from '@/lib/blog-interactions';
 import BlogShareModal from '@/app/components/BlogShareModal';
@@ -34,6 +34,12 @@ import BlogReactionBar from '@/app/components/BlogReactionBar';
 import BlogReactionsAndComments from '@/app/components/BlogReactionsAndComments';
 import { sharePostToWhatsApp, openWhatsAppShare, copyBlogShareText } from '@/lib/blog-share';
 import { getCurrentTheme } from '@/lib/theme';
+
+function extractYouTubeId(text?: string | null): string | null {
+  if (!text) return null;
+  const match = text.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|(?:embed|v)\/))([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
 
 export default function MasterBlogsPage() {
   const theme = getCurrentTheme();
@@ -505,6 +511,11 @@ export default function MasterBlogsPage() {
                               <FaThumbtack className="h-2.5 w-2.5" /> Pinned
                             </span>
                           )}
+                          {extractYouTubeId(post.content) && (
+                            <span className="flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-black text-white shadow-md">
+                              <FaPlay className="h-2 w-2" /> Video
+                            </span>
+                          )}
                           {post.hidden && (
                             <span className="rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-black text-white shadow-md">
                               Hidden
@@ -799,6 +810,40 @@ export default function MasterBlogsPage() {
                 <span>{activePost.readTime}</span>
               </div>
 
+              {/* Responsive YouTube Player for Video Blogs */}
+              {(() => {
+                const ytId = extractYouTubeId(activePost.content);
+                if (!ytId) return null;
+                return (
+                  <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200/90 bg-slate-900 shadow-xl dark:border-slate-800">
+                    <div className="relative aspect-video w-full">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${ytId}?rel=0`}
+                        title={activePost.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="h-full w-full border-0"
+                      />
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-950 p-3 text-xs text-white">
+                      <div className="flex items-center gap-2 font-bold">
+                        <FaYoutube className="h-4 w-4 text-red-500" />
+                        <span>The Master Sahib Official Video</span>
+                      </div>
+                      <a
+                        href={`https://www.youtube.com/watch?v=${ytId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1 text-xs font-bold text-white transition hover:bg-red-700"
+                      >
+                        <FaYoutube className="h-3.5 w-3.5" />
+                        <span>Watch on YouTube</span>
+                      </a>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Article Content with Urdu/English formatting */}
               <div
                 className={`mt-6 whitespace-pre-wrap text-base leading-relaxed text-slate-700 dark:text-slate-200 ${
@@ -842,6 +887,16 @@ export default function MasterBlogsPage() {
                 >
                   <HiOutlineClipboardCopy className="h-4 w-4" /> Copy Text
                 </button>
+                {extractYouTubeId(activePost.content) && (
+                  <a
+                    href={`https://www.youtube.com/watch?v=${extractYouTubeId(activePost.content)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
+                  >
+                    <FaYoutube className="h-4 w-4" /> Watch Video
+                  </a>
+                )}
               </div>
 
               <a
