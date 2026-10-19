@@ -200,20 +200,21 @@ export default function HomePage() {
     <main className="min-h-screen bg-[var(--ms-bg-main)] text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <WorkshopBannerCarousel />
 
-      {/* Top Quick Contact & Status Bar (Light/Sober Cool Palette) */}
+      {/* Top Quick Contact & Status Bar (#88E788, #B788E7, #E788B8 & White Palette) */}
       <div
-        className="border-b border-white/10 text-white shadow-sm"
+        className="border-b border-white/40 shadow-sm"
         style={{
-          background: `linear-gradient(90deg, ${theme.primaryHover} 0%, ${theme.primary} 50%, ${theme.secondary} 100%)`,
+          background: `linear-gradient(90deg, ${theme.accentFrom} 0%, ${theme.accentVia} 50%, ${theme.accentTo} 100%)`,
+          color: theme.primaryText,
         }}
       >
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 text-xs font-semibold sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 text-xs font-bold sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <span
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-[11px] font-bold shadow-sm"
               style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
             >
-              <HiOutlineSparkles className="h-3.5 w-3.5" />
+              <HiOutlineSparkles className="h-3.5 w-3.5 text-[#88E788]" />
               The Master Sahib Academic Series
             </span>
           </div>
@@ -223,46 +224,58 @@ export default function HomePage() {
               href="https://wa.me/923458340669"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 transition hover:opacity-80"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-0.5 text-slate-900 shadow-sm transition hover:bg-white"
             >
-              <FaWhatsapp className="h-3.5 w-3.5" /> +92 345 8340669
+              <FaWhatsapp className="h-3.5 w-3.5 text-emerald-600" /> +92 345 8340669
             </a>
-            <a href="tel:+923458340669" className="inline-flex items-center gap-1.5 transition hover:opacity-80">
-              <HiOutlinePhone className="h-3.5 w-3.5" /> Call
+            <a
+              href="tel:+923458340669"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-0.5 text-slate-900 shadow-sm transition hover:bg-white"
+            >
+              <HiOutlinePhone className="h-3.5 w-3.5 text-[#B788E7]" /> Call
             </a>
             <a
               href="mailto:mohammadfaisalpirzada@gmail.com"
-              className="inline-flex items-center gap-1.5 transition hover:opacity-80 hidden md:inline-flex"
+              className="hidden items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-0.5 text-slate-900 shadow-sm transition hover:bg-white md:inline-flex"
             >
-              <HiOutlineMail className="h-3.5 w-3.5" /> Support
+              <HiOutlineMail className="h-3.5 w-3.5 text-[#E788B8]" /> Support
             </a>
           </div>
         </div>
       </div>
 
       {/* Hero Header Section - Mobile Priority & Desktop Crisp */}
-      <section className="relative overflow-hidden border-b border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur-sm">
+      <section className="relative overflow-hidden border-b border-[#88E788]/50 bg-white dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur-sm">
         <div
-          className="absolute -left-20 top-[-100px] h-72 w-72 rounded-full blur-3xl pointer-events-none opacity-30"
-          style={{ backgroundColor: theme.primaryLight }}
+          className="absolute -left-20 top-[-80px] h-72 w-72 rounded-full blur-3xl pointer-events-none opacity-45"
+          style={{ backgroundColor: '#88E788' }}
         />
         <div
-          className="absolute right-[-80px] top-10 h-80 w-80 rounded-full blur-3xl pointer-events-none opacity-25"
-          style={{ backgroundColor: theme.primary }}
+          className="absolute left-1/3 top-12 h-64 w-64 rounded-full blur-3xl pointer-events-none opacity-35"
+          style={{ backgroundColor: '#B788E7' }}
+        />
+        <div
+          className="absolute right-[-60px] top-6 h-80 w-80 rounded-full blur-3xl pointer-events-none opacity-40"
+          style={{ backgroundColor: '#E788B8' }}
         />
 
         <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8 lg:pt-12">
           <div className="grid gap-8 lg:grid-cols-[1.15fr,0.85fr] lg:items-center">
             <div className="space-y-4 text-center sm:text-left">
-              <div className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-bold tracking-wide shadow-sm" style={{ borderColor: theme.borderSubtle, backgroundColor: theme.badgeBg, color: theme.badgeText }}>
-                <HiOutlineSparkles className="h-4 w-4" />
+              <div
+                className="inline-flex items-center gap-2 rounded-full border-2 bg-white px-3.5 py-1 text-xs font-bold tracking-wide text-slate-900 shadow-sm"
+                style={{ borderColor: '#88E788' }}
+              >
+                <span className="h-2.5 w-2.5 rounded-full bg-[#88E788]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#B788E7]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#E788B8]" />
                 MasterSahib Digital Workspace
               </div>
 
               <h1 className="text-3xl font-black leading-tight text-slate-900 dark:text-white sm:text-4xl lg:text-5xl">
                 One Clean Entry
                 <span
-                  className="block bg-clip-text text-transparent"
+                  className="mt-1 inline-block rounded-2xl px-3 py-1 text-slate-900 shadow-sm"
                   style={{
                     backgroundImage: `linear-gradient(90deg, ${theme.accentFrom}, ${theme.accentVia}, ${theme.accentTo})`,
                   }}
@@ -279,9 +292,9 @@ export default function HomePage() {
               <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:justify-start pt-2">
                 <Link
                   href="/govt-forms"
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#88E788] px-5 py-3 text-sm font-extrabold text-slate-900 shadow-md transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                   style={{
-                    backgroundColor: theme.primary,
+                    backgroundColor: '#88E788',
                   }}
                 >
                   <span>📋</span> Govt School Forms
@@ -290,20 +303,14 @@ export default function HomePage() {
 
                 <Link
                   href="/softwares/video-editor"
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border bg-white px-5 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 dark:bg-slate-800 dark:text-white dark:border-slate-700"
-                  style={{ borderColor: theme.borderSubtle }}
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#B788E7] bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#B788E7]/20 dark:bg-slate-800 dark:text-white"
                 >
                   <span>🎬</span> Video Editor (MSVE)
                 </Link>
 
                 <Link
                   href="/class_notes"
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-bold transition hover:opacity-90"
-                  style={{
-                    borderColor: theme.borderSubtle,
-                    backgroundColor: theme.badgeBg,
-                    color: theme.badgeText,
-                  }}
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#E788B8] bg-white px-4 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#E788B8]/20 dark:bg-slate-800 dark:text-white"
                 >
                   <span>📚</span> Class Books (ECE-XII)
                 </Link>
@@ -313,31 +320,35 @@ export default function HomePage() {
             </div>
 
             {/* Highlights and Visitor Counter Widget */}
-            <div className="rounded-3xl border border-slate-200/80 bg-white/95 p-5 shadow-lg dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur">
+            <div className="rounded-3xl border-2 border-[#88E788]/70 bg-white p-5 shadow-lg dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur">
               <div className="grid grid-cols-3 gap-2.5">
-                {highlights.map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3 text-center dark:border-slate-800 dark:bg-slate-800/50"
-                  >
-                    <p className="text-lg font-black text-slate-900 dark:text-white sm:text-2xl">{item.value}</p>
-                    <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      {item.label}
-                    </p>
-                  </div>
-                ))}
+                {highlights.map((item, idx) => {
+                  const accentBorders = ['border-[#88E788]', 'border-[#B788E7]', 'border-[#E788B8]'];
+                  const accentBgs = ['bg-[#88E788]/15', 'bg-[#B788E7]/15', 'bg-[#E788B8]/15'];
+                  return (
+                    <div
+                      key={item.label}
+                      className={`rounded-2xl border-2 ${accentBorders[idx % 3]} ${accentBgs[idx % 3]} p-3 text-center dark:border-slate-800 dark:bg-slate-800/50`}
+                    >
+                      <p className="text-lg font-black text-slate-900 dark:text-white sm:text-2xl">{item.value}</p>
+                      <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">
+                        {item.label}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
 
               <div
-                className="mt-3 flex items-center justify-between rounded-2xl border px-4 py-2.5 shadow-sm"
+                className="mt-3 flex items-center justify-between rounded-2xl border-2 px-4 py-2.5 shadow-sm"
                 style={{
-                  borderColor: theme.borderSubtle,
-                  backgroundColor: theme.bgCardMuted,
+                  borderColor: '#88E788',
+                  background: 'linear-gradient(90deg, rgba(136,231,136,0.22), rgba(183,136,231,0.18), rgba(231,136,184,0.22))',
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <HiOutlineCheckCircle className="h-4 w-4" style={{ color: theme.primary }} />
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  <HiOutlineCheckCircle className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">
                     Live Visitors
                   </span>
                 </div>
@@ -352,23 +363,31 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/60 bg-sky-50/90 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-sky-800 shadow-sm dark:border-sky-800/80 dark:bg-sky-950/70 dark:text-sky-300">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-500"></span>
+            <div className="inline-flex items-center gap-2 rounded-full border-2 border-[#88E788] bg-white px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-slate-900 shadow-sm dark:border-emerald-700 dark:bg-slate-900 dark:text-emerald-300">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#88E788] opacity-75"></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#88E788]"></span>
               </span>
               Directory of Educational Tools
             </div>
             <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl lg:text-4xl">
-              Academic & Teacher <span className="bg-gradient-to-r from-sky-600 via-teal-600 to-indigo-600 bg-clip-text text-transparent dark:from-sky-400 dark:via-teal-300 dark:to-indigo-300">Tools</span>
+              Academic & Teacher{' '}
+              <span
+                className="inline-block rounded-xl px-2.5 py-0.5 text-slate-900 shadow-sm"
+                style={{
+                  backgroundImage: 'linear-gradient(90deg, #88E788, #B788E7, #E788B8)',
+                }}
+              >
+                Tools
+              </span>
             </h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
               All digital learning software, school utilities, and teacher tools in one unified workspace.
             </p>
           </div>
 
           {/* Category Filter Tabs - Touch friendly for Mobile */}
-          <div className="flex flex-wrap gap-1.5 rounded-2xl border border-slate-200/90 bg-white/90 p-1.5 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
+          <div className="flex flex-wrap gap-1.5 rounded-2xl border-2 border-[#88E788]/70 bg-white p-1.5 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
             {(
               [
                 { id: 'all', label: 'All Tools' },
@@ -384,8 +403,8 @@ export default function HomePage() {
                   onClick={() => setSelectedCategory(tab.id)}
                   className={`rounded-xl px-3.5 py-2 text-xs font-bold transition min-h-[38px] ${
                     active
-                      ? 'bg-gradient-to-r from-sky-600 to-teal-600 text-white shadow-md'
-                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                      ? 'bg-gradient-to-r from-[#88E788] via-[#B788E7] to-[#E788B8] text-slate-950 shadow-md'
+                      : 'text-slate-600 hover:bg-[#88E788]/20 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                   }`}
                 >
                   {tab.label}
@@ -397,22 +416,28 @@ export default function HomePage() {
 
         {/* Tools Grid: 1 column on mobile, 2 on small tablet, 3 on tablet, 4 on desktop */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredTools.map((tool) => {
+          {filteredTools.map((tool, index) => {
             const showNewBadge = Boolean(tool.newUntil) && now <= new Date(tool.newUntil as string).getTime();
+            const borderColors = [
+              'border-[#88E788]/70 hover:border-[#88E788]',
+              'border-[#B788E7]/70 hover:border-[#B788E7]',
+              'border-[#E788B8]/70 hover:border-[#E788B8]',
+            ];
+            const cardBorderClass = borderColors[index % 3];
 
             return (
               <Link
                 key={tool.title}
                 href={tool.href}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/90 bg-white/95 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-sky-300 hover:shadow-xl hover:shadow-sky-500/10 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-sky-700 dark:hover:shadow-black/40 backdrop-blur-sm"
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border-2 ${cardBorderClass} bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-[#88E788] backdrop-blur-sm`}
               >
-                {/* Top expanding gradient accent line */}
+                {/* Top expanding gradient accent line using #88E788, #B788E7, #E788B8 */}
                 <div
-                  className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${tool.accent} opacity-80 transition-all duration-300 group-hover:h-1.5 group-hover:opacity-100`}
+                  className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#88E788] via-[#B788E7] to-[#E788B8] opacity-90 transition-all duration-300 group-hover:h-2 group-hover:opacity-100"
                 />
 
                 {/* Ambient corner radial hover glow */}
-                <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-gradient-to-br from-sky-400/15 via-teal-400/10 to-transparent blur-2xl transition-all duration-300 group-hover:scale-150 group-hover:opacity-100" />
+                <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-gradient-to-br from-[#88E788]/30 via-[#B788E7]/25 to-[#E788B8]/25 blur-2xl transition-all duration-300 group-hover:scale-150 group-hover:opacity-100" />
 
                 {/* Badge with live pulsing dot for NEW */}
                 {showNewBadge || tool.badge ? (
@@ -420,15 +445,15 @@ export default function HomePage() {
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-sm ${
                         showNewBadge
-                          ? 'bg-rose-500 text-white shadow-rose-200 dark:shadow-none'
-                          : 'border border-sky-200/60 bg-sky-50 text-sky-800 dark:border-sky-800/60 dark:bg-sky-950/80 dark:text-sky-300'
+                          ? 'bg-[#E788B8] text-slate-950'
+                          : 'border border-[#B788E7] bg-[#B788E7]/25 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
                       }`}
                     >
                       {showNewBadge ? (
                         <>
                           <span className="relative flex h-1.5 w-1.5">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-slate-900 opacity-75" />
+                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-slate-900" />
                           </span>
                           NEW
                         </>
@@ -442,11 +467,11 @@ export default function HomePage() {
                 {/* Card Content */}
                 <div className="relative z-10">
                   {/* 3D-styled app icon tile with hover scaling */}
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-50 to-slate-100 p-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-md dark:border-slate-700/80 dark:from-slate-800 dark:to-slate-800/60">
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[#88E788]/60 bg-gradient-to-br from-[#88E788]/25 via-white to-[#B788E7]/25 p-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-md dark:border-slate-700/80 dark:from-slate-800 dark:to-slate-800/60">
                     <span className="text-2xl filter drop-shadow-sm">{tool.icon}</span>
                   </div>
 
-                  <h3 className="text-base font-bold text-slate-900 transition-colors duration-200 group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">
+                  <h3 className="text-base font-bold text-slate-900 transition-colors duration-200 group-hover:text-emerald-800 dark:text-white dark:group-hover:text-[#88E788]">
                     {tool.title}
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
@@ -455,11 +480,11 @@ export default function HomePage() {
                 </div>
 
                 {/* Sleek interactive card footer */}
-                <div className="relative z-10 mt-6 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800/80">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <div className="relative z-10 mt-6 flex items-center justify-between border-t border-[#88E788]/30 pt-3 dark:border-slate-800/80">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {tool.category === 'teacher' ? 'Teacher Tool' : tool.category === 'academic' ? 'Academic' : 'Software'}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-sky-600 transition-all duration-200 group-hover:gap-1.5 group-hover:text-sky-700 dark:text-sky-400 dark:group-hover:text-sky-300">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#88E788]/30 px-2.5 py-0.5 text-xs font-bold text-slate-900 transition-all duration-200 group-hover:bg-[#88E788] dark:bg-slate-800 dark:text-[#88E788]">
                     Open
                     <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">→</span>
                   </span>

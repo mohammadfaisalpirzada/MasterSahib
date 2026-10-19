@@ -33,22 +33,23 @@ html {
 
 :root {
   /* Centralized Theme: Sober, Light & Cool ("thandy thandy") Weekly Palette */
-  --ms-bg-main: #f2f8fa;
+  --ms-bg-main: #f7fdf7;
   --ms-bg-card: #ffffff;
-  --ms-bg-card-muted: #eaf4f7;
-  --ms-border: #dbeafe;
+  --ms-bg-card-muted: #f0fbf0;
+  --ms-border: #88E788;
   --ms-text-primary: #0f172a;
-  --ms-text-secondary: #475569;
+  --ms-text-secondary: #334155;
   --ms-text-muted: #64748b;
-  --ms-primary: #0284c7;
-  --ms-primary-hover: #0369a1;
-  --ms-primary-light: #e0f2fe;
-  --ms-secondary: #0d9488;
-  --ms-accent-from: #0284c7;
-  --ms-accent-via: #0ea5e9;
-  --ms-accent-to: #0d9488;
-  --ms-badge-bg: #e0f2fe;
-  --ms-badge-text: #0369a1;
+  --ms-primary: #88E788;
+  --ms-primary-hover: #B788E7;
+  --ms-primary-light: #e8fbe8;
+  --ms-primary-text: #0f172a;
+  --ms-secondary: #E788B8;
+  --ms-accent-from: #88E788;
+  --ms-accent-via: #B788E7;
+  --ms-accent-to: #E788B8;
+  --ms-badge-bg: #ffffff;
+  --ms-badge-text: #0f172a;
 }
 
 html.dark {

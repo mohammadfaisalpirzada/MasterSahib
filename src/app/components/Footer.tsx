@@ -15,45 +15,49 @@ export default function Footer() {
   };
 
   return (
-    <footer className="border-t border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors">
+    <footer className="border-t-2 border-[#88E788]/70 bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors">
       {/* Top Banner with Quick Actions */}
-      <div className="border-b border-slate-100 bg-slate-50/80 px-4 py-4 dark:border-slate-800/80 dark:bg-slate-950/50 sm:px-6 lg:px-8">
+      <div
+        className="border-b border-[#88E788]/40 px-4 py-4 dark:border-slate-800/80 dark:bg-slate-950/50 sm:px-6 lg:px-8"
+        style={{
+          background: 'linear-gradient(90deg, rgba(136,231,136,0.25), rgba(183,136,231,0.22), rgba(231,136,184,0.25))',
+        }}
+      >
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
             <span
-              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide"
-              style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#88E788] bg-white px-3 py-1 text-[11px] font-bold tracking-wide text-slate-900 shadow-sm"
             >
-              <HiOutlineSparkles className="h-3 w-3" />
+              <HiOutlineSparkles className="h-3.5 w-3.5 text-[#88E788]" />
               The Master Sahib Portal
             </span>
             <span className="hidden sm:inline">•</span>
-            <span className="hidden sm:inline">SLO Based Educational Resources</span>
+            <span className="hidden sm:inline font-semibold">SLO Based Educational Resources</span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-semibold">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-bold">
             <a
               href="https://wa.me/923458340669"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300"
+              className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[#88E788] bg-white px-3 py-1.5 text-slate-900 shadow-sm transition hover:bg-[#88E788]/30 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300"
             >
               <FaWhatsapp className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               WhatsApp Help
             </a>
             <a
               href="tel:+923458340669"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-sky-800 transition hover:bg-sky-100 dark:border-sky-800/50 dark:bg-sky-950/40 dark:text-sky-300"
+              className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[#B788E7] bg-white px-3 py-1.5 text-slate-900 shadow-sm transition hover:bg-[#B788E7]/25 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
             >
-              <HiOutlinePhone className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+              <HiOutlinePhone className="h-3.5 w-3.5 text-[#B788E7]" />
               Direct Call
             </a>
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-slate-600 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              className="inline-flex items-center gap-1 rounded-lg border-2 border-[#E788B8] bg-white px-2.5 py-1.5 text-slate-900 shadow-sm transition hover:bg-[#E788B8]/25 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
               aria-label="Scroll to top"
             >
-              <HiOutlineArrowUp className="h-3.5 w-3.5" />
+              <HiOutlineArrowUp className="h-3.5 w-3.5 text-[#E788B8]" />
               Top
             </button>
           </div>

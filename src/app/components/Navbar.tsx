@@ -177,18 +177,26 @@ export default function Navbar() {
     void signIn('google');
   };
 
+  const isLightNav = theme.primaryText !== '#ffffff';
+
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-40 w-full border-b border-white/15 bg-gradient-to-r ${theme.navGradient} text-white shadow-md transition-colors duration-300`}
+      className={`sticky top-0 z-40 w-full border-b bg-gradient-to-r ${theme.navGradient} ${
+        isLightNav
+          ? 'border-white/60 text-slate-900'
+          : 'border-white/15 text-white'
+      } shadow-md transition-colors duration-300`}
     >
       <nav className="mx-auto flex w-full max-w-[1700px] items-center justify-between gap-4 px-3 py-3 sm:px-6 lg:px-10">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2.5 rounded-xl px-2 py-1 transition hover:bg-white/10"
+          className={`flex shrink-0 items-center gap-2.5 rounded-xl px-2 py-1 transition ${
+            isLightNav ? 'hover:bg-white/50' : 'hover:bg-white/10'
+          }`}
           aria-label="Go to home page"
         >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/10">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/80 bg-white shadow-sm">
             <Image
               src="/images/main_logo.png"
               alt="TheMasterSahib Logo"
@@ -199,7 +207,9 @@ export default function Navbar() {
           </span>
           <div className="shrink-0">
             <p className="whitespace-nowrap text-base font-extrabold leading-tight sm:text-xl">TheMasterSahib</p>
-            <p className="hidden whitespace-nowrap text-xs text-indigo-100 sm:block">Learn. Build. Grow.</p>
+            <p className={`hidden whitespace-nowrap text-xs sm:block ${isLightNav ? 'text-slate-800 font-medium' : 'text-indigo-100'}`}>
+              Learn. Build. Grow.
+            </p>
           </div>
         </Link>
 
@@ -219,7 +229,9 @@ export default function Navbar() {
                   <div
                     className={`inline-flex shrink-0 items-center whitespace-nowrap overflow-hidden rounded-lg text-sm font-semibold transition ${
                       isActive
-                        ? 'bg-white text-indigo-700 shadow-sm'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : isLightNav
+                        ? 'text-slate-900 hover:bg-white/60 hover:text-slate-950'
                         : 'text-indigo-50 hover:bg-white/15 hover:text-white'
                     }`}
                   >
@@ -244,10 +256,10 @@ export default function Navbar() {
                       isOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
                     }`}
                   >
-                    <div className="max-h-[75vh] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                    <div className="max-h-[75vh] overflow-y-auto overscroll-contain rounded-2xl border border-[#88E788]/60 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
                       <Link
                         href={item.href}
-                        className="block rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                        className="block rounded-xl bg-[#f0fbf0] px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-[#88E788]/30 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                       >
                         Open All {item.desktopLabel ?? item.label}
                       </Link>
@@ -257,8 +269,8 @@ export default function Navbar() {
                           <Link
                             key={child.href}
                             href={child.href}
-                            className={`rounded-xl px-3 py-2.5 transition hover:bg-indigo-50 dark:hover:bg-slate-800 ${
-                              isActiveRoute(child.href) ? 'bg-indigo-50 dark:bg-slate-800' : ''
+                            className={`rounded-xl px-3 py-2.5 transition hover:bg-[#88E788]/20 dark:hover:bg-slate-800 ${
+                              isActiveRoute(child.href) ? 'bg-[#88E788]/25 dark:bg-slate-800' : ''
                             }`}
                           >
                             <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">{child.label}</span>
@@ -278,7 +290,9 @@ export default function Navbar() {
                   href={item.href}
                   className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition ${
                     isActive
-                      ? 'bg-white text-indigo-700 shadow-sm'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : isLightNav
+                      ? 'text-slate-900 hover:bg-white/60 hover:text-slate-950'
                       : 'text-indigo-50 hover:bg-white/15 hover:text-white'
                   }`}
                 >
@@ -295,7 +309,11 @@ export default function Navbar() {
             onClick={toggleTheme}
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
+              isLightNav
+                ? 'border-white/80 bg-white/70 text-slate-900 hover:bg-white shadow-sm'
+                : 'border-white/30 bg-white/10 text-white hover:bg-white/20'
+            }`}
           >
             {isDark ? <HiOutlineSun className="h-5 w-5" /> : <HiOutlineMoon className="h-5 w-5" />}
           </button>
@@ -307,7 +325,11 @@ export default function Navbar() {
               title="More links"
               aria-expanded={isMoreOpen}
               className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                isMoreOpen ? 'border-white bg-white text-indigo-700' : 'border-white/30 bg-white/10 text-white hover:bg-white/20'
+                isMoreOpen
+                  ? 'border-white bg-white text-slate-900 shadow-sm'
+                  : isLightNav
+                  ? 'border-white/80 bg-white/70 text-slate-900 hover:bg-white shadow-sm'
+                  : 'border-white/30 bg-white/10 text-white hover:bg-white/20'
               }`}
             >
               <HiOutlineMenuAlt3 className="h-5 w-5" />
@@ -318,13 +340,13 @@ export default function Navbar() {
                 isMoreOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
               }`}
             >
-              <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+              <div className="rounded-2xl border border-[#88E788]/60 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
                 {desktopMoreItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                      isActiveRoute(item.href) ? 'bg-slate-100 dark:bg-slate-800' : ''
+                    className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-[#88E788]/20 dark:text-slate-100 dark:hover:bg-slate-800 ${
+                      isActiveRoute(item.href) ? 'bg-[#88E788]/25 dark:bg-slate-800' : ''
                     }`}
                   >
                     {item.label}
@@ -334,16 +356,16 @@ export default function Navbar() {
                   <>
                     <Link
                       href="/client-projects"
-                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                        isActiveRoute('/client-projects') ? 'bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400' : ''
+                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-[#88E788]/20 dark:text-slate-100 dark:hover:bg-slate-800 ${
+                        isActiveRoute('/client-projects') ? 'bg-[#88E788]/25 dark:bg-slate-800 text-emerald-800 dark:text-teal-400' : ''
                       }`}
                     >
                       💼 Client Projects
                     </Link>
                     <Link
                       href="/my-presentations"
-                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                        isActiveRoute('/my-presentations') ? 'bg-slate-100 dark:bg-slate-800' : ''
+                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-[#88E788]/20 dark:text-slate-100 dark:hover:bg-slate-800 ${
+                        isActiveRoute('/my-presentations') ? 'bg-[#88E788]/25 dark:bg-slate-800' : ''
                       }`}
                     >
                       My Presentations
@@ -355,13 +377,13 @@ export default function Navbar() {
           </div>
 
           {status === 'loading' ? (
-            <div className="rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm text-indigo-50">
+            <div className={`rounded-full border border-white/60 bg-white/60 px-4 py-2 text-sm ${isLightNav ? 'text-slate-900' : 'text-indigo-50'}`}>
               Loading...
             </div>
           ) : session ? (
-            <div className="flex items-center gap-3 rounded-full border border-white/25 bg-white/15 px-3 py-1.5">
+            <div className="flex items-center gap-3 rounded-full border border-white/80 bg-white/80 px-3 py-1.5 shadow-sm">
               {session.user?.image && (
-                <div className="h-8 w-8 overflow-hidden rounded-full border border-white/30">
+                <div className="h-8 w-8 overflow-hidden rounded-full border border-slate-200">
                   <Image
                     src={session.user.image}
                     alt={session.user.name || 'Profile'}
@@ -372,10 +394,10 @@ export default function Navbar() {
                 </div>
               )}
               <div className="flex flex-col">
-                <p className="text-xs font-semibold text-white">{session.user?.name || 'User'}</p>
+                <p className={`text-xs font-semibold ${isLightNav ? 'text-slate-900' : 'text-white'}`}>{session.user?.name || 'User'}</p>
                 <button
                   onClick={() => signOut()}
-                  className="text-xs text-indigo-100 transition hover:text-white"
+                  className={`text-xs transition ${isLightNav ? 'text-slate-600 hover:text-slate-950' : 'text-indigo-100 hover:text-white'}`}
                 >
                   Sign out
                 </button>
@@ -384,7 +406,11 @@ export default function Navbar() {
           ) : (
             <button
               onClick={handleNavbarSignIn}
-              className="rounded-full border border-white bg-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/30"
+              className={`rounded-full border px-4 py-2 text-sm font-bold shadow-sm transition ${
+                isLightNav
+                  ? 'border-white bg-white text-slate-900 hover:bg-slate-50'
+                  : 'border-white bg-white/20 text-white hover:bg-white/30'
+              }`}
             >
               Sign in
             </button>
@@ -397,13 +423,21 @@ export default function Navbar() {
             onClick={toggleTheme}
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border transition ${
+              isLightNav
+                ? 'border-white/80 bg-white/75 text-slate-900 hover:bg-white shadow-sm'
+                : 'border-white/30 bg-white/10 text-white hover:bg-white/20'
+            }`}
           >
             {isDark ? <HiOutlineSun className="h-5 w-5" /> : <HiOutlineMoon className="h-5 w-5" />}
           </button>
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-lg border border-white/30 bg-white/10 p-2 text-white transition hover:bg-white/20"
+            className={`inline-flex items-center justify-center rounded-lg border p-2 transition ${
+              isLightNav
+                ? 'border-white/80 bg-white/75 text-slate-900 hover:bg-white shadow-sm'
+                : 'border-white/30 bg-white/10 text-white hover:bg-white/20'
+            }`}
             onClick={() => setIsMobileOpen((current) => !current)}
             aria-label={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
             title={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}

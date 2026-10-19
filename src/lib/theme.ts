@@ -24,6 +24,7 @@ export type ThemePalette = {
   primary: string;
   primaryHover: string;
   primaryLight: string;
+  primaryText: string;
   secondary: string;
   accentFrom: string;
   accentVia: string;
@@ -37,8 +38,34 @@ export type ThemePalette = {
   badgeText: string;
 };
 
-// 4 Sober, light, cool ("thandy") weekly color palettes:
+// Sober, light, cool ("thandy") weekly color palettes:
 export const COOL_SOBER_PALETTES: ThemePalette[] = [
+  {
+    id: 'light-green-white',
+    name: 'Pastel Mint, Lavender & Rose on White',
+    description: 'Soothing #88E788 light green, #B788E7 pastel lavender, and #E788B8 soft rose paired with crisp white.',
+    seasonTag: 'Fresh Pastel Triad',
+    bgMain: '#f7fdf7',
+    bgCard: '#ffffff',
+    bgCardMuted: '#f0fbf0',
+    borderSubtle: '#88E788',
+    textPrimary: '#0f172a',
+    textSecondary: '#334155',
+    textMuted: '#64748b',
+    primary: '#88E788',
+    primaryHover: '#B788E7',
+    primaryLight: '#e8fbe8',
+    primaryText: '#0f172a',
+    secondary: '#E788B8',
+    accentFrom: '#88E788',
+    accentVia: '#B788E7',
+    accentTo: '#E788B8',
+    navGradient: 'from-[#88E788] via-[#B788E7] to-[#E788B8]',
+    navActiveBg: 'bg-white text-slate-900',
+    navActiveText: '#0f172a',
+    badgeBg: '#ffffff',
+    badgeText: '#0f172a',
+  },
   {
     id: 'arctic-glacier',
     name: 'Arctic Glacier & Frosted Cyan',
@@ -54,6 +81,7 @@ export const COOL_SOBER_PALETTES: ThemePalette[] = [
     primary: '#0284c7',
     primaryHover: '#0369a1',
     primaryLight: '#e0f2fe',
+    primaryText: '#ffffff',
     secondary: '#0d9488',
     accentFrom: '#0284c7',
     accentVia: '#0ea5e9',
@@ -79,6 +107,7 @@ export const COOL_SOBER_PALETTES: ThemePalette[] = [
     primary: '#0d9488',
     primaryHover: '#0f766e',
     primaryLight: '#ccfbf1',
+    primaryText: '#ffffff',
     secondary: '#059669',
     accentFrom: '#0f766e',
     accentVia: '#059669',
@@ -104,6 +133,7 @@ export const COOL_SOBER_PALETTES: ThemePalette[] = [
     primary: '#2563eb',
     primaryHover: '#1d4ed8',
     primaryLight: '#dbeafe',
+    primaryText: '#ffffff',
     secondary: '#0891b2',
     accentFrom: '#1e40af',
     accentVia: '#2563eb',
@@ -129,6 +159,7 @@ export const COOL_SOBER_PALETTES: ThemePalette[] = [
     primary: '#4f46e5',
     primaryHover: '#4338ca',
     primaryLight: '#e0e7ff',
+    primaryText: '#ffffff',
     secondary: '#0284c7',
     accentFrom: '#4338ca',
     accentVia: '#6366f1',
@@ -142,10 +173,10 @@ export const COOL_SOBER_PALETTES: ThemePalette[] = [
 ];
 
 /**
- * Set to a palette ID (e.g., 'calm-sage') to lock in a specific theme,
+ * Set to a palette ID (e.g., 'light-green-white') to lock in a specific theme,
  * or leave null to let it automatically rotate week-by-week.
  */
-export const MANUAL_THEME_OVERRIDE: string | null = 'calm-sage';
+export const MANUAL_THEME_OVERRIDE: string | null = 'light-green-white';
 
 /**
  * Calculates current ISO 8601 week number (1 - 53).
@@ -186,6 +217,7 @@ export function getThemeCssVariables(theme: ThemePalette): Record<string, string
     '--ms-primary': theme.primary,
     '--ms-primary-hover': theme.primaryHover,
     '--ms-primary-light': theme.primaryLight,
+    '--ms-primary-text': theme.primaryText,
     '--ms-secondary': theme.secondary,
     '--ms-accent-from': theme.accentFrom,
     '--ms-accent-via': theme.accentVia,
