@@ -49,3 +49,5 @@ tsconfig.idcards*.json
 tsconfig.check*.json
 
 .vercel
+
+/public/store-files

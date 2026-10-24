@@ -1,0 +1,130 @@
+{
+  "generatedAt": "2026-10-24T09:17:00.000Z",
+  "items": [
+    {
+      "id": "pdf-reader-master-sahib",
+      "fileName": "Master-Sahib-PDF-Viewer.apk",
+      "title": "PDF Reader - Master Sahib",
+      "category": "Utilities",
+      "caption": "Fast, clean document scanner and PDF reader for books, notes, and CNIC cards.",
+      "features": [
+        "Smart document scanner with auto-deskew and B&W enhancement",
+        "Single and double sided CNIC card maker",
+        "Smooth offline PDF reading and page jump"
+      ],
+      "icon": "BookOpen",
+      "version": null,
+      "format": "APK",
+      "sizeBytes": 0,
+      "modified": "2026-10-24T04:00:00.000Z",
+      "downloadUrl": "https://github.com/mohammadfaisalpirzada/master-sahib-pdf-viewer/releases/download/latest/Master-Sahib-PDF-Viewer.apk",
+      "external": true,
+      "github": {
+        "owner": "mohammadfaisalpirzada",
+        "repo": "master-sahib-pdf-viewer",
+        "tag": "latest",
+        "asset": "Master-Sahib-PDF-Viewer.apk"
+      }
+    },
+    {
+      "id": "vpn-shield-master-sahib",
+      "fileName": "VPN-Shield-Master-Sahib.apk",
+      "title": "VPN Shield - Master Sahib",
+      "category": "Utilities",
+      "caption": "High-speed secure proxy tunnel with Telegram unblock and full browsing.",
+      "features": [
+        "Instant Telegram unblock and unrestricted browsing",
+        "High-speed encrypted tunnel with zero connection drops",
+        "Dual support for Android and Windows environments"
+      ],
+      "icon": "ShieldCheck",
+      "version": null,
+      "format": "APK",
+      "sizeBytes": 0,
+      "modified": "2026-10-24T04:00:00.000Z",
+      "downloadUrl": "https://github.com/mohammadfaisalpirzada/vpn-shield-master/releases/download/latest/VPN-Shield-Master-Sahib.apk",
+      "external": true,
+      "github": {
+        "owner": "mohammadfaisalpirzada",
+        "repo": "vpn-shield-master",
+        "tag": "latest",
+        "asset": "VPN-Shield-Master-Sahib.apk"
+      }
+    },
+    {
+      "id": "learning-app-master-sahib",
+      "fileName": "Learning-App-Master-Sahib.apk",
+      "title": "Learning App - Master Sahib",
+      "category": "Education",
+      "caption": "Interactive learning app with video lectures, tests, and study material.",
+      "features": [
+        "Complete chapter-wise video syllabus and interactive quizzes",
+        "Offline saved lectures and revision notes for students",
+        "Direct progress monitoring and assessment scoring"
+      ],
+      "icon": "GraduationCap",
+      "version": null,
+      "format": "APK",
+      "sizeBytes": 0,
+      "modified": "2026-10-24T04:00:00.000Z",
+      "downloadUrl": "https://github.com/mohammadfaisalpirzada/learning-app-master/releases/download/latest/Learning-App-Master-Sahib.apk",
+      "external": true,
+      "github": {
+        "owner": "mohammadfaisalpirzada",
+        "repo": "learning-app-master",
+        "tag": "latest",
+        "asset": "Learning-App-Master-Sahib.apk"
+      }
+    },
+    {
+      "id": "tv-remote-master-sahib",
+      "fileName": "TV-Remote-Master-Sahib.apk",
+      "title": "TV Remote - Master Sahib",
+      "category": "Utilities",
+      "caption": "Wireless Android smart TV remote and YouTube controller for quick navigation.",
+      "features": [
+        "Instant Wi-Fi pairing with Smart TVs and Android boxes",
+        "Smooth touch D-pad, media controls and volume rocker",
+        "Quick YouTube video casting and channel navigation"
+      ],
+      "icon": "Smartphone",
+      "version": null,
+      "format": "APK",
+      "sizeBytes": 0,
+      "modified": "2026-10-24T04:00:00.000Z",
+      "downloadUrl": "https://github.com/mohammadfaisalpirzada/tv-remote-master/releases/download/latest/TV-Remote-Master-Sahib.apk",
+      "external": true,
+      "github": {
+        "owner": "mohammadfaisalpirzada",
+        "repo": "tv-remote-master",
+        "tag": "latest",
+        "asset": "TV-Remote-Master-Sahib.apk"
+      }
+    },
+    {
+      "id": "location-changer-master-sahib",
+      "fileName": "Location-Changer-Master-Sahib.apk",
+      "title": "Location Changer - Master Sahib",
+      "category": "Utilities",
+      "caption": "Virtual GPS location spoofer for testing and privacy on Android.",
+      "features": [
+        "One-click virtual GPS location teleport worldwide",
+        "Mock route simulation with speed adjustments",
+        "Secure developer mode spoofing without root"
+      ],
+      "icon": "Globe",
+      "version": null,
+      "format": "APK",
+      "sizeBytes": 0,
+      "modified": "2026-10-24T04:00:00.000Z",
+      "downloadUrl": "https://github.com/mohammadfaisalpirzada/location-changer-master/releases/download/latest/Location-Changer-Master-Sahib.apk",
+      "external": true,
+      "github": {
+        "owner": "mohammadfaisalpirzada",
+        "repo": "location-changer-master",
+        "tag": "latest",
+        "asset": "Location-Changer-Master-Sahib.apk"
+      }
+    }
+  ]
+}
