@@ -18,6 +18,10 @@ export type BlogPost = {
   filename: string;
   title: string;
   content: string;
+  urduContent?: string;
+  englishContent?: string;
+  hasUrdu?: boolean;
+  hasEnglish?: boolean;
   excerpt: string;
   imageUrl: string;
   date: string;
@@ -162,9 +166,90 @@ export function extractMeaningfulExcerpt(content: string, isUrdu?: boolean): str
   return first.length > 240 ? `${first.slice(0, 237)}...` : first;
 }
 
+export function splitBilingualContent(rawText: string): {
+  urduContent: string;
+  englishContent: string;
+  hasUrdu: boolean;
+  hasEnglish: boolean;
+} {
+  if (!rawText) {
+    return { urduContent: '', englishContent: '', hasUrdu: false, hasEnglish: false };
+  }
+
+  const lines = rawText.split(/\r?\n/);
+
+  // Strategy 1: Check for explicit "PART 1" / "PART 2" or "حصہ" markers
+  let part1Idx = -1;
+  let part2Idx = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (isDecorativeLine(line)) continue;
+    if (/^PART\s*1\b/i.test(line) || /^حصہ\s*(اول|1)\b/i.test(line)) {
+      if (part1Idx === -1) part1Idx = i;
+    } else if (/^PART\s*2\b/i.test(line) || /^حصہ\s*(دوم|2)\b/i.test(line)) {
+      if (part2Idx === -1) part2Idx = i;
+    }
+  }
+
+  if (part1Idx !== -1 && part2Idx !== -1 && part2Idx > part1Idx) {
+    const p1Lines = lines.slice(part1Idx + 1, part2Idx);
+    const p2Lines = lines.slice(part2Idx + 1);
+
+    const cleanLines = (arr: string[]) => {
+      while (arr.length && (isDecorativeLine(arr[0].trim()) || !arr[0].trim())) arr.shift();
+      while (arr.length && (isDecorativeLine(arr[arr.length - 1].trim()) || !arr[arr.length - 1].trim())) arr.pop();
+      return arr.join('\n').trim();
+    };
+
+    const p1Text = cleanLines(p1Lines);
+    const p2Text = cleanLines(p2Lines);
+
+    if (detectIsUrdu(p1Text) && !detectIsUrdu(p2Text)) {
+      return { urduContent: p1Text, englishContent: p2Text, hasUrdu: true, hasEnglish: true };
+    } else if (!detectIsUrdu(p1Text) && detectIsUrdu(p2Text)) {
+      return { urduContent: p2Text, englishContent: p1Text, hasUrdu: true, hasEnglish: true };
+    }
+  }
+
+  // Strategy 2: Paragraph-based segregation if no explicit PART markers
+  const paragraphs = rawText.split(/\n\s*\n/);
+  const urduBlocks: string[] = [];
+  const englishBlocks: string[] = [];
+
+  for (const para of paragraphs) {
+    const trimmed = para.trim();
+    if (!trimmed || isDecorativeLine(trimmed)) continue;
+    if (/^(category|date|author|platform|website|authority)\s*:/i.test(trimmed)) continue;
+
+    if (detectIsUrdu(trimmed)) {
+      urduBlocks.push(trimmed);
+    } else if (/[a-zA-Z]/.test(trimmed)) {
+      englishBlocks.push(trimmed);
+    }
+  }
+
+  const urduText = urduBlocks.join('\n\n').trim();
+  const enText = englishBlocks.join('\n\n').trim();
+
+  const hasUrdu = urduText.length > 30;
+  const hasEnglish = enText.length > 30;
+
+  return {
+    urduContent: urduText,
+    englishContent: enText,
+    hasUrdu,
+    hasEnglish,
+  };
+}
+
 function parseTextFile(rawContent: string, fallbackTitle: string): {
   title: string;
   content: string;
+  urduContent?: string;
+  englishContent?: string;
+  hasUrdu?: boolean;
+  hasEnglish?: boolean;
   category: string;
   date: string;
   author: string;
@@ -332,7 +417,7 @@ async function fetchGoogleDriveBlogPosts(metadata: BlogMetadataStore): Promise<B
             author: 'The Master Sahib',
           };
 
-      const isUrdu = detectIsUrdu(`${parsed.title} ${parsed.content}`);
+      const isUrdu = parsed.hasUrdu || detectIsUrdu(`${parsed.title} ${parsed.content}`);
       const cleanExcerpt = extractMeaningfulExcerpt(parsed.content, isUrdu);
 
       const isHidden = metadata.hiddenIds.includes(id);
