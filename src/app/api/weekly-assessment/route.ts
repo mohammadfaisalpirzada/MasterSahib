@@ -10,7 +10,7 @@ export async function GET() {
   const activeTheme = getCurrentTheme(weekNumber);
 
   const coreTools = [
-    { name: 'MasterSahib Video Editor (MSVE)', path: '/softwares/video-editor', status: 'operational', priority: 'high' },
+    { name: 'MasterSahib Video Editor (MSVE)', path: '/the-master-store/video-editor', status: 'operational', priority: 'high' },
     { name: 'Student ID Card Studio', path: '/ggss-nishtar-road/admin/id-cards', status: 'operational', priority: 'high' },
     { name: 'Timetable Generator', path: '/educational-resources/timetable-generator', status: 'operational', priority: 'high' },
     { name: 'Class Notes & Planning Books', path: '/class_notes', status: 'operational', priority: 'high' },

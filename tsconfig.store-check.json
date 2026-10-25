@@ -1,0 +1,1 @@
+{"extends": "./tsconfig.json", "compilerOptions": {"incremental": false}, "include": ["next-env.d.ts", "src/**/*.d.ts", "src/app/the-master-store/**/*.tsx", "src/app/the-master-store/**/*.ts", "src/app/softwares/page.tsx", "scripts/sync-store.mts", "next.config.ts", "src/app/components/HomeMasterStoreBanner.tsx", "src/app/page.tsx"]}

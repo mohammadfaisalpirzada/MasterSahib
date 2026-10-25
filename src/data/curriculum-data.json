@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-24T18:42:14.595Z",
+  "generatedAt": "2026-10-25T13:52:22.775Z",
   "totalClasses": 13,
-  "totalFiles": 248,
+  "totalFiles": 262,
   "classes": [
     {
       "id": "class-v",
@@ -5487,7 +5487,7 @@
               "title": "Class VI English Unit 1 Notes",
               "fileName": "Class VI English Unit 1 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43335,
+              "sizeBytes": 43353,
               "sizeFormatted": "42.3 KB",
               "isDocx": true,
               "isPdf": false,
@@ -6558,14 +6558,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vi/english/eng_vi_ch1.jpg",
-              "lastModified": "2026-09-24T16:30:31.226Z"
+              "lastModified": "2026-09-25T12:45:30.775Z"
             },
             {
               "id": "class-vi-english-class-vi-english-unit-2-notes",
               "title": "Class VI English Unit 2 Notes",
               "fileName": "Class VI English Unit 2 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43273,
+              "sizeBytes": 43299,
               "sizeFormatted": "42.3 KB",
               "isDocx": true,
               "isPdf": false,
@@ -7616,15 +7616,15 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vi/english/eng_vi_ch2.jpg",
-              "lastModified": "2026-09-24T16:30:31.407Z"
+              "lastModified": "2026-09-25T12:45:35.317Z"
             },
             {
               "id": "class-vi-english-class-vi-english-unit-3-notes",
               "title": "Class VI English Unit 3 Notes",
               "fileName": "Class VI English Unit 3 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43156,
-              "sizeFormatted": "42.1 KB",
+              "sizeBytes": 43171,
+              "sizeFormatted": "42.2 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -8679,14 +8679,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vi/english/eng_vi_ch3.jpg",
-              "lastModified": "2026-09-24T16:30:31.683Z"
+              "lastModified": "2026-09-25T12:45:37.370Z"
             },
             {
               "id": "class-vi-english-class-vi-english-unit-4-notes",
               "title": "Class VI English Unit 4 Notes",
               "fileName": "Class VI English Unit 4 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43244,
+              "sizeBytes": 43260,
               "sizeFormatted": "42.2 KB",
               "isDocx": true,
               "isPdf": false,
@@ -9727,14 +9727,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vi/english/eng_vi_ch4.jpg",
-              "lastModified": "2026-09-24T16:30:31.887Z"
+              "lastModified": "2026-09-25T12:45:39.964Z"
             },
             {
               "id": "class-vi-english-class-vi-english-unit-5-notes",
               "title": "Class VI English Unit 5 Notes",
               "fileName": "Class VI English Unit 5 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43332,
+              "sizeBytes": 43354,
               "sizeFormatted": "42.3 KB",
               "isDocx": true,
               "isPdf": false,
@@ -10795,15 +10795,15 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vi/english/eng_vi_ch5.jpg",
-              "lastModified": "2026-09-24T16:30:32.083Z"
+              "lastModified": "2026-09-25T12:45:42.539Z"
             },
             {
               "id": "class-vi-english-class-vi-english-unit-6-notes",
               "title": "Class VI English Unit 6 Notes",
               "fileName": "Class VI English Unit 6 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43353,
-              "sizeFormatted": "42.3 KB",
+              "sizeBytes": 43379,
+              "sizeFormatted": "42.4 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -11868,7 +11868,7 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vi/english/eng_vi_ch6.jpg",
-              "lastModified": "2026-09-24T16:30:32.278Z"
+              "lastModified": "2026-09-25T12:45:44.677Z"
             },
             {
               "id": "class-vi-english-class-vi-english-unit-1-solved-textbook-exercises",
@@ -19649,8 +19649,8 @@
               "title": "Class VII English Unit 1 Notes",
               "fileName": "Class VII English Unit 1 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43331,
-              "sizeFormatted": "42.3 KB",
+              "sizeBytes": 43380,
+              "sizeFormatted": "42.4 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -20710,14 +20710,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vii/english/eng_vii_ch1.jpg",
-              "lastModified": "2026-09-24T16:30:36.342Z"
+              "lastModified": "2026-09-25T12:45:18.193Z"
             },
             {
               "id": "class-vii-english-class-vii-english-unit-2-notes",
               "title": "Class VII English Unit 2 Notes",
               "fileName": "Class VII English Unit 2 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43203,
+              "sizeBytes": 43237,
               "sizeFormatted": "42.2 KB",
               "isDocx": true,
               "isPdf": false,
@@ -21778,14 +21778,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vii/english/eng_vii_ch2.jpg",
-              "lastModified": "2026-09-24T16:30:36.492Z"
+              "lastModified": "2026-09-25T12:45:18.726Z"
             },
             {
               "id": "class-vii-english-class-vii-english-unit-3-notes",
               "title": "Class VII English Unit 3 Notes",
               "fileName": "Class VII English Unit 3 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43474,
+              "sizeBytes": 43513,
               "sizeFormatted": "42.5 KB",
               "isDocx": true,
               "isPdf": false,
@@ -22856,15 +22856,15 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vii/english/eng_vii_ch3.jpg",
-              "lastModified": "2026-09-24T16:30:36.657Z"
+              "lastModified": "2026-09-25T12:45:19.287Z"
             },
             {
               "id": "class-vii-english-class-vii-english-unit-4-notes",
               "title": "Class VII English Unit 4 Notes",
               "fileName": "Class VII English Unit 4 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43246,
-              "sizeFormatted": "42.2 KB",
+              "sizeBytes": 43294,
+              "sizeFormatted": "42.3 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -23909,15 +23909,15 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vii/english/eng_vii_ch4.jpg",
-              "lastModified": "2026-09-24T16:30:36.825Z"
+              "lastModified": "2026-09-25T12:45:20.931Z"
             },
             {
               "id": "class-vii-english-class-vii-english-unit-5-notes",
               "title": "Class VII English Unit 5 Notes",
               "fileName": "Class VII English Unit 5 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43554,
-              "sizeFormatted": "42.5 KB",
+              "sizeBytes": 43608,
+              "sizeFormatted": "42.6 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -24972,14 +24972,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vii/english/eng_vii_ch5.jpg",
-              "lastModified": "2026-09-24T16:30:37.024Z"
+              "lastModified": "2026-09-25T12:45:22.660Z"
             },
             {
               "id": "class-vii-english-class-vii-english-unit-6-notes",
               "title": "Class VII English Unit 6 Notes",
               "fileName": "Class VII English Unit 6 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43386,
+              "sizeBytes": 43413,
               "sizeFormatted": "42.4 KB",
               "isDocx": true,
               "isPdf": false,
@@ -26045,14 +26045,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vii/english/eng_vii_ch6.jpg",
-              "lastModified": "2026-09-24T16:30:37.191Z"
+              "lastModified": "2026-09-25T12:45:25.283Z"
             },
             {
               "id": "class-vii-english-class-vii-english-unit-7-notes",
               "title": "Class VII English Unit 7 Notes",
               "fileName": "Class VII English Unit 7 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43424,
+              "sizeBytes": 43466,
               "sizeFormatted": "42.4 KB",
               "isDocx": true,
               "isPdf": false,
@@ -27103,7 +27103,7 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-vii/english/eng_vii_ch7.jpg",
-              "lastModified": "2026-09-24T16:30:37.452Z"
+              "lastModified": "2026-09-25T12:45:27.642Z"
             },
             {
               "id": "class-vii-english-class-vii-english-unit-1-solved-textbook-exercises",
@@ -36142,8 +36142,8 @@
               "title": "Class VIII English Unit 1 Notes",
               "fileName": "Class VIII English Unit 1 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42919,
-              "sizeFormatted": "41.9 KB",
+              "sizeBytes": 42967,
+              "sizeFormatted": "42.0 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -37188,14 +37188,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-viii/english/eng_viii_ch1.jpg",
-              "lastModified": "2026-09-24T16:30:41.551Z"
+              "lastModified": "2026-09-25T12:46:01.259Z"
             },
             {
               "id": "class-viii-english-class-viii-english-unit-2-notes",
               "title": "Class VIII English Unit 2 Notes",
               "fileName": "Class VIII English Unit 2 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43283,
+              "sizeBytes": 43323,
               "sizeFormatted": "42.3 KB",
               "isDocx": true,
               "isPdf": false,
@@ -38241,15 +38241,15 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-viii/english/eng_viii_ch2.jpg",
-              "lastModified": "2026-09-24T16:30:41.758Z"
+              "lastModified": "2026-09-25T12:46:01.990Z"
             },
             {
               "id": "class-viii-english-class-viii-english-unit-3-notes",
               "title": "Class VIII English Unit 3 Notes",
               "fileName": "Class VIII English Unit 3 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43330,
-              "sizeFormatted": "42.3 KB",
+              "sizeBytes": 43375,
+              "sizeFormatted": "42.4 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -39314,14 +39314,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-viii/english/eng_viii_ch3.jpg",
-              "lastModified": "2026-09-24T16:30:42.001Z"
+              "lastModified": "2026-09-25T12:46:02.751Z"
             },
             {
               "id": "class-viii-english-class-viii-english-unit-4-notes",
               "title": "Class VIII English Unit 4 Notes",
               "fileName": "Class VIII English Unit 4 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43279,
+              "sizeBytes": 43324,
               "sizeFormatted": "42.3 KB",
               "isDocx": true,
               "isPdf": false,
@@ -40387,14 +40387,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-viii/english/eng_viii_ch4.jpg",
-              "lastModified": "2026-09-24T16:30:42.203Z"
+              "lastModified": "2026-09-25T12:46:04.327Z"
             },
             {
               "id": "class-viii-english-class-viii-english-unit-5-notes",
               "title": "Class VIII English Unit 5 Notes",
               "fileName": "Class VIII English Unit 5 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43423,
+              "sizeBytes": 43462,
               "sizeFormatted": "42.4 KB",
               "isDocx": true,
               "isPdf": false,
@@ -41450,14 +41450,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-viii/english/eng_viii_ch5.jpg",
-              "lastModified": "2026-09-24T16:30:42.422Z"
+              "lastModified": "2026-09-25T12:46:07.209Z"
             },
             {
               "id": "class-viii-english-class-viii-english-unit-6-notes",
               "title": "Class VIII English Unit 6 Notes",
               "fileName": "Class VIII English Unit 6 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43315,
+              "sizeBytes": 43359,
               "sizeFormatted": "42.3 KB",
               "isDocx": true,
               "isPdf": false,
@@ -42498,14 +42498,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-viii/english/eng_viii_ch6.jpg",
-              "lastModified": "2026-09-24T16:30:42.609Z"
+              "lastModified": "2026-09-25T12:46:09.323Z"
             },
             {
               "id": "class-viii-english-class-viii-english-unit-7-notes",
               "title": "Class VIII English Unit 7 Notes",
               "fileName": "Class VIII English Unit 7 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 43481,
+              "sizeBytes": 43526,
               "sizeFormatted": "42.5 KB",
               "isDocx": true,
               "isPdf": false,
@@ -43566,7 +43566,7 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-viii/english/eng_viii_ch7.jpg",
-              "lastModified": "2026-09-24T16:30:42.846Z"
+              "lastModified": "2026-09-25T12:46:10.952Z"
             },
             {
               "id": "class-viii-english-class-viii-english-unit-1-solved-textbook-exercises",
@@ -49651,8 +49651,8 @@
       "id": "class-x",
       "name": "Class X",
       "standardName": "Class 10 (Matric Part 2)",
-      "subjectCount": 2,
-      "totalFiles": 19,
+      "subjectCount": 3,
+      "totalFiles": 26,
       "subjects": [
         {
           "id": "class-x-english",
@@ -49679,7 +49679,7 @@
               "title": "Class X English Unit 1 Notes",
               "fileName": "Class X English Unit 1 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42756,
+              "sizeBytes": 42778,
               "sizeFormatted": "41.8 KB",
               "isDocx": true,
               "isPdf": false,
@@ -50500,7 +50500,7 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-x/english/eng_x_ch1.jpg",
-              "lastModified": "2026-09-24T16:30:45.853Z"
+              "lastModified": "2026-09-25T12:45:00.968Z"
             },
             {
               "id": "class-x-english-class-x-english-unit-2-notes",
@@ -51358,14 +51358,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-x/english/eng_x_ch2.jpg",
-              "lastModified": "2026-09-24T16:30:46.134Z"
+              "lastModified": "2026-09-25T12:45:01.457Z"
             },
             {
               "id": "class-x-english-class-x-english-unit-3-notes",
               "title": "Class X English Unit 3 Notes",
               "fileName": "Class X English Unit 3 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42487,
+              "sizeBytes": 42510,
               "sizeFormatted": "41.5 KB",
               "isDocx": true,
               "isPdf": false,
@@ -52076,14 +52076,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-x/english/eng_x_ch3.jpg",
-              "lastModified": "2026-09-24T16:30:46.446Z"
+              "lastModified": "2026-09-25T12:45:01.905Z"
             },
             {
               "id": "class-x-english-class-x-english-unit-4-notes",
               "title": "Class X English Unit 4 Notes",
               "fileName": "Class X English Unit 4 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42299,
+              "sizeBytes": 42331,
               "sizeFormatted": "41.3 KB",
               "isDocx": true,
               "isPdf": false,
@@ -52749,14 +52749,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-x/english/eng_x_ch4.jpg",
-              "lastModified": "2026-09-24T16:30:46.626Z"
+              "lastModified": "2026-09-25T12:45:02.291Z"
             },
             {
               "id": "class-x-english-class-x-english-unit-5-notes",
               "title": "Class X English Unit 5 Notes",
               "fileName": "Class X English Unit 5 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42149,
+              "sizeBytes": 42158,
               "sizeFormatted": "41.2 KB",
               "isDocx": true,
               "isPdf": false,
@@ -53462,14 +53462,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-x/english/eng_x_ch5.jpg",
-              "lastModified": "2026-09-24T16:30:46.786Z"
+              "lastModified": "2026-09-25T12:45:02.685Z"
             },
             {
               "id": "class-x-english-class-x-english-unit-6-notes",
               "title": "Class X English Unit 6 Notes",
               "fileName": "Class X English Unit 6 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42419,
+              "sizeBytes": 42433,
               "sizeFormatted": "41.4 KB",
               "isDocx": true,
               "isPdf": false,
@@ -54185,14 +54185,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-x/english/eng_x_ch6.jpg",
-              "lastModified": "2026-09-24T16:30:46.962Z"
+              "lastModified": "2026-09-25T12:45:03.124Z"
             },
             {
               "id": "class-x-english-class-x-english-unit-7-notes",
               "title": "Class X English Unit 7 Notes",
               "fileName": "Class X English Unit 7 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42307,
+              "sizeBytes": 42341,
               "sizeFormatted": "41.3 KB",
               "isDocx": true,
               "isPdf": false,
@@ -54843,15 +54843,15 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-x/english/eng_x_ch7.jpg",
-              "lastModified": "2026-09-24T16:30:47.194Z"
+              "lastModified": "2026-09-25T12:45:03.546Z"
             },
             {
               "id": "class-x-english-class-x-english-unit-8-notes",
               "title": "Class X English Unit 8 Notes",
               "fileName": "Class X English Unit 8 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42430,
-              "sizeFormatted": "41.4 KB",
+              "sizeBytes": 42458,
+              "sizeFormatted": "41.5 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -55506,7 +55506,7 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-x/english/eng_x_ch8.jpg",
-              "lastModified": "2026-09-24T16:30:47.401Z"
+              "lastModified": "2026-09-25T12:45:03.948Z"
             },
             {
               "id": "class-x-english-bsek-karachi-class-x-english-guess-paper-2026",
@@ -63627,6 +63627,1189 @@
               "lastModified": "2026-09-24T16:30:50.513Z"
             }
           ]
+        },
+        {
+          "id": "class-x-physics",
+          "name": "Physics",
+          "key": "physics",
+          "chapterCount": 7,
+          "chapters": [
+            {
+              "id": "class-x-physics-class-x-physics-chapter-1-notes-urdu",
+              "title": "Class X Physics Chapter 1 Notes Urdu",
+              "fileName": "Class_X_Physics_Chapter_1_Notes_Urdu.docx",
+              "extension": "docx",
+              "sizeBytes": 39143,
+              "sizeFormatted": "38.2 KB",
+              "isDocx": true,
+              "isPdf": false,
+              "resourceType": "notes",
+              "parsedContent": {
+                "paragraphCount": 68,
+                "content": [
+                  {
+                    "text": "گورنمنٹ گرلز سیکنڈری اسکول نشتر روڈ، کراچی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "امتحانی تیاری کے تفصیلی نوٹس (Examination Preparatory Notes)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مضمون: طبیعیات (Physics) | جماعت: X (دہم) | باب نمبر 1 / یونٹ 10: لہروں کی عمومی خصوصیات اور سادہ ہارمونک موشن (General Wave Properties & SHM)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "جماعت: X (دہم)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "نصاب: سندھ ٹیکسٹ بک بورڈ (STBB)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بورڈ: کراچی بورڈ (BSEK)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1۔ ارتعاشی حرکت اور سادہ ہارمونک موشن (SHM)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ارتعاشی حرکت (Vibratory Motion): جب کوئی جسم اپنے وسطی مقام (Mean Position) کے ارد گرد بار بار آگے پیچھے یا دائیں بائیں حرکت کرے تو اسے ارتعاشی حرکت کہتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سادہ ہارمونک موشن (SHM): وہ ارتعاشی حرکت جس میں جسم کا ایکسلریشن (a) اس کے وسطی مقام سے ہٹاؤ (x) کے راست متناسب ہو اور اس کا رخ ہمیشہ وسطی مقام کی طرف ہو: a ∝ -x",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سادہ ہارمونک موشن کی شرائط:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  جسم پر بحال کنندہ قوت عمل کرتی ہے جو اسے ہمیشہ وسطی مقام کی طرف لاتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  وسطی پوزیشن پر رفتار اور کائنیٹک انرجی زیادہ سے زیادہ اور پوٹینشل انرجی صفر ہوتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  انتہائی پوزیشنوں پر رفتار صفر اور پوٹینشل انرجی زیادہ سے زیادہ ہوتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "2۔ سادہ ہارمونک موشن کے اہم سسٹمز (SHM Systems)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ہک کا قانون (Hooke's Law): کمانی میں پیدا ہونے والی بحال کنندہ قوت ہٹاؤ کے راست متناسب ہوتی ہے: F = -kx (سپرنگ کونسٹنٹ k = F/x کی اکائی N/m ہے)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  اسپرنگ کے ٹائم پیریڈ کا فارمولا: T = 2π √(m/k)",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "سادہ پینڈولم کا ٹائم پیریڈ: T = 2π √(l/g)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  سادہ پینڈولم کا ٹائم پیریڈ صرف لمبائی (l) اور گریویٹی (g) پر منحصر ہوتا ہے، یہ گولی کی کمیت یا ایمپلی ٹیوڈ پر منحصر نہیں ہوتا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  گیند اور پیالے کا نظام (Ball and Bowl System): پیالے میں رکھی گیند کو چھوڑنے پر وہ بھی سادہ ہارمونک موشن کرتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "3۔ لہر کی بنیادی اصطلاحات (Wave Terminology)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اصطلاح",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تعریف",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "علامت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "SI اکائی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ارتعاش (Vibration)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وسطی پوزیشن کے گرد ایک مکمل چکر۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "-",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "چکر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ایمپلی ٹیوڈ (Amplitude)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وسطی پوزیشن سے کسی بھی ایک طرف کا زیادہ سے زیادہ ہٹاؤ۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "A",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میٹر (m)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ٹائم پیریڈ (Time Period)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ایک مکمل لہر یا ارتعاش پیدا ہونے کا وقت۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "T",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکنڈ (s)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "فریکوئنسی (Frequency)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ایک سیکنڈ میں پیدا ہونے والی لہروں کی تعداد۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "f",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ہرٹز (Hz)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طول موج (Wavelength)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "دو متواتر فرازوں یا دو نشیبوں کے درمیانی فاصلہ۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "λ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میٹر (m)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "فریکوئنسی اور ٹائم پیریڈ کا باہمی تعلق: f = 1 / T  اور  T = 1 / f",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "4۔ لہروں کی اقسام (Types of Waves)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مادی واسطے کی بنیاد پر لہریں:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  مکینیکل امواج (Mechanical Waves): وہ لہریں جنہیں اشاعت کے لیے مادی واسطے کی ضرورت ہوتی ہے (جیسے آواز، پانی کی لہریں، اسپرنگ کی لہریں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  الیکٹرو میگنیٹک امواج (Electromagnetic Waves): وہ لہریں جنہیں واسطے کی ضرورت نہیں ہوتی اور وہ خلا میں بھی سفر کرتی ہیں (جیسے روشنی، ریڈیو لہریں، ایکس ریز)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "خصوصیت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "عرضی لہریں (Transverse Waves)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طولی لہریں (Longitudinal Waves)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ذرات کی حرکت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "واسطے کے ذرات لہر کی اشاعت کے عموداً حرکت کرتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "واسطے کے ذرات لہر کی سمت کے متوازی آگے پیچھے حرکت کرتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اجزاء",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ان میں فراز (Crest) اور نشیب (Trough) بنتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ان میں دباؤ (Compression) اور کھچاؤ (Rarefaction) بنتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مثالیں",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "پانی کی لہریں، رسی کی لہریں، روشنی۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "آواز کی لہریں (Sound Waves)، اسپرنگ کی لہریں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "5۔ بنیادی موجی مساوات اور رپل ٹینک (Wave Equation & Ripple Tank)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بنیادی موجی مساوات کا ثبوت: چونکہ رفتار = فاصلہ / وقت (v = S/t)۔ اگر S = λ اور t = T ہو تو v = λ/T = λ × (1/T)۔ چونکہ 1/T = f ہے، پس: v = f × λ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "رپل ٹینک (Ripple Tank): پانی کی سطح پر لہریں پیدا کرنے اور ان کی خصوصیات کا مطالعہ کرنے والا خصوصی آلہ۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  انعکاس (Reflection): رکاوٹ سے ٹکرا کر لہروں کا واپس پہلے واسطے میں لوٹ جانا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  انکسار (Refraction): گہرے پانی سے اتھلے پانی میں داخل ہو کر لہروں کا رفتار اور سمت بدل لینا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  انحراف (Diffraction): رکاوٹ کے تیز کناروں یا تنگ سوراخ کے گرد لہروں کا مڑ جانا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "نوٹ برائے طلباء: ان نوٹس کو بار بار دہرا کر یاد کریں اور پرچے کی بھرپور تیاری کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  }
+                ]
+              },
+              "bannerImage": null,
+              "lastModified": "2026-10-24T05:36:16.280Z"
+            },
+            {
+              "id": "class-x-physics-class-x-physics-urdu-summative-one-paper",
+              "title": "Class X Physics Urdu Summative One Paper",
+              "fileName": "Class_X_Physics_Urdu_Summative_One_Paper.pdf",
+              "extension": "pdf",
+              "sizeBytes": 2429315,
+              "sizeFormatted": "2372.4 KB",
+              "isDocx": false,
+              "isPdf": true,
+              "resourceType": "notes",
+              "parsedContent": null,
+              "bannerImage": null,
+              "lastModified": "2026-10-24T06:01:06.691Z"
+            },
+            {
+              "id": "class-x-physics-class-x-physics-unit-1-notes-urdu",
+              "title": "Class X Physics Unit 1 Notes Urdu",
+              "fileName": "Class_X_Physics_Unit_1_Notes_Urdu.pdf",
+              "extension": "pdf",
+              "sizeBytes": 1821560,
+              "sizeFormatted": "1778.9 KB",
+              "isDocx": false,
+              "isPdf": true,
+              "resourceType": "notes",
+              "parsedContent": null,
+              "bannerImage": null,
+              "lastModified": "2026-10-24T06:01:26.584Z"
+            },
+            {
+              "id": "class-x-physics-class-x-physics-unit-1-notes",
+              "title": "Class X Physics Unit 1 Notes",
+              "fileName": "Class X Physics Unit 1 Notes.docx",
+              "extension": "docx",
+              "sizeBytes": 39143,
+              "sizeFormatted": "38.2 KB",
+              "isDocx": true,
+              "isPdf": false,
+              "resourceType": "notes",
+              "parsedContent": {
+                "paragraphCount": 68,
+                "content": [
+                  {
+                    "text": "گورنمنٹ گرلز سیکنڈری اسکول نشتر روڈ، کراچی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "امتحانی تیاری کے تفصیلی نوٹس (Examination Preparatory Notes)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مضمون: طبیعیات (Physics) | جماعت: X (دہم) | باب نمبر 1 / یونٹ 10: لہروں کی عمومی خصوصیات اور سادہ ہارمونک موشن (General Wave Properties & SHM)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "جماعت: X (دہم)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "نصاب: سندھ ٹیکسٹ بک بورڈ (STBB)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بورڈ: کراچی بورڈ (BSEK)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1۔ ارتعاشی حرکت اور سادہ ہارمونک موشن (SHM)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ارتعاشی حرکت (Vibratory Motion): جب کوئی جسم اپنے وسطی مقام (Mean Position) کے ارد گرد بار بار آگے پیچھے یا دائیں بائیں حرکت کرے تو اسے ارتعاشی حرکت کہتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سادہ ہارمونک موشن (SHM): وہ ارتعاشی حرکت جس میں جسم کا ایکسلریشن (a) اس کے وسطی مقام سے ہٹاؤ (x) کے راست متناسب ہو اور اس کا رخ ہمیشہ وسطی مقام کی طرف ہو: a ∝ -x",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سادہ ہارمونک موشن کی شرائط:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  جسم پر بحال کنندہ قوت عمل کرتی ہے جو اسے ہمیشہ وسطی مقام کی طرف لاتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  وسطی پوزیشن پر رفتار اور کائنیٹک انرجی زیادہ سے زیادہ اور پوٹینشل انرجی صفر ہوتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  انتہائی پوزیشنوں پر رفتار صفر اور پوٹینشل انرجی زیادہ سے زیادہ ہوتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "2۔ سادہ ہارمونک موشن کے اہم سسٹمز (SHM Systems)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ہک کا قانون (Hooke's Law): کمانی میں پیدا ہونے والی بحال کنندہ قوت ہٹاؤ کے راست متناسب ہوتی ہے: F = -kx (سپرنگ کونسٹنٹ k = F/x کی اکائی N/m ہے)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  اسپرنگ کے ٹائم پیریڈ کا فارمولا: T = 2π √(m/k)",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "سادہ پینڈولم کا ٹائم پیریڈ: T = 2π √(l/g)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  سادہ پینڈولم کا ٹائم پیریڈ صرف لمبائی (l) اور گریویٹی (g) پر منحصر ہوتا ہے، یہ گولی کی کمیت یا ایمپلی ٹیوڈ پر منحصر نہیں ہوتا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  گیند اور پیالے کا نظام (Ball and Bowl System): پیالے میں رکھی گیند کو چھوڑنے پر وہ بھی سادہ ہارمونک موشن کرتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "3۔ لہر کی بنیادی اصطلاحات (Wave Terminology)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اصطلاح",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تعریف",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "علامت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "SI اکائی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ارتعاش (Vibration)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وسطی پوزیشن کے گرد ایک مکمل چکر۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "-",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "چکر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ایمپلی ٹیوڈ (Amplitude)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وسطی پوزیشن سے کسی بھی ایک طرف کا زیادہ سے زیادہ ہٹاؤ۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "A",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میٹر (m)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ٹائم پیریڈ (Time Period)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ایک مکمل لہر یا ارتعاش پیدا ہونے کا وقت۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "T",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکنڈ (s)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "فریکوئنسی (Frequency)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ایک سیکنڈ میں پیدا ہونے والی لہروں کی تعداد۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "f",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ہرٹز (Hz)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طول موج (Wavelength)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "دو متواتر فرازوں یا دو نشیبوں کے درمیانی فاصلہ۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "λ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میٹر (m)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "فریکوئنسی اور ٹائم پیریڈ کا باہمی تعلق: f = 1 / T  اور  T = 1 / f",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "4۔ لہروں کی اقسام (Types of Waves)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مادی واسطے کی بنیاد پر لہریں:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  مکینیکل امواج (Mechanical Waves): وہ لہریں جنہیں اشاعت کے لیے مادی واسطے کی ضرورت ہوتی ہے (جیسے آواز، پانی کی لہریں، اسپرنگ کی لہریں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  الیکٹرو میگنیٹک امواج (Electromagnetic Waves): وہ لہریں جنہیں واسطے کی ضرورت نہیں ہوتی اور وہ خلا میں بھی سفر کرتی ہیں (جیسے روشنی، ریڈیو لہریں، ایکس ریز)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "خصوصیت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "عرضی لہریں (Transverse Waves)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طولی لہریں (Longitudinal Waves)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ذرات کی حرکت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "واسطے کے ذرات لہر کی اشاعت کے عموداً حرکت کرتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "واسطے کے ذرات لہر کی سمت کے متوازی آگے پیچھے حرکت کرتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اجزاء",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ان میں فراز (Crest) اور نشیب (Trough) بنتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ان میں دباؤ (Compression) اور کھچاؤ (Rarefaction) بنتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مثالیں",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "پانی کی لہریں، رسی کی لہریں، روشنی۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "آواز کی لہریں (Sound Waves)، اسپرنگ کی لہریں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "5۔ بنیادی موجی مساوات اور رپل ٹینک (Wave Equation & Ripple Tank)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بنیادی موجی مساوات کا ثبوت: چونکہ رفتار = فاصلہ / وقت (v = S/t)۔ اگر S = λ اور t = T ہو تو v = λ/T = λ × (1/T)۔ چونکہ 1/T = f ہے، پس: v = f × λ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "رپل ٹینک (Ripple Tank): پانی کی سطح پر لہریں پیدا کرنے اور ان کی خصوصیات کا مطالعہ کرنے والا خصوصی آلہ۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  انعکاس (Reflection): رکاوٹ سے ٹکرا کر لہروں کا واپس پہلے واسطے میں لوٹ جانا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  انکسار (Refraction): گہرے پانی سے اتھلے پانی میں داخل ہو کر لہروں کا رفتار اور سمت بدل لینا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  انحراف (Diffraction): رکاوٹ کے تیز کناروں یا تنگ سوراخ کے گرد لہروں کا مڑ جانا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "نوٹ برائے طلباء: ان نوٹس کو بار بار دہرا کر یاد کریں اور پرچے کی بھرپور تیاری کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  }
+                ]
+              },
+              "bannerImage": null,
+              "lastModified": "2026-10-24T05:36:16.280Z"
+            },
+            {
+              "id": "class-x-physics-class-x-physics-unit-1-notes",
+              "title": "Class X Physics Unit 1 Notes",
+              "fileName": "Class X Physics Unit 1 Notes.pdf",
+              "extension": "pdf",
+              "sizeBytes": 1821560,
+              "sizeFormatted": "1778.9 KB",
+              "isDocx": false,
+              "isPdf": true,
+              "resourceType": "notes",
+              "parsedContent": null,
+              "bannerImage": null,
+              "lastModified": "2026-10-24T06:01:26.584Z"
+            },
+            {
+              "id": "class-x-physics-class-x-physics-summative-one-paper",
+              "title": "Class X Physics Summative One Paper",
+              "fileName": "Class X Physics Summative One Paper.pdf",
+              "extension": "pdf",
+              "sizeBytes": 2429315,
+              "sizeFormatted": "2372.4 KB",
+              "isDocx": false,
+              "isPdf": true,
+              "resourceType": "notes",
+              "parsedContent": null,
+              "bannerImage": null,
+              "lastModified": "2026-10-24T06:01:06.691Z"
+            },
+            {
+              "id": "class-x-physics-class-x-physics-summative-one-paper",
+              "title": "Class X Physics Summative One Paper",
+              "fileName": "Class X Physics Summative One Paper.docx",
+              "extension": "docx",
+              "sizeBytes": 39634,
+              "sizeFormatted": "38.7 KB",
+              "isDocx": true,
+              "isPdf": false,
+              "resourceType": "notes",
+              "parsedContent": {
+                "paragraphCount": 77,
+                "content": [
+                  {
+                    "text": "گورنمنٹ گرلز سیکنڈری اسکول نشتر روڈ، کراچی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سمیٹو اسسمنٹ ون (Summative Assessment - I) — تعلیمی سال 2026 - 2027",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مضمون: طبیعیات (Physics) | جماعت: X (دہم) | باب نمبر 1 / یونٹ 10: لہروں کی عمومی خصوصیات اور سادہ ہارمونک موشن (General Wave Properties & SHM)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مضمون: طبیعیات (Physics)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "جماعت: X (دہم)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وقت: 1.5 گھنٹے (90 منٹ)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کل نمبر: 50",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طالب علم کا نام: ____________________",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "رول نمبر: ____________",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکشن: ____________",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تاریخ: اکتوبر 2026",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تفصیلات",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال 1 (سیکشن الف)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال 2 (سیکشن ب)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال 3 (سیکشن ج)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کل نمبر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کل نمبرات",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "15",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "20",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "15",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "50",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "حاصل کردہ نمبر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ہدایات: تمام سوالات کے جوابات صاف اور واضح تحریر کیجیے۔ کٹنگ اور اوور رائٹنگ سے گریز کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکشن 'الف': کثیر الانتخابی سوالات (MCQs) — کل نمبر: 15 (تمام سوالات لازمی ہیں، ہر سوال کا 1 نمبر ہے)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 1: مندرجہ ذیل میں سے ہر ایک کے لیے درست ترین جواب کا انتخاب کیجیے: (15 × 1 = 15 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1۔ سادہ ہارمونک موشن (SHM) میں جسم کا ایکسلریشن ہمیشہ کس کے راست متناسب (Directly Proportional) ہوتا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) رفتار کے        (ب) ہٹاؤ (Displacement) کے        (ج) کمیت کے        (د) وقت کے",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "2۔ سادہ ہارمونک موشن کرتے ہوئے جسم کا ایکسلریشن ہمیشہ کس سمت اشارہ کرتا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) انتہائی مقام کی طرف        (ب) وسطی مقام (Mean Position) کی طرف        (ج) دائیں جانب        (د) بائیں جانب",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "3۔ سادہ پینڈولم کے ٹائم پیریڈ کا درست حسابی فارمولا کون سا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) T = 2π √(l/g)        (ب) T = 2π √(g/l)        (ج) T = 2π √(m/k)        (د) T = 1 / f^2",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "4۔ فریکوئنسی (Frequency) کی بین الاقوامی (SI) اکائی کیا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) سیکنڈ        (ب) ہرٹز (Hz)        (ج) میٹر فی سیکنڈ        (د) نیوٹن",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "5۔ وہ لہریں جن کی اشاعت (Propagation) کے لیے مادی واسطے کی ضرورت ہوتی ہے، کہلاتی ہیں:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) مکینیکل امواج (Mechanical Waves)        (ب) برقی مقناطیسی امواج        (ج) ریڈیو لہریں        (د) ایکس ریز",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "6۔ عرضی لہروں (Transverse Waves) میں لہر کا بلند ترین ابھرا ہوا حصہ کہلاتا ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) نشیب (Trough)        (ب) فراز (Crest)        (ج) دباؤ (Compression)        (د) کھچاؤ (Rarefaction)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "7۔ طولی لہروں (Longitudinal Waves) کی سب سے بہترین اور عام مثال ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) روشنی کی لہریں        (ب) آواز کی لہریں (Sound Waves)        (ج) ریڈیو لہریں        (د) ایکس رے امواج",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "8۔ بنیادی موجی مساوات (Wave Equation) رفتار، فریکوئنسی اور ویو لینتھ کے درمیان ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) v = f / λ        (ب) v = f × λ        (ج) v = λ / f        (د) v = f + λ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "9۔ اگر کسی سادہ پینڈولم کی لمبائی چار گنا کر دی جائے تو اس کا ٹائم پیریڈ ہو جائے گا:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) دو گنا (Double)        (ب) چار گنا        (ج) آدھا        (د) کوئی فرق نہیں پڑے گا",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10۔ پانی کی سطح پر لہریں پیدا کرنے اور ان کی خصوصیات کا مطالعہ کرنے والا آلہ کہلاتا ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) اسٹروبوسکوپ        (ب) رپل ٹینک (Ripple Tank)        (ج) بیرومیٹر        (د) میکرو میٹر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "11۔ جب کوئی لہر ایک واسطے سے دوسرے واسطے میں داخل ہو کر اپنی سمت بدل لیتی ہے تو یہ عمل کہلاتا ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) انعکاس (Reflection)        (ب) انکسار (Refraction)        (ج) انحراف (Diffraction)        (د) تداخل (Interference)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "12۔ کسی رکاوٹ کے تیز کونوں یا تنگ سوراخ کے گرد لہروں کا مڑ جانا کہلاتا ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) پراگندگی / انحراف (Diffraction)        (ب) انعکاس        (ج) انکسار        (د) انتشار",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "13۔ ایک سیکنڈ میں پیدا ہونے والی لہروں یا چکروں کی تعداد کہلاتی ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) ایمپلی ٹیوڈ        (ب) فریکوئنسی (Frequency)        (ج) ٹائم پیریڈ        (د) طول موج",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "14۔ وسطی پوزیشن سے جسم کا کسی بھی ایک جانب زیادہ سے زیادہ فاصلہ یا ہٹاؤ کہلاتا ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) ایمپلی ٹیوڈ (Amplitude)        (ب) ویو لینتھ        (ج) سپیڈ        (د) وقت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "15۔ اگر ایک لہر کی فریکوئنسی 20 Hz اور اس کی طول موج 2 میٹر ہو تو اس کی رفتار ہوگی:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) 10 m/s        (ب) 40 m/s        (ج) 22 m/s        (د) 18 m/s",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکشن 'ب': مختصر جواب کے سوالات (Short Answer Questions) — کل نمبر: 20",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 2: درج ذیل میں سے کوئی سے پانچ (5) سوالات کے مختصر و جامع جوابات تحریر کیجیے: (5 × 4 = 20 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(1) سادہ ہارمونک موشن (SHM) کی تعریف کیجیے اور اس کی دو بنیادی شرائط تحریر کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(2) مکینیکل امواج (Mechanical Waves) اور برقی مقناطیسی امواج (Electromagnetic Waves) میں دو بنیادی فرق لکھیے اور دونوں کی ایک ایک مثال دیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(3) عرضی لہروں (Transverse Waves) اور طولی لہروں (Longitudinal Waves) کی تعریف کیجیے اور بتائیے کہ فراز اور نشیب کس لہر میں بنتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(4) ٹائم پیریڈ (Time Period) اور فریکوئنسی (Frequency) کی تعریف کیجیے اور ان دونوں کے مابین حسابی تعلق کا فارمولا لکھیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(5) ہک کا قانون (Hooke's Law) بیان کیجیے اور اس کی حسابی مساوات (F = -kx) تحریر کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(6) رپل ٹینک (Ripple Tank) کیا ہے؟ اس کی مدد سے لہروں کے انعکاس (Reflection) کا مظاہرہ کیسے کیا جاتا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(7) لہروں کے انکسار (Refraction) اور انحراف (Diffraction) کے درمیان فرق واضح کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(8) سپرنگ کونسٹنٹ (Spring Constant, k) کی تعریف کیجیے اور اس کی بین الاقوامی (SI) اکائی لکھیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکشن 'ج': بیانیہ / تفصیلی جوابات اور حسابی سوالات (Detailed Answers & Numericals) — کل نمبر: 15",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "درج ذیل میں سے کوئی سے دو (2) سوالات کے تفصیلی جوابات تحریر کیجیے: (2 × 7.5 = 15 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 3:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) ثابت کیجیے کہ کمانی (Spring) کے ساتھ منسلک کمیت کی حرکت سادہ ہارمونک موشن (SHM) ہوتی ہے۔ مناسب ڈایاگرام کی مدد سے وضاحت کیجیے۔ (4 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(ب) حسابی سوال (Numerical Problem): ایک سادہ پینڈولم کی لمبائی 1 میٹر ہے۔ اس کا زمین پر ٹائم پیریڈ معلوم کیجیے جبکہ زمین پر g = 10 m/s^2 اور π = 3.14 ہے۔ (3.5 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 4:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) بنیادی موجی مساوات v = f × λ اخذ (Derive) کیجیے اور اس میں استعمال ہونے والی تمام علامتوں کی وضاحت کیجیے۔ (4 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(ب) حسابی سوال (Numerical Problem): ایک ریڈیو اسٹیشن سے نشر ہونے والی لہروں کی فریکوئنسی 100 MHz ہے اور ان کی رفتار 3 × 10^8 m/s ہے۔ ان لہروں کی طول موج (Wavelength, λ) معلوم کیجیے۔ (3.5 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 5:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) سادہ پینڈولم کی حرکت کی وضاحت کیجیے۔ کیا یہ سادہ ہارمونک موشن ہے؟ اس کے ٹائم پیریڈ پر اثر انداز ہونے والے عوامل بیان کیجیے۔ (4 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(ب) حسابی سوال (Numerical Problem): ایک لہر کی فریکوئنسی 25 Hz ہے اور اس کا طول موج (Wavelength) 0.4 میٹر ہے۔ اس لہر کی رفتار (v) معلوم کیجیے اور بتائیے کہ یہ 5 سیکنڈ میں کتنا فاصلہ طے کرے گی۔ (3.5 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "پرچہ اختتام کو پہنچا۔ اپنے پرچے کا اچھی طرح جائزہ لیجیے اور نام و رول نمبر کی تصدیق کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  }
+                ]
+              },
+              "bannerImage": null,
+              "lastModified": "2026-10-24T05:36:15.679Z"
+            }
+          ]
         }
       ]
     },
@@ -63634,8 +64817,8 @@
       "id": "class-ix",
       "name": "Class IX",
       "standardName": "Class 9 (Matric Part 1)",
-      "subjectCount": 1,
-      "totalFiles": 18,
+      "subjectCount": 2,
+      "totalFiles": 25,
       "subjects": [
         {
           "id": "class-ix-english",
@@ -63662,7 +64845,7 @@
               "title": "Class IX English Unit 1 Notes",
               "fileName": "Class IX English Unit 1 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42387,
+              "sizeBytes": 42390,
               "sizeFormatted": "41.4 KB",
               "isDocx": true,
               "isPdf": false,
@@ -64363,14 +65546,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-ix/english/eng_ix_ch1.jpg",
-              "lastModified": "2026-09-24T16:30:50.844Z"
+              "lastModified": "2026-09-25T12:44:44.115Z"
             },
             {
               "id": "class-ix-english-class-ix-english-unit-2-notes",
               "title": "Class IX English Unit 2 Notes",
               "fileName": "Class IX English Unit 2 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42049,
+              "sizeBytes": 42079,
               "sizeFormatted": "41.1 KB",
               "isDocx": true,
               "isPdf": false,
@@ -65031,23 +66214,23 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-ix/english/eng_ix_ch2.jpg",
-              "lastModified": "2026-09-24T16:30:51.069Z"
+              "lastModified": "2026-09-25T12:44:44.564Z"
             },
             {
               "id": "class-ix-english-class-ix-english-unit-3-notes",
               "title": "Class IX English Unit 3 Notes",
               "fileName": "Class IX English Unit 3 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 39976,
-              "sizeFormatted": "39.0 KB",
+              "sizeBytes": 42192,
+              "sizeFormatted": "41.2 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
               "parsedContent": {
-                "paragraphCount": 237,
+                "paragraphCount": 134,
                 "content": [
                   {
-                    "text": "CLASS IX ENGLISH — UNIT 3EDUCATION AND CAREERS(3.1 Chasing Dreams (Prose))",
+                    "text": "THE MASTER SAHIB EDUCATIONAL SERIESCLASS IX ENGLISH — UNIT 3EDUCATION AND CAREERS(3.1 Chasing Dreams (Prose))",
                     "isHeading": false,
                     "isBullet": false
                   },
@@ -65102,7 +66285,7 @@
                     "isBullet": false
                   },
                   {
-                    "text": "اردو معنی",
+                    "text": "Urdu Meaning",
                     "isHeading": false,
                     "isBullet": false
                   },
@@ -65267,8 +66450,53 @@
                     "isBullet": false
                   },
                   {
+                    "text": "Word",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "Meaning",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "Word",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "Meaning",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "Word",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "Meaning",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "Word",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "Meaning",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "1. Unsheltered",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بے سایہ / کھلے آسمان تلے",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65277,8 +66505,18 @@
                     "isBullet": false
                   },
                   {
+                    "text": "جھلسا دینے والی گرمی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "3. Steadfast",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ثابت قدم",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65287,8 +66525,18 @@
                     "isBullet": false
                   },
                   {
+                    "text": "تازگی بخش",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "5. Foliage",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "درخت کے گھنے پتے",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65297,8 +66545,18 @@
                     "isBullet": false
                   },
                   {
+                    "text": "چھتری نما سایہ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "7. Desert",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "صحرا / ریگستان",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65307,8 +66565,18 @@
                     "isBullet": false
                   },
                   {
+                    "text": "خشک سالی / قحط",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "9. Weary",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تھکا ہارا مسافر",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65317,8 +66585,18 @@
                     "isBullet": false
                   },
                   {
+                    "text": "چمکدار / تابناک",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "11. Suffer",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "برداشت کرنا",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65327,8 +66605,18 @@
                     "isBullet": false
                   },
                   {
+                    "text": "قربانی دینا",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "13. Generous",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سخی / فیاض",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65337,8 +66625,18 @@
                     "isBullet": false
                   },
                   {
+                    "text": "راحت بخش",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "15. Defy",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مقابلہ کرنا / ڈٹے رہنا",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65347,8 +66645,18 @@
                     "isBullet": false
                   },
                   {
+                    "text": "پیاس بجھانا",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "17. Grateful",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "شکر گزار",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65357,13 +66665,28 @@
                     "isBullet": false
                   },
                   {
+                    "text": "حفاظت و پناہ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "19. Slumber",
                     "isHeading": true,
                     "isBullet": false
                   },
                   {
+                    "text": "پرامن نیند",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
                     "text": "20. Splendor",
                     "isHeading": true,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "شان و شوکت",
+                    "isHeading": false,
                     "isBullet": false
                   },
                   {
@@ -65575,679 +66898,24 @@
                     "text": "Aslam",
                     "isHeading": false,
                     "isBullet": false
-                  },
-                  {
-                    "text": "CLASS IX ENGLISH — UNIT 4PAKISTAN AND NATIONAL PRIDE(4.1 The Great Visionaries | 4.4 A Child's Invocation | 4.6 The Mountain and Squirrel)",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "―――――――――――――――――――――――――――――――――――――――――――――――――――――――",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "■  1. LESSON SUMMARIES (EASY POINTS)",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "► 'The Great Visionaries' (Prose)",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Quaid-e-Azam Muhammad Ali Jinnah led the Pakistan Movement with integrity and wisdom.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Allama Muhammad Iqbal was the national poet who gave the vision of an independent Muslim homeland.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Mohtarma Fatima Jinnah (Madar-e-Millat) united Muslim women to support the independence struggle.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "► 'A Child's Invocation' (Poem by Allama Iqbal)",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The child prays to Allah that his life should be bright like a candle.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "He wants to remove the darkness of ignorance and spread knowledge everywhere.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "He longs to help the poor, love the elderly, and walk on the straight moral path.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "► 'The Mountain and the Squirrel' (Poem by Ralph Waldo Emerson)",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "A large mountain and a little squirrel had a quarrel.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The mountain insulted the squirrel by calling it 'Little Prig'.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The squirrel replied that God has given every creature a unique purpose.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The squirrel cannot carry a forest on its back, but the mountain cannot crack a nut.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "■  2. POETRY & REFERENCE TO CONTEXT",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "• Poem 1: 'A Child's Invocation' by Allama Iqbal",
-                    "isHeading": false,
-                    "isBullet": true
-                  },
-                  {
-                    "text": "Stanza: 'My longing comes to my lips as supplication of mine / O God! May like the candle be the life of mine!'",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Reference: Written by Allama Muhammad Iqbal (English translation of 'Lab Pe Aati Hai Dua').",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Context & Meaning: The child prays for a life of service, wishing to banish darkness and illuminate society with knowledge.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "• Poem 2: 'The Mountain and the Squirrel' by Ralph Waldo Emerson",
-                    "isHeading": false,
-                    "isBullet": true
-                  },
-                  {
-                    "text": "Stanza: 'Talents differ; all is well and wisely put; / If I cannot carry forests on my back, / Neither can you crack a nut.'",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Reference: Written by Ralph Waldo Emerson.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Context & Meaning: The squirrel teaches that all created things have their own special abilities; nobody is superior or useless in God's world.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "■  3. WORDS, URDU MEANINGS & USE IN SENTENCES",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Word",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "اردو معنی",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Use in Sentence",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Archaeology",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "علمِ آثارِ قدیمہ",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The Department of Archaeology excavated ancient stone tools in Sindh.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Excavation",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "کھدائی",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Modern excavation revealed the remarkably planned streets of Mohen-jo-Daro.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Civilization",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "تہذیب",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The Indus Valley civilization was one of the earliest urban societies in history.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Drainage",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "نکاسیِ آب کا نظام",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Mohen-jo-Daro possessed an underground drainage system made of baked bricks.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Antiquity",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "قدامت",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The museum displays valuable coins and statues of immense antiquity.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Inhabitants",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "باشندے / رہنے والے",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The ancient inhabitants were skilled weavers, potters, and prosperous farmers.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Terracotta",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "پکی ہوئی مٹی",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Archaeologists discovered beautiful terracotta toys in the ruined rooms.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Citadel",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "قلعہ نما بالائی حصہ",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The citadel hill was built upon a high platform for safety from floods.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Seals",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "مہریں",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Clay seals bearing engraved animal figures were used by ancient merchants.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Discoverer",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "دریافت کرنے والا",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Sir John Marshall was the discoverer who directed historic digs at Mohen-jo-Daro.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "► Dictation Words (20 Difficult Spellings for Practice)",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "1. Archaeology",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "2. Excavation",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "3. Civilization",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "4. Terracotta",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "5. Drainage",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "6. Inhabitants",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "7. Antiquity",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "8. Necropolis",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "9. Well-paved",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "10. Brick-kiln",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "11. Citadel",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "12. Great Bath",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "13. Engraved",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "14. Seals",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "15. Ornaments",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "16. Centuries",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "17. Ancient",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "18. Skeletons",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "19. Mound",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "20. Discoverer",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "■  4. PREFIXES (NEGATIVE PREFIXES)",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Root Word",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Prefix Added",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Opposite Word",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Agree",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "dis-",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Disagree",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Honest",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "dis-",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Dishonest",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Happy",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "un-",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Unhappy",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Known",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "un-",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Unknown",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Direct",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "in-",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Indirect",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Lead",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "mis-",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Mislead",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "■  5. QUESTIONS & ANSWERS",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Q1:  Why is Quaid-e-Azam called a great visionary?",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Ans:  Because he united the Muslims of the subcontinent and created Pakistan through constitutional struggle and unwavering honesty.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Q2:  What was Allama Iqbal's main contribution to Pakistan?",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Ans:  He awakened Muslims through his inspiring poetry and presented the idea of a separate homeland in Allahabad in 1930.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Q3:  What does the child pray for in 'A Child's Invocation'?",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Ans:  The child prays to be like a shining candle, dispelling the darkness of ignorance and helping the needy and poor.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Q4:  What did the mountain say to insult the squirrel?",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Ans:  The mountain called the squirrel 'Little Prig' because the squirrel was very small in physical size.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Q5:  What was the squirrel's wise reply to the mountain?",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Ans:  The squirrel replied that while it cannot carry forests on its back, the mountain cannot crack a small nut.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "■  6. GRAMMAR & LANGUAGE PRACTICE",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "• Topic: Active and Passive Voice",
-                    "isHeading": false,
-                    "isBullet": true
-                  },
-                  {
-                    "text": "1. Quaid-e-Azam founded Pakistan. ---------------> Pakistan was founded by Quaid-e-Azam.",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "2. Allama Iqbal wrote inspiring poems. -----------> Inspiring poems were written by Allama Iqbal.",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "3. The squirrel cracked the nut. --------------------> The nut was cracked by the squirrel.",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "■  7. WRITING SKILLS: OFFICIAL APPLICATION",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "► Application to Principal for Three Days Sick Leave",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "• Application Format & Sample",
-                    "isHeading": false,
-                    "isBullet": true
-                  },
-                  {
-                    "text": "To,",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The Headmaster / Principal,",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "The Master Sahib Model High School, Karachi.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Subject: Application for Three Days Sick Leave",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Respected Sir,",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "With due respect, I state that I am suffering from high fever and severe throat infection. The doctor has examined me and advised complete bed rest for three days from today.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "I kindly request you to grant me sick leave from 22nd to 24th September 2026.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "I shall be very thankful to you.",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Yours obediently,",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Student Name (Class IX, Roll No. 15)",
-                    "isHeading": false,
-                    "isBullet": false
                   }
                 ]
               },
               "bannerImage": "/curriculum-banners/class-ix/english/eng_ix_ch3.jpg",
-              "lastModified": "2026-09-24T16:30:51.265Z"
+              "lastModified": "2026-09-25T12:44:45.080Z"
             },
             {
               "id": "class-ix-english-class-ix-english-unit-4-notes",
               "title": "Class IX English Unit 4 Notes",
               "fileName": "Class IX English Unit 4 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42956,
-              "sizeFormatted": "41.9 KB",
+              "sizeBytes": 37991,
+              "sizeFormatted": "37.1 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
               "parsedContent": {
-                "paragraphCount": 160,
+                "paragraphCount": 111,
                 "content": [
                   {
                     "text": "THE MASTER SAHIB EDUCATIONAL SERIESCLASS IX ENGLISH — UNIT 4PAKISTAN AND NATIONAL PRIDE(4.1 The Great Visionaries | 4.4 A Child's Invocation | 4.6 The Mountain and Squirrel)",
@@ -66545,251 +67213,6 @@
                     "isBullet": false
                   },
                   {
-                    "text": "► Dictation Words (20 Difficult Spellings for Practice)",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Word",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Meaning",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Word",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Meaning",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Word",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Meaning",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Word",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "Meaning",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "1. Archaeology",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "علمِ آثارِ قدیمہ",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "2. Excavation",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "کھدائی",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "3. Civilization",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "قدیم تہذیب",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "4. Terracotta",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "پکی ہوئی مٹی",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "5. Drainage",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "نکاسیِ آب کا نظام",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "6. Inhabitants",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "باشندے / رہنے والے",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "7. Antiquity",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "قدامت",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "8. Necropolis",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "شہرِ خموشاں",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "9. Well-paved",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "پختہ اینٹوں سے بنی سڑکیں",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "10. Brick-kiln",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "اینٹوں کا بھٹہ",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "11. Citadel",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "قلعہ نما بالائی حصہ",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "12. Great Bath",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "عظیم حمام",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "13. Engraved",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "کندہ کاری شدہ",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "14. Seals",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "مہریں",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "15. Ornaments",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "زیورات",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "16. Centuries",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "صدیاں",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "17. Ancient",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "قدیم ترین",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "18. Skeletons",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "ڈھانچے",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "19. Mound",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "ٹیلہ",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "20. Discoverer",
-                    "isHeading": true,
-                    "isBullet": false
-                  },
-                  {
-                    "text": "دریافت کرنے والا",
-                    "isHeading": false,
-                    "isBullet": false
-                  },
-                  {
                     "text": "■  4. PREFIXES (NEGATIVE PREFIXES)",
                     "isHeading": true,
                     "isBullet": false
@@ -67052,14 +67475,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-ix/english/eng_ix_ch4.jpg",
-              "lastModified": "2026-09-24T16:30:51.442Z"
+              "lastModified": "2026-10-01T06:58:45.436Z"
             },
             {
               "id": "class-ix-english-class-ix-english-unit-5-notes",
               "title": "Class IX English Unit 5 Notes",
               "fileName": "Class IX English Unit 5 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42207,
+              "sizeBytes": 42233,
               "sizeFormatted": "41.2 KB",
               "isDocx": true,
               "isPdf": false,
@@ -67710,15 +68133,15 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-ix/english/eng_ix_ch5.jpg",
-              "lastModified": "2026-09-24T16:30:51.634Z"
+              "lastModified": "2026-09-25T12:44:46.305Z"
             },
             {
               "id": "class-ix-english-class-ix-english-unit-6-notes",
               "title": "Class IX English Unit 6 Notes",
               "fileName": "Class IX English Unit 6 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42222,
-              "sizeFormatted": "41.2 KB",
+              "sizeBytes": 42249,
+              "sizeFormatted": "41.3 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -68358,14 +68781,14 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-ix/english/eng_ix_ch6.jpg",
-              "lastModified": "2026-09-24T16:30:51.932Z"
+              "lastModified": "2026-09-25T12:44:46.727Z"
             },
             {
               "id": "class-ix-english-class-ix-english-unit-7-notes",
               "title": "Class IX English Unit 7 Notes",
               "fileName": "Class IX English Unit 7 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42305,
+              "sizeBytes": 42335,
               "sizeFormatted": "41.3 KB",
               "isDocx": true,
               "isPdf": false,
@@ -69021,15 +69444,15 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-ix/english/eng_ix_ch7.jpg",
-              "lastModified": "2026-09-24T16:30:52.142Z"
+              "lastModified": "2026-09-25T12:44:47.190Z"
             },
             {
               "id": "class-ix-english-class-ix-english-unit-8-notes",
               "title": "Class IX English Unit 8 Notes",
               "fileName": "Class IX English Unit 8 Notes.docx",
               "extension": "docx",
-              "sizeBytes": 42945,
-              "sizeFormatted": "41.9 KB",
+              "sizeBytes": 42979,
+              "sizeFormatted": "42.0 KB",
               "isDocx": true,
               "isPdf": false,
               "resourceType": "notes",
@@ -69769,7 +70192,7 @@
                 ]
               },
               "bannerImage": "/curriculum-banners/class-ix/english/eng_ix_ch8.jpg",
-              "lastModified": "2026-09-24T16:30:52.344Z"
+              "lastModified": "2026-09-25T12:44:47.700Z"
             },
             {
               "id": "class-ix-english-bsek-karachi-class-ix-english-guess-paper-2026",
@@ -76037,6 +76460,1819 @@
               },
               "bannerImage": "/curriculum-banners/class-ix/english/eng_ix_ch8.jpg",
               "lastModified": "2026-09-24T16:30:54.243Z"
+            }
+          ]
+        },
+        {
+          "id": "class-ix-physics",
+          "name": "Physics",
+          "key": "physics",
+          "chapterCount": 7,
+          "chapters": [
+            {
+              "id": "class-ix-physics-class-ix-physics-chapter-1-notes-urdu",
+              "title": "Class IX Physics Chapter 1 Notes Urdu",
+              "fileName": "Class_IX_Physics_Chapter_1_Notes_Urdu.docx",
+              "extension": "docx",
+              "sizeBytes": 40679,
+              "sizeFormatted": "39.7 KB",
+              "isDocx": true,
+              "isPdf": false,
+              "resourceType": "notes",
+              "parsedContent": {
+                "paragraphCount": 131,
+                "content": [
+                  {
+                    "text": "گورنمنٹ گرلز سیکنڈری اسکول نشتر روڈ، کراچی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "امتحانی تیاری کے تفصیلی نوٹس (Examination Preparatory Notes)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مضمون: طبیعیات (Physics) | جماعت: IX (نہم) | باب نمبر 1: طبیعی مقداریں اور پیمائش (Physical Quantities and Measurement)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "جماعت: IX (نہم)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "نصاب: سندھ ٹیکسٹ بک بورڈ (STBB)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بورڈ: کراچی بورڈ (BSEK)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1۔ طبیعیات کا تعارف اور اہم شاخیں (Introduction to Physics)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طبیعیات (Physics) کی تعریف: سائنس کی وہ بنیادی شاخ جس میں مادے (Matter)، توانائی (Energy) اور ان کے باہمی تعلق و تعامل کا سائنسی مطالعہ کیا جاتا ہے، طبیعیات کہلاتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طبیعیات کی اہم شاخیں درج ذیل ہیں:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  مکینکس (Mechanics): اس شاخ میں اجسام کی حرکت، ان کی وجوہات اور ان پر عمل کرنے والی قوتوں کا مطالعہ کیا جاتا ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  تھرموڈائنامکس (Heat & Thermodynamics): حرارت کی نوعیت، اس کے بہاؤ، درجہ حرارت اور کام میں تبدیلی کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  آواز (Sound): صوتی امواج کے پیدا ہونے، ان کے خصائص اور ان کے مختلف واسطوں میں سفر کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  بصریات (Optics): روشنی کے رویے، انعکاس، انکسار اور بصری آلات (خوردبین، دوربین) کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  برقیات و مقناطیسیت (Electricity & Magnetism): ساکن و متحرک برقی چارجز، برقی رو اور مقناطیسی میدان کا باہمی مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  ایٹمی و نیوکلیائی طبیعیات (Atomic & Nuclear Physics): ایٹم کی ساخت اور اس کے نیوکلیئس کے تعاملات کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  جیو فزکس (Geophysics): طبیعیات کے بنیادی اصولوں کے تحت زمین کے اندرونی حصوں کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "2۔ مسلم سائنسدان اور ان کی خدمات (Muslim Scientists)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  ابن الہیثم (965ء - 1039ء): آپ کو جدید بصریات (Optics) کا بانی مانا جاتا ہے۔ آپ نے مشہور زمانہ کتاب 'کتاب المناظر' تحریر کی اور پن ہول کیمرہ ایجاد کیا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  ابو ریحان البیرونی (973ء - 1048ء): آپ نے زمین کے نصف قطر (Radius) اور محیط کی انتہائی درست حسابی پیمائش کی اور دھاتوں کی کثافت پر تحقیق کی۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  یعقوب ابن اسحاق الکندی (801ء - 873ء): آپ نے روشنی کے خط مستقیم میں سفر کرنے اور موسیقی کی لہروں کے ارتعاشات پر علمی مقالے لکھے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  ڈاکٹر عبدالسلام (1926ء - 1996ء): پاکستان کے پہلے نوبل انعام یافتہ سائنسدان جنہیں 1979ء میں بنیادی فورسز کے الیکٹرو ویک نظریے پر نوبل پرائز ملا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "3۔ طبیعی مقداریں: بنیادی اور ماخوذ مقداریں (Physical Quantities)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طبیعی مقداریں (Physical Quantities): تمام قابل پیمائش مقداریں جن کی مدد سے سائنس کے قوانین بیان کیے جا سکیں، طبیعی مقداریں کہلاتی ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "خصوصیت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بنیادی مقداریں (Base Quantities)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ماخوذ مقداریں (Derived Quantities)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تعریف",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وہ آزاد مقداریں جن کی بنیاد پر دوسری تمام طبیعی مقداریں بیان کی جاتی ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وہ مقداریں جو بنیادی مقداروں کی ضرب یا تقسیم سے اخذ کی جاتی ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تعداد",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بین الاقوامی نظام (SI) میں کل 7 بنیادی مقداریں ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ان کی تعداد لامحدود ہے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مثالیں",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "لمبائی، کمیت، وقت، برقی کرنٹ، درجہ حرارت۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "رفتار، اسراع، قوت، کام، دباؤ، توانائی، حجم۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بین الاقوامی نظام کی 7 بنیادی اکائیاں (SI Base Units):",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "نمبر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بنیادی مقدار",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اکائی کا نام",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "علامت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "لمبائی (Length)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میٹر (Meter)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "m",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "2",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کمیت (Mass)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کلوگرام (Kilogram)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "kg",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "3",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وقت (Time)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکنڈ (Second)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "s",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "4",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "برقی کرنٹ (Electric Current)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ایمپیئر (Ampere)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "A",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "5",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "درجہ حرارت (Temperature)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کیلون (Kelvin)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "K",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "6",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "روشنی کی شدت (Luminous Intensity)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کینڈیلا (Candela)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "cd",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "7",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مادہ کی مقدار (Amount of Substance)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مول (Mole)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "mol",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "4۔ سابقے اور سائنسی طریقہ کار (Prefixes & Scientific Notation)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سابقے (Prefixes): اکائیوں کے چھوٹے یا بڑے حصوں کو ظاہر کرنے کے لیے اکائی کے شروع میں لگائے جانے والے الفاظ یا علامات سابقے کہلاتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سابقہ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "علامت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ضربی عامل",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سابقہ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "علامت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ضربی عامل",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "گیگا (Giga)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "G",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^9",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سینٹی (Centi)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "c",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^-2",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میگا (Mega)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "M",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^6",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ملی (Milli)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "m",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^-3",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کلو (Kilo)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "k",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^3",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مائیکرو (Micro)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "µ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^-6",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ہیکٹو (Hecto)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "h",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^2",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "نینو (Nano)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "n",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^-9",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سائنسی طریقہ کار (Scientific Notation): کسی بھی عدد کو 1 سے 10 کے درمیان ایک عدد اور 10 کی پاور کی ضرب میں لکھنا: N × 10^n",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  مثال 1: 150,000,000 کلومیٹر = 1.5 × 10^8 کلومیٹر",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  مثال 2: 0.00005 میٹر = 5 × 10^-5 میٹر",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "5۔ پیمائشی آلات اور لیسٹ کاؤنٹ (Measuring Instruments)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "لیسٹ کاؤنٹ (Least Count): کسی پیمائشی آلے کی وہ کم سے کم پیمائش جو وہ درست طور پر ناپ سکتا ہے، اس آلے کا لیسٹ کاؤنٹ کہلاتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "آلہ کا نام",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ملی میٹر میں لیسٹ کاؤنٹ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سینٹی میٹر میں لیسٹ کاؤنٹ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بنیادی استعمال",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میٹر راڈ (Meter Rule)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1 mm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.1 cm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "عام لمبائی ناپنے کے لیے",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ورنیئر کیلیپرز (Vernier Callipers)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.1 mm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.01 cm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اندرونی و بیرونی قطر اور گہرائی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سکرو گیج (Screw Gauge)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.01 mm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.001 cm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "باریک تار کی موٹائی اور گولائی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "زیرو ایرر اور تصحیح کا اصول:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  اگر ورنیئر کا صفر مین اسکیل کے صفر کے دائیں طرف ہو تو زیرو ایرر مثبت ہوتا ہے اور اسے اصل ریڈنگ سے تفریق کیا جاتا ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  اگر ورنیئر کا صفر مین اسکیل کے صفر کے بائیں طرف ہو تو زیرو ایرر منفی ہوتا ہے اور اسے اصل ریڈنگ میں جمع کیا جاتا ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "6۔ اہم ہندسے (Significant Figures)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اہم ہندسے: کسی بھی پیمائش میں تمام درست معلوم ہندسے اور پہلا مشکوک (اندازے کا) ہندسہ اہم ہندسے کہلاتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  اصول 1: تمام غیر صفر ہندسے اہم ہوتے ہیں (جیسے 483 میں 3 اہم ہندسے ہیں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  اصول 2: دو غیر صفر ہندسوں کے درمیانی صفر اہم ہوتے ہیں (جیسے 2005 میں 4 اہم ہندسے ہیں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  اصول 3: اعشاریہ والے عدد میں بائیں جانب کے شروع والے صفر غیر اہم ہوتے ہیں (جیسے 0.0035 میں صرف 2 اہم ہندسے ہیں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  اصول 4: اعشاریہ کے بعد دائیں جانب آنے والے آخری صفر اہم ہوتے ہیں (جیسے 4.200 میں 4 اہم ہندسے ہیں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "نوٹ برائے طلباء: ان نوٹس کو بار بار دہرا کر یاد کریں اور پرچے کی بھرپور تیاری کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  }
+                ]
+              },
+              "bannerImage": null,
+              "lastModified": "2026-10-24T05:36:16.056Z"
+            },
+            {
+              "id": "class-ix-physics-class-ix-physics-urdu-summative-one-paper",
+              "title": "Class IX Physics Urdu Summative One Paper",
+              "fileName": "Class_IX_Physics_Urdu_Summative_One_Paper.pdf",
+              "extension": "pdf",
+              "sizeBytes": 2398170,
+              "sizeFormatted": "2342.0 KB",
+              "isDocx": false,
+              "isPdf": true,
+              "resourceType": "notes",
+              "parsedContent": null,
+              "bannerImage": null,
+              "lastModified": "2026-10-24T06:00:56.533Z"
+            },
+            {
+              "id": "class-ix-physics-class-ix-physics-unit-1-notes-urdu",
+              "title": "Class IX Physics Unit 1 Notes Urdu",
+              "fileName": "Class_IX_Physics_Unit_1_Notes_Urdu.pdf",
+              "extension": "pdf",
+              "sizeBytes": 1866288,
+              "sizeFormatted": "1822.5 KB",
+              "isDocx": false,
+              "isPdf": true,
+              "resourceType": "notes",
+              "parsedContent": null,
+              "bannerImage": null,
+              "lastModified": "2026-10-24T06:01:17.200Z"
+            },
+            {
+              "id": "class-ix-physics-class-ix-physics-unit-1-notes",
+              "title": "Class IX Physics Unit 1 Notes",
+              "fileName": "Class IX Physics Unit 1 Notes.docx",
+              "extension": "docx",
+              "sizeBytes": 40679,
+              "sizeFormatted": "39.7 KB",
+              "isDocx": true,
+              "isPdf": false,
+              "resourceType": "notes",
+              "parsedContent": {
+                "paragraphCount": 131,
+                "content": [
+                  {
+                    "text": "گورنمنٹ گرلز سیکنڈری اسکول نشتر روڈ، کراچی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "امتحانی تیاری کے تفصیلی نوٹس (Examination Preparatory Notes)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مضمون: طبیعیات (Physics) | جماعت: IX (نہم) | باب نمبر 1: طبیعی مقداریں اور پیمائش (Physical Quantities and Measurement)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "جماعت: IX (نہم)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "نصاب: سندھ ٹیکسٹ بک بورڈ (STBB)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بورڈ: کراچی بورڈ (BSEK)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1۔ طبیعیات کا تعارف اور اہم شاخیں (Introduction to Physics)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طبیعیات (Physics) کی تعریف: سائنس کی وہ بنیادی شاخ جس میں مادے (Matter)، توانائی (Energy) اور ان کے باہمی تعلق و تعامل کا سائنسی مطالعہ کیا جاتا ہے، طبیعیات کہلاتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طبیعیات کی اہم شاخیں درج ذیل ہیں:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  مکینکس (Mechanics): اس شاخ میں اجسام کی حرکت، ان کی وجوہات اور ان پر عمل کرنے والی قوتوں کا مطالعہ کیا جاتا ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  تھرموڈائنامکس (Heat & Thermodynamics): حرارت کی نوعیت، اس کے بہاؤ، درجہ حرارت اور کام میں تبدیلی کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  آواز (Sound): صوتی امواج کے پیدا ہونے، ان کے خصائص اور ان کے مختلف واسطوں میں سفر کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  بصریات (Optics): روشنی کے رویے، انعکاس، انکسار اور بصری آلات (خوردبین، دوربین) کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  برقیات و مقناطیسیت (Electricity & Magnetism): ساکن و متحرک برقی چارجز، برقی رو اور مقناطیسی میدان کا باہمی مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  ایٹمی و نیوکلیائی طبیعیات (Atomic & Nuclear Physics): ایٹم کی ساخت اور اس کے نیوکلیئس کے تعاملات کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  جیو فزکس (Geophysics): طبیعیات کے بنیادی اصولوں کے تحت زمین کے اندرونی حصوں کا مطالعہ۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "2۔ مسلم سائنسدان اور ان کی خدمات (Muslim Scientists)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  ابن الہیثم (965ء - 1039ء): آپ کو جدید بصریات (Optics) کا بانی مانا جاتا ہے۔ آپ نے مشہور زمانہ کتاب 'کتاب المناظر' تحریر کی اور پن ہول کیمرہ ایجاد کیا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  ابو ریحان البیرونی (973ء - 1048ء): آپ نے زمین کے نصف قطر (Radius) اور محیط کی انتہائی درست حسابی پیمائش کی اور دھاتوں کی کثافت پر تحقیق کی۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  یعقوب ابن اسحاق الکندی (801ء - 873ء): آپ نے روشنی کے خط مستقیم میں سفر کرنے اور موسیقی کی لہروں کے ارتعاشات پر علمی مقالے لکھے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  ڈاکٹر عبدالسلام (1926ء - 1996ء): پاکستان کے پہلے نوبل انعام یافتہ سائنسدان جنہیں 1979ء میں بنیادی فورسز کے الیکٹرو ویک نظریے پر نوبل پرائز ملا۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "3۔ طبیعی مقداریں: بنیادی اور ماخوذ مقداریں (Physical Quantities)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طبیعی مقداریں (Physical Quantities): تمام قابل پیمائش مقداریں جن کی مدد سے سائنس کے قوانین بیان کیے جا سکیں، طبیعی مقداریں کہلاتی ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "خصوصیت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بنیادی مقداریں (Base Quantities)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ماخوذ مقداریں (Derived Quantities)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تعریف",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وہ آزاد مقداریں جن کی بنیاد پر دوسری تمام طبیعی مقداریں بیان کی جاتی ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وہ مقداریں جو بنیادی مقداروں کی ضرب یا تقسیم سے اخذ کی جاتی ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تعداد",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بین الاقوامی نظام (SI) میں کل 7 بنیادی مقداریں ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ان کی تعداد لامحدود ہے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مثالیں",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "لمبائی، کمیت، وقت، برقی کرنٹ، درجہ حرارت۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "رفتار، اسراع، قوت، کام، دباؤ، توانائی، حجم۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بین الاقوامی نظام کی 7 بنیادی اکائیاں (SI Base Units):",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "نمبر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بنیادی مقدار",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اکائی کا نام",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "علامت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "لمبائی (Length)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میٹر (Meter)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "m",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "2",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کمیت (Mass)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کلوگرام (Kilogram)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "kg",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "3",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وقت (Time)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکنڈ (Second)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "s",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "4",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "برقی کرنٹ (Electric Current)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ایمپیئر (Ampere)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "A",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "5",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "درجہ حرارت (Temperature)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کیلون (Kelvin)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "K",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "6",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "روشنی کی شدت (Luminous Intensity)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کینڈیلا (Candela)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "cd",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "7",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مادہ کی مقدار (Amount of Substance)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مول (Mole)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "mol",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "4۔ سابقے اور سائنسی طریقہ کار (Prefixes & Scientific Notation)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سابقے (Prefixes): اکائیوں کے چھوٹے یا بڑے حصوں کو ظاہر کرنے کے لیے اکائی کے شروع میں لگائے جانے والے الفاظ یا علامات سابقے کہلاتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سابقہ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "علامت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ضربی عامل",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سابقہ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "علامت",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ضربی عامل",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "گیگا (Giga)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "G",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^9",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سینٹی (Centi)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "c",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^-2",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میگا (Mega)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "M",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^6",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ملی (Milli)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "m",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^-3",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کلو (Kilo)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "k",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^3",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مائیکرو (Micro)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "µ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^-6",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ہیکٹو (Hecto)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "h",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^2",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "نینو (Nano)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "n",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10^-9",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سائنسی طریقہ کار (Scientific Notation): کسی بھی عدد کو 1 سے 10 کے درمیان ایک عدد اور 10 کی پاور کی ضرب میں لکھنا: N × 10^n",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  مثال 1: 150,000,000 کلومیٹر = 1.5 × 10^8 کلومیٹر",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  مثال 2: 0.00005 میٹر = 5 × 10^-5 میٹر",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "5۔ پیمائشی آلات اور لیسٹ کاؤنٹ (Measuring Instruments)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "لیسٹ کاؤنٹ (Least Count): کسی پیمائشی آلے کی وہ کم سے کم پیمائش جو وہ درست طور پر ناپ سکتا ہے، اس آلے کا لیسٹ کاؤنٹ کہلاتی ہے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "آلہ کا نام",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ملی میٹر میں لیسٹ کاؤنٹ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سینٹی میٹر میں لیسٹ کاؤنٹ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "بنیادی استعمال",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "میٹر راڈ (Meter Rule)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1 mm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.1 cm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "عام لمبائی ناپنے کے لیے",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ورنیئر کیلیپرز (Vernier Callipers)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.1 mm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.01 cm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اندرونی و بیرونی قطر اور گہرائی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سکرو گیج (Screw Gauge)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.01 mm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "0.001 cm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "باریک تار کی موٹائی اور گولائی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "زیرو ایرر اور تصحیح کا اصول:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  اگر ورنیئر کا صفر مین اسکیل کے صفر کے دائیں طرف ہو تو زیرو ایرر مثبت ہوتا ہے اور اسے اصل ریڈنگ سے تفریق کیا جاتا ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  اگر ورنیئر کا صفر مین اسکیل کے صفر کے بائیں طرف ہو تو زیرو ایرر منفی ہوتا ہے اور اسے اصل ریڈنگ میں جمع کیا جاتا ہے۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "6۔ اہم ہندسے (Significant Figures)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "اہم ہندسے: کسی بھی پیمائش میں تمام درست معلوم ہندسے اور پہلا مشکوک (اندازے کا) ہندسہ اہم ہندسے کہلاتے ہیں۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "•  اصول 1: تمام غیر صفر ہندسے اہم ہوتے ہیں (جیسے 483 میں 3 اہم ہندسے ہیں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  اصول 2: دو غیر صفر ہندسوں کے درمیانی صفر اہم ہوتے ہیں (جیسے 2005 میں 4 اہم ہندسے ہیں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  اصول 3: اعشاریہ والے عدد میں بائیں جانب کے شروع والے صفر غیر اہم ہوتے ہیں (جیسے 0.0035 میں صرف 2 اہم ہندسے ہیں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "•  اصول 4: اعشاریہ کے بعد دائیں جانب آنے والے آخری صفر اہم ہوتے ہیں (جیسے 4.200 میں 4 اہم ہندسے ہیں)۔",
+                    "isHeading": false,
+                    "isBullet": true
+                  },
+                  {
+                    "text": "نوٹ برائے طلباء: ان نوٹس کو بار بار دہرا کر یاد کریں اور پرچے کی بھرپور تیاری کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  }
+                ]
+              },
+              "bannerImage": null,
+              "lastModified": "2026-10-24T05:36:16.056Z"
+            },
+            {
+              "id": "class-ix-physics-class-ix-physics-unit-1-notes",
+              "title": "Class IX Physics Unit 1 Notes",
+              "fileName": "Class IX Physics Unit 1 Notes.pdf",
+              "extension": "pdf",
+              "sizeBytes": 1866288,
+              "sizeFormatted": "1822.5 KB",
+              "isDocx": false,
+              "isPdf": true,
+              "resourceType": "notes",
+              "parsedContent": null,
+              "bannerImage": null,
+              "lastModified": "2026-10-24T06:01:17.200Z"
+            },
+            {
+              "id": "class-ix-physics-class-ix-physics-summative-one-paper",
+              "title": "Class IX Physics Summative One Paper",
+              "fileName": "Class IX Physics Summative One Paper.pdf",
+              "extension": "pdf",
+              "sizeBytes": 2398170,
+              "sizeFormatted": "2342.0 KB",
+              "isDocx": false,
+              "isPdf": true,
+              "resourceType": "notes",
+              "parsedContent": null,
+              "bannerImage": null,
+              "lastModified": "2026-10-24T06:00:56.533Z"
+            },
+            {
+              "id": "class-ix-physics-class-ix-physics-summative-one-paper",
+              "title": "Class IX Physics Summative One Paper",
+              "fileName": "Class IX Physics Summative One Paper.docx",
+              "extension": "docx",
+              "sizeBytes": 39509,
+              "sizeFormatted": "38.6 KB",
+              "isDocx": true,
+              "isPdf": false,
+              "resourceType": "notes",
+              "parsedContent": {
+                "paragraphCount": 77,
+                "content": [
+                  {
+                    "text": "گورنمنٹ گرلز سیکنڈری اسکول نشتر روڈ، کراچی",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سمیٹو اسسمنٹ ون (Summative Assessment - I) — تعلیمی سال 2026 - 2027",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مضمون: طبیعیات (Physics) | جماعت: IX (نہم) | باب نمبر 1: طبیعی مقداریں اور پیمائش (Physical Quantities and Measurement)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "مضمون: طبیعیات (Physics)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "جماعت: IX (نہم)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "وقت: 1.5 گھنٹے (90 منٹ)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کل نمبر: 50",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "طالب علم کا نام: ____________________",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "رول نمبر: ____________",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکشن: ____________",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تاریخ: اکتوبر 2026",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "تفصیلات",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال 1 (سیکشن الف)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال 2 (سیکشن ب)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال 3 (سیکشن ج)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کل نمبر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "کل نمبرات",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "15",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "20",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "15",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "50",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "حاصل کردہ نمبر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "ہدایات: تمام سوالات کے جوابات صاف اور واضح تحریر کیجیے۔ کٹنگ اور اوور رائٹنگ سے گریز کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکشن 'الف': کثیر الانتخابی سوالات (MCQs) — کل نمبر: 15 (تمام سوالات لازمی ہیں، ہر سوال کا 1 نمبر ہے)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 1: مندرجہ ذیل میں سے ہر ایک کے لیے درست ترین جواب کا انتخاب کیجیے: (15 × 1 = 15 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "1۔ طبیعیات کی وہ شاخ جس میں مادے کی حرکات اور اس کے اسباب کا مطالعہ کیا جاتا ہے، کہلاتی ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) تھرموڈائنامکس        (ب) مکینکس (Mechanics)        (ج) جیو فزکس        (د) ایٹمی طبیعیات",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "2۔ معروف سائنسی شاہکار 'کتاب المناظر' (Book of Optics) کے مصنف کون سے مسلمان سائنسدان ہیں؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) ابن الہیثم        (ب) البیرونی        (ج) یعقوب الکندی        (د) ابن سینا",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "3۔ مندرجہ ذیل میں سے کون سی مقدار بنیادی طبیعی مقدار (Base Quantity) ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) رفتار (Velocity)        (ب) کمیت (Mass)        (ج) قوت (Force)        (د) کام (Work)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "4۔ بین الاقوامی نظام اکائیاں (SI) میں لمبائی کی معیاری بنیادی اکائی کیا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) سینٹی میٹر        (ب) میٹر (Meter)        (ج) کلومیٹر        (د) فٹ",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "5۔ عام ورنیئر کیلیپرز کا لیسٹ کاؤنٹ (ورنیئر کونسٹنٹ) ملی میٹر میں کتنا ہوتا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) 0.1 mm        (ب) 0.01 mm        (ج) 1.0 mm        (د) 0.001 mm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "6۔ سکرو گیج کا لیسٹ کاؤنٹ سینٹی میٹر (cm) میں ہوتا ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) 0.01 cm        (ب) 0.001 cm        (ج) 0.1 cm        (د) 1 cm",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "7۔ ایک کلوگرام (1 kg) میں کتنے گرام ہوتے ہیں؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) 100 گرام        (ب) 1000 گرام        (ج) 10 گرام        (د) 10,000 گرام",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "8۔ سابقہ 'مائیکرو' (Micro) کی عددی قیمت کیا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) 10^-3        (ب) 10^-6        (ج) 10^-9        (د) 10^3",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "9۔ عدد 0.0050 میں اہم ہندسوں (Significant Figures) کی تعداد کتنی ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) 4        (ب) 3        (ج) 2        (د) 1",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "10۔ بین الاقوامی نظام (SI) میں وقت کی بنیادی اکائی کیا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) منٹ        (ب) گھنٹہ        (ج) سیکنڈ (Second)        (د) دن",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "11۔ لیبارٹری میں مائع اشیاء کا حجم ناپنے کے لیے کون سا آلہ استعمال ہوتا ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) میٹر راڈ        (ب) پیمائشی سلنڈر (Measuring Cylinder)        (ج) ورنیئر کیلیپرز        (د) طبعی ترازو",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "12۔ طبیعیات کے شعبے میں نوبل انعام حاصل کرنے والے پاکستانی سائنسدان کون ہیں؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) ڈاکٹر عبدالقدیر خان        (ب) ڈاکٹر عبدالسلام        (ج) ڈاکٹر عطاء الرحمن        (د) ڈاکٹر سلیم الزماں",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "13۔ اگر ورنیئر اسکیل کا صفر مین اسکیل کے صفر کے دائیں جانب ہو تو زیرو ایرر کہلاتا ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) مثبت زیرو ایرر        (ب) منفی زیرو ایرر        (ج) صفر ایرر        (د) تصحیحی ایرر",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "14۔ روشنی کی شدت (Luminous Intensity) کی SI بنیادی اکائی ہے:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) ایمپیئر        (ب) کیلون        (ج) کینڈیلا (Candela)        (د) مول",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "15۔ 25000 میٹر کو معیاری سائنسی طریقے (Scientific Notation) میں لکھا جائے گا:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) 2.5 × 10^4 m        (ب) 25 × 10^3 m        (ج) 0.25 × 10^5 m        (د) 2.5 × 10^3 m",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکشن 'ب': مختصر جواب کے سوالات (Short Answer Questions) — کل نمبر: 20",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 2: درج ذیل میں سے کوئی سے پانچ (5) سوالات کے مختصر و جامع جوابات تحریر کیجیے: (5 × 4 = 20 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(1) طبیعیات (Physics) کی تعریف لکھیے اور اس کی کوئی سی دو اہم شاخوں کے نام بیان کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(2) بنیادی مقداروں (Base Quantities) اور ماخوذ مقداروں (Derived Quantities) میں دو بنیادی فرق تحریر کیجیے اور مثالیں دیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(3) ورنیئر کیلیپرز کے لیسٹ کاؤنٹ (Least Count) سے کیا مراد ہے؟ اس کا حسابی فارمولا لکھیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(4) سائنسی طریقہ کار (Scientific Notation) کیا ہے؟ ایک مثال دے کر واضح کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(5) اہم ہندسوں (Significant Figures) کی تعریف کیجیے اور درج ذیل میں اہم ہندسوں کی تعداد بتائیے: (الف) 500.0  (ب) 0.0072",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(6) پیمائش میں زیرو ایرر (Zero Error) کیوں معلوم کیا جاتا ہے؟ مثبت اور منفی زیرو ایرر میں کیا فرق ہے؟",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(7) درج ذیل طبیعی مقداروں کے نام کے سامنے ان کی بین الاقوامی (SI) اکائی اور علامت لکھیے: (1) درجہ حرارت (2) برقی کرنٹ (3) مادہ کی مقدار (4) لمبائی۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(8) مسلمان سائنسدان ابن الہیثم کی بصریات (Optics) اور البیرونی کی زمین کی پیمائش کے حوالے سے ایک ایک خدمت بیان کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سیکشن 'ج': بیانیہ / تفصیلی جوابات اور حسابی سوالات (Detailed Answers & Numericals) — کل نمبر: 15",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "درج ذیل میں سے کوئی سے دو (2) سوالات کے تفصیلی جوابات تحریر کیجیے: (2 × 7.5 = 15 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 3:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) سکرو گیج (Screw Gauge) کی بناوٹ اور کام کرنے کا طریقہ بیان کیجیے۔ اس کے پچ (Pitch) اور لیسٹ کاؤنٹ کی وضاحت کیجیے۔ (4 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(ب) حسابی سوال (Numerical Problem): ایک ورنیئر کیلیپرز کے مین اسکیل کا چھوٹا ترین درجہ 1 mm ہے اور اس کے ورنیئر اسکیل پر 20 درجے بنے ہوئے ہیں۔ اس ورنیئر کیلیپرز کا لیسٹ کاؤنٹ ملی میٹر اور سینٹی میٹر میں معلوم کیجیے۔ (3.5 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 4:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) بین الاقوامی نظام اکائیاں (SI System of Units) پر تفصیلی نوٹ لکھیے اور سات بنیادی مقداروں کے نام، ان کی بنیادی اکائیاں اور علامات کا باقاعدہ جدول (Table) بنائیے۔ (4 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(ب) حسابی سوال (Numerical Problem): درج ذیل اعداد کو سائنسی طریقہ کار (Scientific Notation) اور مناسب سابقوں (Prefixes) میں تبدیل کیجیے: (i) 3,000,000 W  (ii) 0.000045 m  (iii) 7200 s (3.5 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "سوال نمبر 5:",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(الف) طبیعیات کی جدید سائنس اور روزمرہ زندگی میں اہمیت پر جامع نوٹ تحریر کیجیے۔ (4 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "(ب) حسابی سوال (Numerical Problem): اہم ہندسے معلوم کرنے کے کوئی سے چار بنیادی اصول مثالوں کے ساتھ وضاحت سے لکھیے۔ (3.5 نمبر)",
+                    "isHeading": false,
+                    "isBullet": false
+                  },
+                  {
+                    "text": "پرچہ اختتام کو پہنچا۔ اپنے پرچے کا اچھی طرح جائزہ لیجیے اور نام و رول نمبر کی تصدیق کیجیے۔",
+                    "isHeading": false,
+                    "isBullet": false
+                  }
+                ]
+              },
+              "bannerImage": null,
+              "lastModified": "2026-10-24T05:36:15.451Z"
             }
           ]
         }

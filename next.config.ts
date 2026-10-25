@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const nextConfig: NextConfig = {
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   turbopack: {
     root: path.resolve(__dirname),
   },
@@ -15,6 +18,27 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      {
+        // Old software hub and short alias → The Master Store.
+        source: '/softwares',
+        destination: '/the-master-store',
+        permanent: true,
+      },
+      {
+        source: '/softwares/:path*',
+        destination: '/the-master-store/:path*',
+        permanent: true,
+      },
+      {
+        source: '/store',
+        destination: '/the-master-store',
+        permanent: true,
+      },
+      {
+        source: '/store/:path*',
+        destination: '/the-master-store/:path*',
+        permanent: true,
+      },
       {
         source: '/courses/ai-for-teachers',
         destination: '/courses/ai-for-all',

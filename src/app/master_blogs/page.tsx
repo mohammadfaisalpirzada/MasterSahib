@@ -53,6 +53,16 @@ export default function MasterBlogsPage() {
   
   // Modals & Active states
   const [activePost, setActivePost] = useState<BlogPost | null>(null);
+  const [readerLang, setReaderLang] = useState<'urdu' | 'english' | 'both'>('urdu');
+
+  const handleOpenPost = (post: BlogPost) => {
+    setActivePost(post);
+    if (post.hasUrdu ?? post.isUrdu) {
+      setReaderLang('urdu');
+    } else {
+      setReaderLang('english');
+    }
+  };
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [shareModalPost, setShareModalPost] = useState<BlogPost | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -475,7 +485,7 @@ export default function MasterBlogsPage() {
                         className={`relative w-full cursor-pointer overflow-hidden border-b border-slate-100 bg-slate-100/70 transition-all duration-300 dark:border-slate-800 dark:bg-slate-800/40 ${
                           isPortrait ? 'aspect-[3/4]' : isLandscape ? 'aspect-[16/9]' : 'aspect-square'
                         }`}
-                        onClick={() => setActivePost(post)}
+                        onClick={() => handleOpenPost(post)}
                       >
                         <Image
                           src={post.imageUrl}
@@ -567,7 +577,7 @@ export default function MasterBlogsPage() {
 
                     {/* Bold Title (First line of txt file) */}
                     <h2
-                      onClick={() => setActivePost(post)}
+                      onClick={() => handleOpenPost(post)}
                       className={`mt-2.5 cursor-pointer text-lg font-black leading-snug transition group-hover:text-cyan-600 dark:group-hover:text-cyan-400 ${
                         post.isUrdu
                           ? 'font-serif text-right text-xl leading-relaxed text-slate-900 dark:text-white'
@@ -606,7 +616,7 @@ export default function MasterBlogsPage() {
                       {/* Read More Button */}
                       <button
                         type="button"
-                        onClick={() => setActivePost(post)}
+                        onClick={() => handleOpenPost(post)}
                         className="inline-flex items-center gap-1.5 text-xs font-bold transition hover:opacity-80"
                         style={{ color: theme.primary }}
                       >
@@ -844,23 +854,139 @@ export default function MasterBlogsPage() {
                 );
               })()}
 
-              {/* Article Content with Urdu/English formatting */}
-              <div
-                className={`mt-6 whitespace-pre-wrap text-base leading-relaxed text-slate-700 dark:text-slate-200 ${
-                  activePost.isUrdu ? 'font-serif text-right text-lg leading-loose' : ''
-                }`}
-                dir={activePost.isUrdu ? 'rtl' : 'ltr'}
-              >
-                {activePost.content}
-              </div>
+              {/* Language Switcher for Bilingual Posts */}
+              {Boolean(
+                (activePost.hasUrdu && activePost.hasEnglish) ||
+                (activePost.urduContent && activePost.englishContent)
+              ) && (
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-gradient-to-r from-slate-50 to-slate-100/70 p-3 shadow-sm dark:border-slate-800 dark:from-slate-900/90 dark:to-slate-900/50">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                      زبان کا انتخاب / Select Language:
+                    </span>
+                  </div>
 
-              {/* Facebook-style Reactions (👍 ❤️ 😢) & Comments */}
-              <BlogReactionsAndComments
-                postId={activePost.id}
-                postTitle={activePost.title}
-                isAdmin={isAdmin}
-                onToast={showToast}
-              />
+                  <div className="inline-flex items-center rounded-xl bg-white p-1 shadow-sm dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
+                    <button
+                      type="button"
+                      onClick={() => setReaderLang('urdu')}
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
+                        readerLang === 'urdu'
+                          ? 'bg-amber-600 text-white shadow-md scale-[1.02]'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                      }`}
+                    >
+                      <span className="font-serif text-sm">اردو</span>
+                      <span className="text-[10px] opacity-80">(Urdu)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setReaderLang('english')}
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
+                        readerLang === 'english'
+                          ? 'bg-indigo-600 text-white shadow-md scale-[1.02]'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                      }`}
+                    >
+                      <span>English</span>
+                      <span className="text-[10px] opacity-80">(انگریزی)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setReaderLang('both')}
+                      className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-all duration-200 ${
+                        readerLang === 'both'
+                          ? 'bg-slate-900 text-white shadow-md dark:bg-white dark:text-slate-900 scale-[1.02]'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                      }`}
+                    >
+                      <span>دونوں / Both</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Article Content Rendered with Language Alignment */}
+              {readerLang === 'urdu' && (
+                <div
+                  className="mt-6 whitespace-pre-wrap font-serif text-right text-lg sm:text-xl leading-loose text-slate-800 dark:text-slate-100"
+                  dir="rtl"
+                >
+                  {activePost.urduContent || activePost.content}
+                </div>
+              )}
+
+              {readerLang === 'english' && (
+                <div
+                  className="mt-6 whitespace-pre-wrap font-sans text-left text-base sm:text-lg leading-relaxed text-slate-800 dark:text-slate-100"
+                  dir="ltr"
+                >
+                  {activePost.englishContent || activePost.content}
+                </div>
+              )}
+
+              {readerLang === 'both' && (
+                <div className="mt-6 space-y-8">
+                  {activePost.urduContent && (
+                    <div className="rounded-2xl border border-amber-200/90 bg-amber-50/40 p-5 shadow-sm dark:border-amber-900/40 dark:bg-amber-950/20">
+                      <div className="mb-4 flex items-center justify-end border-b border-amber-200/60 pb-2 dark:border-amber-900/60">
+                        <span className="rounded-full bg-amber-600 px-3.5 py-1 font-serif text-xs font-bold text-white shadow-sm">
+                          اردو تحریر
+                        </span>
+                      </div>
+                      <div
+                        className="whitespace-pre-wrap font-serif text-right text-lg sm:text-xl leading-loose text-slate-900 dark:text-slate-100"
+                        dir="rtl"
+                      >
+                        {activePost.urduContent}
+                      </div>
+                    </div>
+                  )}
+
+                  {activePost.englishContent && (
+                    <div className="rounded-2xl border border-indigo-200/90 bg-indigo-50/40 p-5 shadow-sm dark:border-indigo-900/40 dark:bg-indigo-950/20">
+                      <div className="mb-4 flex items-center justify-start border-b border-indigo-200/60 pb-2 dark:border-indigo-900/60">
+                        <span className="rounded-full bg-indigo-600 px-3.5 py-1 text-xs font-bold text-white shadow-sm">
+                          English Translation &amp; Analysis
+                        </span>
+                      </div>
+                      <div
+                        className="whitespace-pre-wrap font-sans text-left text-base sm:text-lg leading-relaxed text-slate-900 dark:text-slate-100"
+                        dir="ltr"
+                      >
+                        {activePost.englishContent}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Community Engagement Section with Explicit Boundary */}
+              <div className="mt-12 border-t-2 border-slate-200/90 pt-8 dark:border-slate-800">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-cyan-500" />
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">
+                      Community Reactions &amp; Comments / تاثرات اور تبصرے
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-semibold text-slate-400">
+                    The Master Sahib Portal
+                  </span>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 dark:border-slate-800/80 dark:bg-slate-900/40 select-none">
+                  <BlogReactionsAndComments
+                    postId={activePost.id}
+                    postTitle={activePost.title}
+                    isAdmin={isAdmin}
+                    onToast={showToast}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Modal Footer with Actions */}

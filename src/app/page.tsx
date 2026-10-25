@@ -11,6 +11,7 @@ import {
 import { FaWhatsapp } from 'react-icons/fa';
 import WorkshopBannerCarousel from './components/WorkshopBannerCarousel';
 import HomeMasterBlogsBanner from './components/HomeMasterBlogsBanner';
+import HomeMasterStoreBanner from './components/HomeMasterStoreBanner';
 import HomeSignIn from './components/HomeSignIn';
 import HomeVisitorCount from './components/HomeVisitorCount';
 import HomePadletBoard from './components/HomePadletBoard';
@@ -54,7 +55,7 @@ const allTools: QuickCard[] = [
   {
     title: 'MasterSahib Video Editor (MSVE)',
     description: 'Proprietary AI Video Merger, Sequence Audio/Video Editor & Social SEO Studio for educators and creators.',
-    href: '/softwares/video-editor',
+    href: '/the-master-store/video-editor',
     accent: 'from-blue-600 via-indigo-600 to-cyan-600',
     icon: '🎬',
     category: 'latest',
@@ -126,9 +127,9 @@ const allTools: QuickCard[] = [
     badge: 'Career Tool',
   },
   {
-    title: 'MasterSahib Softwares Hub',
-    description: 'Explore proprietary AI software suites, MasterSahib Video Editor (MSVE), and upcoming teacher utilities.',
-    href: '/softwares',
+    title: 'The Master Store',
+    description: 'Smart everyday tools & utilities to simplify your work — apps, Excel templates, scripts and the MSVE video editor.',
+    href: '/the-master-store',
     accent: 'from-blue-600 via-indigo-600 to-purple-600',
     icon: '💻',
     category: 'latest',
@@ -323,7 +324,7 @@ export default function HomePage() {
                 </Link>
 
                 <Link
-                  href="/softwares/video-editor"
+                  href="/the-master-store/video-editor"
                   className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#B788E7] bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#B788E7]/20 dark:bg-slate-800 dark:text-white"
                 >
                   <span>🎬</span> Video Editor (MSVE)
@@ -379,6 +380,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* The Master Store promo banner */}
+      <HomeMasterStoreBanner />
 
       {/* All Tools Section with Category Filter Tabs */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

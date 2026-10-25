@@ -9,12 +9,14 @@ import { HiChevronDown, HiOutlineMenuAlt3, HiOutlineMoon, HiOutlineSun, HiOutlin
 
 import { educationalResourceNavLinks } from '@/app/lib/educationalResources';
 import { govtFormNavLinks } from '@/app/lib/govtForms';
+import storeData from '@/data/store-data.json';
 import { getCurrentTheme } from '@/lib/theme';
 
 type NavItem = {
   label: string;
   href: string;
   desktopLabel?: string;
+  badgeCount?: number;
   children?: Array<{
     label: string;
     href: string;
@@ -25,21 +27,10 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
   {
-    label: 'Softwares',
-    desktopLabel: 'Softwares',
-    href: '/softwares',
-    children: [
-      {
-        label: '🎬 MasterSahib Video Editor',
-        href: '/softwares/video-editor',
-        description: 'AI Video Merger, Sequence Editor & Social SEO Studio',
-      },
-      {
-        label: '🚀 All Softwares Hub',
-        href: '/softwares',
-        description: 'Explore proprietary AI software suites and upcoming tools',
-      },
-    ],
+    label: 'TM Store',
+    desktopLabel: 'TM Store',
+    href: '/the-master-store',
+    badgeCount: (storeData?.items?.length ?? 5) + 1,
   },
   {
     label: 'STBB Notes',
@@ -242,9 +233,18 @@ export default function Navbar() {
                   >
                     <Link
                       href={item.href}
-                      className="px-3 py-2 whitespace-nowrap"
+                      className="relative inline-flex items-center px-3 py-2 whitespace-nowrap"
                     >
-                      {item.desktopLabel ?? item.label}
+                      <span>{item.desktopLabel ?? item.label}</span>
+                      {typeof item.badgeCount === 'number' && item.badgeCount > 0 ? (
+                        <span
+                          className="-mt-3 ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-black leading-none text-white shadow-md"
+                          title={`${item.badgeCount} uploaded software`}
+                          aria-label={`${item.badgeCount} uploaded software`}
+                        >
+                          {item.badgeCount}
+                        </span>
+                      ) : null}
                     </Link>
                     <button
                       type="button"
@@ -264,9 +264,17 @@ export default function Navbar() {
                     <div className="max-h-[75vh] overflow-y-auto overscroll-contain rounded-2xl border border-[#88E788]/60 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
                       <Link
                         href={item.href}
-                        className="block rounded-xl bg-[#f0fbf0] px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-[#88E788]/30 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                        className="flex items-center justify-between rounded-xl bg-[#f0fbf0] px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-[#88E788]/30 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                       >
-                        Open All {item.desktopLabel ?? item.label}
+                        <span>Open All {item.desktopLabel ?? item.label}</span>
+                        {typeof item.badgeCount === 'number' && item.badgeCount > 0 ? (
+                          <span
+                            className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-black leading-none text-white shadow-md"
+                            title={`${item.badgeCount} uploaded software`}
+                          >
+                            {item.badgeCount}
+                          </span>
+                        ) : null}
                       </Link>
 
                       <div className="mt-2 grid gap-1">
@@ -301,7 +309,18 @@ export default function Navbar() {
                       : 'text-indigo-50 hover:bg-white/15 hover:text-white'
                   }`}
                 >
-                  {item.desktopLabel ?? item.label}
+                  <span className="relative inline-flex items-center">
+                    <span>{item.desktopLabel ?? item.label}</span>
+                    {typeof item.badgeCount === 'number' && item.badgeCount > 0 ? (
+                      <span
+                        className="-mt-3 ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-black leading-none text-white shadow-md"
+                        title={`${item.badgeCount} uploaded software`}
+                        aria-label={`${item.badgeCount} uploaded software`}
+                      >
+                        {item.badgeCount}
+                      </span>
+                    ) : null}
+                  </span>
                 </Link>
               </li>
             );
@@ -479,7 +498,17 @@ export default function Navbar() {
                         onClick={() => setOpenMobileDropdown((current) => (current === item.href ? null : item.href))}
                         className="flex w-full items-center justify-between px-4 py-3 text-left text-base font-semibold text-white"
                       >
-                        <span>{item.label}</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span>{item.label}</span>
+                          {typeof item.badgeCount === 'number' && item.badgeCount > 0 ? (
+                            <span
+                              className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-black leading-none text-white shadow-md"
+                              title={`${item.badgeCount} uploaded software`}
+                            >
+                              {item.badgeCount}
+                            </span>
+                          ) : null}
+                        </span>
                         <HiChevronDown className={`h-5 w-5 transition ${isOpen ? 'rotate-180' : ''}`} />
                       </button>
 
@@ -487,10 +516,15 @@ export default function Navbar() {
                         <div className="space-y-2 px-3 pb-3">
                           <Link
                             href={item.href}
-                            className="block rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20"
+                            className="flex items-center justify-between rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20"
                             onClick={() => setIsMobileOpen(false)}
                           >
-                            Open All {item.label}
+                            <span>Open All {item.label}</span>
+                            {typeof item.badgeCount === 'number' && item.badgeCount > 0 ? (
+                              <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-black leading-none text-white shadow-md">
+                                {item.badgeCount}
+                              </span>
+                            ) : null}
                           </Link>
 
                           {item.children.map((child) => (
@@ -514,14 +548,19 @@ export default function Navbar() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className={`block rounded-xl border px-4 py-3 text-base font-semibold transition ${
+                      className={`flex items-center justify-between rounded-xl border px-4 py-3 text-base font-semibold transition ${
                         isActiveRoute(item.href)
                           ? 'border-white/70 bg-white text-indigo-700'
                           : 'border-white/20 bg-white/10 text-white hover:bg-white/20'
                       }`}
                       onClick={() => setIsMobileOpen(false)}
                     >
-                      {item.label}
+                      <span>{item.label}</span>
+                      {typeof item.badgeCount === 'number' && item.badgeCount > 0 ? (
+                        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-black leading-none text-white shadow-md">
+                          {item.badgeCount}
+                        </span>
+                      ) : null}
                     </Link>
                   </li>
                 );

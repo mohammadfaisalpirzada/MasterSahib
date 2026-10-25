@@ -98,13 +98,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/softwares/video-editor" className="font-semibold text-slate-700 hover:text-sky-600 dark:text-slate-300 dark:hover:text-sky-400 transition flex items-center gap-1.5">
+                <Link href="/the-master-store/video-editor" className="font-semibold text-slate-700 hover:text-sky-600 dark:text-slate-300 dark:hover:text-sky-400 transition flex items-center gap-1.5">
                   <span>🎬</span> MasterSahib Video Editor (MSVE)
                 </Link>
               </li>
               <li>
-                <Link href="/softwares" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition">
-                  💻 All Software Suites
+                <Link href="/the-master-store" className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition">
+                  🛍️ The Master Store
                 </Link>
               </li>
               <li>
