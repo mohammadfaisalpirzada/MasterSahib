@@ -13,6 +13,16 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        urdu: [
+          "'Jameel Noori Nastaleeq'",
+          "'Noto Nastaliq Urdu'",
+          "'Urdu Typesetting'",
+          "'Alvi Nastaleeq'",
+          "'Nafees Nastaleeq'",
+          "serif",
+        ],
+      },
     },
   },
   plugins: [],

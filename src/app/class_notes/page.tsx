@@ -111,10 +111,10 @@ const CLASS_ORDER = [
 
 function isUrduOrSindhi(text: string): boolean {
   if (!text) return false;
-  const matches = text.match(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g);
+  const matches = text.match(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/g);
   if (!matches) return false;
-  // English text might contain isolated quotes or symbols, so check character count and ratio
-  return matches.length >= 6 && matches.length / text.length > 0.4;
+  // If text contains at least 2 Urdu/Arabic characters or more than 15% Urdu characters
+  return matches.length >= 2 || (matches.length / text.length > 0.15);
 }
 
 interface VocabItem {
@@ -568,6 +568,8 @@ const THEME_STYLES = {
   },
 };
 
+const STORAGE_KEY_LAST_VISIT = 'ms_last_active_curriculum_v2';
+
 function CurriculumContent() {
   const searchParams = useSearchParams();
 
@@ -587,10 +589,11 @@ function CurriculumContent() {
   // Main Tab State: 'notes' | 'planning'
   const [activeTab, setActiveTab] = useState<'notes' | 'planning'>('notes');
 
-  // Selected hierarchy states
-  const [selectedClassId, setSelectedClassId] = useState<string>('class-viii');
+  // Selected hierarchy states (defaults to Class IX instead of Class VIII)
+  const [selectedClassId, setSelectedClassId] = useState<string>('class-ix');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [selectedChapterId, setSelectedChapterId] = useState<string>('');
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   // Search & Reader states
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -599,22 +602,62 @@ function CurriculumContent() {
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>('normal');
   const [isFocusMode, setIsFocusMode] = useState<boolean>(false);
 
-  // Initialize from query params if available
+  // 1. Initial State Restoration: Check URL parameters first, then localStorage memory
   useEffect(() => {
+    if (isInitialized || classes.length === 0) return;
+
+    // Check URL parameters
     const tabParam = searchParams?.get('tab');
+    const classParam = searchParams?.get('class');
+    const subjectParam = searchParams?.get('subject');
+    const chapterParam = searchParams?.get('chapter');
+
+    let initialClassId = '';
+    let initialSubjectId = '';
+    let initialChapterId = '';
+    let initialTab: 'notes' | 'planning' = 'notes';
+
     if (tabParam === 'notes' || tabParam === 'planning') {
-      setActiveTab(tabParam);
+      initialTab = tabParam;
     }
 
-    const classParam = searchParams?.get('class');
-    const chapterParam = searchParams?.get('chapter');
     if (classParam && classes.some((c) => c.id === classParam)) {
-      setSelectedClassId(classParam);
+      initialClassId = classParam;
+      if (subjectParam) initialSubjectId = subjectParam;
+      if (chapterParam) initialChapterId = chapterParam;
+    } else {
+      // Recall from localStorage cache (keeps exact notes even when returning days later)
+      try {
+        if (typeof window !== 'undefined') {
+          const cached = localStorage.getItem(STORAGE_KEY_LAST_VISIT);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed?.classId && classes.some((c) => c.id === parsed.classId)) {
+              initialClassId = parsed.classId;
+              if (parsed.subjectId) initialSubjectId = parsed.subjectId;
+              if (parsed.chapterId) initialChapterId = parsed.chapterId;
+              if (parsed.tab === 'notes' || parsed.tab === 'planning') {
+                initialTab = parsed.tab;
+              }
+            }
+          }
+        }
+      } catch {
+        // ignore cache read errors
+      }
     }
-    if (chapterParam) {
-      setSelectedChapterId(chapterParam);
+
+    // Default to Class IX if nothing found
+    if (!initialClassId) {
+      initialClassId = classes.some((c) => c.id === 'class-ix') ? 'class-ix' : classes[0]?.id || 'class-viii';
     }
-  }, [searchParams, classes]);
+
+    setSelectedClassId(initialClassId);
+    setActiveTab(initialTab);
+    if (initialSubjectId) setSelectedSubjectId(initialSubjectId);
+    if (initialChapterId) setSelectedChapterId(initialChapterId);
+    setIsInitialized(true);
+  }, [searchParams, classes, isInitialized]);
 
   // Active Class object
   const currentClass = useMemo(() => {
@@ -652,44 +695,48 @@ function CurriculumContent() {
 
   // Smart Sync & Memory: Whenever class or tab changes, recall user's last visited unit or pick first interactive unit (not PDF)
   useEffect(() => {
-    if (availableSubjects.length > 0) {
-      let savedChapterId = '';
-      let savedSubjectId = '';
-      try {
-        if (typeof window !== 'undefined') {
-          savedChapterId = localStorage.getItem(`ms_last_chap_${selectedClassId}_${activeTab}`) || '';
-          savedSubjectId = localStorage.getItem(`ms_last_subj_${selectedClassId}_${activeTab}`) || '';
-        }
-      } catch {
-        // ignore storage errors
-      }
+    if (!isInitialized || availableSubjects.length === 0) return;
 
-      // Find target subject
-      let targetSubject = availableSubjects.find((s) => s.id === savedSubjectId);
-      if (!targetSubject && selectedSubjectId) {
-        targetSubject = availableSubjects.find((s) => s.id === selectedSubjectId);
+    let savedChapterId = '';
+    let savedSubjectId = '';
+    try {
+      if (typeof window !== 'undefined') {
+        savedChapterId = localStorage.getItem(`ms_last_chap_${selectedClassId}_${activeTab}`) || '';
+        savedSubjectId = localStorage.getItem(`ms_last_subj_${selectedClassId}_${activeTab}`) || '';
       }
-      if (!targetSubject) {
-        targetSubject = availableSubjects[0];
-      }
+    } catch {
+      // ignore storage errors
+    }
 
-      setSelectedSubjectId(targetSubject.id);
+    // Find target subject
+    let targetSubject = availableSubjects.find((s) => s.id === selectedSubjectId);
+    if (!targetSubject && savedSubjectId) {
+      targetSubject = availableSubjects.find((s) => s.id === savedSubjectId);
+    }
+    if (!targetSubject) {
+      targetSubject = availableSubjects[0];
+    }
 
-      // Check if savedChapterId exists in targetSubject
-      const hasSavedChapter = targetSubject.filteredChapters.some((ch) => ch.id === savedChapterId);
-      if (savedChapterId && hasSavedChapter) {
-        setSelectedChapterId(savedChapterId);
-      } else {
-        // Pick best default chapter (prioritizing interactive notes / docx, never defaulting to PDF)
-        const best = getBestDefaultChapter(targetSubject.filteredChapters);
-        if (best) {
-          setSelectedChapterId(best.id);
-        }
+    setSelectedSubjectId(targetSubject.id);
+
+    // Check if current or saved chapter exists in targetSubject
+    const hasCurrentChapter = selectedChapterId && targetSubject.filteredChapters.some((ch) => ch.id === selectedChapterId);
+    const hasSavedChapter = savedChapterId && targetSubject.filteredChapters.some((ch) => ch.id === savedChapterId);
+
+    if (hasCurrentChapter) {
+      // Keep current chapter
+    } else if (hasSavedChapter) {
+      setSelectedChapterId(savedChapterId);
+    } else {
+      // Pick best default chapter (prioritizing interactive notes / docx, never defaulting to PDF)
+      const best = getBestDefaultChapter(targetSubject.filteredChapters);
+      if (best) {
+        setSelectedChapterId(best.id);
       }
     }
-  }, [selectedClassId, activeTab, availableSubjects]);
+  }, [selectedClassId, activeTab, availableSubjects, isInitialized]);
 
-  // User selects a specific chapter -> save to localStorage
+  // User selects a specific chapter -> save to localStorage and update state
   const handleSelectChapter = (subjId: string, chapId: string) => {
     setSelectedSubjectId(subjId);
     setSelectedChapterId(chapId);
@@ -697,9 +744,50 @@ function CurriculumContent() {
       if (typeof window !== 'undefined') {
         localStorage.setItem(`ms_last_chap_${selectedClassId}_${activeTab}`, chapId);
         localStorage.setItem(`ms_last_subj_${selectedClassId}_${activeTab}`, subjId);
+        localStorage.setItem(
+          STORAGE_KEY_LAST_VISIT,
+          JSON.stringify({
+            classId: selectedClassId,
+            subjectId: subjId,
+            chapterId: chapId,
+            tab: activeTab,
+            timestamp: Date.now(),
+          })
+        );
       }
     } catch {}
   };
+
+  // Keep URL parameters and persistent global cache in sync with active selection
+  useEffect(() => {
+    if (!isInitialized || !selectedClassId) return;
+
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(
+          STORAGE_KEY_LAST_VISIT,
+          JSON.stringify({
+            classId: selectedClassId,
+            subjectId: selectedSubjectId,
+            chapterId: selectedChapterId,
+            tab: activeTab,
+            timestamp: Date.now(),
+          })
+        );
+
+        const params = new URLSearchParams(window.location.search);
+        params.set('class', selectedClassId);
+        if (selectedSubjectId) params.set('subject', selectedSubjectId);
+        if (selectedChapterId) params.set('chapter', selectedChapterId);
+        if (activeTab) params.set('tab', activeTab);
+
+        const nextUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState(null, '', nextUrl);
+      }
+    } catch {
+      // ignore history errors
+    }
+  }, [selectedClassId, selectedSubjectId, selectedChapterId, activeTab, isInitialized]);
 
   // Active Chapter Lookup
   const activeChapterData = useMemo(() => {
@@ -719,6 +807,24 @@ function CurriculumContent() {
       chapter: defaultChapter,
     };
   }, [classes, currentClass, availableSubjects, selectedChapterId]);
+
+  // Check if current subject or active chapter is Urdu / Sindhi / Islamiat or has Urdu in title
+  const isChapterUrdu = useMemo(() => {
+    const sName = currentSubject?.name?.toLowerCase() || '';
+    const sKey = currentSubject?.key?.toLowerCase() || '';
+    const chTitle = activeChapterData?.chapter?.title?.toLowerCase() || '';
+    const chFile = activeChapterData?.chapter?.fileName?.toLowerCase() || '';
+    return (
+      sName.includes('urdu') ||
+      sName.includes('islamiat') ||
+      sName.includes('sindhi') ||
+      sKey === 'urdu' ||
+      sKey === 'islamiat' ||
+      sKey === 'sindhi' ||
+      chTitle.includes('urdu') ||
+      chFile.includes('urdu')
+    );
+  }, [currentSubject, activeChapterData]);
 
   // Chapters list for Next/Prev in current subject
   const currentSubjectChapters = useMemo(() => {
@@ -1243,9 +1349,9 @@ function CurriculumContent() {
                           >
                             <h2
                               className={`font-black ${styles.sectionTitle} print:text-black text-base sm:text-lg md:text-xl tracking-wide uppercase ${
-                                block.isUrdu ? 'font-urdu' : ''
+                                (block.isUrdu || isChapterUrdu) ? 'font-urdu' : ''
                               }`}
-                              dir={block.isUrdu ? 'rtl' : 'ltr'}
+                              dir={(block.isUrdu || isChapterUrdu) ? 'rtl' : 'ltr'}
                             >
                               {block.title}
                             </h2>
@@ -1259,9 +1365,9 @@ function CurriculumContent() {
                           <div
                             key={idx}
                             className={`mt-6 mb-3 px-4 py-2.5 rounded-xl ${styles.subSectionHeader} text-center font-bold text-sm sm:text-base print:bg-slate-50 print:text-black`}
-                            dir={block.isUrdu ? 'rtl' : 'ltr'}
+                            dir={(block.isUrdu || isChapterUrdu) ? 'rtl' : 'ltr'}
                           >
-                            <h3 className={block.isUrdu ? 'font-urdu' : ''}>{block.title}</h3>
+                            <h3 className={(block.isUrdu || isChapterUrdu) ? 'font-urdu' : ''}>{block.title}</h3>
                           </div>
                         );
                       }
@@ -1412,12 +1518,12 @@ function CurriculumContent() {
                           <div
                             key={idx}
                             className={`mt-6 p-4 rounded-2xl ${styles.questionBox} border space-y-1.5 print:bg-slate-50 print:border-slate-300 text-left`}
-                            dir={block.isUrdu ? 'rtl' : 'ltr'}
+                            dir={(block.isUrdu || isChapterUrdu) ? 'rtl' : 'ltr'}
                           >
                             <span className={`inline-block px-2.5 py-0.5 rounded-full ${styles.questionBadge} text-xs uppercase tracking-wider mb-1`}>
                               ❓ Question
                             </span>
-                            <p className={`${styles.questionText} print:text-black text-sm md:text-base leading-snug ${block.isUrdu ? 'text-right font-urdu' : 'text-left'}`}>
+                            <p className={`${styles.questionText} print:text-black text-sm md:text-base leading-snug ${(block.isUrdu || isChapterUrdu) ? 'text-right font-urdu' : 'text-left'}`}>
                               {block.text}
                             </p>
                           </div>
@@ -1430,12 +1536,12 @@ function CurriculumContent() {
                           <div
                             key={idx}
                             className={`p-4 rounded-2xl ${styles.answerBox} border-l-4 space-y-1.5 print:bg-slate-50 print:border-emerald-700 text-left`}
-                            dir={block.isUrdu ? 'rtl' : 'ltr'}
+                            dir={(block.isUrdu || isChapterUrdu) ? 'rtl' : 'ltr'}
                           >
                             <span className={`inline-block px-2.5 py-0.5 rounded-full ${styles.answerBadge} text-xs uppercase tracking-wider mb-1`}>
                               💡 Answer
                             </span>
-                            <p className={`${styles.answerText} print:text-black leading-relaxed ${block.isUrdu ? 'text-right font-urdu text-base md:text-lg' : 'text-left'}`}>
+                            <p className={`${styles.answerText} print:text-black leading-relaxed ${(block.isUrdu || isChapterUrdu) ? 'text-right font-urdu text-base md:text-lg' : 'text-left'}`}>
                               {block.text}
                             </p>
                           </div>
@@ -1448,12 +1554,12 @@ function CurriculumContent() {
                           <div
                             key={idx}
                             className={`p-4 rounded-2xl ${styles.calloutBox} border-l-4 space-y-1 my-3 text-left`}
-                            dir={block.isUrdu ? 'rtl' : 'ltr'}
+                            dir={(block.isUrdu || isChapterUrdu) ? 'rtl' : 'ltr'}
                           >
                             <span className={`font-bold flex items-center gap-1.5 text-xs ${styles.calloutBadge} uppercase tracking-wider`}>
                               <span>📌</span> {block.label}
                             </span>
-                            <p className={`${styles.calloutText} print:text-black leading-relaxed ${block.isUrdu ? 'text-right font-urdu' : 'text-left'}`}>
+                            <p className={`${styles.calloutText} print:text-black leading-relaxed ${(block.isUrdu || isChapterUrdu) ? 'text-right font-urdu' : 'text-left'}`}>
                               {block.text}
                             </p>
                           </div>
@@ -1463,9 +1569,9 @@ function CurriculumContent() {
                       // Standard Bullet or Numbered item
                       if (block.type === 'bullet') {
                         return (
-                          <div key={idx} className={`flex items-start gap-3 pl-2 py-1 ${block.isUrdu ? 'flex-row-reverse text-right' : 'text-left'}`} dir={block.isUrdu ? 'rtl' : 'ltr'}>
+                          <div key={idx} className={`flex items-start gap-3 pl-2 py-1 ${(block.isUrdu || isChapterUrdu) ? 'flex-row-reverse text-right' : 'text-left'}`} dir={(block.isUrdu || isChapterUrdu) ? 'rtl' : 'ltr'}>
                             <span className={`${styles.bulletDot} mt-1 text-sm`}>●</span>
-                            <p className={`flex-1 ${styles.paragraph} print:text-black ${block.isUrdu ? 'font-urdu text-right' : 'text-left'}`}>
+                            <p className={`flex-1 ${styles.paragraph} print:text-black ${(block.isUrdu || isChapterUrdu) ? 'font-urdu text-right' : 'text-left'}`}>
                               {block.text}
                             </p>
                           </div>
@@ -1478,9 +1584,9 @@ function CurriculumContent() {
                           <h3
                             key={idx}
                             className={`text-base md:text-lg font-bold ${styles.sectionTitle} text-center border-b ${styles.divider} print:border-slate-300 pb-2 pt-5`}
-                            dir={block.isUrdu ? 'rtl' : 'ltr'}
+                            dir={(block.isUrdu || isChapterUrdu) ? 'rtl' : 'ltr'}
                           >
-                            <span className={block.isUrdu ? 'font-urdu' : ''}>{block.text}</span>
+                            <span className={(block.isUrdu || isChapterUrdu) ? 'font-urdu' : ''}>{block.text}</span>
                           </h3>
                         );
                       }
@@ -1490,9 +1596,9 @@ function CurriculumContent() {
                         <p
                           key={idx}
                           className={`${styles.paragraph} print:text-black ${
-                            block.isUrdu ? 'text-right font-urdu text-base md:text-lg' : 'text-left text-sm md:text-base'
+                            (block.isUrdu || isChapterUrdu) ? 'text-right font-urdu text-base md:text-lg' : 'text-left text-sm md:text-base'
                           } leading-relaxed`}
-                          dir={block.isUrdu ? 'rtl' : 'ltr'}
+                          dir={(block.isUrdu || isChapterUrdu) ? 'rtl' : 'ltr'}
                         >
                           {block.text}
                         </p>

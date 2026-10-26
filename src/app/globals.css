@@ -1,3 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'Jameel Noori Nastaleeq';
+  src: local('Jameel Noori Nastaleeq'), local('JameelNooriNastaleeq'), local('Jameel Noori Nastaleeq Regular');
+  font-display: swap;
+}
+
+/* Global Urdu & RTL Typography */
+.font-urdu,
+[dir="rtl"],
+.urdu-text,
+.urdu-font {
+  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', 'Alvi Nastaleeq', 'Nafees Nastaleeq', serif !important;
+  line-height: 2.2 !important;
+}
+
+[dir="rtl"] p,
+[dir="rtl"] span,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] li {
+  font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', 'Alvi Nastaleeq', 'Nafees Nastaleeq', serif !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
