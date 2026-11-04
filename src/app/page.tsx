@@ -222,11 +222,11 @@ export default function HomePage() {
       <WorkshopBannerCarousel />
       <HomeMasterBlogsBanner />
 
-      {/* Top Quick Contact & Status Bar (#88E788, #B788E7, #E788B8 & White Palette) */}
+      {/* Top Quick Contact & Status Bar (Graphite Palette: #C1C0C2, #F5E9E7, #837D68, #8A9DB1, #ECC5C6) */}
       <div
         className="border-b border-white/40 shadow-sm"
         style={{
-          background: `linear-gradient(90deg, ${theme.accentFrom} 0%, ${theme.accentVia} 50%, ${theme.accentTo} 100%)`,
+          background: `linear-gradient(90deg, #C1C0C2 0%, #F5E9E7 32%, #8A9DB1 68%, #ECC5C6 100%)`,
           color: theme.primaryText,
         }}
       >
@@ -236,7 +236,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-[11px] font-bold shadow-sm"
               style={{ backgroundColor: theme.badgeBg, color: theme.badgeText }}
             >
-              <span className="text-[#88E788]">★</span>
+              <span className="text-[#837D68]">★</span>
               The Master Sahib Academic Series
             </span>
           </div>
@@ -254,31 +254,31 @@ export default function HomePage() {
               href="tel:+923458340669"
               className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-0.5 text-slate-900 shadow-sm transition hover:bg-white"
             >
-              <HiOutlinePhone className="h-3.5 w-3.5 text-[#B788E7]" /> Call
+              <HiOutlinePhone className="h-3.5 w-3.5 text-[#8A9DB1]" /> Call
             </a>
             <a
               href="mailto:mohammadfaisalpirzada@gmail.com"
               className="hidden items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-0.5 text-slate-900 shadow-sm transition hover:bg-white md:inline-flex"
             >
-              <HiOutlineMail className="h-3.5 w-3.5 text-[#E788B8]" /> Support
+              <HiOutlineMail className="h-3.5 w-3.5 text-[#837D68]" /> Support
             </a>
           </div>
         </div>
       </div>
 
       {/* Hero Header Section - Mobile Priority & Desktop Crisp */}
-      <section className="relative overflow-hidden border-b border-[#88E788]/50 bg-white dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur-sm">
+      <section className="relative overflow-hidden border-b border-[#C1C0C2]/70 bg-white dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur-sm">
         <div
           className="absolute -left-20 top-[-80px] h-72 w-72 rounded-full blur-3xl pointer-events-none opacity-45"
-          style={{ backgroundColor: '#88E788' }}
+          style={{ backgroundColor: '#C1C0C2' }}
         />
         <div
           className="absolute left-1/3 top-12 h-64 w-64 rounded-full blur-3xl pointer-events-none opacity-35"
-          style={{ backgroundColor: '#B788E7' }}
+          style={{ backgroundColor: '#8A9DB1' }}
         />
         <div
           className="absolute right-[-60px] top-6 h-80 w-80 rounded-full blur-3xl pointer-events-none opacity-40"
-          style={{ backgroundColor: '#E788B8' }}
+          style={{ backgroundColor: '#ECC5C6' }}
         />
 
         <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8 lg:pt-12">
@@ -286,11 +286,13 @@ export default function HomePage() {
             <div className="space-y-4 text-center sm:text-left">
               <div
                 className="inline-flex items-center gap-2 rounded-full border-2 bg-white px-3.5 py-1 text-xs font-bold tracking-wide text-slate-900 shadow-sm"
-                style={{ borderColor: '#88E788' }}
+                style={{ borderColor: '#C1C0C2' }}
               >
-                <span className="h-2.5 w-2.5 rounded-full bg-[#88E788]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#B788E7]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#E788B8]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#C1C0C2]" />
+                <span className="h-2.5 w-2.5 rounded-full border border-[#C1C0C2] bg-[#F5E9E7]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#837D68]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#8A9DB1]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#ECC5C6]" />
                 MasterSahib Digital Workspace
               </div>
 
@@ -299,7 +301,7 @@ export default function HomePage() {
                 <span
                   className="mt-1 inline-block rounded-2xl px-3 py-1 text-slate-900 shadow-sm"
                   style={{
-                    backgroundImage: `linear-gradient(90deg, ${theme.accentFrom}, ${theme.accentVia}, ${theme.accentTo})`,
+                    backgroundImage: `linear-gradient(90deg, #C1C0C2, #F5E9E7, #ECC5C6)`, border: "1px solid #C1C0C2",
                   }}
                 >
                   For Learning + Teaching
@@ -314,9 +316,9 @@ export default function HomePage() {
               <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:justify-start pt-2">
                 <Link
                   href="/govt-forms"
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#88E788] px-5 py-3 text-sm font-extrabold text-slate-900 shadow-md transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#837D68] px-5 py-3 text-sm font-extrabold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                   style={{
-                    backgroundColor: '#88E788',
+                    backgroundColor: '#837D68',
                   }}
                 >
                   <span>📋</span> Govt School Forms
@@ -325,14 +327,14 @@ export default function HomePage() {
 
                 <Link
                   href="/the-master-store/video-editor"
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#B788E7] bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#B788E7]/20 dark:bg-slate-800 dark:text-white"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#8A9DB1] bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#8A9DB1]/20 dark:bg-slate-800 dark:text-white"
                 >
                   <span>🎬</span> Video Editor (MSVE)
                 </Link>
 
                 <Link
                   href="/class_notes"
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#E788B8] bg-white px-4 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#E788B8]/20 dark:bg-slate-800 dark:text-white"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-2xl border-2 border-[#ECC5C6] bg-[#F5E9E7] px-4 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#ECC5C6]/45 dark:bg-slate-800 dark:text-white"
                 >
                   <span>📚</span> STBB Notes (ECE-XII)
                 </Link>
@@ -342,11 +344,11 @@ export default function HomePage() {
             </div>
 
             {/* Highlights and Visitor Counter Widget */}
-            <div className="rounded-3xl border-2 border-[#88E788]/70 bg-white p-5 shadow-lg dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur">
+            <div className="rounded-3xl border-2 border-[#C1C0C2] bg-white p-5 shadow-lg dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur">
               <div className="grid grid-cols-3 gap-2.5">
                 {highlights.map((item, idx) => {
-                  const accentBorders = ['border-[#88E788]', 'border-[#B788E7]', 'border-[#E788B8]'];
-                  const accentBgs = ['bg-[#88E788]/15', 'bg-[#B788E7]/15', 'bg-[#E788B8]/15'];
+                  const accentBorders = ['border-[#837D68]', 'border-[#8A9DB1]', 'border-[#ECC5C6]'];
+                  const accentBgs = ['bg-[#F5E9E7]', 'bg-[#8A9DB1]/15', 'bg-[#ECC5C6]/30'];
                   return (
                     <div
                       key={item.label}
@@ -364,12 +366,12 @@ export default function HomePage() {
               <div
                 className="mt-3 flex items-center justify-between rounded-2xl border-2 px-4 py-2.5 shadow-sm"
                 style={{
-                  borderColor: '#88E788',
-                  background: 'linear-gradient(90deg, rgba(136,231,136,0.22), rgba(183,136,231,0.18), rgba(231,136,184,0.22))',
+                  borderColor: '#C1C0C2',
+                  background: 'linear-gradient(90deg, rgba(193,192,194,0.25), rgba(245,233,231,0.7), rgba(138,157,177,0.22), rgba(236,197,198,0.35))',
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <HiOutlineCheckCircle className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                  <HiOutlineCheckCircle className="h-4 w-4 text-[#837D68] dark:text-[#ECC5C6]" />
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">
                     Live Visitors
                   </span>
@@ -388,10 +390,10 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border-2 border-[#88E788] bg-white px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-slate-900 shadow-sm dark:border-emerald-700 dark:bg-slate-900 dark:text-emerald-300">
+            <div className="inline-flex items-center gap-2 rounded-full border-2 border-[#837D68]/70 bg-[#F5E9E7] px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#837D68] shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-[#ECC5C6]">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#88E788] opacity-75"></span>
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#88E788]"></span>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#837D68] opacity-75"></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#837D68]"></span>
               </span>
               Directory of Educational Tools
             </div>
@@ -400,7 +402,7 @@ export default function HomePage() {
               <span
                 className="inline-block rounded-xl px-2.5 py-0.5 text-slate-900 shadow-sm"
                 style={{
-                  backgroundImage: 'linear-gradient(90deg, #88E788, #B788E7, #E788B8)',
+                  backgroundImage: 'linear-gradient(90deg, #C1C0C2, #F5E9E7, #ECC5C6)', border: '1px solid #C1C0C2',
                 }}
               >
                 Tools
@@ -412,7 +414,7 @@ export default function HomePage() {
           </div>
 
           {/* Category Filter Tabs - Touch friendly for Mobile */}
-          <div className="flex flex-wrap gap-1.5 rounded-2xl border-2 border-[#88E788]/70 bg-white p-1.5 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
+          <div className="flex flex-wrap gap-1.5 rounded-2xl border-2 border-[#C1C0C2] bg-white p-1.5 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
             {(
               [
                 { id: 'all', label: 'All Tools' },
@@ -428,8 +430,8 @@ export default function HomePage() {
                   onClick={() => setSelectedCategory(tab.id)}
                   className={`rounded-xl px-3.5 py-2 text-xs font-bold transition min-h-[38px] ${
                     active
-                      ? 'bg-gradient-to-r from-[#88E788] via-[#B788E7] to-[#E788B8] text-slate-950 shadow-md'
-                      : 'text-slate-600 hover:bg-[#88E788]/20 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                      ? 'bg-gradient-to-r from-[#837D68] via-[#8A9DB1] to-[#837D68] text-white shadow-md'
+                      : 'text-slate-600 hover:bg-[#F5E9E7] hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                   }`}
                 >
                   {tab.label}
@@ -444,9 +446,9 @@ export default function HomePage() {
           {filteredTools.map((tool, index) => {
             const showNewBadge = Boolean(tool.newUntil) && now <= new Date(tool.newUntil as string).getTime();
             const borderColors = [
-              'border-[#88E788]/70 hover:border-[#88E788]',
-              'border-[#B788E7]/70 hover:border-[#B788E7]',
-              'border-[#E788B8]/70 hover:border-[#E788B8]',
+              'border-[#C1C0C2] hover:border-[#837D68]',
+              'border-[#8A9DB1]/70 hover:border-[#8A9DB1]',
+              'border-[#ECC5C6] hover:border-[#837D68]',
             ];
             const cardBorderClass = borderColors[index % 3];
 
@@ -454,15 +456,15 @@ export default function HomePage() {
               <Link
                 key={tool.title}
                 href={tool.href}
-                className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border-2 ${cardBorderClass} bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-[#88E788] backdrop-blur-sm`}
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border-2 ${cardBorderClass} bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-[#8A9DB1] backdrop-blur-sm`}
               >
                 {/* Top expanding gradient accent line using #88E788, #B788E7, #E788B8 */}
                 <div
-                  className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#88E788] via-[#B788E7] to-[#E788B8] opacity-90 transition-all duration-300 group-hover:h-2 group-hover:opacity-100"
+                  className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#837D68] via-[#8A9DB1] to-[#ECC5C6] opacity-95 transition-all duration-300 group-hover:h-2 group-hover:opacity-100"
                 />
 
                 {/* Ambient corner radial hover glow */}
-                <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-gradient-to-br from-[#88E788]/30 via-[#B788E7]/25 to-[#E788B8]/25 blur-2xl transition-all duration-300 group-hover:scale-150 group-hover:opacity-100" />
+                <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-gradient-to-br from-[#C1C0C2]/35 via-[#8A9DB1]/25 to-[#ECC5C6]/35 blur-2xl transition-all duration-300 group-hover:scale-150 group-hover:opacity-100" />
 
                 {/* Badge with live pulsing dot for NEW */}
                 {showNewBadge || tool.badge ? (
@@ -470,8 +472,8 @@ export default function HomePage() {
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-sm ${
                         showNewBadge
-                          ? 'bg-[#E788B8] text-slate-950'
-                          : 'border border-[#B788E7] bg-[#B788E7]/25 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
+                          ? 'bg-[#ECC5C6] text-slate-950 border border-[#837D68]/30'
+                          : 'border border-[#8A9DB1] bg-[#F5E9E7] text-[#837D68] dark:bg-slate-800 dark:text-slate-100'
                       }`}
                     >
                       {showNewBadge ? (
@@ -492,11 +494,11 @@ export default function HomePage() {
                 {/* Card Content */}
                 <div className="relative z-10">
                   {/* 3D-styled app icon tile with hover scaling */}
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[#88E788]/60 bg-gradient-to-br from-[#88E788]/25 via-white to-[#B788E7]/25 p-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-md dark:border-slate-700/80 dark:from-slate-800 dark:to-slate-800/60">
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[#C1C0C2] bg-gradient-to-br from-[#F5E9E7] via-white to-[#ECC5C6]/45 p-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-md dark:border-slate-700/80 dark:from-slate-800 dark:to-slate-800/60">
                     <span className="text-2xl filter drop-shadow-sm">{tool.icon}</span>
                   </div>
 
-                  <h3 className="text-base font-bold text-slate-900 transition-colors duration-200 group-hover:text-emerald-800 dark:text-white dark:group-hover:text-[#88E788]">
+                  <h3 className="text-base font-bold text-slate-900 transition-colors duration-200 group-hover:text-[#837D68] dark:text-white dark:group-hover:text-[#ECC5C6]">
                     {tool.title}
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
@@ -505,11 +507,11 @@ export default function HomePage() {
                 </div>
 
                 {/* Sleek interactive card footer */}
-                <div className="relative z-10 mt-6 flex items-center justify-between border-t border-[#88E788]/30 pt-3 dark:border-slate-800/80">
+                <div className="relative z-10 mt-6 flex items-center justify-between border-t border-[#C1C0C2]/50 pt-3 dark:border-slate-800/80">
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {tool.category === 'teacher' ? 'Teacher Tool' : tool.category === 'academic' ? 'Academic' : 'Software'}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#88E788]/30 px-2.5 py-0.5 text-xs font-bold text-slate-900 transition-all duration-200 group-hover:bg-[#88E788] dark:bg-slate-800 dark:text-[#88E788]">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#F5E9E7] px-2.5 py-0.5 text-xs font-bold text-[#837D68] border border-[#C1C0C2] transition-all duration-200 group-hover:bg-[#837D68] group-hover:text-white group-hover:border-[#837D68] dark:bg-slate-800 dark:text-[#ECC5C6]">
                     Open
                     <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">→</span>
                   </span>

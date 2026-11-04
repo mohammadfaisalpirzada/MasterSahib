@@ -261,10 +261,10 @@ export default function Navbar() {
                       isOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
                     }`}
                   >
-                    <div className="max-h-[75vh] overflow-y-auto overscroll-contain rounded-2xl border border-[#88E788]/60 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                    <div className="max-h-[75vh] overflow-y-auto overscroll-contain rounded-2xl border border-[#C1C0C2] bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
                       <Link
                         href={item.href}
-                        className="flex items-center justify-between rounded-xl bg-[#f0fbf0] px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-[#88E788]/30 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                        className="flex items-center justify-between rounded-xl bg-[#F5E9E7] px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-[#ECC5C6]/45 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                       >
                         <span>Open All {item.desktopLabel ?? item.label}</span>
                         {typeof item.badgeCount === 'number' && item.badgeCount > 0 ? (
@@ -282,8 +282,8 @@ export default function Navbar() {
                           <Link
                             key={child.href}
                             href={child.href}
-                            className={`rounded-xl px-3 py-2.5 transition hover:bg-[#88E788]/20 dark:hover:bg-slate-800 ${
-                              isActiveRoute(child.href) ? 'bg-[#88E788]/25 dark:bg-slate-800' : ''
+                            className={`rounded-xl px-3 py-2.5 transition hover:bg-[#F5E9E7] dark:hover:bg-slate-800 ${
+                              isActiveRoute(child.href) ? 'bg-[#ECC5C6]/40 dark:bg-slate-800' : ''
                             }`}
                           >
                             <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">{child.label}</span>
@@ -364,13 +364,13 @@ export default function Navbar() {
                 isMoreOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
               }`}
             >
-              <div className="rounded-2xl border border-[#88E788]/60 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+              <div className="rounded-2xl border border-[#C1C0C2] bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
                 {desktopMoreItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-[#88E788]/20 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                      isActiveRoute(item.href) ? 'bg-[#88E788]/25 dark:bg-slate-800' : ''
+                    className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-[#F5E9E7] dark:text-slate-100 dark:hover:bg-slate-800 ${
+                      isActiveRoute(item.href) ? 'bg-[#ECC5C6]/40 dark:bg-slate-800' : ''
                     }`}
                   >
                     {item.label}
@@ -380,16 +380,16 @@ export default function Navbar() {
                   <>
                     <Link
                       href="/client-projects"
-                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-[#88E788]/20 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                        isActiveRoute('/client-projects') ? 'bg-[#88E788]/25 dark:bg-slate-800 text-emerald-800 dark:text-teal-400' : ''
+                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-[#F5E9E7] dark:text-slate-100 dark:hover:bg-slate-800 ${
+                        isActiveRoute('/client-projects') ? 'bg-[#ECC5C6]/40 dark:bg-slate-800 text-[#837D68] dark:text-teal-400' : ''
                       }`}
                     >
                       💼 Client Projects
                     </Link>
                     <Link
                       href="/my-presentations"
-                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-[#88E788]/20 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                        isActiveRoute('/my-presentations') ? 'bg-[#88E788]/25 dark:bg-slate-800' : ''
+                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-[#F5E9E7] dark:text-slate-100 dark:hover:bg-slate-800 ${
+                        isActiveRoute('/my-presentations') ? 'bg-[#ECC5C6]/40 dark:bg-slate-800' : ''
                       }`}
                     >
                       My Presentations

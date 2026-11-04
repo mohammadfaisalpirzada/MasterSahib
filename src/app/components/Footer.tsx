@@ -15,20 +15,20 @@ export default function Footer() {
   };
 
   return (
-    <footer className="border-t-2 border-[#88E788]/70 bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors">
+    <footer className="border-t-2 border-[#C1C0C2] bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors">
       {/* Top Banner with Quick Actions */}
       <div
-        className="border-b border-[#88E788]/40 px-4 py-4 dark:border-slate-800/80 dark:bg-slate-950/50 sm:px-6 lg:px-8"
+        className="border-b border-[#C1C0C2]/60 px-4 py-4 dark:border-slate-800/80 dark:bg-slate-950/50 sm:px-6 lg:px-8"
         style={{
-          background: 'linear-gradient(90deg, rgba(136,231,136,0.25), rgba(183,136,231,0.22), rgba(231,136,184,0.25))',
+          background: 'linear-gradient(90deg, rgba(193,192,194,0.3), rgba(245,233,231,0.7), rgba(138,157,177,0.25), rgba(236,197,198,0.35))',
         }}
       >
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
           <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
             <span
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#88E788] bg-white px-3 py-1 text-[11px] font-bold tracking-wide text-slate-900 shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#837D68] bg-white px-3 py-1 text-[11px] font-bold tracking-wide text-slate-900 shadow-sm"
             >
-              <span className="text-[#88E788]">★</span>
+              <span className="text-[#837D68]">★</span>
               The Master Sahib Portal
             </span>
             <span className="hidden sm:inline">•</span>
@@ -40,24 +40,24 @@ export default function Footer() {
               href="https://wa.me/923458340669"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[#88E788] bg-white px-3 py-1.5 text-slate-900 shadow-sm transition hover:bg-[#88E788]/30 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300"
+              className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[#837D68] bg-white px-3 py-1.5 text-slate-900 shadow-sm transition hover:bg-[#F5E9E7] dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300"
             >
               <FaWhatsapp className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               WhatsApp Help
             </a>
             <a
               href="tel:+923458340669"
-              className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[#B788E7] bg-white px-3 py-1.5 text-slate-900 shadow-sm transition hover:bg-[#B788E7]/25 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
+              className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[#8A9DB1] bg-white px-3 py-1.5 text-slate-900 shadow-sm transition hover:bg-[#8A9DB1]/20 dark:border-purple-800/50 dark:bg-purple-950/40 dark:text-purple-300"
             >
-              <HiOutlinePhone className="h-3.5 w-3.5 text-[#B788E7]" />
+              <HiOutlinePhone className="h-3.5 w-3.5 text-[#8A9DB1]" />
               Direct Call
             </a>
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center gap-1 rounded-lg border-2 border-[#E788B8] bg-white px-2.5 py-1.5 text-slate-900 shadow-sm transition hover:bg-[#E788B8]/25 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              className="inline-flex items-center gap-1 rounded-lg border-2 border-[#ECC5C6] bg-white px-2.5 py-1.5 text-slate-900 shadow-sm transition hover:bg-[#ECC5C6]/35 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
               aria-label="Scroll to top"
             >
-              <HiOutlineArrowUp className="h-3.5 w-3.5 text-[#E788B8]" />
+              <HiOutlineArrowUp className="h-3.5 w-3.5 text-[#837D68]" />
               Top
             </button>
           </div>
