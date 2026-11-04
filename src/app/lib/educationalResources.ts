@@ -311,7 +311,7 @@ export const educationalResourceItems: EducationalResourceItem[] = [
     color: 'from-indigo-500 to-violet-400',
   },
   {
-    title: 'Ty Words (20-90)',
+    title: 'Tens Words (20-90)',
     description: 'Learn tens number words twenty to ninety with quiz, fill-the-name, and auto-learn memorization.',
     status: 'Ready',
     href: '/educational-resources/fun-learning?tab=ty',

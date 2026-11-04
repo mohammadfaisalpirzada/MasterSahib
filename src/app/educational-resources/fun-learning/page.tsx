@@ -28,7 +28,7 @@ const tabs: { key: Tab; icon: string; label: string }[] = [
   { key: 'sight', icon: '📖', label: 'Sight Words' },
   { key: 'd3', icon: '🧊', label: '3D Shapes' },
   { key: 'teen', icon: '🔢', label: 'Teen Words' },
-  { key: 'ty', icon: '🔟', label: 'Ty Words' },
+  { key: 'ty', icon: '🔟', label: 'Tens Words' },
   { key: 'spell', icon: '🐝', label: 'Spelling' },
   { key: 'blanks', icon: '📝', label: 'Fill Blanks' },
   { key: 'days', icon: '📅', label: 'Days' },

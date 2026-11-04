@@ -359,7 +359,7 @@ export default function TyTab() {
         </div>
       ) : !tyMemoRunning ? (
         <div className="mt-5 space-y-5 text-center">
-          <h2 className="text-lg font-bold text-slate-900">🔄 Memorize Ty Words</h2>
+          <h2 className="text-lg font-bold text-slate-900">🔄 Memorize Tens Words</h2>
           <p className="text-sm text-slate-600">Watch and listen as tens number words (20-90) are shown, spelled, and named.</p>
           <div className="flex items-center justify-center gap-3">
             <span className="text-sm font-semibold text-slate-700">Repeat each:</span>
