@@ -4,12 +4,22 @@ import {
   createStaffAdminSessionToken,
   verifyStaffAdminPassword,
 } from '@/app/lib/staffAdminAuth';
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit(`login:staff-admin:${clientId}`, 10, 10 * 60);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) } },
+      );
+    }
+
     const body = (await request.json()) as { password?: string };
     const password = body.password?.trim() || '';
 

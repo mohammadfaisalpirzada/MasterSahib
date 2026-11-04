@@ -7,12 +7,22 @@ import {
   isGgssStipendAdminUser,
   verifyGgssStipendCredentials,
 } from '@/app/lib/ggssStipendAuth';
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit(`login:ggss-stipend:${clientId}`, 10, 10 * 60);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) } },
+      );
+    }
+
     const body = (await request.json()) as { username?: string; password?: string };
     const username = body.username?.trim() || '';
     const password = body.password?.trim() || '';

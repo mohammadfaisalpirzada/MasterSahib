@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { sanitizeHtmlFragment } from '@/app/lib/sanitizeHtml';
 
 const DAILY_LIMIT = 5;
 
@@ -116,9 +117,11 @@ Generate the worksheet content HTML now:`;
     const codeBlockMatch = text.match(/```(?:html)?\s*([\s\S]*?)```/);
     if (codeBlockMatch) html = codeBlockMatch[1].trim();
 
+    const safeHtml = sanitizeHtmlFragment(html);
+
     incrementUsage(request);
 
-    return NextResponse.json({ html, remaining: remaining - 1 });
+    return NextResponse.json({ html: safeHtml, remaining: remaining - 1 });
   } catch (err) {
     console.error('Worksheet builder error:', err);
     return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 });

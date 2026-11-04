@@ -157,6 +157,20 @@ const nextConfig: NextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
+          {
+            // Intentionally permissive on script-src/style-src (unsafe-inline,
+            // unsafe-eval) rather than a strict nonce-based policy: this site
+            // runs Google AdSense + Analytics (revenue-critical, notoriously
+            // CSP-sensitive) and this change could not be build/browser-tested
+            // before deploy in the environment it was written in. Still adds
+            // real protection: blocks script/frame/connect loads from any
+            // domain not explicitly listed, locks down object-src and
+            // base-uri, and reinforces frame-ancestors alongside the existing
+            // X-Frame-Options. Tightening further (nonces, dropping
+            // unsafe-eval) is a good follow-up once it can be tested live.
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google-analytics.com https://*.googlesyndication.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://www.google-analytics.com https://generativelanguage.googleapis.com https://*.googlesyndication.com https://*.google-analytics.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://accounts.google.com https://*.googlesyndication.com https://googleads.g.doubleclick.net; object-src 'none'; base-uri 'self'; frame-ancestors 'self'",
+          },
         ],
       },
     ];

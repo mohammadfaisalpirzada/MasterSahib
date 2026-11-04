@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HiOutlineDownload, HiOutlinePrinter } from 'react-icons/hi';
+import { sanitizeHtmlFragment } from '@/app/lib/sanitizeHtml';
 
 /* ─── Website Topics with images ─── */
 type WsTopic = { id: string; label: string; icon: string; words: string[]; images?: string[] };
@@ -231,7 +232,10 @@ export default function WorksheetBuilderPage() {
       });
       const data = await res.json();
       if (!res.ok) { setApiError(data.error || 'Failed.'); setLoading(false); return; }
-      setPreview(data.html);
+      // defense in depth: the server already sanitizes AI-generated HTML
+      // before returning it, but re-sanitize client-side too in case this ever
+      // gets called with data from a different/older API response shape.
+      setPreview(sanitizeHtmlFragment(data.html));
       setRemaining(data.remaining ?? remaining - 1);
     } catch { setApiError('Network error.'); }
     setLoading(false);
