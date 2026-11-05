@@ -1,7 +1,7 @@
 import type { IconType } from 'react-icons';
 import {
   LuAppWindow, LuBot, LuBookOpen, LuBrain, LuCalculator, LuCalendarDays, LuChartColumn,
-  LuClipboardList, LuCode, LuCpu, LuDatabase, LuFileArchive, LuFileCode, LuFileSpreadsheet,
+  LuClipboardList, LuCode, LuCpu, LuDatabase, LuDownload, LuFileArchive, LuFileCode, LuFileSpreadsheet,
   LuFileText, LuFilm, LuFolder, LuGlobe, LuGraduationCap, LuImage, LuLanguages, LuLayers,
   LuListChecks, LuLock, LuMail, LuMessageSquare, LuMonitor, LuMusic, LuNotebookPen, LuPackage,
   LuPalette, LuPresentation, LuPrinter, LuPuzzle, LuQrCode, LuReceipt, LuRocket, LuRuler,
@@ -13,7 +13,7 @@ import {
 export const STORE_ICONS: Record<string, IconType> = {
   AppWindow: LuAppWindow, Bot: LuBot, BookOpen: LuBookOpen, Brain: LuBrain, Calculator: LuCalculator,
   Calendar: LuCalendarDays, Chart: LuChartColumn, ClipboardList: LuClipboardList, Code: LuCode, Cpu: LuCpu,
-  Database: LuDatabase, FileArchive: LuFileArchive, FileCode: LuFileCode, FileSpreadsheet: LuFileSpreadsheet,
+  Database: LuDatabase, Download: LuDownload, FileArchive: LuFileArchive, FileCode: LuFileCode, FileSpreadsheet: LuFileSpreadsheet,
   FileText: LuFileText, Film: LuFilm, Folder: LuFolder, Globe: LuGlobe, GraduationCap: LuGraduationCap,
   Image: LuImage, Languages: LuLanguages, Layers: LuLayers, ListChecks: LuListChecks, Lock: LuLock,
   Mail: LuMail, MessageSquare: LuMessageSquare, Monitor: LuMonitor, Music: LuMusic, NotebookPen: LuNotebookPen,
