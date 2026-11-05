@@ -72,7 +72,7 @@ export default function MasterStorePage() {
             <h2 className="text-2xl font-extrabold text-white sm:text-3xl">Flagship Android App</h2>
           </div>
           <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">
-            Latest Release v1.0.13
+            Latest Release v1.0.15
           </span>
         </div>
 
@@ -95,16 +95,16 @@ export default function MasterStorePage() {
               <p className="mt-2 text-xs text-slate-400">
                 Package: <code className="text-slate-300">com.themastersahib.downloader</code>
               </p>
-              <p className="text-xs text-slate-400">Size: 4.16 MB • Version: 1.0.13 (Build 13)</p>
+              <p className="text-xs text-slate-400">Size: 4.8 MB • Version: 1.0.15 (Build 15)</p>
 
               {/* Download Buttons */}
               <div className="mt-6 flex w-full flex-col gap-2.5 sm:flex-row lg:flex-col">
                 <a
-                  href="https://github.com/mohammadfaisalpirzada/Download-Master/releases/download/v1.0.13/Download-Master-v1.0.13.apk"
+                  href="https://github.com/mohammadfaisalpirzada/Download-Master/releases/download/v1.0.15/Download-Master-v1.0.15.apk"
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition duration-200 hover:-translate-y-0.5 hover:shadow-cyan-500/40"
                 >
                   <HiOutlineDownload className="h-5 w-5" />
-                  Download APK (v1.0.13)
+                  Download APK (v1.0.15)
                 </a>
 
                 <a
