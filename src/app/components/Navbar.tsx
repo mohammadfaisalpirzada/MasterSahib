@@ -3,13 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
-import { HiChevronDown, HiOutlineMenuAlt3, HiOutlineMoon, HiOutlineSun, HiOutlineX } from 'react-icons/hi';
+import { HiChevronDown, HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi';
 
 import { educationalResourceNavLinks } from '@/app/lib/educationalResources';
-import { govtFormNavLinks } from '@/app/lib/govtForms';
-import { getCurrentTheme } from '@/lib/theme';
 
 type NavItem = {
   label: string;
@@ -24,85 +22,34 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
-  {
-    label: 'Softwares',
-    desktopLabel: 'Softwares',
-    href: '/softwares',
-    children: [
-      {
-        label: '🎬 MasterSahib Video Editor',
-        href: '/softwares/video-editor',
-        description: 'AI Video Merger, Sequence Editor & Social SEO Studio',
-      },
-      {
-        label: '🚀 All Softwares Hub',
-        href: '/softwares',
-        description: 'Explore proprietary AI software suites and upcoming tools',
-      },
-    ],
-  },
-  {
-    label: 'STBB Notes',
-    desktopLabel: 'STBB Notes',
-    href: '/class_notes',
-  },
-  {
-    label: 'Master Blogs',
-    desktopLabel: 'Blogs',
-    href: '/master_blogs',
-  },
-  { label: 'Courses', href: '/courses/ai-for-all' },
+  { label: 'Quiz Program', href: '/peace-quiz' },
   { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },
   {
     label: 'Educational Resources',
     desktopLabel: 'Edu Resources',
-    href: '/educational-resources',
+    href: '/teaching-tools',
     children: educationalResourceNavLinks,
   },
-  {
-    label: 'Govt Educational Forms',
-    desktopLabel: 'Govt Forms',
-    href: '/govt-forms',
-    children: govtFormNavLinks,
-  },
+  { label: 'The Master Store', href: '/the-master-store' },
   { label: 'Contact', href: '/contact' },
 ];
 
 const secondaryNavItem = { label: 'Portfolio', href: '/portfolio' };
-const presentationOwnerEmail = 'mohammadfaisalpirzada@gmail.com';
-
-// Items shown directly in the desktop bar. GGSS / Contact / Portfolio / My Presentations
-// move into the "More" overflow menu on desktop to keep the bar from feeling crowded.
-// Mobile keeps the full list in its drawer, unchanged.
-const desktopMainItems = navItems.filter((item) => item.href !== '/ggss-nishtar-road' && item.href !== '/contact');
-const desktopMoreItems = [
-  { label: 'GGSS Nishtar Road', href: '/ggss-nishtar-road' },
-  { label: 'Contact', href: '/contact' },
-  secondaryNavItem,
-];
 
 export default function Navbar() {
-  const theme = getCurrentTheme();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openDesktopDropdown, setOpenDesktopDropdown] = useState<string | null>(null);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   const pathname = usePathname();
-  const safePathname = pathname || '/';
-  const router = useRouter();
-  const signInHref = `/auth/signin?callbackUrl=${encodeURIComponent(safePathname)}`;
   const { data: session, status } = useSession();
-  const canAccessPresentations = session?.user?.email?.toLowerCase() === presentationOwnerEmail;
   const headerRef = useRef<HTMLElement | null>(null);
-  const moreMenuRef = useRef<HTMLDivElement | null>(null);
 
   const isActiveRoute = (href: string) => {
     if (href === '/') {
-      return safePathname === '/';
+      return pathname === '/';
     }
 
-    return safePathname === href || safePathname.startsWith(`${href}/`);
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   const isItemActive = (item: NavItem) => {
@@ -125,44 +72,12 @@ export default function Navbar() {
     setIsMobileOpen(false);
     setOpenDesktopDropdown(null);
     setOpenMobileDropdown(null);
-    setIsMoreOpen(false);
-  }, [safePathname]);
-
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
-
-    // If user has not set a manual override, listen to screen/device brightness changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemChange = (e: MediaQueryListEvent) => {
-      try {
-        if (!localStorage.getItem('ms-theme')) {
-          const systemDark = e.matches;
-          setIsDark(systemDark);
-          document.documentElement.classList.toggle('dark', systemDark);
-        }
-      } catch {}
-    };
-
-    mediaQuery.addEventListener('change', handleSystemChange);
-    return () => mediaQuery.removeEventListener('change', handleSystemChange);
-  }, []);
-
-  const toggleTheme = () => {
-    const next = !isDark;
-    setIsDark(next);
-    document.documentElement.classList.toggle('dark', next);
-    try {
-      localStorage.setItem('ms-theme', next ? 'dark' : 'light');
-    } catch {}
-  };
+  }, [pathname]);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
         setOpenDesktopDropdown(null);
-      }
-      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-        setIsMoreOpen(false);
       }
     };
 
@@ -170,46 +85,32 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const handleNavbarSignIn = () => {
-    const hostname = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
-    const isGgssDomain = hostname === 'ggssnishtarroad.themastersahib.com' || hostname.startsWith('ggssnishtarroad.');
-
-    if (isGgssDomain) {
-      router.push(signInHref);
-      return;
-    }
-
-    void signIn('google');
-  };
-
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-40 w-full border-b border-white/15 bg-gradient-to-r ${theme.navGradient} text-white shadow-md transition-colors duration-300`}
+      className="sticky top-0 z-40 w-full border-b border-indigo-300/40 bg-gradient-to-r from-indigo-700 via-indigo-600 to-cyan-600 text-white shadow-lg"
     >
       <nav className="mx-auto flex w-full max-w-[1700px] items-center justify-between gap-4 px-3 py-3 sm:px-6 lg:px-10">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2.5 rounded-xl px-2 py-1 transition hover:bg-white/10"
+          className="flex min-w-0 items-center gap-2 rounded-xl px-2 py-1 transition hover:bg-white/10"
           aria-label="Go to home page"
         >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/55 bg-white/10">
-            <Image
-              src="/images/main_logo.png"
-              alt="TheMasterSahib Logo"
-              width={48}
-              height={48}
-              className="h-full w-full scale-110 object-contain"
-            />
-          </span>
-          <div className="shrink-0">
-            <p className="whitespace-nowrap text-base font-extrabold leading-tight sm:text-xl">TheMasterSahib</p>
-            <p className="hidden whitespace-nowrap text-xs text-indigo-100 sm:block">Learn. Build. Grow.</p>
+          <Image
+            src="/images/main_logo.png"
+            alt="TheMasterSahib Logo"
+            width={48}
+            height={48}
+            className="h-10 w-10 rounded-full border border-white/30 object-cover sm:h-11 sm:w-11"
+          />
+          <div className="min-w-0">
+            <p className="truncate text-base font-extrabold leading-tight sm:text-xl">TheMasterSahib</p>
+            <p className="hidden truncate text-xs text-indigo-100 sm:block">Learn. Build. Grow.</p>
           </div>
         </Link>
 
-        <ul className="hidden items-center gap-1 xl:gap-1.5 lg:flex shrink-0">
-          {desktopMainItems.map((item) => {
+        <ul className="hidden items-center gap-1 lg:flex">
+          {navItems.map((item) => {
             const isOpen = openDesktopDropdown === item.href;
             const isActive = isItemActive(item);
 
@@ -217,7 +118,7 @@ export default function Navbar() {
               return (
                 <li
                   key={item.href}
-                  className="relative pb-2 -mb-2 shrink-0"
+                  className="relative pb-2 -mb-2"
                   onMouseEnter={() => setOpenDesktopDropdown(item.href)}
                   onMouseLeave={() => setOpenDesktopDropdown((current) => (current === item.href ? null : current))}
                 >
@@ -230,7 +131,7 @@ export default function Navbar() {
                   >
                     <Link
                       href={item.href}
-                      className="px-3 py-2 whitespace-nowrap"
+                      className="px-3 py-2"
                     >
                       {item.desktopLabel ?? item.label}
                     </Link>
@@ -249,12 +150,12 @@ export default function Navbar() {
                       isOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
                     }`}
                   >
-                    <div className="max-h-[75vh] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
                       <Link
                         href={item.href}
-                        className="block rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                        className="block rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
                       >
-                        Open All {item.desktopLabel ?? item.label}
+                        Open All Educational Resources
                       </Link>
 
                       <div className="mt-2 grid gap-1">
@@ -262,12 +163,12 @@ export default function Navbar() {
                           <Link
                             key={child.href}
                             href={child.href}
-                            className={`rounded-xl px-3 py-2.5 transition hover:bg-indigo-50 dark:hover:bg-slate-800 ${
-                              isActiveRoute(child.href) ? 'bg-indigo-50 dark:bg-slate-800' : ''
+                            className={`rounded-xl px-3 py-2.5 transition hover:bg-indigo-50 ${
+                              isActiveRoute(child.href) ? 'bg-indigo-50' : ''
                             }`}
                           >
-                            <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">{child.label}</span>
-                            <span className="mt-0.5 block text-xs leading-5 text-slate-600 dark:text-slate-400">{child.description}</span>
+                            <span className="block text-sm font-semibold text-slate-900">{child.label}</span>
+                            <span className="mt-0.5 block text-xs leading-5 text-slate-600">{child.description}</span>
                           </Link>
                         ))}
                       </div>
@@ -278,16 +179,16 @@ export default function Navbar() {
             }
 
             return (
-              <li key={item.href} className="shrink-0">
+              <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                  className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
                     isActive
                       ? 'bg-white text-indigo-700 shadow-sm'
                       : 'text-indigo-50 hover:bg-white/15 hover:text-white'
                   }`}
                 >
-                  {item.desktopLabel ?? item.label}
+                  {item.label}
                 </Link>
               </li>
             );
@@ -295,69 +196,16 @@ export default function Navbar() {
         </ul>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
+          <Link
+            href={secondaryNavItem.href}
+            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+              isActiveRoute(secondaryNavItem.href)
+                ? 'border-white bg-white text-indigo-700'
+                : 'border-white/35 bg-white/10 text-white hover:bg-white/20'
+            }`}
           >
-            {isDark ? <HiOutlineSun className="h-5 w-5" /> : <HiOutlineMoon className="h-5 w-5" />}
-          </button>
-          <div className="relative" ref={moreMenuRef}>
-            <button
-              type="button"
-              onClick={() => setIsMoreOpen((current) => !current)}
-              aria-label="More links"
-              title="More links"
-              aria-expanded={isMoreOpen}
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                isMoreOpen ? 'border-white bg-white text-indigo-700' : 'border-white/30 bg-white/10 text-white hover:bg-white/20'
-              }`}
-            >
-              <HiOutlineMenuAlt3 className="h-5 w-5" />
-            </button>
-
-            <div
-              className={`absolute right-0 top-full z-50 w-56 pt-2 text-slate-900 transition-all duration-200 ${
-                isMoreOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'
-              }`}
-            >
-              <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-                {desktopMoreItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                      isActiveRoute(item.href) ? 'bg-slate-100 dark:bg-slate-800' : ''
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                {canAccessPresentations ? (
-                  <>
-                    <Link
-                      href="/client-projects"
-                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                        isActiveRoute('/client-projects') ? 'bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400' : ''
-                      }`}
-                    >
-                      💼 Client Projects
-                    </Link>
-                    <Link
-                      href="/my-presentations"
-                      className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 ${
-                        isActiveRoute('/my-presentations') ? 'bg-slate-100 dark:bg-slate-800' : ''
-                      }`}
-                    >
-                      My Presentations
-                    </Link>
-                  </>
-                ) : null}
-              </div>
-            </div>
-          </div>
+            {secondaryNavItem.label}
+          </Link>
 
           {status === 'loading' ? (
             <div className="rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm text-indigo-50">
@@ -388,7 +236,7 @@ export default function Navbar() {
             </div>
           ) : (
             <button
-              onClick={handleNavbarSignIn}
+              onClick={() => signIn('google')}
               className="rounded-full border border-white bg-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/30"
             >
               Sign in
@@ -396,32 +244,21 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
-          >
-            {isDark ? <HiOutlineSun className="h-5 w-5" /> : <HiOutlineMoon className="h-5 w-5" />}
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-lg border border-white/30 bg-white/10 p-2 text-white transition hover:bg-white/20"
-            onClick={() => setIsMobileOpen((current) => !current)}
-            aria-label={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            title={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          >
-            {isMobileOpen ? <HiOutlineX className="h-6 w-6" /> : <HiOutlineMenuAlt3 className="h-6 w-6" />}
-          </button>
-        </div>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-lg border border-white/30 bg-white/10 p-2 text-white transition hover:bg-white/20 lg:hidden"
+          onClick={() => setIsMobileOpen((current) => !current)}
+          aria-label={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          title={isMobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        >
+          {isMobileOpen ? <HiOutlineX className="h-6 w-6" /> : <HiOutlineMenuAlt3 className="h-6 w-6" />}
+        </button>
       </nav>
 
       {isMobileOpen ? (
-        <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-slate-900/90 backdrop-blur-sm lg:hidden">
-          <div className="mx-auto flex w-full max-w-md flex-col px-6 pb-16 pt-8">
-            <div className="sticky top-0 z-10 -mx-6 mb-6 flex items-center justify-between bg-slate-900/95 px-6 pb-4 pt-1 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm lg:hidden">
+          <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 pt-8">
+            <div className="mb-8 flex items-center justify-between">
               <span className="text-lg font-bold">Navigation</span>
               <button
                 type="button"
@@ -456,7 +293,7 @@ export default function Navbar() {
                             className="block rounded-xl bg-white/15 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20"
                             onClick={() => setIsMobileOpen(false)}
                           >
-                            Open All {item.label}
+                            Open All Educational Resources
                           </Link>
 
                           {item.children.map((child) => (
@@ -508,25 +345,6 @@ export default function Navbar() {
                 {secondaryNavItem.label}
               </Link>
 
-              {canAccessPresentations ? (
-                <>
-                  <Link
-                    href="/client-projects"
-                    className="mt-3 block rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-base font-semibold text-white transition hover:bg-white/20"
-                    onClick={() => setIsMobileOpen(false)}
-                  >
-                    💼 Client Projects
-                  </Link>
-                  <Link
-                    href="/my-presentations"
-                    className="mt-3 block rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-base font-semibold text-white transition hover:bg-white/20"
-                    onClick={() => setIsMobileOpen(false)}
-                  >
-                    My Presentations
-                  </Link>
-                </>
-              ) : null}
-
               {status === 'loading' ? (
                 <div className="mt-3 text-sm text-indigo-100">Loading...</div>
               ) : session ? (
@@ -561,7 +379,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => {
-                    handleNavbarSignIn();
+                    signIn('google');
                     setIsMobileOpen(false);
                   }}
                   className="mt-3 w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20"

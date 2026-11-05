@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
+  HiOutlineSparkles,
   HiOutlineVideoCamera,
   HiOutlineDeviceMobile,
   HiOutlineShare,
@@ -37,6 +38,27 @@ type SoftwareTool = {
 };
 
 const softwaresList: SoftwareTool[] = [
+  {
+    id: 'download-master',
+    title: 'Download Master (DM)',
+    badge: 'v1.0.13 • Official Release',
+    tagline: 'High-Speed All-in-One Android Video & Suno AI Music Downloader',
+    description:
+      'A lightweight, privacy-focused Android application designed to extract HD videos (1080p, 720p) and MP3/M4A audio from Suno AI, TikTok (No Watermark), YouTube, Facebook, Instagram, Twitter/X, and the open web. Features 100% zero login tracking, in-player instant social share, and 1 to 20 concurrent download controls.',
+    status: 'active',
+    href: '/the-master-store',
+    accent: 'from-cyan-600 via-blue-600 to-indigo-600',
+    icon: 'DM',
+    features: [
+      'Suno AI Bulk Multi-Song and Single Track Extractor (MP3, M4A, MP4)',
+      'TikTok HD Video Downloader without Watermark',
+      'YouTube 1080p Full HD, 720p & 320kbps MP3 Extractor',
+      'Built-in In-App Video & Audio Player with 1-Click Instant Share',
+      'User-Controlled Simultaneous Downloads (1 to 20 concurrent limit)',
+      '100% Zero-Knowledge Privacy with optional Google Drive Sync',
+    ],
+    techStack: ['Android Kotlin', 'Jetpack Compose', 'Material 3', 'OkHttp 4', 'ExoPlayer / Media3'],
+  },
   {
     id: 'video-editor-agent',
     title: 'MasterSahib Video Editor (MSVE)',
@@ -109,7 +131,7 @@ export default function SoftwaresHubPage() {
         <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-12 sm:px-6 lg:px-8 lg:pt-16">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700 shadow-sm backdrop-blur">
-              <span>🚀</span>
+              <HiOutlineSparkles className="h-4 w-4 text-indigo-600" />
               MasterSahib Proprietary Applications
             </div>
 
