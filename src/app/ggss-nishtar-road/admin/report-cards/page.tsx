@@ -1895,6 +1895,14 @@ export default function ReportCardsPage() {
           font-weight: 800;
         }
 
+        .rc-year-dash {
+          font-size: 14pt;
+          font-weight: 800;
+          margin: 0 2.5mm;
+          line-height: 1;
+          display: inline-block;
+        }
+
         .rc-year-dots {
           display: inline-flex;
           align-items: flex-end;
@@ -2267,8 +2275,17 @@ export default function ReportCardsPage() {
             background: #ffffff !important;
           }
 
+          header,
+          nav,
+          footer,
+          .navbar,
+          [aria-label="Back to global website"],
+          [class*="NewsTicker"],
+          [class*="Navbar"],
           .no-print {
             display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
           }
 
           .rc-a4-landscape-sheet {

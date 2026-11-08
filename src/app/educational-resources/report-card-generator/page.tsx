@@ -10,11 +10,9 @@ import {
   FiCheckCircle,
   FiAlertTriangle,
   FiImage,
-  FiTrash2,
-  FiPlus,
-  FiCpu,
   FiRefreshCw,
   FiEye,
+  FiSliders,
 } from 'react-icons/fi';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
@@ -23,7 +21,6 @@ import {
   ReportCardFront,
   ReportCardBack,
   REPORT_SUBJECT_ROWS,
-  DEFAULT_SCHOOL_CONFIG,
   type SchoolConfig,
   type ReportCardStudentData,
   type SubjectKey,
@@ -42,12 +39,12 @@ const groupIntoPairs = <T,>(items: T[]): Array<[T, T | null]> => {
 const parseSessionYears = (sessionStr: string): { startSuffix: string; endSuffix: string } => {
   const matches = String(sessionStr || '').match(/\d{2,4}/g);
   if (!matches || matches.length === 0) {
-    return { startSuffix: '25', endSuffix: '26' };
+    return { startSuffix: '26', endSuffix: '27' };
   }
   const toTwoDigit = (val: string) => (val.length >= 2 ? val.slice(-2) : val);
   return {
-    startSuffix: toTwoDigit(matches[0] || '25'),
-    endSuffix: matches[1] ? toTwoDigit(matches[1]) : '26',
+    startSuffix: toTwoDigit(matches[0] || '26'),
+    endSuffix: matches[1] ? toTwoDigit(matches[1]) : '27',
   };
 };
 
@@ -62,23 +59,23 @@ export const TERM_OPTIONS = [
   { id: 'other', label: 'Custom Examination Title', defaultTitle: '' },
 ] as const;
 
-// Preset sample students so teacher sees preview immediately
+// 100% Anonymous generic placeholder demo data
 const INITIAL_DEMO_STUDENTS: ReportCardStudentData[] = [
   {
     rowNumber: '1',
     rollNo: '101',
-    grNo: '4521',
-    name: 'Ayesha Khan',
-    fatherName: 'Muhammad Tariq Khan',
+    grNo: '1001',
+    name: 'Student ABC',
+    fatherName: 'Father ABC',
     studentClass: 'VIII',
     dob: '12-04-2011',
-    address: 'House No. 14, Block 5, Karachi',
-    sessionStartYear: '25',
-    sessionEndYear: '26',
-    sessionFull: '2025-2026',
+    address: 'House 123, Street ABC, City',
+    sessionStartYear: '26',
+    sessionEndYear: '27',
+    sessionFull: '2026-2027',
     examTitle: 'SUMMATIVE ASSESSMENT - 1',
-    examYearSuffix: '25',
-    schoolName: 'Govt. Secondary School',
+    examYearSuffix: '26',
+    schoolName: 'ABC Model High School',
     subjects: {
       english: { maxMarks: '100', marksObtained: '84' },
       urdu: { maxMarks: '100', marksObtained: '88' },
@@ -104,18 +101,18 @@ const INITIAL_DEMO_STUDENTS: ReportCardStudentData[] = [
   {
     rowNumber: '2',
     rollNo: '102',
-    grNo: '4522',
-    name: 'Fatima Zahra',
-    fatherName: 'Syed Ali Raza',
+    grNo: '1002',
+    name: 'Student XYZ',
+    fatherName: 'Father XYZ',
     studentClass: 'VIII',
     dob: '05-09-2011',
-    address: 'Flat B-3, Nishtar Road, Karachi',
-    sessionStartYear: '25',
-    sessionEndYear: '26',
-    sessionFull: '2025-2026',
+    address: 'Apartment 456, Block XYZ, City',
+    sessionStartYear: '26',
+    sessionEndYear: '27',
+    sessionFull: '2026-2027',
     examTitle: 'SUMMATIVE ASSESSMENT - 1',
-    examYearSuffix: '25',
-    schoolName: 'Govt. Secondary School',
+    examYearSuffix: '26',
+    schoolName: 'ABC Model High School',
     subjects: {
       english: { maxMarks: '100', marksObtained: '76' },
       urdu: { maxMarks: '100', marksObtained: '81' },
@@ -145,16 +142,23 @@ export default function ReportCardGeneratorPage() {
   const [activeTab, setActiveTab] = useState<'excel' | 'ai_scan' | 'settings'>('excel');
 
   // School configuration
-  const [schoolName, setSchoolName] = useState<string>('Govt. Secondary School');
+  const [schoolName, setSchoolName] = useState<string>('ABC Model High School');
   const [schoolLogo, setSchoolLogo] = useState<string>('/images/pakistan_quarter_logo.png');
   const [headSignTitle, setHeadSignTitle] = useState<string>('Sign. of Head Master / Mistress');
 
   // Global Session and Exam parameters
-  const [sessionLabel, setSessionLabel] = useState<string>('2025-2026');
+  const [sessionLabel, setSessionLabel] = useState<string>('2026-2027');
   const [selectedTermId, setSelectedTermId] = useState<string>('summative_one');
   const [examTitle, setExamTitle] = useState<string>('SUMMATIVE ASSESSMENT - 1');
-  const [customTermText, setCustomTermText] = useState<string>('');
-  const [examYearSuffix, setExamYearSuffix] = useState<string>('25');
+  const [examYearSuffix, setExamYearSuffix] = useState<string>('26');
+
+  // Max Marks Configuration
+  const [defaultMaxMarks, setDefaultMaxMarks] = useState<string>('100');
+  const [customSubjectMaxMarks, setCustomSubjectMaxMarks] = useState<Partial<Record<SubjectKey, string>>>({
+    islamiat_oral: '40',
+    islamiat_written: '60',
+  });
+  const [showSubjectMaxConfig, setShowSubjectMaxConfig] = useState<boolean>(false);
 
   // Print controls
   const [mirrorBackForDuplex, setMirrorBackForDuplex] = useState<boolean>(true);
@@ -164,9 +168,6 @@ export default function ReportCardGeneratorPage() {
 
   // States
   const [isScanning, setIsScanning] = useState<boolean>(false);
-  const [scanFilePreview, setScanFilePreview] = useState<string>('');
-  const [scanFileMime, setScanFileMime] = useState<string>('');
-  const [additionalScanNotes, setAdditionalScanNotes] = useState<string>('');
   const [pdfGenerating, setPdfGenerating] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -184,36 +185,13 @@ export default function ReportCardGeneratorPage() {
     [schoolName, schoolLogo, headSignTitle],
   );
 
-  // Filter selected cards for printing
-  const cardsToPrint: ReportCardStudentData[] = useMemo(() => {
-    const list = students.filter((s) => selectedRowNumbers.has(s.rowNumber));
-    if (list.length > 0) return list;
-    return students;
-  }, [students, selectedRowNumbers]);
-
-  const cardPairs = useMemo(() => groupIntoPairs(cardsToPrint), [cardsToPrint]);
-
-  // Handle Logo Upload
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setErrorMessage('Please select a valid image file (PNG, JPG, SVG, WebP).');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      setSchoolLogo(result);
-      setStatusMessage('School logo uploaded successfully!');
-      setErrorMessage('');
-    };
-    reader.onerror = () => {
-      setErrorMessage('Failed to read image file.');
-    };
-    reader.readAsDataURL(file);
+  // Helper to determine Max Marks for a specific subject
+  const getSubjectMaxMarks = (key: SubjectKey, baseVal = defaultMaxMarks): string => {
+    if (customSubjectMaxMarks[key]) return customSubjectMaxMarks[key]!;
+    const base = parseFloat(baseVal) || 100;
+    if (key === 'islamiat_oral') return String(Math.round(base * 0.4));
+    if (key === 'islamiat_written') return String(Math.round(base * 0.6));
+    return String(base);
   };
 
   // Helper to calculate total, percentage, grade
@@ -259,12 +237,90 @@ export default function ReportCardGeneratorPage() {
     };
   };
 
+  // Handler for changing default max marks
+  const handleMaxMarksChange = (newVal: string) => {
+    setDefaultMaxMarks(newVal);
+    const base = parseFloat(newVal) || 100;
+    const nextCustom = {
+      ...customSubjectMaxMarks,
+      islamiat_oral: String(Math.round(base * 0.4)),
+      islamiat_written: String(Math.round(base * 0.6)),
+    };
+    setCustomSubjectMaxMarks(nextCustom);
+
+    // Update all student records dynamically with the new Max Marks
+    setStudents((prev) =>
+      prev.map((st) => {
+        const nextSubjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>> = {};
+        Object.entries(st.subjects).forEach(([k, score]) => {
+          if (!score) return;
+          const key = k as SubjectKey;
+          let subMax = String(base);
+          if (nextCustom[key]) {
+            subMax = nextCustom[key]!;
+          } else if (key === 'islamiat_total') {
+            const oral = parseFloat(nextCustom['islamiat_oral'] || String(Math.round(base * 0.4))) || 0;
+            const written = parseFloat(nextCustom['islamiat_written'] || String(Math.round(base * 0.6))) || 0;
+            subMax = String(oral + written);
+          }
+          nextSubjects[key] = {
+            maxMarks: subMax,
+            marksObtained: score.marksObtained,
+          };
+        });
+
+        const stats = computeStudentStats(nextSubjects);
+        return {
+          ...st,
+          subjects: nextSubjects,
+          grandTotalMax: stats.grandTotalMax,
+          grandTotalObtained: stats.grandTotalObtained,
+          percentage: stats.percentage,
+          grade: stats.grade,
+          result: stats.result,
+        };
+      }),
+    );
+  };
+
+  // Filter selected cards for printing
+  const cardsToPrint: ReportCardStudentData[] = useMemo(() => {
+    const list = students.filter((s) => selectedRowNumbers.has(s.rowNumber));
+    if (list.length > 0) return list;
+    return students;
+  }, [students, selectedRowNumbers]);
+
+  const cardPairs = useMemo(() => groupIntoPairs(cardsToPrint), [cardsToPrint]);
+
+  // Handle Logo Upload
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setErrorMessage('Please select a valid image file (PNG, JPG, SVG, WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setSchoolLogo(result);
+      setStatusMessage('School logo uploaded successfully!');
+      setErrorMessage('');
+    };
+    reader.onerror = () => {
+      setErrorMessage('Failed to read image file.');
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Handle Excel / CSV File Upload
   const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setStatusMessage('Reading Excel file...');
+    setStatusMessage('Reading spreadsheet...');
     setErrorMessage('');
 
     try {
@@ -275,7 +331,7 @@ export default function ReportCardGeneratorPage() {
       const rows: Record<string, any>[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
       if (!rows.length) {
-        throw new Error('Excel sheet appears to be empty. Please check your file.');
+        throw new Error('Spreadsheet appears to be empty. Please check your file.');
       }
 
       // Check if School Name column exists in Excel
@@ -304,7 +360,6 @@ export default function ReportCardGeneratorPage() {
 
         const rowSession = String(row['Session'] || row['Academic Year'] || sessionLabel).trim();
         const parsedYears = parseSessionYears(rowSession);
-
         const rowExam = String(row['Exam'] || row['Exam Title'] || examTitle).trim();
 
         // Extract marks
@@ -319,49 +374,49 @@ export default function ReportCardGeneratorPage() {
           return '';
         };
 
-        const addSubj = (key: SubjectKey, max: string, ...colNames: string[]) => {
+        const addSubj = (key: SubjectKey, ...colNames: string[]) => {
           const val = getVal(...colNames);
           if (val !== '') {
-            subjects[key] = { maxMarks: max, marksObtained: val };
+            subjects[key] = {
+              maxMarks: getSubjectMaxMarks(key),
+              marksObtained: val,
+            };
           }
         };
 
-        addSubj('english', '100', 'English', 'ENG', 'Eng', 'English Marks');
-        addSubj('urdu', '100', 'Urdu', 'URD', 'Urdu Marks');
-        addSubj('social_pak_studies', '100', 'Social Studies', 'Pak Studies', 'S. Studies', 'Mutala-e-Pakistan', 'P.S');
-        addSubj('sindhi', '100', 'Sindhi', 'SIN', 'Asan Sindhi', 'Saleem Sindhi');
+        addSubj('english', 'English', 'ENG', 'Eng', 'English Marks');
+        addSubj('urdu', 'Urdu', 'URD', 'Urdu Marks');
+        addSubj('social_pak_studies', 'Social Studies', 'Pak Studies', 'S. Studies', 'Mutala-e-Pakistan', 'P.S');
+        addSubj('sindhi', 'Sindhi', 'SIN', 'Asan Sindhi', 'Saleem Sindhi');
 
         // Islamiat oral & written
         const oral = getVal('Islamiat Oral', 'Islamiat Nazra', 'Nazra', 'Oral');
         const written = getVal('Islamiat Written', 'Written', 'Islamiat T');
         const totalIsl = getVal('Islamiat', 'Islamiat Total', 'ISL');
 
+        const oralMax = getSubjectMaxMarks('islamiat_oral');
+        const writtenMax = getSubjectMaxMarks('islamiat_written');
+        const totalIslMax = getSubjectMaxMarks('islamiat_total');
+
         if (oral !== '' || written !== '') {
-          if (oral !== '') subjects.islamiat_oral = { maxMarks: '40', marksObtained: oral };
-          if (written !== '') subjects.islamiat_written = { maxMarks: '60', marksObtained: written };
+          if (oral !== '') subjects.islamiat_oral = { maxMarks: oralMax, marksObtained: oral };
+          if (written !== '') subjects.islamiat_written = { maxMarks: writtenMax, marksObtained: written };
           const sumIsl = (parseFloat(oral || '0') + parseFloat(written || '0')).toString();
-          subjects.islamiat_total = { maxMarks: '100', marksObtained: totalIsl || sumIsl };
+          subjects.islamiat_total = { maxMarks: totalIslMax, marksObtained: totalIsl || sumIsl };
         } else if (totalIsl !== '') {
-          subjects.islamiat_total = { maxMarks: '100', marksObtained: totalIsl };
+          subjects.islamiat_total = { maxMarks: totalIslMax, marksObtained: totalIsl };
         }
 
-        addSubj('g_science', '100', 'General Science', 'Science', 'G. Science', 'Sci');
-        addSubj('mathematics', '100', 'Mathematics', 'Maths', 'Math', 'MTH', 'Hisaab');
-        addSubj('h_economics', '100', 'Home Economics', 'H. Economics', 'H.Econ');
-        addSubj('arabic_drawing', '100', 'Arabic', 'Drawing', 'Art', 'Arabic / Drawing');
-        addSubj('biology_computer', '100', 'Biology', 'Computer', 'Biology/Computer', 'CS', 'Bio');
-        addSubj('physics', '100', 'Physics', 'Phy');
-        addSubj('chemistry', '100', 'Chemistry', 'Chem');
+        addSubj('g_science', 'General Science', 'Science', 'G. Science', 'Sci');
+        addSubj('mathematics', 'Mathematics', 'Maths', 'Math', 'MTH', 'Hisaab');
+        addSubj('h_economics', 'Home Economics', 'H. Economics', 'H.Econ');
+        addSubj('arabic_drawing', 'Arabic', 'Drawing', 'Art', 'Arabic / Drawing');
+        addSubj('biology_computer', 'Biology', 'Computer', 'Biology/Computer', 'CS', 'Bio');
+        addSubj('physics', 'Physics', 'Phy');
+        addSubj('chemistry', 'Chemistry', 'Chem');
 
         // Stats calculation
         const stats = computeStudentStats(subjects);
-
-        const customGrandTotalMax = getVal('Total Marks', 'Grand Total Max', 'Max Marks');
-        const customGrandTotalObt = getVal('Obtained Marks', 'Marks Obtained', 'Grand Total Obtained');
-        const customPct = getVal('Percentage', 'Pct');
-        const customGrade = getVal('Grade');
-        const customRank = getVal('Rank', 'Position');
-        const customResult = getVal('Result');
 
         return {
           rowNumber: String(index + 1),
@@ -379,12 +434,12 @@ export default function ReportCardGeneratorPage() {
           examYearSuffix: parsedYears.startSuffix || examYearSuffix,
           schoolName: String(rowSchool || '').trim(),
           subjects,
-          grandTotalMax: customGrandTotalMax || stats.grandTotalMax,
-          grandTotalObtained: customGrandTotalObt || stats.grandTotalObtained,
-          percentage: customPct || stats.percentage,
-          grade: customGrade || stats.grade,
-          rank: customRank || `${index + 1}${index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th'}`,
-          result: customResult || stats.result,
+          grandTotalMax: stats.grandTotalMax,
+          grandTotalObtained: stats.grandTotalObtained,
+          percentage: stats.percentage,
+          grade: stats.grade,
+          rank: `${index + 1}${index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th'}`,
+          result: stats.result,
           attendance: String(getVal('Attendance') || '95%'),
           conduct: String(getVal('Conduct') || 'Good'),
         };
@@ -392,27 +447,27 @@ export default function ReportCardGeneratorPage() {
 
       setStudents(parsedStudents);
       setSelectedRowNumbers(new Set(parsedStudents.map((s) => s.rowNumber)));
-      setStatusMessage(`Successfully loaded ${parsedStudents.length} students from Excel file!`);
+      setStatusMessage(`Successfully loaded ${parsedStudents.length} student records from spreadsheet.`);
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Error reading Excel file.');
+      setErrorMessage(err instanceof Error ? err.message : 'Error reading spreadsheet.');
     } finally {
       if (excelInputRef.current) excelInputRef.current.value = '';
     }
   };
 
-  // Download Sample Excel Template
+  // Download Sample Excel Template with 100% Anonymous Dummy Placeholders
   const handleDownloadSampleExcel = () => {
     const sampleData = [
       {
-        'School Name': schoolName || 'Govt. Secondary School',
-        'Roll No': '1',
-        'GR No': '5001',
-        'Student Name': 'Fatima Ali',
-        "Father's Name": 'Muhammad Ali',
+        'School Name': schoolName || 'ABC High School',
+        'Roll No': '101',
+        'GR No': '1001',
+        'Student Name': 'Student ABC',
+        "Father's Name": 'Father ABC',
         Class: 'VIII',
         'Date of Birth': '15-05-2011',
-        Address: 'House 12, Nishtar Road, Karachi',
-        Session: '2025-2026',
+        Address: 'Address 123, Area ABC, City',
+        Session: '2026-2027',
         Exam: 'SUMMATIVE ASSESSMENT - 1',
         English: 85,
         Urdu: 88,
@@ -426,15 +481,15 @@ export default function ReportCardGeneratorPage() {
         Conduct: 'Excellent',
       },
       {
-        'School Name': schoolName || 'Govt. Secondary School',
-        'Roll No': '2',
-        'GR No': '5002',
-        'Student Name': 'Zainab Ahmed',
-        "Father's Name": 'Ahmed Raza',
+        'School Name': schoolName || 'ABC High School',
+        'Roll No': '102',
+        'GR No': '1002',
+        'Student Name': 'Student XYZ',
+        "Father's Name": 'Father XYZ',
         Class: 'VIII',
         'Date of Birth': '20-08-2011',
-        Address: 'Flat 4B, Block 3, Garden, Karachi',
-        Session: '2025-2026',
+        Address: 'Address 456, Area XYZ, City',
+        Session: '2026-2027',
         Exam: 'SUMMATIVE ASSESSMENT - 1',
         English: 78,
         Urdu: 82,
@@ -448,15 +503,15 @@ export default function ReportCardGeneratorPage() {
         Conduct: 'Good',
       },
       {
-        'School Name': schoolName || 'Govt. Secondary School',
-        'Roll No': '3',
-        'GR No': '5003',
-        'Student Name': 'Maryam Khan',
-        "Father's Name": 'Tariq Khan',
+        'School Name': schoolName || 'ABC High School',
+        'Roll No': '103',
+        'GR No': '1003',
+        'Student Name': 'Student 123',
+        "Father's Name": 'Father 123',
         Class: 'VIII',
         'Date of Birth': '10-01-2012',
-        Address: 'Plot 78, Pakistan Quarter, Karachi',
-        Session: '2025-2026',
+        Address: 'Address 789, Area 123, City',
+        Session: '2026-2027',
         Exam: 'SUMMATIVE ASSESSMENT - 1',
         English: 92,
         Urdu: 90,
@@ -474,10 +529,10 @@ export default function ReportCardGeneratorPage() {
     const ws = XLSX.utils.json_to_sheet(sampleData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Report Card Data');
-    XLSX.writeFile(wb, 'Report_Card_Template_Master_Sahib.xlsx');
+    XLSX.writeFile(wb, 'Report_Card_Template_Sample.xlsx');
   };
 
-  // AI Scanner Handler
+  // Marksheet Scanner Handler
   const handleAiScanUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -491,8 +546,6 @@ export default function ReportCardGeneratorPage() {
       reader.onload = async () => {
         const base64Data = (reader.result as string) || '';
         const mimeType = file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-        setScanFilePreview(base64Data);
-        setScanFileMime(mimeType);
 
         try {
           const res = await fetch('/api/educational-resources/report-card-generator/scan', {
@@ -501,7 +554,6 @@ export default function ReportCardGeneratorPage() {
             body: JSON.stringify({
               fileBase64: base64Data,
               mimeType,
-              additionalNotes: additionalScanNotes,
             }),
           });
 
@@ -526,7 +578,7 @@ export default function ReportCardGeneratorPage() {
             if (st.subjects) {
               Object.entries(st.subjects).forEach(([k, v]: [string, any]) => {
                 subjects[k as SubjectKey] = {
-                  maxMarks: String(v?.maxMarks || '100'),
+                  maxMarks: String(v?.maxMarks || getSubjectMaxMarks(k as SubjectKey)),
                   marksObtained: String(v?.marksObtained ?? ''),
                 };
               });
@@ -574,7 +626,7 @@ export default function ReportCardGeneratorPage() {
       reader.readAsDataURL(file);
     } catch (err) {
       setIsScanning(false);
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to read image.');
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to read document.');
     }
   };
 
@@ -590,6 +642,10 @@ export default function ReportCardGeneratorPage() {
     setErrorMessage('');
 
     try {
+      if (typeof document !== 'undefined' && document.fonts) {
+        await document.fonts.ready;
+      }
+
       const sheets = Array.from(document.querySelectorAll<HTMLElement>('.rc-a4-landscape-sheet'));
       if (!sheets.length) {
         throw new Error('No printable sheets found on the page. Please select at least one student.');
@@ -609,12 +665,13 @@ export default function ReportCardGeneratorPage() {
           scale: 2,
           useCORS: true,
           backgroundColor: '#ffffff',
+          logging: false,
         });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
       }
 
-      const cleanSchool = (schoolName || 'School').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const cleanSchool = (schoolName || 'Report_Cards').replace(/[^a-zA-Z0-9_-]/g, '_');
       pdf.save(`${cleanSchool}_Report_Cards.pdf`);
       setStatusMessage('PDF downloaded successfully!');
     } catch (err) {
@@ -679,6 +736,101 @@ export default function ReportCardGeneratorPage() {
           </div>
         </div>
 
+        {/* Total Marks / Max Marks Configuration Bar */}
+        <div className="mb-4 rounded-2xl bg-white p-4 shadow-sm border border-slate-200">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <FiSliders className="text-indigo-600" size={16} />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                  Exam Total Marks per Subject (Max Marks)
+                </h3>
+              </div>
+              <p className="mt-0.5 text-[11px] text-slate-500">
+                Set total marks for proper percentage and grade calculations (e.g. 100 for Annual, 50 for Mid-Term / Assessment).
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-slate-600">Quick Presets:</span>
+              {[
+                { label: '100 (Standard)', val: '100' },
+                { label: '75', val: '75' },
+                { label: '50 (Assessment)', val: '50' },
+                { label: '25 (Monthly)', val: '25' },
+              ].map((btn) => (
+                <button
+                  key={btn.val}
+                  type="button"
+                  onClick={() => handleMaxMarksChange(btn.val)}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
+                    defaultMaxMarks === btn.val
+                      ? 'bg-indigo-900 text-white shadow-sm'
+                      : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  {btn.label}
+                </button>
+              ))}
+
+              <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 pl-3">
+                <span className="text-xs font-semibold text-slate-600">Custom:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="1000"
+                  value={defaultMaxMarks}
+                  onChange={(e) => handleMaxMarksChange(e.target.value)}
+                  className="w-16 rounded-lg border border-slate-300 px-2 py-1 text-xs font-bold text-center focus:border-indigo-600 focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowSubjectMaxConfig(!showSubjectMaxConfig)}
+                className="ml-2 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition"
+              >
+                {showSubjectMaxConfig ? 'Hide Details' : 'Per-Subject Marks'}
+              </button>
+            </div>
+          </div>
+
+          {/* Collapsible Subject-Wise Detailed Max Marks */}
+          {showSubjectMaxConfig ? (
+            <div className="mt-4 pt-3 border-t border-slate-200">
+              <p className="text-[11px] font-semibold text-slate-600 mb-2">
+                Fine-tune Max Marks for individual subjects if your exam has different marks per paper:
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {REPORT_SUBJECT_ROWS.map((s) => {
+                  const currentVal = customSubjectMaxMarks[s.key] || defaultMaxMarks;
+                  return (
+                    <div key={s.key} className="rounded-lg border border-slate-200 p-2 bg-slate-50">
+                      <label className="block text-[11px] font-bold text-slate-700 truncate mb-1">
+                        {s.label}
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="500"
+                        value={currentVal}
+                        onChange={(e) => {
+                          const updated = {
+                            ...customSubjectMaxMarks,
+                            [s.key]: e.target.value,
+                          };
+                          applyCustomSubjectChange(updated);
+                        }}
+                        className="w-full rounded border border-slate-300 px-2 py-1 text-xs font-bold text-center bg-white"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
         {/* Notifications */}
         {statusMessage ? (
           <div className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs font-semibold text-emerald-800">
@@ -708,7 +860,7 @@ export default function ReportCardGeneratorPage() {
               }`}
             >
               <FiFileText size={15} />
-              <span>Attach Excel / CSV File</span>
+              <span>Attach Spreadsheet (.xlsx / .csv)</span>
             </button>
 
             <button
@@ -743,7 +895,7 @@ export default function ReportCardGeneratorPage() {
             <div className="space-y-4">
               <div className="rounded-xl border-2 border-dashed border-indigo-200 bg-indigo-50/50 p-6 text-center">
                 <FiUploadCloud size={36} className="mx-auto text-indigo-600 mb-2" />
-                <h3 className="text-sm font-bold text-slate-800">Attach Student Marks Excel File (.xlsx / .csv)</h3>
+                <h3 className="text-sm font-bold text-slate-800">Attach Student Marks Spreadsheet (.xlsx / .csv)</h3>
                 <p className="mt-1 text-xs text-slate-500 max-w-lg mx-auto">
                   Select your spreadsheet (.xlsx or .csv) containing student information and subject marks.
                 </p>
@@ -751,7 +903,7 @@ export default function ReportCardGeneratorPage() {
                 <div className="mt-4 flex flex-wrap justify-center items-center gap-3">
                   <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow hover:bg-indigo-700 transition">
                     <FiUploadCloud size={16} />
-                    <span>Select Excel / CSV File</span>
+                    <span>Select Spreadsheet File</span>
                     <input
                       ref={excelInputRef}
                       type="file"
@@ -774,11 +926,11 @@ export default function ReportCardGeneratorPage() {
             </div>
           ) : null}
 
-          {/* TAB 2: AI BRAIN SCAN */}
+          {/* TAB 2: MARKSHEET SCAN */}
           {activeTab === 'ai_scan' ? (
             <div className="space-y-4">
               <div className="rounded-xl border-2 border-dashed border-purple-200 bg-purple-50/40 p-6 text-center">
-                <FiCpu size={36} className="mx-auto text-purple-600 mb-2" />
+                <FiImage size={36} className="mx-auto text-purple-600 mb-2" />
                 <h3 className="text-sm font-bold text-slate-800">Scan Marksheet or Award List (Photo or PDF)</h3>
                 <p className="mt-1 text-xs text-slate-500 max-w-lg mx-auto">
                   Upload a photo or scanned copy of your handwritten or printed marksheet, gazette, or award list.
@@ -817,7 +969,7 @@ export default function ReportCardGeneratorPage() {
                   type="text"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder="e.g. Govt. Girls Secondary School"
+                  placeholder="e.g. ABC Model High School"
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-medium focus:border-indigo-600 focus:outline-none"
                 />
                 <span className="text-[10px] text-slate-500">Auto-detected from sheet or enter manually</span>
@@ -833,7 +985,7 @@ export default function ReportCardGeneratorPage() {
                     const { startSuffix } = parseSessionYears(e.target.value);
                     if (startSuffix) setExamYearSuffix(startSuffix);
                   }}
-                  placeholder="e.g. 2025-2026"
+                  placeholder="e.g. 2026-2027"
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-medium focus:border-indigo-600 focus:outline-none"
                 />
               </div>
@@ -884,7 +1036,7 @@ export default function ReportCardGeneratorPage() {
 
               <div className="md:col-span-2 flex items-center gap-3">
                 <div className="h-12 w-12 rounded-full border border-slate-300 overflow-hidden bg-slate-50 flex items-center justify-center shrink-0">
-                                    <img src={schoolLogo} alt="Logo" className="h-full w-full object-contain" />
+                  <img src={schoolLogo} alt="Logo" className="h-full w-full object-contain" />
                 </div>
                 <div className="flex-1">
                   <label className="block text-xs font-bold text-slate-700 mb-1">School Logo</label>
@@ -907,7 +1059,7 @@ export default function ReportCardGeneratorPage() {
           {/* Bottom Bar: Cards summary & duplex toggle */}
           <div className="mt-4 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-700">Total Students Loaded:</span>
+              <span className="font-bold text-slate-700">Total Students:</span>
               <span className="rounded-md bg-indigo-100 px-2.5 py-0.5 font-bold text-indigo-900">
                 {students.length}
               </span>
@@ -936,7 +1088,7 @@ export default function ReportCardGeneratorPage() {
         <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm border border-slate-200">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-              Students Selection for Printing ({cardsToPrint.length} of {students.length} Selected)
+              Select Students to Print ({cardsToPrint.length} of {students.length} Selected)
             </h3>
             <div className="flex items-center gap-2">
               <button
@@ -1074,6 +1226,8 @@ export default function ReportCardGeneratorPage() {
 
       {/* ===================== Print & Card CSS ===================== */}
       <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap');
+
         .rc-a4-landscape-sheet {
           position: relative;
           width: 297mm;
@@ -1152,7 +1306,7 @@ export default function ReportCardGeneratorPage() {
           align-items: center;
           justify-content: center;
           width: 100%;
-          padding-top: 2mm;
+          padding-top: 1.5mm;
           margin-bottom: 1mm;
         }
 
@@ -1183,56 +1337,76 @@ export default function ReportCardGeneratorPage() {
         .rc-badge-wrap {
           display: flex;
           justify-content: center;
+          align-items: center;
           width: 100%;
-          margin: 1.5mm 0;
+          margin: 1.5mm 0 2mm 0;
         }
 
         .rc-progress-pill {
-          border: 1.2px solid #000000;
+          border: 1.4px solid #000000;
           border-radius: 999px;
-          padding: 1.8mm 7mm 2.2mm 7mm;
+          height: 11mm;
+          min-height: 11mm;
+          padding: 0 8mm;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           background: #ffffff;
+          box-sizing: border-box;
+          overflow: hidden;
         }
 
         .rc-blackletter-text {
           font-family: 'UnifrakturMaguntia', 'Old English Text MT', 'Engravers Old English BT', Georgia, serif;
-          font-size: 20pt;
+          font-size: 19pt;
           font-weight: 400;
           line-height: 1;
           color: #000000;
+          display: inline-block;
+          vertical-align: middle;
+          margin-top: -1.2mm;
           letter-spacing: 0.5px;
         }
 
         .rc-session-year-row {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           justify-content: center;
-          font-size: 13.5pt;
+          font-size: 13pt;
           font-weight: 800;
           color: #000000;
-          margin: 1mm 0 2mm 0;
+          margin: 1.8mm 0 2.2mm 0;
+          line-height: 1;
         }
 
         .rc-year-prefix {
           font-weight: 800;
+          line-height: 1;
+          display: inline-block;
         }
 
         .rc-year-dots {
           display: inline-flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: center;
-          min-width: 18mm;
+          min-width: 16mm;
+          height: 5.5mm;
           border-bottom: 1.5px dotted #000000;
           text-align: center;
-          font-size: 12pt;
+          font-size: 11.5pt;
           font-weight: 700;
-          padding: 0 1mm 1.5mm 1mm;
-          margin-right: 1.5mm;
-          line-height: 1.1;
+          padding: 0 1mm;
+          margin: 0 1.5mm 0 1mm;
+          line-height: 1;
           box-sizing: border-box;
+        }
+
+        .rc-year-dash {
+          font-size: 14pt;
+          font-weight: 800;
+          margin: 0 2.5mm;
+          line-height: 1;
+          display: inline-block;
         }
 
         .rc-front-fields {
@@ -1252,11 +1426,11 @@ export default function ReportCardGeneratorPage() {
 
         .rc-field-line {
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           gap: 2mm;
           width: 100%;
-          min-height: 6.5mm;
-          margin-bottom: 0.5mm;
+          min-height: 6.8mm;
+          margin-bottom: 0.6mm;
         }
 
         .rc-field-label {
@@ -1264,7 +1438,8 @@ export default function ReportCardGeneratorPage() {
           font-weight: 700;
           color: #000000;
           white-space: nowrap;
-          padding-bottom: 1.6mm;
+          padding-bottom: 0;
+          line-height: 1;
         }
 
         .rc-field-value {
@@ -1274,11 +1449,12 @@ export default function ReportCardGeneratorPage() {
           font-weight: 700;
           color: #000000;
           text-align: center;
-          min-height: 5.4mm;
-          line-height: 1.1;
-          padding: 0 1.5mm 1.6mm 1.5mm;
+          min-height: 5.5mm;
+          height: 5.5mm;
+          line-height: 1;
+          padding: 0 1.5mm;
           display: inline-flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: center;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -1299,14 +1475,14 @@ export default function ReportCardGeneratorPage() {
         .rc-back-top-row {
           display: flex;
           justify-content: space-between;
-          align-items: baseline;
+          align-items: center;
           width: 100%;
           margin-bottom: 1.8mm;
         }
 
         .rc-back-top-field {
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           gap: 1.5mm;
           min-height: 5.5mm;
         }
@@ -1316,7 +1492,7 @@ export default function ReportCardGeneratorPage() {
           font-weight: 700;
           color: #000000;
           white-space: nowrap;
-          padding-bottom: 1.5mm;
+          line-height: 1;
         }
 
         .rc-back-top-val {
@@ -1326,11 +1502,13 @@ export default function ReportCardGeneratorPage() {
           font-weight: 700;
           text-align: center;
           min-height: 5mm;
-          padding: 0 1.5mm 1.5mm 1.5mm;
+          height: 5mm;
+          padding: 0 1.5mm;
           display: inline-flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: center;
           box-sizing: border-box;
+          line-height: 1;
         }
 
         .rc-table-wrapper {
@@ -1552,7 +1730,7 @@ export default function ReportCardGeneratorPage() {
 
         .rc-footer-line {
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           gap: 1.5mm;
           width: 100%;
           min-height: 6mm;
@@ -1563,20 +1741,22 @@ export default function ReportCardGeneratorPage() {
           font-weight: 800;
           color: #000000;
           white-space: nowrap;
-          padding-bottom: 1.5mm;
+          line-height: 1;
         }
 
         .rc-footer-val {
           flex: 1;
           border-bottom: 1.2px solid #000000;
           min-height: 5mm;
+          height: 5mm;
           font-size: 9pt;
           font-weight: 700;
-          padding: 0 1.5mm 1.5mm 1.5mm;
+          padding: 0 1.5mm;
           display: inline-flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: center;
           box-sizing: border-box;
+          line-height: 1;
         }
 
         @media print {
@@ -1592,8 +1772,18 @@ export default function ReportCardGeneratorPage() {
             background: #ffffff !important;
           }
 
+          /* Hide global navbar, news ticker, floating back button, footers, headers during print */
+          header,
+          nav,
+          footer,
+          .navbar,
+          [aria-label="Back to global website"],
+          [class*="NewsTicker"],
+          [class*="Navbar"],
           .no-print {
             display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
           }
 
           .rc-print-container {
@@ -1612,4 +1802,32 @@ export default function ReportCardGeneratorPage() {
       `}</style>
     </main>
   );
+
+  function applyCustomSubjectChange(updated: Record<string, string>) {
+    setCustomSubjectMaxMarks(updated);
+    setStudents((prev) =>
+      prev.map((st) => {
+        const nextSubjects = { ...st.subjects };
+        Object.entries(nextSubjects).forEach(([k, score]) => {
+          if (!score) return;
+          const key = k as SubjectKey;
+          const subMax = updated[key] || defaultMaxMarks;
+          nextSubjects[key] = {
+            maxMarks: subMax,
+            marksObtained: score.marksObtained,
+          };
+        });
+        const stats = computeStudentStats(nextSubjects);
+        return {
+          ...st,
+          subjects: nextSubjects,
+          grandTotalMax: stats.grandTotalMax,
+          grandTotalObtained: stats.grandTotalObtained,
+          percentage: stats.percentage,
+          grade: stats.grade,
+          result: stats.result,
+        };
+      }),
+    );
+  }
 }
