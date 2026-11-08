@@ -59,24 +59,24 @@ html {
 }
 
 :root {
-  /* Centralized Theme: Sober, Light & Cool ("thandy thandy") Weekly Palette */
-  --ms-bg-main: #f7fdf7;
+  /* Centralized Theme: Graphite Palette (#C1C0C2, #F5E9E7, #837D68, #8A9DB1, #ECC5C6) */
+  --ms-bg-main: #F5E9E7;
   --ms-bg-card: #ffffff;
-  --ms-bg-card-muted: #f0fbf0;
-  --ms-border: #88E788;
-  --ms-text-primary: #0f172a;
-  --ms-text-secondary: #334155;
+  --ms-bg-card-muted: #ECC5C6;
+  --ms-border: #C1C0C2;
+  --ms-text-primary: #1e293b;
+  --ms-text-secondary: #837D68;
   --ms-text-muted: #64748b;
-  --ms-primary: #88E788;
-  --ms-primary-hover: #B788E7;
-  --ms-primary-light: #e8fbe8;
+  --ms-primary: #837D68;
+  --ms-primary-hover: #8A9DB1;
+  --ms-primary-light: #F5E9E7;
   --ms-primary-text: #0f172a;
-  --ms-secondary: #E788B8;
-  --ms-accent-from: #88E788;
-  --ms-accent-via: #B788E7;
-  --ms-accent-to: #E788B8;
-  --ms-badge-bg: #ffffff;
-  --ms-badge-text: #0f172a;
+  --ms-secondary: #ECC5C6;
+  --ms-accent-from: #837D68;
+  --ms-accent-via: #8A9DB1;
+  --ms-accent-to: #ECC5C6;
+  --ms-badge-bg: #F5E9E7;
+  --ms-badge-text: #837D68;
 }
 
 html.dark {

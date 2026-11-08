@@ -51,8 +51,8 @@ export default function GgssNishtarRoadLandingPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { data: session } = useSession();
-  const isSchoolAdmin = session?.user?.email?.toLowerCase() === SCHOOL_ADMIN_EMAIL;
+  const { data: session, status } = useSession();
+  const isSchoolAdmin = status === 'authenticated' && session?.user?.email?.trim().toLowerCase() === SCHOOL_ADMIN_EMAIL;
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [noticesLoading, setNoticesLoading] = useState(true);
   const [faculty, setFaculty] = useState<FacultyItem[]>([]);
@@ -68,10 +68,10 @@ export default function GgssNishtarRoadLandingPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!form.name.trim()) errs.name = 'Name darj karein';
-    if (!form.phone.trim()) errs.phone = 'Phone number darj karein';
-    else if (!/^[0-9+\-\s]{10,15}$/.test(form.phone.trim())) errs.phone = 'Durust phone number darj karein (e.g. 03001234567)';
-    if (!form.message.trim()) errs.message = 'Message darj karein';
+    if (!form.name.trim()) errs.name = 'Please enter your full name';
+    if (!form.phone.trim()) errs.phone = 'Please enter your phone number';
+    else if (!/^[0-9+\-\s]{10,15}$/.test(form.phone.trim())) errs.phone = 'Please enter a valid phone number (e.g. 03001234567)';
+    if (!form.message.trim()) errs.message = 'Please enter your message';
     return errs;
   };
 
@@ -159,22 +159,7 @@ export default function GgssNishtarRoadLandingPage() {
           .faculty-track-left { animation-duration: 22s; }
           .faculty-track-right { animation-duration: 26s; }
         }
-        @media (prefers-reduced-motion: reduce) {
-          .faculty-track-left, .faculty-track-right { animation: none; }
-        }
       `}</style>
-
-      {/* TOP HEADER BAR */}
-      <div style={{ backgroundColor: '#1a3a6b', borderBottom: '3px solid #c8a96e' }} className="px-4 py-2">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <p style={{ color: '#c8a96e', fontSize: '11px', letterSpacing: '0.05em' }} className="font-semibold uppercase hidden sm:block">
-            Government of Sindh · Education Department
-          </p>
-          <p style={{ color: '#c8a96e', fontSize: '11px' }} className="font-semibold sm:hidden">
-            Govt of Sindh · Education Dept
-          </p>
-        </div>
-      </div>
 
       {/* STICKY NAVBAR */}
       <nav style={{ backgroundColor: '#fff', borderBottom: '1px solid #dce3ec', boxShadow: '0 2px 10px rgba(0,0,0,0.08)', position: 'sticky', top: 0, zIndex: 50 }}>
@@ -514,7 +499,7 @@ export default function GgssNishtarRoadLandingPage() {
                     <label style={{ display: 'block', color: '#374151', fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>Full Name *</label>
                     <input
                       type="text"
-                      placeholder="Apna naam likhein"
+                      placeholder="Enter your full name"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       style={{ width: '100%', padding: '11px 14px', border: errors.name ? '2px solid #ef4444' : '1px solid #d1d5db', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#1e293b' }}
@@ -535,7 +520,7 @@ export default function GgssNishtarRoadLandingPage() {
                   <div className="mb-6">
                     <label style={{ display: 'block', color: '#374151', fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>Message *</label>
                     <textarea
-                      placeholder="Apna sawal ya message likhein..."
+                      placeholder="Write your question or message here..."
                       rows={5}
                       value={form.message}
                       onChange={(e) => setForm({ ...form, message: e.target.value })}

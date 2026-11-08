@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { createElement, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { LuArrowDownToLine, LuArrowUpRight, LuSearch, LuX, LuPackageOpen, LuCheck } from 'react-icons/lu';
@@ -224,7 +224,7 @@ export default function StoreClient({ items }: { items: StoreItem[] }) {
 }
 
 function StoreCard({ item }: { item: StoreItem }) {
-  const Icon = getStoreIcon(item.icon);
+  const IconComponent = getStoreIcon(item.icon);
   const style = CATEGORY_STYLE[item.category] ?? CATEGORY_STYLE.Utilities;
   const isWebApp = item.kind === 'webapp';
   const size = formatSize(item.sizeBytes);
@@ -243,7 +243,10 @@ function StoreCard({ item }: { item: StoreItem }) {
           className={`relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br text-white ring-1 ring-white/25 transition duration-300 group-hover:scale-105 group-hover:-rotate-3 ${style.tile} ${style.glow}`}
         >
           <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent" />
-          <Icon className="relative h-8 w-8 drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]" aria-hidden />
+          {createElement(IconComponent, {
+            className: 'relative h-8 w-8 drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]',
+            'aria-hidden': true,
+          })}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="line-clamp-2 text-base font-bold leading-snug text-white">{item.title}</h3>

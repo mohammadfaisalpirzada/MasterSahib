@@ -14,7 +14,7 @@ function ghHeaders(): HeadersInit {
 }
 
 async function fetchRelease(owner: string, repo: string, tag: string | null): Promise<Release | null> {
-  const endpoint = tag
+  const endpoint = tag && tag.toLowerCase() !== 'latest'
     ? `https://api.github.com/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`
     : `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
   try {
