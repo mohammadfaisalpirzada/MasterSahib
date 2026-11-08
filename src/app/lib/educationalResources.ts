@@ -13,6 +13,17 @@ export type EducationalResourceItem = {
 
 export const educationalResourceItems: EducationalResourceItem[] = [
   {
+    title: 'Report Card Generator',
+    description: 'Generate authentic school progress report cards from Excel or AI marksheet scan with print and PDF export.',
+    status: 'Ready',
+    href: '/educational-resources/report-card-generator',
+    addedOn: '2026-05-01',
+    ageGroup: 'general',
+    category: 'teachers',
+    icon: '📊',
+    color: 'from-blue-600 to-indigo-700',
+  },
+  {
     title: 'Students Age Calculator',
     description: 'Calculate exact student age and view a recommended class instantly.',
     status: 'Ready',
