@@ -101,7 +101,7 @@ export function ReportCardFront({
 }) {
   const [addressLine1, addressLine2] = splitAddressLines(data.address);
   const activeSchool = school || DEFAULT_SCHOOL_CONFIG;
-  const displayName = data.schoolName?.trim() || activeSchool.name?.trim() || '';
+  const displayName = activeSchool.name?.trim() || data.schoolName?.trim() || '';
 
   return (
     <div className="rc-a5-slot">
@@ -273,10 +273,17 @@ export function ReportCardBack({
                   const score = data.subjects[subj.key] || { maxMarks: '', marksObtained: '' };
 
                   if (subj.key === 'islamiat_total') {
-                    const oral = data.subjects.islamiat_oral || { maxMarks: '40', marksObtained: '' };
-                    const written = data.subjects.islamiat_written || { maxMarks: '60', marksObtained: '' };
-                    const oralMarks = oral.marksObtained ? ` (${oral.marksObtained})` : '';
-                    const writtenMarks = written.marksObtained ? ` (${written.marksObtained})` : '';
+                    const oral = data.subjects.islamiat_oral || { maxMarks: '', marksObtained: '' };
+                    const written = data.subjects.islamiat_written || { maxMarks: '', marksObtained: '' };
+                    const hasOral = Boolean(oral.marksObtained && String(oral.marksObtained).trim() !== '' && String(oral.marksObtained).trim() !== '-');
+                    const hasWritten = Boolean(written.marksObtained && String(written.marksObtained).trim() !== '' && String(written.marksObtained).trim() !== '-');
+                    const hasTotal = Boolean(score.marksObtained && String(score.marksObtained).trim() !== '' && String(score.marksObtained).trim() !== '-');
+                    const hasIsl = hasOral || hasWritten || hasTotal;
+
+                    const oralMax = hasIsl ? (oral.maxMarks || '40') : '-';
+                    const writtenMax = hasIsl ? (written.maxMarks || '60') : '-';
+                    const oralMarks = hasOral ? ` (${oral.marksObtained})` : '';
+                    const writtenMarks = hasWritten ? ` (${written.marksObtained})` : '';
 
                     return (
                       <tr key={subj.key} className="rc-subj-row rc-islamiat-row">
@@ -286,17 +293,17 @@ export function ReportCardBack({
                             <div className="rc-islamiat-sub">
                               <div className="rc-islamiat-sub-top">
                                 <span>Nazra / Oral</span>
-                                <span className="rc-islamiat-num">40{oralMarks}</span>
+                                <span className="rc-islamiat-num">{oralMax}{oralMarks}</span>
                               </div>
                               <div className="rc-islamiat-sub-bottom">
                                 <span>Written</span>
-                                <span className="rc-islamiat-num">60{writtenMarks}</span>
+                                <span className="rc-islamiat-num">{writtenMax}{writtenMarks}</span>
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="rc-num-cell">{score.maxMarks || '100'}</td>
-                        <td className="rc-num-cell">{score.marksObtained}</td>
+                        <td className="rc-num-cell">{hasIsl ? (score.maxMarks || '100') : '-'}</td>
+                        <td className="rc-num-cell">{hasIsl ? score.marksObtained : '-'}</td>
                         {idx === 0 ? (
                           <td rowSpan={REPORT_SUBJECT_ROWS.length + 1} className="rc-remarks-merged-cell">
                             <RemarksColumnContent data={data} />
@@ -306,13 +313,15 @@ export function ReportCardBack({
                     );
                   }
 
+                  const hasMarks = Boolean(score.marksObtained && String(score.marksObtained).trim() !== '' && String(score.marksObtained).trim() !== '-');
+
                   return (
                     <tr key={subj.key} className="rc-subj-row">
                       <td className={`rc-subj-name-cell ${subj.compactText ? 'rc-subj-compact' : ''}`}>
                         {subj.label}
                       </td>
-                      <td className="rc-num-cell">{score.maxMarks}</td>
-                      <td className="rc-num-cell">{score.marksObtained}</td>
+                      <td className="rc-num-cell">{hasMarks ? score.maxMarks : '-'}</td>
+                      <td className="rc-num-cell">{hasMarks ? score.marksObtained : '-'}</td>
                       {idx === 0 ? (
                         <td rowSpan={REPORT_SUBJECT_ROWS.length + 1} className="rc-remarks-merged-cell">
                           <RemarksColumnContent data={data} />
