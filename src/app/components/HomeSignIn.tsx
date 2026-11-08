@@ -16,7 +16,8 @@ export default function HomeSignIn() {
       return;
     }
 
-    void signIn('google');
+    const callbackUrl = typeof window !== 'undefined' ? window.location.origin + '/' : '/';
+    void signIn('google', { callbackUrl }, { prompt: 'select_account' });
   };
 
   if (session) {

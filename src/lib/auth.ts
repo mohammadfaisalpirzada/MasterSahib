@@ -13,6 +13,14 @@ const googleDriveProvider = {
   name: 'Owner Google Drive',
 };
 
+const isAllowedHost = (hostname: string) =>
+  hostname === 'themastersahib.com' ||
+  hostname === 'www.themastersahib.com' ||
+  hostname === 'ggssnishtarroad.themastersahib.com' ||
+  hostname.endsWith('.themastersahib.com') ||
+  hostname === 'localhost' ||
+  hostname === '127.0.0.1';
+
 export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
   session: {
@@ -36,6 +44,20 @@ export const authOptions: NextAuthOptions = {
         // non-blocking — login still succeeds even if sheet write fails
       }
       return true;
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`;
+      }
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin === baseUrl || isAllowedHost(parsed.hostname.toLowerCase())) {
+          return url;
+        }
+      } catch {
+        // ignore invalid URL
+      }
+      return baseUrl;
     },
     async session({ session, token }) {
       (session as typeof session & { googleDriveAccessToken?: string }).googleDriveAccessToken =

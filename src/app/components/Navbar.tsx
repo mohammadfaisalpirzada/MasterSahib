@@ -170,7 +170,8 @@ export default function Navbar() {
       return;
     }
 
-    void signIn('google');
+    const callbackUrl = typeof window !== 'undefined' ? window.location.href : safePathname;
+    void signIn('google', { callbackUrl }, { prompt: 'select_account' });
   };
 
   const isLightNav = theme.primaryText !== '#ffffff';
