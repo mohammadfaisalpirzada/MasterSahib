@@ -14,7 +14,7 @@ export type EducationalResourceItem = {
 export const educationalResourceItems: EducationalResourceItem[] = [
   {
     title: 'Report Card Generator',
-    description: 'Generate authentic school progress report cards from Excel or AI marksheet scan with print and PDF export.',
+    description: 'Generate authentic school progress report cards from an Excel spreadsheet or marksheet photo with print and PDF export.',
     status: 'Ready',
     href: '/educational-resources/report-card-generator',
     addedOn: '2026-05-01',

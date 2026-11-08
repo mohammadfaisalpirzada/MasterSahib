@@ -483,7 +483,7 @@ export default function ReportCardGeneratorPage() {
     if (!file) return;
 
     setIsScanning(true);
-    setStatusMessage('AI Brain is reading Result Tabulation Sheet / Marksheet...');
+    setStatusMessage('Reading result sheet...');
     setErrorMessage('');
 
     try {
@@ -507,7 +507,7 @@ export default function ReportCardGeneratorPage() {
 
           const data = await res.json();
           if (!res.ok || !data.success) {
-            throw new Error(data.message || 'AI Scan failed. Please upload a clear photo or PDF.');
+            throw new Error(data.message || 'Unable to scan document. Please ensure the photo or PDF is clear and well-lit.');
           }
 
           if (data.schoolName && String(data.schoolName).trim()) {
@@ -563,9 +563,9 @@ export default function ReportCardGeneratorPage() {
 
           setStudents(converted);
           setSelectedRowNumbers(new Set(converted.map((s) => s.rowNumber)));
-          setStatusMessage(`AI Brain successfully extracted ${converted.length} student records!`);
+          setStatusMessage(`Successfully loaded ${converted.length} student records.`);
         } catch (scanErr) {
-          setErrorMessage(scanErr instanceof Error ? scanErr.message : 'AI Scan failed.');
+          setErrorMessage(scanErr instanceof Error ? scanErr.message : 'Scanning failed. Please try a clearer photo.');
         } finally {
           setIsScanning(false);
         }
@@ -645,14 +645,13 @@ export default function ReportCardGeneratorPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300">
-                Official Report Card Generator
+                The Master Sahib Educational Series
               </p>
               <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
                 Student Progress Report Card Generator
               </h1>
               <p className="mt-1 text-xs text-indigo-200">
-                Generate authentic school report cards from an Excel sheet or AI scan with the official Nishtar Road
-                print layout.
+                Generate authentic, print-ready student progress report cards with duplex printing and PDF export.
               </p>
             </div>
 
@@ -721,8 +720,8 @@ export default function ReportCardGeneratorPage() {
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
-              <FiCpu size={15} />
-              <span>AI Brain Image / PDF Scan</span>
+              <FiImage size={15} />
+              <span>Scan Marksheet (Photo / PDF)</span>
             </button>
 
             <button
@@ -746,8 +745,7 @@ export default function ReportCardGeneratorPage() {
                 <FiUploadCloud size={36} className="mx-auto text-indigo-600 mb-2" />
                 <h3 className="text-sm font-bold text-slate-800">Attach Student Marks Excel File (.xlsx / .csv)</h3>
                 <p className="mt-1 text-xs text-slate-500 max-w-lg mx-auto">
-                  Attach your spreadsheet containing students, subjects, and marks. The tool will automatically extract
-                  the School Name and calculate totals, percentages, and grades.
+                  Select your spreadsheet (.xlsx or .csv) containing student information and subject marks.
                 </p>
 
                 <div className="mt-4 flex flex-wrap justify-center items-center gap-3">
@@ -781,10 +779,9 @@ export default function ReportCardGeneratorPage() {
             <div className="space-y-4">
               <div className="rounded-xl border-2 border-dashed border-purple-200 bg-purple-50/40 p-6 text-center">
                 <FiCpu size={36} className="mx-auto text-purple-600 mb-2" />
-                <h3 className="text-sm font-bold text-slate-800">AI Marksheet Scanner (Image or PDF)</h3>
+                <h3 className="text-sm font-bold text-slate-800">Scan Marksheet or Award List (Photo or PDF)</h3>
                 <p className="mt-1 text-xs text-slate-500 max-w-lg mx-auto">
-                  Take a photo or upload an image / PDF of a handwritten or printed marksheet, gazette, or award list.
-                  The AI Brain will read the marks and generate the report cards automatically.
+                  Upload a photo or scanned copy of your handwritten or printed marksheet, gazette, or award list.
                 </p>
 
                 <div className="mt-4 flex flex-wrap justify-center items-center gap-3">
@@ -804,7 +801,7 @@ export default function ReportCardGeneratorPage() {
                 {isScanning ? (
                   <div className="mt-4 flex items-center justify-center gap-2 text-xs font-bold text-purple-800">
                     <FiRefreshCw className="animate-spin text-purple-600" size={16} />
-                    <span>AI Brain is analyzing the tabulation sheet... Please wait 5-10 seconds.</span>
+                    <span>Scanning marksheet... Please wait a moment.</span>
                   </div>
                 ) : null}
               </div>
@@ -823,7 +820,7 @@ export default function ReportCardGeneratorPage() {
                   placeholder="e.g. Govt. Girls Secondary School"
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-medium focus:border-indigo-600 focus:outline-none"
                 />
-                <span className="text-[10px] text-slate-500">Auto-filled from Excel or AI scan</span>
+                <span className="text-[10px] text-slate-500">Auto-detected from sheet or enter manually</span>
               </div>
 
               <div>
