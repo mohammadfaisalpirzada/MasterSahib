@@ -182,6 +182,7 @@ export default function ReportCardsPage() {
 
   // Live Data Lists
   const [admissionRecords, setAdmissionRecords] = useState<AdmissionRecord[]>([]);
+  const [masterStudents, setMasterStudents] = useState<any[]>([]);
   const [savedResults, setSavedResults] = useState<Record<string, string>[]>([]);
   const [loadingData, setLoadingData] = useState(false);
   const [dataError, setDataError] = useState('');
@@ -305,19 +306,37 @@ export default function ReportCardsPage() {
     void checkSession();
   }, []);
 
-  // Fetch both Admission Forms and Saved Results from Google Sheets
+  // Fetch Master Students (Supabase), Admission Forms and Saved Results
   const refreshAllData = async () => {
     setLoadingData(true);
     setDataError('');
     try {
-      // 1. Fetch Admission Records
-      const admRes = await fetch('/api/ggss-admission-form/records', { cache: 'no-store' });
-      const admData = await parseJsonResponse(admRes);
-      if (admRes.ok && admData.success) {
-        setAdmissionRecords(admData.records || []);
+      // 1. Fetch Master Students from Supabase
+      try {
+        const studRes = await fetch(
+          `/api/students?session=${encodeURIComponent(sessionLabel)}`,
+          { cache: 'no-store' },
+        );
+        const studData = await parseJsonResponse(studRes);
+        if (studRes.ok && studData.success && Array.isArray(studData.students)) {
+          setMasterStudents(studData.students);
+        }
+      } catch (err) {
+        console.warn('Unable to load master students from database:', err);
       }
 
-      // 2. Fetch Results from Google Sheet tab "result card data"
+      // 2. Fetch Admission Records
+      try {
+        const admRes = await fetch('/api/ggss-admission-form/records', { cache: 'no-store' });
+        const admData = await parseJsonResponse(admRes);
+        if (admRes.ok && admData.success) {
+          setAdmissionRecords(admData.records || []);
+        }
+      } catch (err) {
+        console.warn('Unable to load admission records:', err);
+      }
+
+      // 3. Fetch Results from Google Sheet tab "result card data"
       const resRes = await fetch(
         `/api/ggss-report-cards?session=${encodeURIComponent(sessionLabel)}&examTitle=${encodeURIComponent(examTitle)}`,
         { cache: 'no-store' },
@@ -355,9 +374,16 @@ export default function ReportCardsPage() {
     persistPreferences(sessionLabel, termId, resolvedTitle, examYearSuffix, classFilter);
   };
 
-  // Merge Saved Results with Admission biodata
+  // Merge Saved Results with Master Database & Admission biodata
   const combinedReportCards: ReportCardStudentData[] = useMemo(() => {
     const { startSuffix, endSuffix } = parseSessionYears(sessionLabel);
+
+    const masterByGr = new Map<string, any>();
+    const masterByName = new Map<string, any>();
+    masterStudents.forEach((m) => {
+      if (m.grNo) masterByGr.set(m.grNo.trim().toLowerCase(), m);
+      if (m.name) masterByName.set(m.name.trim().toLowerCase(), m);
+    });
 
     const admByGr = new Map<string, AdmissionRecord>();
     const admByName = new Map<string, AdmissionRecord>();
@@ -370,6 +396,7 @@ export default function ReportCardsPage() {
       return savedResults.map((row, idx) => {
         const gr = row.gr_no || '';
         const name = row.student_name || '';
+        const matchedMaster = masterByGr.get(gr.trim().toLowerCase()) || masterByName.get(name.trim().toLowerCase());
         const matchedAdm = admByGr.get(gr.trim().toLowerCase()) || admByName.get(name.trim().toLowerCase());
 
         const subjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>> = {};
@@ -402,13 +429,13 @@ export default function ReportCardsPage() {
 
         return {
           rowNumber: row.row_number || String(idx + 2),
-          rollNo: row.roll_no || matchedAdm?.roll_no || '',
-          grNo: gr || matchedAdm?.gr_no || '',
-          name: name || matchedAdm?.student_name || '',
-          fatherName: row.father_name || matchedAdm?.father_name || '',
-          studentClass: row.student_class || matchedAdm?.admission_class || '',
-          dob: row.dob || matchedAdm?.dob || '',
-          address: row.address || matchedAdm?.address || '',
+          rollNo: row.roll_no || matchedMaster?.rollNo || matchedAdm?.roll_no || '',
+          grNo: matchedMaster?.grNo || gr || matchedAdm?.gr_no || '',
+          name: matchedMaster?.name || name || matchedAdm?.student_name || '',
+          fatherName: matchedMaster?.fatherName || row.father_name || matchedAdm?.father_name || '',
+          studentClass: row.student_class || matchedMaster?.studentClass || matchedAdm?.admission_class || '',
+          dob: matchedMaster?.dob || row.dob || matchedAdm?.dob || '',
+          address: matchedMaster?.address || row.address || matchedAdm?.address || '',
           sessionStartYear: startSuffix,
           sessionEndYear: endSuffix,
           sessionFull: row.session || sessionLabel,
@@ -425,6 +452,33 @@ export default function ReportCardsPage() {
           conduct: row.conduct || 'Good',
         };
       });
+    }
+
+    if (masterStudents.length > 0) {
+      return masterStudents.map((m, idx) => ({
+        rowNumber: String(idx + 2),
+        rollNo: m.rollNo || '',
+        grNo: m.grNo || '',
+        name: m.name || '',
+        fatherName: m.fatherName || '',
+        studentClass: m.studentClass || '',
+        dob: m.dob || '',
+        address: m.address || '',
+        sessionStartYear: startSuffix,
+        sessionEndYear: endSuffix,
+        sessionFull: sessionLabel,
+        examTitle,
+        examYearSuffix,
+        subjects: {},
+        grandTotalMax: '',
+        grandTotalObtained: '',
+        result: 'Pending',
+        percentage: '',
+        grade: '',
+        rank: '',
+        attendance: '',
+        conduct: 'Good',
+      }));
     }
 
     return admissionRecords.map((adm, idx) => ({
@@ -451,7 +505,7 @@ export default function ReportCardsPage() {
       attendance: '',
       conduct: 'Good',
     }));
-  }, [savedResults, admissionRecords, sessionLabel, examTitle, examYearSuffix]);
+  }, [savedResults, masterStudents, admissionRecords, sessionLabel, examTitle, examYearSuffix]);
 
   // Filtered Cards
   const filteredCards = useMemo(() => {
@@ -721,6 +775,24 @@ export default function ReportCardsPage() {
   // Manual Entry Form Handlers
   const handleManualStudentSelect = (grOrName: string) => {
     setManualSelectedAdmission(grOrName);
+
+    const master = masterStudents.find(
+      (m) => m.grNo === grOrName || m.name.toLowerCase() === grOrName.toLowerCase(),
+    );
+    if (master) {
+      setManualFormData((prev) => ({
+        ...prev,
+        student_class: master.studentClass || prev.student_class,
+        gr_no: master.grNo,
+        roll_no: master.rollNo || prev.roll_no,
+        student_name: master.name,
+        father_name: master.fatherName,
+        dob: master.dob || prev.dob,
+        address: master.address || prev.address,
+      }));
+      return;
+    }
+
     const adm = admissionRecords.find(
       (a) => a.gr_no === grOrName || a.student_name === grOrName,
     );
@@ -817,8 +889,37 @@ export default function ReportCardsPage() {
     }
 
     setManualSaving(true);
-    setStatusMessage('Saving record to Google Sheet (result card data)...');
+    setStatusMessage('Saving record to Master Database (Supabase) and Google Sheet...');
     try {
+      // 1. Save to Supabase (Master Examination Database)
+      if (manualFormData.gr_no) {
+        try {
+          await fetch('/api/exam-results', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              grNo: manualFormData.gr_no,
+              session: manualFormData.session || sessionLabel,
+              examTitle: manualFormData.exam_title || examTitle,
+              studentClass: manualFormData.student_class || classFilter,
+              rollNo: manualFormData.roll_no || '',
+              marks: manualFormData,
+              totalMax: manualFormData.grand_total_max,
+              totalObt: manualFormData.grand_total_obt,
+              percentage: manualFormData.percentage,
+              grade: manualFormData.grade,
+              attendanceTotal: 100,
+              attendancePresent: parseInt(manualFormData.attendance) || 95,
+              remarks: manualFormData.remarks || '',
+              conduct: manualFormData.conduct || 'Good',
+            }),
+          });
+        } catch (e) {
+          console.warn('Could not save to Supabase exam_results:', e);
+        }
+      }
+
+      // 2. Save to Google Sheet (result card data)
       const response = await fetch('/api/ggss-report-cards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1461,39 +1562,77 @@ export default function ReportCardsPage() {
 
             {/* Student Biodata */}
             <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <label className="text-xs font-semibold text-slate-600">Auto-fill from Admission Records</label>
+              <div className="sm:col-span-3 rounded-xl bg-blue-50/70 p-3.5 border border-blue-200">
+                <label className="text-xs font-bold text-[#1a3a6b]">
+                  Select Student from Master Database ({
+                    (manualFormData.student_class
+                      ? masterStudents.filter((m) => String(m.studentClass || '').trim().toLowerCase() === manualFormData.student_class.trim().toLowerCase())
+                      : masterStudents
+                    ).length
+                  } Enrolled)
+                </label>
                 <select
                   value={manualSelectedAdmission}
                   onChange={(e) => handleManualStudentSelect(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-300 p-2 text-xs"
+                  className="mt-1.5 w-full rounded-xl border border-blue-300 bg-white p-2.5 text-xs font-semibold text-slate-800 shadow-sm"
                 >
-                  <option value="">-- Choose Student --</option>
+                  <option value="">-- Choose Student (Auto-fills Official Name, Father Name & GR) --</option>
+                  {(manualFormData.student_class
+                    ? masterStudents.filter((m) => String(m.studentClass || '').trim().toLowerCase() === manualFormData.student_class.trim().toLowerCase())
+                    : masterStudents
+                  ).map((s) => (
+                    <option key={s.grNo} value={s.grNo}>
+                      GR: {s.grNo} | {s.name} (S/D/O {s.fatherName}) - Class {s.studentClass}
+                    </option>
+                  ))}
                   {admissionRecords.map((a) => (
                     <option key={a.row_number} value={a.gr_no || a.student_name}>
-                      {a.student_name} ({a.admission_class} - GR: {a.gr_no || 'N/A'})
+                      [Admission Form] {a.student_name} ({a.admission_class} - GR: {a.gr_no || 'N/A'})
                     </option>
                   ))}
                 </select>
+                <p className="mt-1 text-[11px] text-blue-700">
+                  Selecting a student locks their official Name, Father Name and GR No so records never get corrupted or mixed up.
+                </p>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600">Student Name</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-600">Student Name</label>
+                  {manualFormData.gr_no ? (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                      Locked (Verified)
+                    </span>
+                  ) : null}
+                </div>
                 <input
                   type="text"
                   value={manualFormData.student_name || ''}
                   onChange={(e) => setManualFormData({ ...manualFormData, student_name: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-300 p-2 text-xs font-bold"
+                  readOnly={Boolean(manualFormData.gr_no)}
+                  className={`mt-1 w-full rounded-xl border p-2 text-xs font-bold ${
+                    manualFormData.gr_no ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-white border-slate-300'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600">Father Name</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-600">Father Name</label>
+                  {manualFormData.gr_no ? (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                      Locked
+                    </span>
+                  ) : null}
+                </div>
                 <input
                   type="text"
                   value={manualFormData.father_name || ''}
                   onChange={(e) => setManualFormData({ ...manualFormData, father_name: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-300 p-2 text-xs"
+                  readOnly={Boolean(manualFormData.gr_no)}
+                  className={`mt-1 w-full rounded-xl border p-2 text-xs ${
+                    manualFormData.gr_no ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-white border-slate-300'
+                  }`}
                 />
               </div>
 
@@ -1503,7 +1642,10 @@ export default function ReportCardsPage() {
                   type="text"
                   value={manualFormData.gr_no || ''}
                   onChange={(e) => setManualFormData({ ...manualFormData, gr_no: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-300 p-2 text-xs"
+                  readOnly={Boolean(manualFormData.gr_no)}
+                  className={`mt-1 w-full rounded-xl border p-2 text-xs font-bold ${
+                    manualFormData.gr_no ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-white border-slate-300'
+                  }`}
                 />
               </div>
 
