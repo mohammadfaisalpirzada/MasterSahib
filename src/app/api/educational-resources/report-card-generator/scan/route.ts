@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     const apiKey = pickApiKey();
     if (!apiKey) {
       return NextResponse.json(
-        { success: false, message: 'Gemini AI API key is not configured on server (GOOGLE_AI_API_KEY / GEMINI_API_KEY).' },
+        { success: false, message: 'Scanning service is currently unavailable. Please try again later.' },
         { status: 500 },
       );
     }
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
         );
       }
       return NextResponse.json(
-        { success: false, message: `AI Scan failed: ${errText.slice(0, 150)}` },
+        { success: false, message: 'Document scan could not be processed. Please upload a clearer photo.' },
         { status: 502 },
       );
     }
