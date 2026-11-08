@@ -1835,54 +1835,24 @@ export default function ReportCardsPage() {
         }
 
         .rc-front-content {
-          padding: 6mm 8mm 7mm 8mm;
+          padding: 5mm 8mm 6.5mm 8mm;
           justify-content: space-between;
           align-items: center;
         }
 
-        .rc-arch-wrap {
-          position: relative;
-          width: 100%;
-          height: 74mm;
+        .rc-front-logo-header {
           display: flex;
           align-items: center;
           justify-content: center;
-        }
-
-        .rc-arch-svg {
-          position: absolute;
-          inset: 0;
           width: 100%;
-          height: 100%;
-          overflow: visible;
+          padding-top: 2mm;
+          margin-bottom: 2mm;
         }
 
-        .rc-front-logo-box {
-          position: relative;
-          margin-top: 15mm;
-          width: 44mm;
-          height: 44mm;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .rc-front-logo-img {
-          width: 100%;
-          height: 100%;
+        .rc-prominent-school-logo {
+          width: 58mm;
+          height: 58mm;
           object-fit: contain;
-          filter: grayscale(100%) contrast(125%);
-        }
-
-        .rc-location-title {
-          font-size: 12.8pt;
-          font-weight: 800;
-          letter-spacing: 0.3px;
-          text-align: center;
-          text-transform: uppercase;
-          color: #000000;
-          margin-top: -1mm;
-          white-space: nowrap;
         }
 
         .rc-badge-wrap {
@@ -2057,11 +2027,11 @@ export default function ReportCardsPage() {
         }
 
         .rc-watermark-img {
-          width: 68mm;
-          height: 68mm;
+          width: 72mm;
+          height: 72mm;
           object-fit: contain;
           filter: grayscale(100%);
-          opacity: 0.16;
+          opacity: 0.15;
         }
 
         .rc-marks-table {

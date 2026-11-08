@@ -85,17 +85,17 @@ export const SCHOOL_PRESETS: Record<SchoolId, SchoolConfig> = {
     id: 'gbss_pak_quarter',
     name: 'Govt Boys Pri/Secondary School Pakistan Quarter , N/R Karachi',
     shortName: 'Pakistan Quarter (Boys)',
-    archTitle: 'Govt. Boys Pri/Secondary School',
-    locationTitle: 'PAKISTAN QUARTER, N/R KARACHI.',
-    logoSrc: '/images/sindh-govt-logo-black.png',
+    archTitle: '',
+    locationTitle: '',
+    logoSrc: '/images/pakistan_quarter_logo.png',
     headSignTitle: 'Sign. of Head Master / Mistress',
   },
   ggss_nishtar_road: {
     id: 'ggss_nishtar_road',
     name: 'Govt Girls Secondary School Nishtar Road, Karachi',
     shortName: 'Nishtar Road (Girls)',
-    archTitle: 'Govt. Girls Secondary School',
-    locationTitle: 'NISHTER ROAD, KARACHI.',
+    archTitle: '',
+    locationTitle: '',
     logoSrc: '/images/ggssnishtar_mastersahib.png',
     headSignTitle: 'Sign. of Head Mistress / Master',
   },
@@ -124,57 +124,20 @@ export function ReportCardFront({
 }) {
   const [addressLine1, addressLine2] = splitAddressLines(data.address);
   const activeSchool = school || SCHOOL_PRESETS.gbss_pak_quarter;
-  const archTitle = activeSchool.archTitle;
-  const archFontSize = archTitle.length > 33 ? '16' : archTitle.length > 27 ? '17.5' : '19';
 
   return (
     <div className="rc-a5-slot">
       <div className="rc-outer-border">
         <div className="rc-inner-border rc-front-content">
-          {/* Top Arch + School Emblem */}
-          <div className="rc-arch-wrap">
-            <svg
-              viewBox="0 0 360 225"
-              className="rc-arch-svg"
-              aria-label={archTitle}
-            >
-              <defs>
-                {/* 240-degree wide sweep arc path centered at (180, 145) with radius 120 (arc length ~502px) */}
-                <path
-                  id={`arch-path-${data.rowNumber || 'default'}`}
-                  d="M 76,205 A 120,120 0 1,1 284,205"
-                  fill="none"
-                />
-              </defs>
-              <text
-                fill="#000000"
-                fontSize={archFontSize}
-                fontWeight="800"
-                fontFamily="Arial, Helvetica, sans-serif"
-                letterSpacing="0.4"
-              >
-                <textPath
-                  href={`#arch-path-${data.rowNumber || 'default'}`}
-                  startOffset="50%"
-                  textAnchor="middle"
-                >
-                  {archTitle}
-                </textPath>
-              </text>
-            </svg>
-
-            <div className="rc-front-logo-box">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={activeSchool.logoSrc}
-                alt={activeSchool.name}
-                className="rc-front-logo-img"
-              />
-            </div>
+          {/* Prominent School Emblem Logo (Self-contained circular seal) */}
+          <div className="rc-front-logo-header">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={activeSchool.logoSrc}
+              alt={activeSchool.name}
+              className="rc-prominent-school-logo"
+            />
           </div>
-
-          {/* Location Heading */}
-          <div className="rc-location-title">{activeSchool.locationTitle}</div>
 
           {/* Progress Report Pill Badge */}
           <div className="rc-badge-wrap">
