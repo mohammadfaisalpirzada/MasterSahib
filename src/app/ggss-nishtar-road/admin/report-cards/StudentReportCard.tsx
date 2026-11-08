@@ -150,6 +150,7 @@ export function ReportCardFront({
           <div className="rc-session-year-row">
             <span className="rc-year-prefix">20</span>
             <span className="rc-year-dots">{data.sessionStartYear || ''}</span>
+            <span className="rc-year-dash">-</span>
             <span className="rc-year-prefix">20</span>
             <span className="rc-year-dots">{data.sessionEndYear || ''}</span>
           </div>
