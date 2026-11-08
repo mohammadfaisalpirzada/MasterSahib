@@ -418,11 +418,12 @@ export default function Navbar() {
                   />
                 </div>
               )}
-              <div className="flex flex-col">
-                <p className={`text-xs font-semibold ${isLightNav ? 'text-slate-900' : 'text-white'}`}>{session.user?.name || 'User'}</p>
+              <div className="text-xs leading-snug">
+                <span className={`font-semibold ${isLightNav ? 'text-slate-900' : 'text-white'}`}>{session.user?.name || 'User'}</span>
                 <button
+                  type="button"
                   onClick={() => signOut()}
-                  className={`text-xs transition ${isLightNav ? 'text-slate-600 hover:text-slate-950' : 'text-indigo-100 hover:text-white'}`}
+                  className={`ml-2 inline whitespace-nowrap text-xs font-medium transition underline-offset-2 hover:underline ${isLightNav ? 'text-slate-600 hover:text-slate-950' : 'text-indigo-100 hover:text-white'}`}
                 >
                   Sign out
                 </button>
