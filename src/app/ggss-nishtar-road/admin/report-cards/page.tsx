@@ -40,10 +40,10 @@ const CLASS_OPTIONS = ['ECE', 'Prep / KG', 'I', 'II', 'III', 'IV', 'V', 'VI', 'V
 const CLASS_SORT_INDEX = new Map(CLASS_OPTIONS.map((cls, index) => [cls, index]));
 
 export const TERM_OPTIONS = [
-  { id: 'summative_one', label: 'Summative Assessment I (Summative One)', defaultTitle: 'SUMMATIVE ASSESSMENT - I' },
-  { id: 'summative_two', label: 'Summative Assessment II (Summative Two)', defaultTitle: 'SUMMATIVE ASSESSMENT - II' },
-  { id: 'first_assessment', label: 'First Assessment (Formative I)', defaultTitle: 'FIRST ASSESSMENT' },
-  { id: 'second_assessment', label: 'Second Assessment (Formative II)', defaultTitle: 'SECOND ASSESSMENT' },
+  { id: 'summative_one', label: 'Summative Assessment 1 (Summative One)', defaultTitle: 'SUMMATIVE ASSESSMENT - 1' },
+  { id: 'summative_two', label: 'Summative Assessment 2 (Summative Two)', defaultTitle: 'SUMMATIVE ASSESSMENT - 2' },
+  { id: 'first_assessment', label: 'First Assessment (Formative 1)', defaultTitle: 'FIRST ASSESSMENT' },
+  { id: 'second_assessment', label: 'Second Assessment (Formative 2)', defaultTitle: 'SECOND ASSESSMENT' },
   { id: 'first_term', label: 'First Term Examination', defaultTitle: 'FIRST TERM EXAMINATION' },
   { id: 'mid_term', label: 'Mid Term Examination', defaultTitle: 'MID TERM EXAMINATION' },
   { id: 'final_term', label: 'Final Term / Annual Examination', defaultTitle: 'FINAL TERM EXAMINATION' },
@@ -150,7 +150,7 @@ export default function ReportCardsPage() {
       const saved = localStorage.getItem(LS_EXAM_TITLE);
       if (saved) return saved;
     }
-    return 'SUMMATIVE ASSESSMENT - I';
+    return 'SUMMATIVE ASSESSMENT - 1';
   });
 
   const [customTermText, setCustomTermText] = useState<string>('');
@@ -232,7 +232,7 @@ export default function ReportCardsPage() {
   const [manualFormData, setManualFormData] = useState<Record<string, string>>(() => ({
     session: defaultSessionLabel(),
     exam_term_id: 'summative_one',
-    exam_title: 'SUMMATIVE ASSESSMENT - I',
+    exam_title: 'SUMMATIVE ASSESSMENT - 1',
     exam_year_suffix: '26',
     student_class: '',
     gr_no: '',
@@ -348,7 +348,7 @@ export default function ReportCardsPage() {
       setCustomTermText(customText);
     } else {
       const match = TERM_OPTIONS.find((t) => t.id === termId);
-      resolvedTitle = match?.defaultTitle || 'SUMMATIVE ASSESSMENT - I';
+      resolvedTitle = match?.defaultTitle || 'SUMMATIVE ASSESSMENT - 1';
       setCustomTermText('');
     }
     setExamTitle(resolvedTitle);
@@ -744,7 +744,7 @@ export default function ReportCardsPage() {
       resolvedTitle = customText.trim().toUpperCase() || 'EXAMINATION';
     } else {
       const match = TERM_OPTIONS.find((t) => t.id === termId);
-      resolvedTitle = match?.defaultTitle || 'SUMMATIVE ASSESSMENT - I';
+      resolvedTitle = match?.defaultTitle || 'SUMMATIVE ASSESSMENT - 1';
     }
     setManualFormData((prev) => ({
       ...prev,
@@ -2055,17 +2055,19 @@ export default function ReportCardsPage() {
           font-size: 10.5pt;
           font-weight: 800;
           text-align: center;
-          padding: 1.4mm 2mm !important;
+          padding: 1.6mm 2mm !important;
           letter-spacing: 0.3px;
         }
 
-        .rc-exam-year-line {
+        .rc-exam-title-text {
+          font-weight: 800;
+        }
+
+        .rc-exam-year-badge {
           display: inline-block;
-          min-width: 11mm;
-          border-bottom: 1.2px solid #000000;
-          text-align: center;
-          margin-left: 1mm;
-          line-height: 1;
+          margin-left: 2.5mm;
+          font-weight: 800;
+          letter-spacing: 0.4px;
         }
 
         .rc-col-header-row th {

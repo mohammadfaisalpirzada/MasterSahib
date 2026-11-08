@@ -202,6 +202,15 @@ export function ReportCardFront({
   );
 }
 
+// Helper to format 4-digit year for the exam banner (e.g. "26" -> "2026")
+const formatExamBannerYear = (suffix: string) => {
+  const clean = String(suffix || '').trim();
+  if (!clean) return '____';
+  if (clean.length === 4) return clean;
+  if (clean.length === 2) return `20${clean}`;
+  return clean.startsWith('20') ? clean : `20${clean}`;
+};
+
 export function ReportCardBack({
   data,
   school = SCHOOL_PRESETS.gbss_pak_quarter,
@@ -249,8 +258,12 @@ export function ReportCardBack({
                 {/* Exam Title Row */}
                 <tr>
                   <th colSpan={4} className="rc-exam-banner-cell">
-                    <span>{data.examTitle || 'SUMMATIVE ASSESSMENT - I'} 20</span>
-                    <span className="rc-exam-year-line">{data.examYearSuffix || ''}</span>
+                    <span className="rc-exam-title-text">
+                      {data.examTitle || 'SUMMATIVE ASSESSMENT - 1'}
+                    </span>
+                    <span className="rc-exam-year-badge">
+                      ( {formatExamBannerYear(data.examYearSuffix)} )
+                    </span>
                   </th>
                 </tr>
                 {/* Column Headers */}
