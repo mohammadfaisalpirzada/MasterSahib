@@ -28,6 +28,10 @@ import {
   ReportCardFront,
   ReportCardBack,
   REPORT_SUBJECT_ROWS,
+  SCHOOL_PRESETS,
+  DEFAULT_SCHOOL_ID,
+  type SchoolId,
+  type SchoolConfig,
   type ReportCardStudentData,
   type SubjectKey,
 } from './StudentReportCard';
@@ -243,6 +247,26 @@ export default function ReportCardsPage() {
   }));
 
   const [pdfGenerating, setPdfGenerating] = useState(false);
+
+  // Active School Selection (Default: Govt Boys Pakistan Quarter)
+  const [selectedSchoolId, setSelectedSchoolId] = useState<SchoolId>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ms_rc_school_id') as SchoolId;
+      if (saved && (saved === 'gbss_pak_quarter' || saved === 'ggss_nishtar_road')) {
+        return saved;
+      }
+    }
+    return DEFAULT_SCHOOL_ID;
+  });
+
+  const activeSchool: SchoolConfig = SCHOOL_PRESETS[selectedSchoolId] || SCHOOL_PRESETS[DEFAULT_SCHOOL_ID];
+
+  const handleSchoolChange = (id: SchoolId) => {
+    setSelectedSchoolId(id);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('ms_rc_school_id', id);
+    }
+  };
 
   // Synchronize Preferences into LocalStorage
   const persistPreferences = (
@@ -535,7 +559,8 @@ export default function ReportCardsPage() {
         pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
       }
 
-      pdf.save(`GGSS_Nishtar_Road_Report_Cards_${classFilter || 'All'}.pdf`);
+      const schoolSlug = activeSchool.id === 'gbss_pak_quarter' ? 'GBSS_Pakistan_Quarter' : 'GGSS_Nishtar_Road';
+      pdf.save(`${schoolSlug}_Report_Cards_${classFilter || 'All'}.pdf`);
       setStatusMessage('PDF downloaded successfully!');
     } catch (err) {
       setDataError(err instanceof Error ? err.message : 'PDF generation failed.');
@@ -970,6 +995,51 @@ export default function ReportCardsPage() {
             </button>
           </div>
         ) : null}
+
+        {/* Active School Selection Bar */}
+        <div className="mt-4 rounded-2xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-blue-50 p-4 shadow-sm">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-700 text-xs font-black tracking-wider text-white shadow-sm">
+                SCH
+              </span>
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-900">
+                  Select School for Report Cards &amp; Print / PDF Output:
+                </div>
+                <div className="text-sm font-extrabold text-slate-800">
+                  {activeSchool.name}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleSchoolChange('gbss_pak_quarter')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition shadow-sm ${
+                  selectedSchoolId === 'gbss_pak_quarter'
+                    ? 'bg-indigo-700 text-white ring-2 ring-indigo-400'
+                    : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                Govt Boys Pri/Sec Pakistan Quarter (Default)
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSchoolChange('ggss_nishtar_road')}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition shadow-sm ${
+                  selectedSchoolId === 'ggss_nishtar_road'
+                    ? 'bg-indigo-700 text-white ring-2 ring-indigo-400'
+                    : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                Govt Girls Sec School Nishtar Road
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Global Filter Bar */}
         <div className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -1607,12 +1677,12 @@ export default function ReportCardsPage() {
 
                   <div className="rc-a4-landscape-sheet">
                     <div className="rc-a5-half">
-                      <ReportCardFront data={firstCard} />
+                      <ReportCardFront data={firstCard} school={activeSchool} />
                     </div>
                     {/* Center Dotted Cutting Line */}
                     <div className="rc-center-cut-line" aria-hidden="true" />
                     <div className="rc-a5-half">
-                      {secondCard ? <ReportCardFront data={secondCard} /> : <div className="rc-a5-slot" />}
+                      {secondCard ? <ReportCardFront data={secondCard} school={activeSchool} /> : <div className="rc-a5-slot" />}
                     </div>
                   </div>
                 </div>
@@ -1628,12 +1698,12 @@ export default function ReportCardsPage() {
 
                   <div className="rc-a4-landscape-sheet">
                     <div className="rc-a5-half">
-                      {backLeftCard ? <ReportCardBack data={backLeftCard} /> : <div className="rc-a5-slot" />}
+                      {backLeftCard ? <ReportCardBack data={backLeftCard} school={activeSchool} /> : <div className="rc-a5-slot" />}
                     </div>
                     {/* Center Dotted Cutting Line */}
                     <div className="rc-center-cut-line" aria-hidden="true" />
                     <div className="rc-a5-half">
-                      {backRightCard ? <ReportCardBack data={backRightCard} /> : <div className="rc-a5-slot" />}
+                      {backRightCard ? <ReportCardBack data={backRightCard} school={activeSchool} /> : <div className="rc-a5-slot" />}
                     </div>
                   </div>
                 </div>
@@ -1804,13 +1874,14 @@ export default function ReportCardsPage() {
         }
 
         .rc-location-title {
-          font-size: 13.5pt;
+          font-size: 12.8pt;
           font-weight: 800;
-          letter-spacing: 0.4px;
+          letter-spacing: 0.3px;
           text-align: center;
           text-transform: uppercase;
           color: #000000;
           margin-top: -1mm;
+          white-space: nowrap;
         }
 
         .rc-badge-wrap {
@@ -1854,15 +1925,18 @@ export default function ReportCardsPage() {
         }
 
         .rc-year-dots {
-          display: inline-block;
+          display: inline-flex;
+          align-items: flex-end;
+          justify-content: center;
           min-width: 18mm;
           border-bottom: 1.5px dotted #000000;
           text-align: center;
           font-size: 12.5pt;
           font-weight: 700;
-          padding: 0 1mm;
+          padding: 0 1mm 1.8mm 1mm;
           margin-right: 1.5mm;
-          line-height: 1;
+          line-height: 1.1;
+          box-sizing: border-box;
         }
 
         .rc-front-fields {
@@ -1882,35 +1956,42 @@ export default function ReportCardsPage() {
 
         .rc-field-line {
           display: flex;
-          align-items: baseline;
+          align-items: flex-end;
           gap: 2mm;
           width: 100%;
-          min-height: 5.5mm;
+          min-height: 6.8mm;
+          margin-bottom: 0.6mm;
         }
 
         .rc-field-label {
           font-size: 9.8pt;
-          font-weight: 600;
+          font-weight: 700;
           color: #000000;
           white-space: nowrap;
+          padding-bottom: 1.8mm;
         }
 
         .rc-field-value {
           flex: 1;
-          border-bottom: 1.1px solid #000000;
-          font-size: 10pt;
+          border-bottom: 1.2px solid #000000;
+          font-size: 10.5pt;
           font-weight: 700;
           color: #000000;
           text-align: center;
-          min-height: 4.8mm;
-          line-height: 1.15;
-          padding: 0 1.5mm 0.5mm 1.5mm;
+          min-height: 5.6mm;
+          line-height: 1.1;
+          padding: 0 1.5mm 1.8mm 1.5mm;
+          display: inline-flex;
+          align-items: flex-end;
+          justify-content: center;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          box-sizing: border-box;
         }
 
         .rc-field-value-left {
+          justify-content: flex-start;
           text-align: left;
         }
 
@@ -1929,25 +2010,31 @@ export default function ReportCardsPage() {
 
         .rc-back-top-field {
           display: flex;
-          align-items: baseline;
+          align-items: flex-end;
           gap: 1.5mm;
+          min-height: 5.5mm;
         }
 
         .rc-back-top-label {
           font-size: 9.5pt;
-          font-weight: 600;
+          font-weight: 700;
           color: #000000;
           white-space: nowrap;
+          padding-bottom: 1.5mm;
         }
 
         .rc-back-top-val {
           flex: 1;
-          border-bottom: 1px solid #000000;
-          font-size: 9.5pt;
+          border-bottom: 1.2px solid #000000;
+          font-size: 10pt;
           font-weight: 700;
           text-align: center;
-          min-height: 4.2mm;
-          padding-bottom: 0.3mm;
+          min-height: 5mm;
+          padding: 0 1.5mm 1.5mm 1.5mm;
+          display: inline-flex;
+          align-items: flex-end;
+          justify-content: center;
+          box-sizing: border-box;
         }
 
         .rc-table-wrapper {
@@ -2167,9 +2254,10 @@ export default function ReportCardsPage() {
 
         .rc-footer-line {
           display: flex;
-          align-items: baseline;
+          align-items: flex-end;
           gap: 1.5mm;
           width: 100%;
+          min-height: 6mm;
         }
 
         .rc-footer-label {
@@ -2177,15 +2265,20 @@ export default function ReportCardsPage() {
           font-weight: 800;
           color: #000000;
           white-space: nowrap;
+          padding-bottom: 1.5mm;
         }
 
         .rc-footer-val {
           flex: 1;
-          border-bottom: 1.1px solid #000000;
-          min-height: 4mm;
+          border-bottom: 1.2px solid #000000;
+          min-height: 5mm;
           font-size: 9pt;
           font-weight: 700;
-          padding: 0 1.5mm;
+          padding: 0 1.5mm 1.5mm 1.5mm;
+          display: inline-flex;
+          align-items: flex-end;
+          justify-content: center;
+          box-sizing: border-box;
         }
 
         @media print {

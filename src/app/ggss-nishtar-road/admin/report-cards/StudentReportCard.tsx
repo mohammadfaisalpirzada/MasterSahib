@@ -68,6 +68,41 @@ export const REPORT_SUBJECT_ROWS: Array<{
   { key: 'chemistry', label: 'Chemistry' },
 ];
 
+export type SchoolId = 'gbss_pak_quarter' | 'ggss_nishtar_road';
+
+export interface SchoolConfig {
+  id: SchoolId;
+  name: string;
+  shortName: string;
+  archTitle: string;
+  locationTitle: string;
+  logoSrc: string;
+  headSignTitle: string;
+}
+
+export const SCHOOL_PRESETS: Record<SchoolId, SchoolConfig> = {
+  gbss_pak_quarter: {
+    id: 'gbss_pak_quarter',
+    name: 'Govt Boys Pri/Secondary School Pakistan Quarter , N/R Karachi',
+    shortName: 'Pakistan Quarter (Boys)',
+    archTitle: 'Govt. Boys Pri/Secondary School',
+    locationTitle: 'PAKISTAN QUARTER, N/R KARACHI.',
+    logoSrc: '/images/sindh-govt-logo-black.png',
+    headSignTitle: 'Sign. of Head Master / Mistress',
+  },
+  ggss_nishtar_road: {
+    id: 'ggss_nishtar_road',
+    name: 'Govt Girls Secondary School Nishtar Road, Karachi',
+    shortName: 'Nishtar Road (Girls)',
+    archTitle: 'Govt. Girls Secondary School',
+    locationTitle: 'NISHTER ROAD, KARACHI.',
+    logoSrc: '/images/ggssnishtar_mastersahib.png',
+    headSignTitle: 'Sign. of Head Mistress / Master',
+  },
+};
+
+export const DEFAULT_SCHOOL_ID: SchoolId = 'gbss_pak_quarter';
+
 // Split long address across two lines on the front cover
 const splitAddressLines = (address: string): [string, string] => {
   const clean = String(address || '').trim();
@@ -80,8 +115,17 @@ const splitAddressLines = (address: string): [string, string] => {
   return [clean.slice(0, 42).trim(), clean.slice(42).trim()];
 };
 
-export function ReportCardFront({ data }: { data: ReportCardStudentData }) {
+export function ReportCardFront({
+  data,
+  school = SCHOOL_PRESETS.gbss_pak_quarter,
+}: {
+  data: ReportCardStudentData;
+  school?: SchoolConfig;
+}) {
   const [addressLine1, addressLine2] = splitAddressLines(data.address);
+  const activeSchool = school || SCHOOL_PRESETS.gbss_pak_quarter;
+  const archTitle = activeSchool.archTitle;
+  const archFontSize = archTitle.length > 33 ? '16' : archTitle.length > 27 ? '17.5' : '19';
 
   return (
     <div className="rc-a5-slot">
@@ -92,29 +136,29 @@ export function ReportCardFront({ data }: { data: ReportCardStudentData }) {
             <svg
               viewBox="0 0 360 225"
               className="rc-arch-svg"
-              aria-label="Govt. Girls Secondary School"
+              aria-label={archTitle}
             >
               <defs>
-                {/* Semi-circular arc path centered at (180, 148) with radius 116 */}
+                {/* 240-degree wide sweep arc path centered at (180, 145) with radius 120 (arc length ~502px) */}
                 <path
                   id={`arch-path-${data.rowNumber || 'default'}`}
-                  d="M 64,148 A 116,116 0 1,1 296,148"
+                  d="M 76,205 A 120,120 0 1,1 284,205"
                   fill="none"
                 />
               </defs>
               <text
                 fill="#000000"
-                fontSize="24"
+                fontSize={archFontSize}
                 fontWeight="800"
                 fontFamily="Arial, Helvetica, sans-serif"
-                letterSpacing="1"
+                letterSpacing="0.4"
               >
                 <textPath
                   href={`#arch-path-${data.rowNumber || 'default'}`}
                   startOffset="50%"
                   textAnchor="middle"
                 >
-                  Govt. Girls Secondary School
+                  {archTitle}
                 </textPath>
               </text>
             </svg>
@@ -122,15 +166,15 @@ export function ReportCardFront({ data }: { data: ReportCardStudentData }) {
             <div className="rc-front-logo-box">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/ggssnishtar_mastersahib.png"
-                alt="GGSS Nishtar Road Logo"
+                src={activeSchool.logoSrc}
+                alt={activeSchool.name}
                 className="rc-front-logo-img"
               />
             </div>
           </div>
 
           {/* Location Heading */}
-          <div className="rc-location-title">NISHTER ROAD, KARACHI.</div>
+          <div className="rc-location-title">{activeSchool.locationTitle}</div>
 
           {/* Progress Report Pill Badge */}
           <div className="rc-badge-wrap">
@@ -195,7 +239,14 @@ export function ReportCardFront({ data }: { data: ReportCardStudentData }) {
   );
 }
 
-export function ReportCardBack({ data }: { data: ReportCardStudentData }) {
+export function ReportCardBack({
+  data,
+  school = SCHOOL_PRESETS.gbss_pak_quarter,
+}: {
+  data: ReportCardStudentData;
+  school?: SchoolConfig;
+}) {
+  const activeSchool = school || SCHOOL_PRESETS.gbss_pak_quarter;
   return (
     <div className="rc-a5-slot">
       <div className="rc-outer-border">
@@ -218,7 +269,7 @@ export function ReportCardBack({ data }: { data: ReportCardStudentData }) {
             <div className="rc-watermark-wrap" aria-hidden="true">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/ggssnishtar_mastersahib.png"
+                src={activeSchool.logoSrc}
                 alt=""
                 className="rc-watermark-img"
               />
@@ -327,7 +378,7 @@ export function ReportCardBack({ data }: { data: ReportCardStudentData }) {
               <span className="rc-footer-val"></span>
             </div>
             <div className="rc-footer-line">
-              <span className="rc-footer-label">Sign. of Head Mistress/ Master</span>
+              <span className="rc-footer-label">{activeSchool.headSignTitle}</span>
               <span className="rc-footer-val"></span>
             </div>
             <div className="rc-footer-line">
