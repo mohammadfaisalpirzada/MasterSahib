@@ -11,6 +11,8 @@
     "sync:store": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/sync-store.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
     "cheerio": "^1.2.0",
     "googleapis": "^171.4.0",
     "heic2any": "^0.0.4",
