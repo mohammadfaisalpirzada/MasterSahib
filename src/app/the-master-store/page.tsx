@@ -59,7 +59,12 @@ const pinnedApps: StoreItem[] = [
 ];
 
 export default async function StorePage() {
-  const synced = await withLiveGitHubInfo(storeData.items as unknown as StoreItem[]);
+  const synced = await Promise.race([
+    withLiveGitHubInfo(storeData.items as unknown as StoreItem[]),
+    new Promise<StoreItem[]>((resolve) =>
+      setTimeout(() => resolve(storeData.items as unknown as StoreItem[]), 4000),
+    ),
+  ]);
   const items = [...pinnedApps, ...synced];
   return <StoreClient items={items} />;
 }

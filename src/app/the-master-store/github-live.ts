@@ -18,7 +18,11 @@ async function fetchRelease(owner: string, repo: string, tag: string | null): Pr
     ? `https://api.github.com/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`
     : `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
   try {
-    const res = await fetch(endpoint, { headers: ghHeaders(), next: { revalidate: GITHUB_REVALIDATE_SECONDS } });
+    const res = await fetch(endpoint, {
+      headers: ghHeaders(),
+      next: { revalidate: GITHUB_REVALIDATE_SECONDS },
+      signal: AbortSignal.timeout(3000),
+    });
     return res.ok ? ((await res.json()) as Release) : null;
   } catch {
     return null;
@@ -30,7 +34,10 @@ async function fetchVersion(release: Release): Promise<string | null> {
   const asset = release.assets.find((a) => a.name.toLowerCase() === 'latest-version.json');
   if (!asset) return null;
   try {
-    const res = await fetch(asset.browser_download_url, { next: { revalidate: GITHUB_REVALIDATE_SECONDS } });
+    const res = await fetch(asset.browser_download_url, {
+      next: { revalidate: GITHUB_REVALIDATE_SECONDS },
+      signal: AbortSignal.timeout(3000),
+    });
     if (!res.ok) return null;
     const data = (await res.json()) as { versionName?: string; version?: string };
     return data.versionName ?? data.version ?? null;
