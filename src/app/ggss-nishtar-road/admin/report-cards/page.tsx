@@ -75,8 +75,8 @@ const compareByClass = (a: string, b: string) => {
 const sortCards = (cards: ReportCardStudentData[], sortKey: SortKey, direction: 'asc' | 'desc') => {
   const sorted = [...cards].sort((a, b) => {
     if (sortKey === 'class') return compareByClass(a.studentClass || '', b.studentClass || '');
-    if (sortKey === 'gr_no') return compareNumericOrText(a.gr_no || '', b.gr_no || '');
-    if (sortKey === 'roll_no') return compareNumericOrText(a.roll_no || '', b.roll_no || '');
+    if (sortKey === 'gr_no') return compareNumericOrText(a.grNo || '', b.grNo || '');
+    if (sortKey === 'roll_no') return compareNumericOrText(a.rollNo || '', b.rollNo || '');
     return String(a.name ?? '').localeCompare(String(b.name ?? ''));
   });
   return direction === 'desc' ? sorted.reverse() : sorted;
