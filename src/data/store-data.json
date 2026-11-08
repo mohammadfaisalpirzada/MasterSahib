@@ -2,6 +2,31 @@
   "generatedAt": "2026-10-24T09:17:00.000Z",
   "items": [
     {
+      "id": "download-master",
+      "fileName": "Download-Master.apk",
+      "title": "Download Master",
+      "category": "Utilities",
+      "caption": "Fast multi-threaded video, audio and Suno AI media downloader with built-in player.",
+      "features": [
+        "Suno AI high-speed music, lyrics and video downloader",
+        "Configurable multi-threaded downloads (1 to 20 concurrent tasks)",
+        "In-player instant social media sharing and retry failed tasks"
+      ],
+      "icon": "Download",
+      "version": "1.0.13",
+      "format": "APK",
+      "sizeBytes": 4164903,
+      "modified": "2026-11-05T07:00:00.000Z",
+      "downloadUrl": "https://github.com/mohammadfaisalpirzada/Download-Master/releases/download/v1.0.13/Download-Master.apk",
+      "external": true,
+      "github": {
+        "owner": "mohammadfaisalpirzada",
+        "repo": "Download-Master",
+        "tag": "v1.0.13",
+        "asset": "Download-Master.apk"
+      }
+    },
+    {
       "id": "pdf-reader-master-sahib",
       "fileName": "Master-Sahib-PDF-Viewer.apk",
       "title": "PDF Reader - Master Sahib",

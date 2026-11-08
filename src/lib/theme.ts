@@ -41,6 +41,32 @@ export type ThemePalette = {
 // Sober, light, cool ("thandy") weekly color palettes:
 export const COOL_SOBER_PALETTES: ThemePalette[] = [
   {
+    id: 'graphite-wellness',
+    name: 'Graphite Cool Gray, Olive Taupe, Slate Blue & Dusty Rose',
+    description: 'Gentle and inviting Graphite palette (#C1C0C2, #F5E9E7, #837D68, #8A9DB1, #ECC5C6) with warm taupe and blue-gray contrast.',
+    seasonTag: 'Graphite Serenity',
+    bgMain: '#F5E9E7',
+    bgCard: '#ffffff',
+    bgCardMuted: '#ECC5C6',
+    borderSubtle: '#C1C0C2',
+    textPrimary: '#1e293b',
+    textSecondary: '#837D68',
+    textMuted: '#64748b',
+    primary: '#837D68',
+    primaryHover: '#8A9DB1',
+    primaryLight: '#F5E9E7',
+    primaryText: '#0f172a',
+    secondary: '#ECC5C6',
+    accentFrom: '#837D68',
+    accentVia: '#8A9DB1',
+    accentTo: '#ECC5C6',
+    navGradient: 'from-[#C1C0C2] via-[#8A9DB1] to-[#ECC5C6]',
+    navActiveBg: 'bg-white text-slate-900',
+    navActiveText: '#837D68',
+    badgeBg: '#F5E9E7',
+    badgeText: '#837D68',
+  },
+  {
     id: 'light-green-white',
     name: 'Pastel Mint, Lavender & Rose on White',
     description: 'Soothing #88E788 light green, #B788E7 pastel lavender, and #E788B8 soft rose paired with crisp white.',
@@ -176,7 +202,7 @@ export const COOL_SOBER_PALETTES: ThemePalette[] = [
  * Set to a palette ID (e.g., 'light-green-white') to lock in a specific theme,
  * or leave null to let it automatically rotate week-by-week.
  */
-export const MANUAL_THEME_OVERRIDE: string | null = 'light-green-white';
+export const MANUAL_THEME_OVERRIDE: string | null = 'graphite-wellness';
 
 /**
  * Calculates current ISO 8601 week number (1 - 53).

@@ -1,10 +1,11 @@
-name: CI & Deploy to Vercel
+name: CI & Build
 
 on:
   pull_request:
   push:
     branches:
       - main
+      - master
 
 jobs:
   check:
@@ -28,29 +29,3 @@ jobs:
 
       - name: Run build
         run: npm run build
-
-  deploy:
-    name: Deploy to Vercel
-    needs: check
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v23
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          prod: true
