@@ -2073,6 +2073,15 @@ export default function GgssAdminPage() {
                 <p className="text-sm font-bold">Student ID Cards</p>
                 <p className="mt-1 text-xs" style={{ color: '#7c3aed' }}>Generate & print CR80 ID cards, 3 per A4 sheet</p>
               </Link>
+
+              <Link
+                href="/ggss-nishtar-road/admin/report-cards"
+                style={{ border: '1px solid #b45309', background: 'rgba(180,83,9,0.06)', color: '#b45309' }}
+                className="rounded-2xl px-5 py-4 text-left transition hover:bg-[rgba(180,83,9,0.12)]"
+              >
+                <p className="text-sm font-bold">Student Report Cards</p>
+                <p className="mt-1 text-xs" style={{ color: '#b45309' }}>Manage student result data, preview & print report cards</p>
+              </Link>
             </div>
 
             {activeView ? (
