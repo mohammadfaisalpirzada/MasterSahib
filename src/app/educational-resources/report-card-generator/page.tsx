@@ -59,6 +59,22 @@ export const TERM_OPTIONS = [
   { id: 'other', label: 'Custom Examination Title', defaultTitle: '' },
 ] as const;
 
+const CONFIGURABLE_SUBJECTS: Array<{ key: SubjectKey; label: string; badge?: string }> = [
+  { key: 'english', label: 'English' },
+  { key: 'urdu', label: 'Urdu' },
+  { key: 'social_pak_studies', label: 'S. Studies / Pak' },
+  { key: 'sindhi', label: 'Sindhi' },
+  { key: 'islamiat_oral', label: 'Nazra / Oral', badge: 'Oral' },
+  { key: 'islamiat_written', label: 'Written', badge: 'Written' },
+  { key: 'islamiat_total', label: 'Islamiat (Total)', badge: 'Total' },
+  { key: 'g_science', label: 'General Science' },
+  { key: 'mathematics', label: 'Mathematics' },
+  { key: 'arabic_drawing', label: 'Arabic / Drawing' },
+  { key: 'biology_computer', label: 'Biology / Computer' },
+  { key: 'physics', label: 'Physics' },
+  { key: 'chemistry', label: 'Chemistry' },
+];
+
 // 100% Anonymous generic placeholder demo data
 const INITIAL_DEMO_STUDENTS: ReportCardStudentData[] = [
   {
@@ -147,7 +163,7 @@ export default function ReportCardGeneratorPage() {
   const [headSignTitle, setHeadSignTitle] = useState<string>('Sign. of Head Master / Mistress');
 
   // Global Session and Exam parameters
-  const [sessionLabel, setSessionLabel] = useState<string>('2026-2027');
+  const [sessionLabel, setSessionLabel] = useState<string>('2026 - 2027');
   const [selectedTermId, setSelectedTermId] = useState<string>('summative_one');
   const [examTitle, setExamTitle] = useState<string>('SUMMATIVE ASSESSMENT - 1');
   const [examYearSuffix, setExamYearSuffix] = useState<string>('26');
@@ -171,6 +187,80 @@ export default function ReportCardGeneratorPage() {
   const [pdfGenerating, setPdfGenerating] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+    // Single Pair Printing & PDF states
+  const [activePrintPairIndex, setActivePrintPairIndex] = useState<number | null>(null);
+
+  const handlePrintSinglePair = (pairIndex: number) => {
+    setActivePrintPairIndex(pairIndex);
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        setActivePrintPairIndex(null);
+      }, 1000);
+    }, 100);
+  };
+
+  useEffect(() => {
+    const handleAfterPrint = () => {
+      setActivePrintPairIndex(null);
+    };
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => {
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, []);
+
+  const handleExportSinglePairPdf = async (pairIndex: number) => {
+    const pair = cardPairs[pairIndex];
+    if (!pair || !pair[0]) return;
+    const studentName = (pair[0].name || `Student_${pairIndex + 1}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+    setPdfGenerating(true);
+    setStatusMessage(`Generating PDF for ${pair[0].name}...`);
+
+    try {
+      if (typeof document !== 'undefined' && document.fonts) {
+        await document.fonts.ready;
+      }
+
+      const pairElement = document.querySelector(`[data-pair-idx="${pairIndex}"]`);
+      if (!pairElement) throw new Error('Sheet element not found.');
+
+      const sheets = Array.from(pairElement.querySelectorAll<HTMLElement>('.rc-a4-landscape-sheet'));
+      if (!sheets.length) throw new Error('No printable sheets found for this student.');
+
+      const html2canvas = (await import('html2canvas')).default;
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      for (let i = 0; i < sheets.length; i++) {
+        const sheet = sheets[i];
+        if (i > 0) pdf.addPage([297, 210], 'landscape');
+
+        const canvas = await html2canvas(sheet, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          windowWidth: 1200,
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210, undefined, 'FAST');
+      }
+
+      pdf.save(`Report_Card_${studentName}.pdf`);
+      setStatusMessage(`PDF downloaded successfully for ${pair[0].name}.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to generate PDF';
+      setErrorMessage(msg);
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
 
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const excelInputRef = useRef<HTMLInputElement | null>(null);
@@ -207,8 +297,13 @@ export default function ReportCardGeneratorPage() {
         // Skip individual islamiat parts from grand total if islamiat_total is counted
         return;
       }
+      const rawObt = score?.marksObtained != null ? String(score.marksObtained).trim() : '';
+      if (rawObt === '' || rawObt === '-') {
+        // Only count subjects that have actual marks obtained
+        return;
+      }
       const max = parseFloat(score?.maxMarks || '0') || 0;
-      const obt = parseFloat(score?.marksObtained || '0') || 0;
+      const obt = parseFloat(rawObt) || 0;
       if (max > 0) {
         totalMax += max;
         totalObt += obt;
@@ -283,12 +378,34 @@ export default function ReportCardGeneratorPage() {
     );
   };
 
+  // Derive effective student data overlaying global settings and computing real-time stats
+  const effectiveStudents: ReportCardStudentData[] = useMemo(() => {
+    const { startSuffix, endSuffix } = parseSessionYears(sessionLabel);
+    return students.map((st) => {
+      const stats = computeStudentStats(st.subjects);
+      return {
+        ...st,
+        schoolName: schoolName.trim() || st.schoolName,
+        sessionStartYear: startSuffix || st.sessionStartYear,
+        sessionEndYear: endSuffix || st.sessionEndYear,
+        sessionFull: sessionLabel.trim() || st.sessionFull,
+        examTitle: examTitle.trim() || st.examTitle,
+        examYearSuffix: examYearSuffix || startSuffix || st.examYearSuffix,
+        grandTotalMax: stats.grandTotalMax,
+        grandTotalObtained: stats.grandTotalObtained,
+        percentage: stats.percentage,
+        grade: stats.grade,
+        result: stats.result,
+      };
+    });
+  }, [students, schoolName, sessionLabel, examTitle, examYearSuffix]);
+
   // Filter selected cards for printing
   const cardsToPrint: ReportCardStudentData[] = useMemo(() => {
-    const list = students.filter((s) => selectedRowNumbers.has(s.rowNumber));
+    const list = effectiveStudents.filter((s) => selectedRowNumbers.has(s.rowNumber));
     if (list.length > 0) return list;
-    return students;
-  }, [students, selectedRowNumbers]);
+    return effectiveStudents;
+  }, [effectiveStudents, selectedRowNumbers]);
 
   const cardPairs = useMemo(() => groupIntoPairs(cardsToPrint), [cardsToPrint]);
 
@@ -712,25 +829,21 @@ export default function ReportCardGeneratorPage() {
               </p>
             </div>
 
-            {/* Quick Action Buttons */}
+            {/* Quick Action Navigation */}
             <div className="flex flex-wrap items-center gap-2">
+              <a
+                href="#cards-review-section"
+                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600/70 border border-indigo-400/40 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-600 transition"
+              >
+                <span>Review Cards Below</span>
+              </a>
               <button
                 type="button"
                 onClick={handlePrint}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-500 transition"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-emerald-500 transition"
               >
-                <FiPrinter size={16} />
-                <span>Print Report Cards</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleExportPdf}
-                disabled={pdfGenerating}
-                className="inline-flex items-center gap-2 rounded-xl bg-white text-indigo-950 px-4 py-2.5 text-xs font-bold shadow-md hover:bg-indigo-50 transition disabled:opacity-50"
-              >
-                <FiDownload size={16} />
-                <span>{pdfGenerating ? 'Generating PDF...' : 'Download PDF'}</span>
+                <FiPrinter size={15} />
+                <span>Print All</span>
               </button>
             </div>
           </div>
@@ -802,13 +915,29 @@ export default function ReportCardGeneratorPage() {
                 Fine-tune Max Marks for individual subjects if your exam has different marks per paper:
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                {REPORT_SUBJECT_ROWS.map((s) => {
-                  const currentVal = customSubjectMaxMarks[s.key] || defaultMaxMarks;
+                {CONFIGURABLE_SUBJECTS.map((s) => {
+                  const base = parseFloat(defaultMaxMarks) || 100;
+                  let defaultVal = defaultMaxMarks;
+                  if (s.key === 'islamiat_oral') defaultVal = String(Math.round(base * 0.4));
+                  else if (s.key === 'islamiat_written') defaultVal = String(Math.round(base * 0.6));
+                  else if (s.key === 'islamiat_total') {
+                    const oral = parseFloat(customSubjectMaxMarks['islamiat_oral'] || String(Math.round(base * 0.4))) || 0;
+                    const written = parseFloat(customSubjectMaxMarks['islamiat_written'] || String(Math.round(base * 0.6))) || 0;
+                    defaultVal = String(oral + written);
+                  }
+                  const currentVal = customSubjectMaxMarks[s.key] ?? defaultVal;
                   return (
                     <div key={s.key} className="rounded-lg border border-slate-200 p-2 bg-slate-50">
-                      <label className="block text-[11px] font-bold text-slate-700 truncate mb-1">
-                        {s.label}
-                      </label>
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <label className="block text-[11px] font-bold text-slate-700 truncate">
+                          {s.label}
+                        </label>
+                        {s.badge ? (
+                          <span className="text-[9px] font-bold uppercase px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">
+                            {s.badge}
+                          </span>
+                        ) : null}
+                      </div>
                       <input
                         type="number"
                         min="1"
@@ -1222,6 +1351,45 @@ export default function ReportCardGeneratorPage() {
             </div>
           );
         })}
+
+        {/* ===================== BOTTOM REVIEW & PRINT ACTION BAR ===================== */}
+        <div className="no-print w-full max-w-5xl mx-auto my-8 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-indigo-500/20">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300">
+                <FiCheckCircle size={14} className="text-emerald-400" />
+                <span>Review Complete</span>
+              </div>
+              <h3 className="mt-2 text-xl font-black tracking-tight text-white">
+                Ready to Print {cardsToPrint.length} Student Report Cards
+              </h3>
+              <p className="mt-1 text-xs text-indigo-200">
+                {cardPairs.length * 2} A4 Landscape Sheets total ({cardPairs.length} Front covers + {cardPairs.length} Back marks tables with duplex mirroring).
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-black text-white shadow-lg hover:bg-emerald-400 transition"
+              >
+                <FiPrinter size={18} />
+                <span>Print All Report Cards</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={pdfGenerating}
+                className="inline-flex items-center gap-2 rounded-xl bg-white text-indigo-950 px-5 py-3.5 text-sm font-bold shadow-lg hover:bg-indigo-50 transition disabled:opacity-50"
+              >
+                <FiDownload size={18} />
+                <span>{pdfGenerating ? 'Generating PDF...' : 'Download Complete PDF'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ===================== Print & Card CSS ===================== */}
@@ -1760,6 +1928,9 @@ export default function ReportCardGeneratorPage() {
         }
 
         @media print {
+          .rc-print-hidden {
+            display: none !important;
+          }
           @page {
             size: A4 landscape;
             margin: 0;
@@ -1803,15 +1974,25 @@ export default function ReportCardGeneratorPage() {
     </main>
   );
 
-  function applyCustomSubjectChange(updated: Record<string, string>) {
-    setCustomSubjectMaxMarks(updated);
+  function applyCustomSubjectChange(updated: Partial<Record<SubjectKey, string>>) {
+    const base = parseFloat(defaultMaxMarks) || 100;
+    const nextUpdated: Partial<Record<SubjectKey, string>> = { ...updated };
+    if (updated.islamiat_oral || updated.islamiat_written) {
+      const oral = parseFloat(updated.islamiat_oral || String(Math.round(base * 0.4))) || 0;
+      const written = parseFloat(updated.islamiat_written || String(Math.round(base * 0.6))) || 0;
+      nextUpdated.islamiat_total = String(oral + written);
+    }
+    setCustomSubjectMaxMarks(nextUpdated);
     setStudents((prev) =>
       prev.map((st) => {
         const nextSubjects = { ...st.subjects };
         Object.entries(nextSubjects).forEach(([k, score]) => {
           if (!score) return;
           const key = k as SubjectKey;
-          const subMax = updated[key] || defaultMaxMarks;
+          let subMax = nextUpdated[key] || defaultMaxMarks;
+          if (key === 'islamiat_total' && nextUpdated.islamiat_total) {
+            subMax = nextUpdated.islamiat_total;
+          }
           nextSubjects[key] = {
             maxMarks: subMax,
             marksObtained: score.marksObtained,
