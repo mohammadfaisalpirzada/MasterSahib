@@ -159,9 +159,6 @@ export default function GgssNishtarRoadLandingPage() {
           .faculty-track-left { animation-duration: 22s; }
           .faculty-track-right { animation-duration: 26s; }
         }
-        @media (prefers-reduced-motion: reduce) {
-          .faculty-track-left, .faculty-track-right { animation: none; }
-        }
       `}</style>
 
       {/* STICKY NAVBAR */}
