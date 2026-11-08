@@ -40,13 +40,14 @@ const CLASS_OPTIONS = ['ECE', 'Prep / KG', 'I', 'II', 'III', 'IV', 'V', 'VI', 'V
 const CLASS_SORT_INDEX = new Map(CLASS_OPTIONS.map((cls, index) => [cls, index]));
 
 export const TERM_OPTIONS = [
-  { id: 'first_assessment', label: 'First Assessment', defaultTitle: 'FIRST ASSESSMENT' },
-  { id: 'first_term', label: 'First Term', defaultTitle: 'FIRST TERM EXAMINATION' },
-  { id: 'mid_term', label: 'Mid Term', defaultTitle: 'MID TERM EXAMINATION' },
-  { id: 'send_up_term', label: 'Send-up Term', defaultTitle: 'SEND-UP EXAMINATION' },
-  { id: 'second_assessment', label: 'Second Assessment', defaultTitle: 'SECOND ASSESSMENT' },
-  { id: 'final_term', label: 'Final Term', defaultTitle: 'FINAL TERM EXAMINATION' },
-  { id: 'other', label: 'Other (Custom)', defaultTitle: '' },
+  { id: 'summative_one', label: 'Summative Assessment I (Summative One)', defaultTitle: 'SUMMATIVE ASSESSMENT - I' },
+  { id: 'summative_two', label: 'Summative Assessment II (Summative Two)', defaultTitle: 'SUMMATIVE ASSESSMENT - II' },
+  { id: 'first_assessment', label: 'First Assessment (Formative I)', defaultTitle: 'FIRST ASSESSMENT' },
+  { id: 'second_assessment', label: 'Second Assessment (Formative II)', defaultTitle: 'SECOND ASSESSMENT' },
+  { id: 'first_term', label: 'First Term Examination', defaultTitle: 'FIRST TERM EXAMINATION' },
+  { id: 'mid_term', label: 'Mid Term Examination', defaultTitle: 'MID TERM EXAMINATION' },
+  { id: 'final_term', label: 'Final Term / Annual Examination', defaultTitle: 'FINAL TERM EXAMINATION' },
+  { id: 'other', label: 'Other (Custom Term)', defaultTitle: '' },
 ] as const;
 
 type SortKey = 'class' | 'gr_no' | 'roll_no' | 'name';
@@ -141,7 +142,7 @@ export default function ReportCardsPage() {
       const saved = localStorage.getItem(LS_TERM_ID);
       if (saved) return saved;
     }
-    return 'mid_term';
+    return 'summative_one';
   });
 
   const [examTitle, setExamTitle] = useState<string>(() => {
@@ -149,7 +150,7 @@ export default function ReportCardsPage() {
       const saved = localStorage.getItem(LS_EXAM_TITLE);
       if (saved) return saved;
     }
-    return 'MID TERM EXAMINATION';
+    return 'SUMMATIVE ASSESSMENT - I';
   });
 
   const [customTermText, setCustomTermText] = useState<string>('');
@@ -230,8 +231,8 @@ export default function ReportCardsPage() {
   const [manualSelectedAdmission, setManualSelectedAdmission] = useState<string>('');
   const [manualFormData, setManualFormData] = useState<Record<string, string>>(() => ({
     session: defaultSessionLabel(),
-    exam_term_id: 'mid_term',
-    exam_title: 'MID TERM EXAMINATION',
+    exam_term_id: 'summative_one',
+    exam_title: 'SUMMATIVE ASSESSMENT - I',
     exam_year_suffix: '26',
     student_class: '',
     gr_no: '',
@@ -347,7 +348,7 @@ export default function ReportCardsPage() {
       setCustomTermText(customText);
     } else {
       const match = TERM_OPTIONS.find((t) => t.id === termId);
-      resolvedTitle = match?.defaultTitle || 'MID TERM EXAMINATION';
+      resolvedTitle = match?.defaultTitle || 'SUMMATIVE ASSESSMENT - I';
       setCustomTermText('');
     }
     setExamTitle(resolvedTitle);
@@ -743,7 +744,7 @@ export default function ReportCardsPage() {
       resolvedTitle = customText.trim().toUpperCase() || 'EXAMINATION';
     } else {
       const match = TERM_OPTIONS.find((t) => t.id === termId);
-      resolvedTitle = match?.defaultTitle || 'MID TERM EXAMINATION';
+      resolvedTitle = match?.defaultTitle || 'SUMMATIVE ASSESSMENT - I';
     }
     setManualFormData((prev) => ({
       ...prev,

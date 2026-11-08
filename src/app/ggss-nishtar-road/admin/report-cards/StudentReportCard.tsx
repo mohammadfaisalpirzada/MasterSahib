@@ -286,7 +286,7 @@ export function ReportCardBack({
                 {/* Exam Title Row */}
                 <tr>
                   <th colSpan={4} className="rc-exam-banner-cell">
-                    <span>{data.examTitle || 'MID TERM EXAMINATION'} 20</span>
+                    <span>{data.examTitle || 'SUMMATIVE ASSESSMENT - I'} 20</span>
                     <span className="rc-exam-year-line">{data.examYearSuffix || ''}</span>
                   </th>
                 </tr>
