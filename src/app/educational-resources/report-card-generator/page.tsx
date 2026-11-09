@@ -435,7 +435,10 @@ export default function ReportCardGeneratorPage() {
   const [showSubjectMaxConfig, setShowSubjectMaxConfig] = useState<boolean>(false);
 
   // Print controls
-  const [mirrorBackForDuplex, setMirrorBackForDuplex] = useState<boolean>(true);
+  const [duplexMode, setDuplexMode] = useState<'long_edge' | 'short_edge' | 'none'>('long_edge');
+  const [previewRotatedOnScreen, setPreviewRotatedOnScreen] = useState<boolean>(false);
+  const mirrorBackForDuplex = duplexMode !== 'none';
+  const rotateBackForDuplex = duplexMode === 'long_edge';
   const [selectedRowNumbers, setSelectedRowNumbers] = useState<Set<string>>(
     new Set(INITIAL_DEMO_STUDENTS.map((s) => s.rowNumber)),
   );
@@ -501,6 +504,7 @@ export default function ReportCardGeneratorPage() {
       for (let i = 0; i < sheets.length; i++) {
         const sheet = sheets[i];
         if (i > 0) pdf.addPage([297, 210], 'landscape');
+        const isBackSheet = i % 2 === 1;
 
         const canvas = await html2canvas(sheet, {
           scale: 2,
@@ -510,7 +514,21 @@ export default function ReportCardGeneratorPage() {
           windowWidth: 1200,
         });
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        let finalCanvas: HTMLCanvasElement = canvas;
+        if (isBackSheet && rotateBackForDuplex) {
+          const rotatedCanvas = document.createElement('canvas');
+          rotatedCanvas.width = canvas.width;
+          rotatedCanvas.height = canvas.height;
+          const ctx = rotatedCanvas.getContext('2d');
+          if (ctx) {
+            ctx.translate(canvas.width, canvas.height);
+            ctx.rotate(Math.PI);
+            ctx.drawImage(canvas, 0, 0);
+            finalCanvas = rotatedCanvas;
+          }
+        }
+
+        const imgData = finalCanvas.toDataURL('image/jpeg', 0.95);
         pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210, undefined, 'FAST');
       }
 
@@ -1224,13 +1242,30 @@ export default function ReportCardGeneratorPage() {
       for (let i = 0; i < sheets.length; i += 1) {
         if (i > 0) pdf.addPage('a4', 'landscape');
         const sheetEl = sheets[i];
+        const isBackSheet = i % 2 === 1;
+
         const canvas = await html2canvas(sheetEl, {
           scale: 2,
           useCORS: true,
           backgroundColor: '#ffffff',
           logging: false,
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+        let finalCanvas: HTMLCanvasElement = canvas;
+        if (isBackSheet && rotateBackForDuplex) {
+          const rotatedCanvas = document.createElement('canvas');
+          rotatedCanvas.width = canvas.width;
+          rotatedCanvas.height = canvas.height;
+          const ctx = rotatedCanvas.getContext('2d');
+          if (ctx) {
+            ctx.translate(canvas.width, canvas.height);
+            ctx.rotate(Math.PI);
+            ctx.drawImage(canvas, 0, 0);
+            finalCanvas = rotatedCanvas;
+          }
+        }
+
+        const imgData = finalCanvas.toDataURL('image/jpeg', 0.95);
         pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
       }
 
@@ -1674,30 +1709,58 @@ export default function ReportCardGeneratorPage() {
           ) : null}
 
           {/* Bottom Bar: Cards summary & duplex toggle */}
-          <div className="mt-4 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-700">Total Students:</span>
-              <span className="rounded-md bg-indigo-100 px-2.5 py-0.5 font-bold text-indigo-900">
-                {students.length}
-              </span>
-              <span className="text-slate-400">|</span>
-              <span className="font-bold text-slate-700">Printable Sheets (A4):</span>
-              <span className="rounded-md bg-slate-100 px-2.5 py-0.5 font-bold text-slate-800">
-                {cardPairs.length * 2} Sheets
-              </span>
+          <div className="mt-4 pt-3 border-t border-slate-200 flex flex-col gap-2 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-700">Total Students:</span>
+                <span className="rounded-md bg-indigo-100 px-2.5 py-0.5 font-bold text-indigo-900">
+                  {students.length}
+                </span>
+                <span className="text-slate-400">|</span>
+                <span className="font-bold text-slate-700">Printable Sheets (A4):</span>
+                <span className="rounded-md bg-slate-100 px-2.5 py-0.5 font-bold text-slate-800">
+                  {cardPairs.length * 2} Sheets
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-slate-700">Duplex Printer Setting:</span>
+                  <select
+                    value={duplexMode}
+                    onChange={(e) => setDuplexMode(e.target.value as 'long_edge' | 'short_edge' | 'none')}
+                    className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                  >
+                    <option value="long_edge">Flip on Long Edge (Rotate 180° - Standard Duplex)</option>
+                    <option value="short_edge">Flip on Short Edge (0° Upright - Booklet Mode)</option>
+                    <option value="none">Single-Sided / Manual Feed (No Mirroring)</option>
+                  </select>
+                </div>
+
+                {rotateBackForDuplex ? (
+                  <label className="inline-flex items-center gap-1.5 font-semibold text-slate-600 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={previewRotatedOnScreen}
+                      onChange={(e) => setPreviewRotatedOnScreen(e.target.checked)}
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span>Preview 180° on Screen</span>
+                  </label>
+                ) : null}
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <label className="inline-flex items-center gap-1.5 font-semibold text-slate-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={mirrorBackForDuplex}
-                  onChange={(e) => setMirrorBackForDuplex(e.target.checked)}
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span>Mirror Back Side for Standard Duplex (Two-Sided) Printing</span>
-              </label>
-            </div>
+            {rotateBackForDuplex ? (
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-[11px] text-emerald-800 flex items-center justify-between">
+                <span>
+                  <strong>ڈوپلیکس پرنٹنگ محفوظ ہے:</strong> بیک پیج خودکار طور پر 180 ڈگری روٹیٹ ہو کر پرنٹ اور پی ڈی ایف میں جائے گا تاکہ ڈوپلیکس پرنٹر سے کارڈ نکلنے پر پچھلا صفحہ الٹا نہ آئے۔
+                </span>
+                <span className="text-emerald-700 font-semibold hidden md:inline">
+                  Back page auto-rotated 180° for standard duplex printers.
+                </span>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -1836,9 +1899,16 @@ export default function ReportCardGeneratorPage() {
               </div>
 
               {/* SHEET 2: 2 BACKS ON A4 LANDSCAPE (Reverse) */}
-              <div className="rc-sheet-wrapper w-full">
+              <div className={`rc-sheet-wrapper rc-sheet-back w-full ${previewRotatedOnScreen && rotateBackForDuplex ? 'rc-preview-rotated' : ''}`}>
                 <div className="no-print mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-600">
-                  <span>A4 Sheet {pairIndex * 2 + 2} — RESULT MARKS TABLE (2 × A5 Backs)</span>
+                  <div className="flex items-center gap-2">
+                    <span>A4 Sheet {pairIndex * 2 + 2} — RESULT MARKS TABLE (2 × A5 Backs)</span>
+                    {rotateBackForDuplex ? (
+                      <span className="rounded bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-black lowercase tracking-normal">
+                        duplex 180° auto-flip active
+                      </span>
+                    ) : null}
+                  </div>
                   <span>
                     Left: {backLeftCard?.name || 'Empty'} | Right: {backRightCard?.name || 'Empty'}
                   </span>
@@ -2511,6 +2581,11 @@ export default function ReportCardGeneratorPage() {
           line-height: 1;
         }
 
+        .rc-preview-rotated .rc-a4-landscape-sheet {
+          transform: rotate(180deg);
+          transform-origin: 50% 50%;
+        }
+
         .rc-dummy-num {
           color: #94a3b8 !important;
           font-weight: 500 !important;
@@ -2528,6 +2603,13 @@ export default function ReportCardGeneratorPage() {
           ${!hasUserUploadedData ? `
             .rc-print-container {
               display: none !important;
+            }
+          ` : ''}
+
+          ${rotateBackForDuplex ? `
+            .rc-sheet-back .rc-a4-landscape-sheet {
+              transform: rotate(180deg) !important;
+              transform-origin: 50% 50% !important;
             }
           ` : ''}
 
