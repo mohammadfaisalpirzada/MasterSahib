@@ -512,6 +512,23 @@ export default function ReportCardGeneratorPage() {
           logging: false,
           backgroundColor: '#ffffff',
           windowWidth: 1200,
+          onclone: (clonedDoc) => {
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-field-text').forEach((el) => {
+              el.style.position = 'relative';
+              el.style.top = '-3.5px';
+              el.style.display = 'inline-block';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-year-dots span').forEach((el) => {
+              el.style.position = 'relative';
+              el.style.top = '-3px';
+              el.style.display = 'inline-block';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-back-top-val span').forEach((el) => {
+              el.style.position = 'relative';
+              el.style.top = '-2.5px';
+              el.style.display = 'inline-block';
+            });
+          },
         });
 
         let finalCanvas: HTMLCanvasElement = canvas;
@@ -1249,6 +1266,23 @@ export default function ReportCardGeneratorPage() {
           useCORS: true,
           backgroundColor: '#ffffff',
           logging: false,
+          onclone: (clonedDoc) => {
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-field-text').forEach((el) => {
+              el.style.position = 'relative';
+              el.style.top = '-3.5px';
+              el.style.display = 'inline-block';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-year-dots span').forEach((el) => {
+              el.style.position = 'relative';
+              el.style.top = '-3px';
+              el.style.display = 'inline-block';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-back-top-val span').forEach((el) => {
+              el.style.position = 'relative';
+              el.style.top = '-2.5px';
+              el.style.display = 'inline-block';
+            });
+          },
         });
 
         let finalCanvas: HTMLCanvasElement = canvas;
@@ -2194,12 +2228,12 @@ export default function ReportCardGeneratorPage() {
           align-items: flex-end;
           justify-content: center;
           min-width: 16mm;
-          height: 6.5mm;
+          height: 6.8mm;
           border-bottom: 1.5px dotted #000000;
           text-align: center;
           font-size: 11.5pt;
           font-weight: 700;
-          padding: 0 1mm 0 1mm;
+          padding: 0 1mm 2.8mm 1mm;
           margin: 0 1.5mm 0 1mm;
           line-height: 1;
           box-sizing: border-box;
@@ -2207,7 +2241,8 @@ export default function ReportCardGeneratorPage() {
 
         .rc-year-dots span {
           display: inline-block;
-          margin-bottom: 1.8mm;
+          position: relative;
+          top: -2px;
           line-height: 1;
         }
 
@@ -2259,10 +2294,10 @@ export default function ReportCardGeneratorPage() {
           font-weight: 700;
           color: #000000;
           text-align: center;
-          min-height: 6.5mm;
-          height: 6.5mm;
+          min-height: 6.8mm;
+          height: 6.8mm;
           line-height: 1;
-          padding: 0 1.5mm 0 1.5mm;
+          padding: 0 1.5mm 3.2mm 1.5mm;
           display: inline-flex;
           align-items: flex-end;
           justify-content: center;
@@ -2274,8 +2309,9 @@ export default function ReportCardGeneratorPage() {
 
         .rc-field-text {
           display: inline-block;
-          margin-bottom: 2.2mm;
-          line-height: 1.1;
+          position: relative;
+          top: -2px;
+          line-height: 1;
         }
 
         .rc-field-value-left {
@@ -2317,9 +2353,9 @@ export default function ReportCardGeneratorPage() {
           font-size: 10pt;
           font-weight: 700;
           text-align: center;
-          min-height: 5.5mm;
-          height: 5.5mm;
-          padding: 0 1.5mm 0 1.5mm;
+          min-height: 5.8mm;
+          height: 5.8mm;
+          padding: 0 1.5mm 2.5mm 1.5mm;
           display: inline-flex;
           align-items: flex-end;
           justify-content: center;
@@ -2329,7 +2365,8 @@ export default function ReportCardGeneratorPage() {
 
         .rc-back-top-val span {
           display: inline-block;
-          margin-bottom: 1.8mm;
+          position: relative;
+          top: -1.5px;
           line-height: 1;
         }
 
