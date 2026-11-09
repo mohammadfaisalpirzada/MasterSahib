@@ -515,18 +515,30 @@ export default function ReportCardGeneratorPage() {
           onclone: (clonedDoc) => {
             clonedDoc.querySelectorAll<HTMLElement>('.rc-field-text').forEach((el) => {
               el.style.position = 'relative';
-              el.style.top = '-3.5px';
+              el.style.top = '-1.5px';
               el.style.display = 'inline-block';
             });
             clonedDoc.querySelectorAll<HTMLElement>('.rc-year-dots span').forEach((el) => {
               el.style.position = 'relative';
-              el.style.top = '-3px';
+              el.style.top = '-1px';
               el.style.display = 'inline-block';
             });
             clonedDoc.querySelectorAll<HTMLElement>('.rc-back-top-val span').forEach((el) => {
               el.style.position = 'relative';
-              el.style.top = '-2.5px';
+              el.style.top = '-1px';
               el.style.display = 'inline-block';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-progress-pill').forEach((el) => {
+              el.style.display = 'flex';
+              el.style.justifyContent = 'center';
+              el.style.alignItems = 'center';
+              el.style.textAlign = 'center';
+              el.style.margin = '0 auto';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-blackletter-text').forEach((el) => {
+              el.style.display = 'inline-block';
+              el.style.textAlign = 'center';
+              el.style.letterSpacing = 'normal';
             });
           },
         });
@@ -1269,18 +1281,30 @@ export default function ReportCardGeneratorPage() {
           onclone: (clonedDoc) => {
             clonedDoc.querySelectorAll<HTMLElement>('.rc-field-text').forEach((el) => {
               el.style.position = 'relative';
-              el.style.top = '-3.5px';
+              el.style.top = '-1.5px';
               el.style.display = 'inline-block';
             });
             clonedDoc.querySelectorAll<HTMLElement>('.rc-year-dots span').forEach((el) => {
               el.style.position = 'relative';
-              el.style.top = '-3px';
+              el.style.top = '-1px';
               el.style.display = 'inline-block';
             });
             clonedDoc.querySelectorAll<HTMLElement>('.rc-back-top-val span').forEach((el) => {
               el.style.position = 'relative';
-              el.style.top = '-2.5px';
+              el.style.top = '-1px';
               el.style.display = 'inline-block';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-progress-pill').forEach((el) => {
+              el.style.display = 'flex';
+              el.style.justifyContent = 'center';
+              el.style.alignItems = 'center';
+              el.style.textAlign = 'center';
+              el.style.margin = '0 auto';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-blackletter-text').forEach((el) => {
+              el.style.display = 'inline-block';
+              el.style.textAlign = 'center';
+              el.style.letterSpacing = 'normal';
             });
           },
         });
@@ -2012,10 +2036,10 @@ export default function ReportCardGeneratorPage() {
                   onClick={handlePrint}
                   disabled={!hasUserUploadedData}
                   className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-emerald-400 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-700"
-                  title={!hasUserUploadedData ? 'Upload student data to enable printing' : 'Print All Report Cards'}
+                  title={!hasUserUploadedData ? 'Upload student data to enable printing' : 'Recommended: Open print dialog to print directly or save crisp vector PDF'}
                 >
                   <FiPrinter size={18} />
-                  <span>Print All Report Cards</span>
+                  <span>Print All (or Save as PDF)</span>
                 </button>
 
                 <button
@@ -2023,10 +2047,10 @@ export default function ReportCardGeneratorPage() {
                   onClick={handleExportPdf}
                   disabled={!hasUserUploadedData || pdfGenerating}
                   className="inline-flex items-center gap-2 rounded-xl bg-white text-indigo-950 px-5 py-3 text-sm font-bold shadow-lg hover:bg-indigo-50 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-200"
-                  title={!hasUserUploadedData ? 'Upload student data to enable PDF export' : 'Download Complete PDF'}
+                  title={!hasUserUploadedData ? 'Upload student data to enable PDF export' : 'Download direct PDF file'}
                 >
                   <FiDownload size={18} />
-                  <span>{pdfGenerating ? 'Generating PDF...' : 'Download Complete PDF'}</span>
+                  <span>{pdfGenerating ? 'Generating PDF...' : 'Download Direct PDF'}</span>
                 </button>
               </div>
             </div>
@@ -2180,30 +2204,35 @@ export default function ReportCardGeneratorPage() {
           align-items: center;
           width: 100%;
           margin: 1.5mm 0 2mm 0;
+          text-align: center;
         }
 
         .rc-progress-pill {
           border: 1.4px solid #000000;
           border-radius: 999px;
-          height: 12mm;
-          min-height: 12mm;
-          padding: 0 8mm;
+          height: 11mm;
+          min-height: 11mm;
+          padding: 0 6mm;
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          text-align: center;
           background: #ffffff;
           box-sizing: border-box;
+          margin: 0 auto;
         }
 
         .rc-blackletter-text {
           font-family: 'UnifrakturMaguntia', 'Old English Text MT', 'Engravers Old English BT', Georgia, serif;
-          font-size: 18pt;
+          font-size: 17pt;
           font-weight: 400;
           line-height: 1;
           color: #000000;
           display: inline-block;
+          text-align: center;
           vertical-align: middle;
-          letter-spacing: 0.5px;
+          white-space: nowrap;
+          letter-spacing: normal;
         }
 
         .rc-session-year-row {
@@ -2228,12 +2257,12 @@ export default function ReportCardGeneratorPage() {
           align-items: flex-end;
           justify-content: center;
           min-width: 16mm;
-          height: 6.8mm;
+          height: 6mm;
           border-bottom: 1.5px dotted #000000;
           text-align: center;
           font-size: 11.5pt;
           font-weight: 700;
-          padding: 0 1mm 2.8mm 1mm;
+          padding: 0 1mm 1.3mm 1mm;
           margin: 0 1.5mm 0 1mm;
           line-height: 1;
           box-sizing: border-box;
@@ -2241,8 +2270,6 @@ export default function ReportCardGeneratorPage() {
 
         .rc-year-dots span {
           display: inline-block;
-          position: relative;
-          top: -2px;
           line-height: 1;
         }
 
@@ -2294,10 +2321,10 @@ export default function ReportCardGeneratorPage() {
           font-weight: 700;
           color: #000000;
           text-align: center;
-          min-height: 6.8mm;
-          height: 6.8mm;
+          min-height: 6.2mm;
+          height: 6.2mm;
           line-height: 1;
-          padding: 0 1.5mm 3.2mm 1.5mm;
+          padding: 0 1.5mm 1.4mm 1.5mm;
           display: inline-flex;
           align-items: flex-end;
           justify-content: center;
@@ -2309,9 +2336,7 @@ export default function ReportCardGeneratorPage() {
 
         .rc-field-text {
           display: inline-block;
-          position: relative;
-          top: -2px;
-          line-height: 1;
+          line-height: 1.1;
         }
 
         .rc-field-value-left {
@@ -2353,9 +2378,9 @@ export default function ReportCardGeneratorPage() {
           font-size: 10pt;
           font-weight: 700;
           text-align: center;
-          min-height: 5.8mm;
-          height: 5.8mm;
-          padding: 0 1.5mm 2.5mm 1.5mm;
+          min-height: 5.5mm;
+          height: 5.5mm;
+          padding: 0 1.5mm 1.3mm 1.5mm;
           display: inline-flex;
           align-items: flex-end;
           justify-content: center;
@@ -2365,8 +2390,6 @@ export default function ReportCardGeneratorPage() {
 
         .rc-back-top-val span {
           display: inline-block;
-          position: relative;
-          top: -1.5px;
           line-height: 1;
         }
 
