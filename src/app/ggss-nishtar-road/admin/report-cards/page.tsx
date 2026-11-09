@@ -390,15 +390,16 @@ export default function ReportCardsPage() {
     persistPreferences(sessionLabel, termId, resolvedTitle, examYearSuffix, classFilter);
   };
 
-  // Merge Saved Results with Master Database & Admission biodata
+  // Merge Master Database Roster with any Saved Results & Admission biodata
   const combinedReportCards: ReportCardStudentData[] = useMemo(() => {
     const { startSuffix, endSuffix } = parseSessionYears(sessionLabel);
 
-    const masterByGr = new Map<string, any>();
-    const masterByName = new Map<string, any>();
-    masterStudents.forEach((m) => {
-      if (m.grNo) masterByGr.set(m.grNo.trim().toLowerCase(), m);
-      if (m.name) masterByName.set(m.name.trim().toLowerCase(), m);
+    // Index saved results by GR and Name
+    const resultsByGr = new Map<string, any>();
+    const resultsByName = new Map<string, any>();
+    savedResults.forEach((r) => {
+      if (r.gr_no) resultsByGr.set(r.gr_no.trim().toLowerCase(), r);
+      if (r.student_name) resultsByName.set(r.student_name.trim().toLowerCase(), r);
     });
 
     const admByGr = new Map<string, AdmissionRecord>();
@@ -408,11 +409,126 @@ export default function ReportCardsPage() {
       if (adm.student_name) admByName.set(adm.student_name.trim().toLowerCase(), adm);
     });
 
+    // 1. If we have master students from database, they are the primary roster!
+    if (masterStudents.length > 0) {
+      const processedResultGrs = new Set<string>();
+
+      const cards: ReportCardStudentData[] = masterStudents.map((m, idx) => {
+        const gr = m.grNo || '';
+        const name = m.name || '';
+        const grKey = gr.trim().toLowerCase();
+        const nameKey = name.trim().toLowerCase();
+
+        const savedRow = (grKey ? resultsByGr.get(grKey) : null) || resultsByName.get(nameKey);
+        if (savedRow?.gr_no) processedResultGrs.add(savedRow.gr_no.trim().toLowerCase());
+
+        const matchedAdm = (grKey ? admByGr.get(grKey) : null) || admByName.get(nameKey);
+
+        const subjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>> = {};
+        if (savedRow) {
+          REPORT_SUBJECT_ROWS.forEach((subj) => {
+            const max = savedRow[`${subj.key}_max`] || '';
+            const obt = savedRow[`${subj.key}_obt`] || '';
+            if (max || obt) {
+              subjects[subj.key] = { maxMarks: max, marksObtained: obt };
+            }
+          });
+
+          if (savedRow.islamiat_oral_max || savedRow.islamiat_oral_obt) {
+            subjects['islamiat_oral'] = {
+              maxMarks: savedRow.islamiat_oral_max || '40',
+              marksObtained: savedRow.islamiat_oral_obt || '',
+            };
+          }
+          if (savedRow.islamiat_written_max || savedRow.islamiat_written_obt) {
+            subjects['islamiat_written'] = {
+              maxMarks: savedRow.islamiat_written_max || '60',
+              marksObtained: savedRow.islamiat_written_obt || '',
+            };
+          }
+          if (savedRow.islamiat_total_max || savedRow.islamiat_total_obt) {
+            subjects['islamiat_total'] = {
+              maxMarks: savedRow.islamiat_total_max || '100',
+              marksObtained: savedRow.islamiat_total_obt || '',
+            };
+          }
+        }
+
+        const cardId = m.grNo ? `gr-${m.grNo.trim()}` : (savedRow?.row_number ? `row-${savedRow.row_number}` : `idx-${idx}`);
+
+        return {
+          rowNumber: cardId,
+          rollNo: m.rollNo || savedRow?.roll_no || matchedAdm?.roll_no || '',
+          grNo: m.grNo || savedRow?.gr_no || matchedAdm?.gr_no || '',
+          name: m.name || savedRow?.student_name || matchedAdm?.student_name || '',
+          fatherName: m.fatherName || savedRow?.father_name || matchedAdm?.father_name || '',
+          studentClass: m.studentClass || savedRow?.student_class || matchedAdm?.admission_class || '',
+          dob: m.dob || savedRow?.dob || matchedAdm?.dob || '',
+          address: m.address || savedRow?.address || matchedAdm?.address || '',
+          sessionStartYear: startSuffix,
+          sessionEndYear: endSuffix,
+          sessionFull: savedRow?.session || sessionLabel,
+          examTitle: savedRow?.exam_title || examTitle,
+          examYearSuffix: savedRow?.exam_year_suffix || examYearSuffix,
+          subjects,
+          grandTotalMax: savedRow?.grand_total_max || '',
+          grandTotalObtained: savedRow?.grand_total_obt || '',
+          result: savedRow?.result || '',
+          percentage: savedRow?.percentage || '',
+          grade: savedRow?.grade || '',
+          rank: savedRow?.rank || '',
+          attendance: savedRow?.attendance || '',
+          conduct: savedRow?.conduct || 'Good',
+        };
+      });
+
+      // Also include any extra saved results not in master database
+      savedResults.forEach((row, sIdx) => {
+        const grKey = (row.gr_no || '').trim().toLowerCase();
+        if (grKey && !processedResultGrs.has(grKey)) {
+          const subjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>> = {};
+          REPORT_SUBJECT_ROWS.forEach((subj) => {
+            const max = row[`${subj.key}_max`] || '';
+            const obt = row[`${subj.key}_obt`] || '';
+            if (max || obt) {
+              subjects[subj.key] = { maxMarks: max, marksObtained: obt };
+            }
+          });
+          cards.push({
+            rowNumber: row.row_number || `extra-${sIdx}`,
+            rollNo: row.roll_no || '',
+            grNo: row.gr_no || '',
+            name: row.student_name || '',
+            fatherName: row.father_name || '',
+            studentClass: row.student_class || '',
+            dob: row.dob || '',
+            address: row.address || '',
+            sessionStartYear: startSuffix,
+            sessionEndYear: endSuffix,
+            sessionFull: row.session || sessionLabel,
+            examTitle: row.exam_title || examTitle,
+            examYearSuffix: row.exam_year_suffix || examYearSuffix,
+            subjects,
+            grandTotalMax: row.grand_total_max || '',
+            grandTotalObtained: row.grand_total_obt || '',
+            result: row.result || '',
+            percentage: row.percentage || '',
+            grade: row.grade || '',
+            rank: row.rank || '',
+            attendance: row.attendance || '',
+            conduct: row.conduct || 'Good',
+          });
+        }
+      });
+
+      return cards;
+    }
+
+    // 2. Fallback: If master students query is empty, use saved results
     if (savedResults.length > 0) {
       return savedResults.map((row, idx) => {
         const gr = row.gr_no || '';
         const name = row.student_name || '';
-        const matchedMaster = masterByGr.get(gr.trim().toLowerCase()) || masterByName.get(name.trim().toLowerCase());
         const matchedAdm = admByGr.get(gr.trim().toLowerCase()) || admByName.get(name.trim().toLowerCase());
 
         const subjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>> = {};
@@ -445,13 +561,13 @@ export default function ReportCardsPage() {
 
         return {
           rowNumber: row.row_number || String(idx + 2),
-          rollNo: row.roll_no || matchedMaster?.rollNo || matchedAdm?.roll_no || '',
-          grNo: matchedMaster?.grNo || gr || matchedAdm?.gr_no || '',
-          name: matchedMaster?.name || name || matchedAdm?.student_name || '',
-          fatherName: matchedMaster?.fatherName || row.father_name || matchedAdm?.father_name || '',
-          studentClass: row.student_class || matchedMaster?.studentClass || matchedAdm?.admission_class || '',
-          dob: matchedMaster?.dob || row.dob || matchedAdm?.dob || '',
-          address: matchedMaster?.address || row.address || matchedAdm?.address || '',
+          rollNo: row.roll_no || matchedAdm?.roll_no || '',
+          grNo: gr || matchedAdm?.gr_no || '',
+          name: name || matchedAdm?.student_name || '',
+          fatherName: row.father_name || matchedAdm?.father_name || '',
+          studentClass: row.student_class || matchedAdm?.admission_class || '',
+          dob: row.dob || matchedAdm?.dob || '',
+          address: row.address || matchedAdm?.address || '',
           sessionStartYear: startSuffix,
           sessionEndYear: endSuffix,
           sessionFull: row.session || sessionLabel,
@@ -470,33 +586,7 @@ export default function ReportCardsPage() {
       });
     }
 
-    if (masterStudents.length > 0) {
-      return masterStudents.map((m, idx) => ({
-        rowNumber: String(idx + 2),
-        rollNo: m.rollNo || '',
-        grNo: m.grNo || '',
-        name: m.name || '',
-        fatherName: m.fatherName || '',
-        studentClass: m.studentClass || '',
-        dob: m.dob || '',
-        address: m.address || '',
-        sessionStartYear: startSuffix,
-        sessionEndYear: endSuffix,
-        sessionFull: sessionLabel,
-        examTitle,
-        examYearSuffix,
-        subjects: {},
-        grandTotalMax: '',
-        grandTotalObtained: '',
-        result: 'Pending',
-        percentage: '',
-        grade: '',
-        rank: '',
-        attendance: '',
-        conduct: 'Good',
-      }));
-    }
-
+    // 3. Fallback: Admission records
     return admissionRecords.map((adm, idx) => ({
       rowNumber: adm.row_number || String(idx + 2),
       rollNo: adm.roll_no || '',
@@ -563,14 +653,22 @@ export default function ReportCardsPage() {
     }
   };
 
+  // Auto-select all students when class filter or master student list loads
+  useEffect(() => {
+    if (filteredCards.length > 0) {
+      setSelectedRowNumbers(new Set(filteredCards.map((c) => c.rowNumber)));
+    } else {
+      setSelectedRowNumbers(new Set());
+    }
+  }, [classFilter, combinedReportCards.length]);
+
   const selectedCardsInOrder = useMemo(() => {
     return filteredCards.filter((c) => selectedRowNumbers.has(c.rowNumber));
   }, [filteredCards, selectedRowNumbers]);
 
   const cardsToPrint: ReportCardStudentData[] = useMemo(() => {
     if (selectedCardsInOrder.length > 0) return selectedCardsInOrder;
-    if (filteredCards.length >= 2) return [filteredCards[0], filteredCards[1]];
-    if (filteredCards.length === 1) return [filteredCards[0]];
+    if (filteredCards.length > 0) return filteredCards;
     const { startSuffix, endSuffix } = parseSessionYears(sessionLabel);
     return [
       {
