@@ -216,10 +216,12 @@ export function ReportCardBack({
   data,
   school = SCHOOL_PRESETS.gbss_pak_quarter,
   subjectRows = REPORT_SUBJECT_ROWS,
+  isDummy = false,
 }: {
   data: ReportCardStudentData;
   school?: SchoolConfig;
   subjectRows?: Array<{ key: string; label: string; compactText?: boolean }>;
+  isDummy?: boolean;
 }) {
   const activeSchool = school || SCHOOL_PRESETS.gbss_pak_quarter;
   return (
@@ -312,20 +314,30 @@ export function ReportCardBack({
                             <div className="rc-islamiat-sub">
                               <div className="rc-islamiat-sub-top">
                                 <span>Nazra / Oral</span>
-                                <span className="rc-islamiat-num">{oralMax}{oralMarks}</span>
+                                <span className="rc-islamiat-num">
+                                  {oralMax}
+                                  {hasOral ? (
+                                    <span className={isDummy ? 'rc-dummy-num' : ''}>{oralMarks}</span>
+                                  ) : null}
+                                </span>
                               </div>
                               <div className="rc-islamiat-sub-bottom">
                                 <span>Written</span>
-                                <span className="rc-islamiat-num">{writtenMax}{writtenMarks}</span>
+                                <span className="rc-islamiat-num">
+                                  {writtenMax}
+                                  {hasWritten ? (
+                                    <span className={isDummy ? 'rc-dummy-num' : ''}>{writtenMarks}</span>
+                                  ) : null}
+                                </span>
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="rc-num-cell">{hasIsl ? (score.maxMarks || '100') : '-'}</td>
-                        <td className="rc-num-cell">{hasIsl ? (score.marksObtained || '-') : '-'}</td>
+                        <td className={`rc-num-cell ${isDummy && hasIsl ? 'rc-dummy-num' : ''}`}>{hasIsl ? (score.marksObtained || '-') : '-'}</td>
                         {idx === 0 ? (
                           <td rowSpan={subjectRows.length + 1} className="rc-remarks-merged-cell">
-                            <RemarksColumnContent data={data} />
+                            <RemarksColumnContent data={data} isDummy={isDummy} />
                           </td>
                         ) : null}
                       </tr>
@@ -340,10 +352,10 @@ export function ReportCardBack({
                         {subj.label}
                       </td>
                       <td className="rc-num-cell">{hasMarks ? score.maxMarks : '-'}</td>
-                      <td className="rc-num-cell">{hasMarks ? score.marksObtained : '-'}</td>
+                      <td className={`rc-num-cell ${isDummy && hasMarks ? 'rc-dummy-num' : ''}`}>{hasMarks ? score.marksObtained : '-'}</td>
                       {idx === 0 ? (
                         <td rowSpan={subjectRows.length + 1} className="rc-remarks-merged-cell">
-                          <RemarksColumnContent data={data} />
+                          <RemarksColumnContent data={data} isDummy={isDummy} />
                         </td>
                       ) : null}
                     </tr>
@@ -354,7 +366,7 @@ export function ReportCardBack({
                 <tr className="rc-subj-row rc-grand-total-row">
                   <td className="rc-subj-name-cell rc-grand-total-label">Grand Total</td>
                   <td className="rc-num-cell rc-grand-total-val">{data.grandTotalMax}</td>
-                  <td className="rc-num-cell rc-grand-total-val">{data.grandTotalObtained}</td>
+                  <td className={`rc-num-cell rc-grand-total-val ${isDummy ? 'rc-dummy-num' : ''}`}>{data.grandTotalObtained}</td>
                 </tr>
               </tbody>
             </table>
@@ -409,28 +421,28 @@ export function formatAttendancePercentage(val: string | number | undefined | nu
   return clean;
 }
 
-function RemarksColumnContent({ data }: { data: ReportCardStudentData }) {
+function RemarksColumnContent({ data, isDummy = false }: { data: ReportCardStudentData; isDummy?: boolean }) {
   return (
     <div className="rc-remarks-stack">
       <div className="rc-remark-item">
         <div className="rc-remark-heading">RESULT</div>
-        <div className="rc-remark-value">{data.result}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{data.result}</div>
       </div>
       <div className="rc-remark-item">
         <div className="rc-remark-heading">PERCENTAGE</div>
-        <div className="rc-remark-value">{data.percentage}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{data.percentage}</div>
       </div>
       <div className="rc-remark-item">
         <div className="rc-remark-heading">GRADE</div>
-        <div className="rc-remark-value">{data.grade}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{data.grade}</div>
       </div>
       <div className="rc-remark-item">
         <div className="rc-remark-heading">RANK</div>
-        <div className="rc-remark-value">{data.rank}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{data.rank}</div>
       </div>
       <div className="rc-remark-item">
         <div className="rc-remark-heading">ATTENDANCE</div>
-        <div className="rc-remark-value">{formatAttendancePercentage(data.attendance)}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{formatAttendancePercentage(data.attendance)}</div>
       </div>
     </div>
   );

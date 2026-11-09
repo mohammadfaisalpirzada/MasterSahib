@@ -102,85 +102,314 @@ const CONFIGURABLE_SUBJECTS: Array<{ key: SubjectKey; label: string; badge?: str
   { key: 'chemistry', label: 'Chemistry' },
 ];
 
-// 100% Anonymous generic placeholder demo data
-const INITIAL_DEMO_STUDENTS: ReportCardStudentData[] = [
+export function getOrdinalSuffix(n: number): string {
+  if (n <= 0) return '-';
+  const j = n % 10;
+  const k = n % 100;
+  if (j === 1 && k !== 11) return `${n}st`;
+  if (j === 2 && k !== 12) return `${n}nd`;
+  if (j === 3 && k !== 13) return `${n}rd`;
+  return `${n}th`;
+}
+
+export function formatRankLabel(val: string | number | undefined | null): string {
+  if (val == null) return '-';
+  const str = String(val).trim();
+  if (!str || str === '-') return '-';
+  if (/^\d+(st|nd|rd|th)$/i.test(str)) return str;
+  const num = parseInt(str, 10);
+  if (!isNaN(num) && num > 0) return getOrdinalSuffix(num);
+  return str;
+}
+
+function computeStudentStats(
+  subjects: Partial<Record<string, { maxMarks: string; marksObtained: string }>>,
+  activeItems: SubjectConfigItem[],
+  passingPct: number = 40,
+) {
+  let totalMax = 0;
+  let totalObt = 0;
+  let failedSubjectsCount = 0;
+
+  const activeKeys = new Set(activeItems.map((s) => s.key));
+
+  Object.entries(subjects).forEach(([key, score]) => {
+    if (key === 'islamiat_oral' || key === 'islamiat_written') return;
+    if (!activeKeys.has(key)) return;
+    const rawObt = score?.marksObtained != null ? String(score.marksObtained).trim() : '';
+    if (rawObt === '' || rawObt === '-') return;
+    const max = parseFloat(score?.maxMarks || '0') || 0;
+    const obt = parseFloat(rawObt) || 0;
+    if (max > 0) {
+      totalMax += max;
+      totalObt += obt;
+      const passMark = (passingPct / 100) * max;
+      if (obt < passMark) {
+        failedSubjectsCount++;
+      }
+    }
+  });
+
+  const pct = totalMax > 0 ? (totalObt / totalMax) * 100 : 0;
+  const isPass = failedSubjectsCount === 0 && pct >= passingPct;
+  const result = isPass ? 'PASS' : 'FAIL';
+
+  let grade = 'Fail';
+  if (isPass) {
+    if (pct >= 80) grade = 'A+';
+    else if (pct >= 70) grade = 'A';
+    else if (pct >= 60) grade = 'B';
+    else if (pct >= 50) grade = 'C';
+    else grade = 'D';
+  }
+
+  return {
+    grandTotalMax: totalMax > 0 ? String(totalMax) : '0',
+    grandTotalObtained: String(totalObt),
+    percentage: `${pct.toFixed(1)}%`,
+    grade,
+    result,
+    failedSubjectsCount,
+  };
+}
+
+function assignRanksToStudents(
+  list: ReportCardStudentData[],
+  activeItems: SubjectConfigItem[],
+  passingPct: number = 40,
+): ReportCardStudentData[] {
+  const withStats = list.map((st) => {
+    const stats = computeStudentStats(st.subjects, activeItems, passingPct);
+    return {
+      ...st,
+      grandTotalMax: stats.grandTotalMax,
+      grandTotalObtained: stats.grandTotalObtained,
+      percentage: stats.percentage,
+      grade: stats.grade,
+      result: stats.result,
+    };
+  });
+
+  const passingIndices: Array<{ index: number; obt: number; pct: number }> = [];
+  withStats.forEach((st, idx) => {
+    if (st.result === 'PASS') {
+      const obt = parseFloat(st.grandTotalObtained) || 0;
+      const pct = parseFloat(st.percentage.replace('%', '')) || 0;
+      passingIndices.push({ index: idx, obt, pct });
+    }
+  });
+
+  passingIndices.sort((a, b) => {
+    if (b.obt !== a.obt) return b.obt - a.obt;
+    return b.pct - a.pct;
+  });
+
+  const rankByOriginalIndex = new Map<number, string>();
+  for (let i = 0; i < passingIndices.length; i++) {
+    const item = passingIndices[i];
+    if (i > 0) {
+      const prev = passingIndices[i - 1];
+      if (item.obt === prev.obt && item.pct === prev.pct) {
+        rankByOriginalIndex.set(item.index, rankByOriginalIndex.get(prev.index)!);
+        continue;
+      }
+    }
+    rankByOriginalIndex.set(item.index, getOrdinalSuffix(i + 1));
+  }
+
+  return withStats.map((st, idx) => {
+    if (st.result !== 'PASS') {
+      return { ...st, rank: '-' };
+    }
+    const autoRank = rankByOriginalIndex.get(idx) || '1st';
+    const rawSheetRank = st.rank && st.rank !== '-' ? st.rank.trim() : '';
+    const finalRank = rawSheetRank ? formatRankLabel(rawSheetRank) : autoRank;
+    return { ...st, rank: finalRank };
+  });
+}
+
+interface DummyProfile {
+  name: string;
+  fatherName: string;
+  rollNo: string;
+  grNo: string;
+  studentClass: string;
+  dob: string;
+  address: string;
+  attendance: string;
+  conduct: string;
+  ratios: Record<string, number>;
+}
+
+const DUMMY_STUDENT_PROFILES: DummyProfile[] = [
   {
-    rowNumber: '1',
-    rollNo: '101',
-    grNo: '1001',
     name: 'Student ABC',
     fatherName: 'Father ABC',
+    rollNo: '101',
+    grNo: '1001',
     studentClass: 'VIII',
     dob: '12-04-2011',
     address: 'House 123, Street ABC, City',
-    sessionStartYear: '26',
-    sessionEndYear: '27',
-    sessionFull: '2026-2027',
-    examTitle: 'SUMMATIVE ASSESSMENT - 1',
-    examYearSuffix: '26',
-    schoolName: 'ABC Model High School',
-    subjects: {
-      english: { maxMarks: '100', marksObtained: '84' },
-      urdu: { maxMarks: '100', marksObtained: '88' },
-      social_pak_studies: { maxMarks: '100', marksObtained: '79' },
-      sindhi: { maxMarks: '100', marksObtained: '82' },
-      islamiat_oral: { maxMarks: '40', marksObtained: '38' },
-      islamiat_written: { maxMarks: '60', marksObtained: '52' },
-      islamiat_total: { maxMarks: '100', marksObtained: '90' },
-      g_science: { maxMarks: '100', marksObtained: '85' },
-      mathematics: { maxMarks: '100', marksObtained: '92' },
-      arabic_drawing: { maxMarks: '100', marksObtained: '86' },
-      biology_computer: { maxMarks: '100', marksObtained: '91' },
-    },
-    grandTotalMax: '800',
-    grandTotalObtained: '687',
-    percentage: '85.9%',
-    grade: 'A+',
-    rank: '1st',
-    result: 'PASS',
     attendance: '96%',
     conduct: 'Excellent',
+    ratios: {
+      english: 0.84,
+      urdu: 0.88,
+      social_pak_studies: 0.79,
+      sindhi: 0.82,
+      islamiat_oral: 0.85,
+      islamiat_written: 0.86,
+      g_science: 0.85,
+      mathematics: 0.92,
+      biology_computer: 0.91,
+      h_economics: 0.84,
+      arabic_drawing: 0.86,
+      physics: 0.85,
+      chemistry: 0.88,
+    },
   },
   {
-    rowNumber: '2',
-    rollNo: '102',
-    grNo: '1002',
     name: 'Student XYZ',
     fatherName: 'Father XYZ',
+    rollNo: '102',
+    grNo: '1002',
     studentClass: 'VIII',
     dob: '05-09-2011',
     address: 'Apartment 456, Block XYZ, City',
-    sessionStartYear: '26',
-    sessionEndYear: '27',
-    sessionFull: '2026-2027',
-    examTitle: 'SUMMATIVE ASSESSMENT - 1',
-    examYearSuffix: '26',
-    schoolName: 'ABC Model High School',
-    subjects: {
-      english: { maxMarks: '100', marksObtained: '76' },
-      urdu: { maxMarks: '100', marksObtained: '81' },
-      social_pak_studies: { maxMarks: '100', marksObtained: '74' },
-      sindhi: { maxMarks: '100', marksObtained: '78' },
-      islamiat_oral: { maxMarks: '40', marksObtained: '35' },
-      islamiat_written: { maxMarks: '60', marksObtained: '48' },
-      islamiat_total: { maxMarks: '100', marksObtained: '83' },
-      g_science: { maxMarks: '100', marksObtained: '77' },
-      mathematics: { maxMarks: '100', marksObtained: '80' },
-      arabic_drawing: { maxMarks: '100', marksObtained: '75' },
-      biology_computer: { maxMarks: '100', marksObtained: '82' },
-    },
-    grandTotalMax: '800',
-    grandTotalObtained: '631',
-    percentage: '78.9%',
-    grade: 'A',
-    rank: '2nd',
-    result: 'PASS',
     attendance: '94%',
     conduct: 'Good',
+    ratios: {
+      english: 0.76,
+      urdu: 0.81,
+      social_pak_studies: 0.74,
+      sindhi: 0.78,
+      islamiat_oral: 0.80,
+      islamiat_written: 0.78,
+      g_science: 0.77,
+      mathematics: 0.80,
+      biology_computer: 0.82,
+      h_economics: 0.75,
+      arabic_drawing: 0.75,
+      physics: 0.76,
+      chemistry: 0.78,
+    },
   },
 ];
 
+const DUMMY_ACTIVE_SUBJECT_KEYS = new Set([
+  'english',
+  'urdu',
+  'social_pak_studies',
+  'sindhi',
+  'islamiat_total',
+  'g_science',
+  'mathematics',
+  'biology_computer',
+]);
+
+function generateDummyStudents(
+  subjectList: SubjectConfigItem[],
+  defaultMaxStr: string,
+  customMax: Partial<Record<string, string>> = {},
+  passingPct: number = 40,
+): ReportCardStudentData[] {
+  const baseDefault = parseFloat(defaultMaxStr) || 100;
+
+  const rawList: ReportCardStudentData[] = DUMMY_STUDENT_PROFILES.map((profile, pIdx) => {
+    const subjects: Partial<Record<SubjectKey, SubjectScore>> = {};
+
+    const oralMaxNum = parseFloat(customMax.islamiat_oral || '') || Math.round(baseDefault * 0.4);
+    const writtenMaxNum = parseFloat(customMax.islamiat_written || '') || Math.round(baseDefault * 0.6);
+
+    const oralRatio = profile.ratios.islamiat_oral ?? 0.85;
+    const writtenRatio = profile.ratios.islamiat_written ?? 0.85;
+
+    const oralObtained = Math.min(oralMaxNum, Math.round(oralMaxNum * oralRatio));
+    const writtenObtained = Math.min(writtenMaxNum, Math.round(writtenMaxNum * writtenRatio));
+    const islamiatTotalObtained = oralObtained + writtenObtained;
+
+    subjectList.forEach((subj) => {
+      const isCore = DUMMY_ACTIVE_SUBJECT_KEYS.has(subj.key) || subjectList.length <= 8;
+
+      if (subj.key === 'islamiat_total') {
+        const islMax = parseFloat(subj.maxMarks) || (oralMaxNum + writtenMaxNum);
+        if (isCore) {
+          subjects.islamiat_oral = {
+            maxMarks: String(oralMaxNum),
+            marksObtained: String(oralObtained),
+          };
+          subjects.islamiat_written = {
+            maxMarks: String(writtenMaxNum),
+            marksObtained: String(writtenObtained),
+          };
+          subjects.islamiat_total = {
+            maxMarks: String(islMax),
+            marksObtained: String(Math.min(islMax, islamiatTotalObtained)),
+          };
+        } else {
+          subjects.islamiat_oral = { maxMarks: '', marksObtained: '' };
+          subjects.islamiat_written = { maxMarks: '', marksObtained: '' };
+          subjects.islamiat_total = { maxMarks: '', marksObtained: '' };
+        }
+        return;
+      }
+
+      if (!isCore) {
+        subjects[subj.key as SubjectKey] = { maxMarks: '', marksObtained: '' };
+        return;
+      }
+
+      const sMax = parseFloat(subj.maxMarks) || baseDefault;
+      const ratio = profile.ratios[subj.key] ?? 0.82;
+      const sObtained = Math.min(sMax, Math.round(sMax * ratio));
+
+      subjects[subj.key as SubjectKey] = {
+        maxMarks: String(sMax),
+        marksObtained: String(sObtained),
+      };
+    });
+
+    return {
+      rowNumber: String(pIdx + 1),
+      rollNo: profile.rollNo,
+      grNo: profile.grNo,
+      name: profile.name,
+      fatherName: profile.fatherName,
+      studentClass: profile.studentClass,
+      dob: profile.dob,
+      address: profile.address,
+      sessionStartYear: '26',
+      sessionEndYear: '27',
+      sessionFull: '2026 - 2027',
+      examTitle: 'SUMMATIVE ASSESSMENT - 1',
+      examYearSuffix: '26',
+      schoolName: 'ABC Model High School',
+      subjects,
+      grandTotalMax: '0',
+      grandTotalObtained: '0',
+      percentage: '0.0%',
+      grade: 'D',
+      rank: '',
+      result: 'PASS',
+      attendance: profile.attendance,
+      conduct: profile.conduct,
+    };
+  });
+
+  return assignRanksToStudents(rawList, subjectList, passingPct);
+}
+
+// 100% Anonymous generic placeholder demo data
+const INITIAL_DEMO_STUDENTS: ReportCardStudentData[] = generateDummyStudents(
+  DEFAULT_SUBJECT_ITEMS,
+  '100',
+  { islamiat_oral: '40', islamiat_written: '60' },
+  40,
+);
+
 export default function ReportCardGeneratorPage() {
+  const [hasUserUploadedData, setHasUserUploadedData] = useState<boolean>(false);
+  const [passingPercentage, setPassingPercentage] = useState<number>(40);
   const [students, setStudents] = useState<ReportCardStudentData[]>(INITIAL_DEMO_STUDENTS);
   const [activeTab, setActiveTab] = useState<'excel' | 'ai_scan' | 'settings'>('excel');
 
@@ -220,6 +449,10 @@ export default function ReportCardGeneratorPage() {
   const [activePrintPairIndex, setActivePrintPairIndex] = useState<number | null>(null);
 
   const handlePrintSinglePair = (pairIndex: number) => {
+    if (!hasUserUploadedData) {
+      setErrorMessage('Dummy sample data cannot be printed. Please upload your student Excel file first.');
+      return;
+    }
     setActivePrintPairIndex(pairIndex);
     setTimeout(() => {
       window.print();
@@ -379,27 +612,32 @@ export default function ReportCardGeneratorPage() {
     const updatedCustom = { ...customSubjectMaxMarks, [key]: newMax };
     setCustomSubjectMaxMarks(updatedCustom);
 
-    setStudents((prev) =>
-      prev.map((st) => {
-        const nextSubjects = { ...st.subjects };
-        if (nextSubjects[key]) {
-          nextSubjects[key] = {
-            maxMarks: newMax,
-            marksObtained: nextSubjects[key]!.marksObtained,
-          };
-        }
-        const stats = computeStudentStats(nextSubjects, updatedItems);
-        return {
-          ...st,
-          subjects: nextSubjects,
-          grandTotalMax: stats.grandTotalMax,
-          grandTotalObtained: stats.grandTotalObtained,
-          percentage: stats.percentage,
-          grade: stats.grade,
-          result: stats.result,
-        };
-      }),
-    );
+    if (!hasUserUploadedData) {
+      setStudents(generateDummyStudents(updatedItems, defaultMaxMarks, updatedCustom, passingPercentage));
+    } else {
+      setStudents((prev) => {
+        const updated = prev.map((st) => {
+          const nextSubjects = { ...st.subjects };
+          if (nextSubjects[key]) {
+            nextSubjects[key] = {
+              maxMarks: newMax,
+              marksObtained: nextSubjects[key]!.marksObtained,
+            };
+          }
+          return { ...st, subjects: nextSubjects };
+        });
+        return assignRanksToStudents(updated, updatedItems, passingPercentage);
+      });
+    }
+  };
+
+  const handlePassingPercentageChange = (newPct: number) => {
+    setPassingPercentage(newPct);
+    if (!hasUserUploadedData) {
+      setStudents(generateDummyStudents(subjectItems, defaultMaxMarks, customSubjectMaxMarks, newPct));
+    } else {
+      setStudents((prev) => assignRanksToStudents(prev, subjectItems, newPct));
+    }
   };
 
   const handleAddSubject = () => {
@@ -412,44 +650,38 @@ export default function ReportCardGeneratorPage() {
     };
     const nextList = [...subjectItems, newItem];
     setSubjectItems(nextList);
+    if (!hasUserUploadedData) {
+      setStudents(generateDummyStudents(nextList, defaultMaxMarks, customSubjectMaxMarks, passingPercentage));
+    } else {
+      setStudents((prev) => assignRanksToStudents(prev, nextList, passingPercentage));
+    }
   };
 
   const handleRemoveSubject = (key: string) => {
     if (subjectItems.length <= 1) return;
     const nextList = subjectItems.filter((s) => s.key !== key);
     setSubjectItems(nextList);
-    setStudents((prev) =>
-      prev.map((st) => {
-        const stats = computeStudentStats(st.subjects, nextList);
-        return {
-          ...st,
-          grandTotalMax: stats.grandTotalMax,
-          grandTotalObtained: stats.grandTotalObtained,
-          percentage: stats.percentage,
-          grade: stats.grade,
-          result: stats.result,
-        };
-      }),
-    );
+    if (!hasUserUploadedData) {
+      setStudents(generateDummyStudents(nextList, defaultMaxMarks, customSubjectMaxMarks, passingPercentage));
+    } else {
+      setStudents((prev) => assignRanksToStudents(prev, nextList, passingPercentage));
+    }
   };
 
   const handleResetSubjects = () => {
-    const base = defaultMaxMarks;
+    const base = defaultMaxMarks || '100';
     const reset = DEFAULT_SUBJECT_ITEMS.map((s) => ({ ...s, maxMarks: base }));
     setSubjectItems(reset);
-    setStudents((prev) =>
-      prev.map((st) => {
-        const stats = computeStudentStats(st.subjects, reset);
-        return {
-          ...st,
-          grandTotalMax: stats.grandTotalMax,
-          grandTotalObtained: stats.grandTotalObtained,
-          percentage: stats.percentage,
-          grade: stats.grade,
-          result: stats.result,
-        };
-      }),
-    );
+    const defaultCustom = {
+      islamiat_oral: String(Math.round(parseFloat(base) * 0.4)),
+      islamiat_written: String(Math.round(parseFloat(base) * 0.6)),
+    };
+    setCustomSubjectMaxMarks(defaultCustom);
+    if (!hasUserUploadedData) {
+      setStudents(generateDummyStudents(reset, base, defaultCustom, passingPercentage));
+    } else {
+      setStudents((prev) => assignRanksToStudents(prev, reset, passingPercentage));
+    }
   };
 
   // Handler for changing default max marks
@@ -469,40 +701,37 @@ export default function ReportCardGeneratorPage() {
     }));
     setSubjectItems(updatedItems);
 
-    // Update all student records dynamically with the new Max Marks
-    setStudents((prev) =>
-      prev.map((st) => {
-        const nextSubjects: Partial<Record<string, { maxMarks: string; marksObtained: string }>> = {};
-        Object.entries(st.subjects).forEach(([k, score]) => {
-          if (!score) return;
-          let subMax = String(base);
-          if (k === 'islamiat_oral') subMax = nextCustom.islamiat_oral!;
-          else if (k === 'islamiat_written') subMax = nextCustom.islamiat_written!;
-          nextSubjects[k] = {
-            maxMarks: subMax,
-            marksObtained: score.marksObtained,
+    if (!hasUserUploadedData) {
+      setStudents(generateDummyStudents(updatedItems, newVal, nextCustom, passingPercentage));
+    } else {
+      setStudents((prev) => {
+        const updated = prev.map((st) => {
+          const nextSubjects: Partial<Record<string, { maxMarks: string; marksObtained: string }>> = {};
+          Object.entries(st.subjects).forEach(([k, score]) => {
+            if (!score) return;
+            let subMax = String(base);
+            if (k === 'islamiat_oral') subMax = nextCustom.islamiat_oral!;
+            else if (k === 'islamiat_written') subMax = nextCustom.islamiat_written!;
+            nextSubjects[k] = {
+              maxMarks: subMax,
+              marksObtained: score.marksObtained,
+            };
+          });
+          return {
+            ...st,
+            subjects: nextSubjects,
           };
         });
-
-        const stats = computeStudentStats(nextSubjects, updatedItems);
-        return {
-          ...st,
-          subjects: nextSubjects,
-          grandTotalMax: stats.grandTotalMax,
-          grandTotalObtained: stats.grandTotalObtained,
-          percentage: stats.percentage,
-          grade: stats.grade,
-          result: stats.result,
-        };
-      }),
-    );
+        return assignRanksToStudents(updated, updatedItems, passingPercentage);
+      });
+    }
   };
 
   // Derive effective student data overlaying global settings and computing real-time stats
   const effectiveStudents: ReportCardStudentData[] = useMemo(() => {
     const { startSuffix, endSuffix } = parseSessionYears(sessionLabel);
-    return students.map((st) => {
-      const stats = computeStudentStats(st.subjects, subjectItems);
+    const mapped = students.map((st) => {
+      const stats = computeStudentStats(st.subjects, subjectItems, passingPercentage);
       return {
         ...st,
         schoolName: schoolName.trim() || st.schoolName,
@@ -519,7 +748,8 @@ export default function ReportCardGeneratorPage() {
         attendance: formatAttendancePercentage(st.attendance),
       };
     });
-  }, [students, schoolName, sessionLabel, examTitle, examYearSuffix]);
+    return assignRanksToStudents(mapped, subjectItems, passingPercentage);
+  }, [students, schoolName, sessionLabel, examTitle, examYearSuffix, subjectItems, passingPercentage]);
 
   // Filter selected cards for printing
   const cardsToPrint: ReportCardStudentData[] = useMemo(() => {
@@ -676,14 +906,16 @@ export default function ReportCardGeneratorPage() {
           grandTotalObtained: stats.grandTotalObtained,
           percentage: stats.percentage,
           grade: stats.grade,
-          rank: `${index + 1}${index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th'}`,
+          rank: String(getVal('Rank', 'Position', 'Stand', 'Pos', 'Student Rank') || '').trim(),
           result: stats.result,
           attendance: formatAttendancePercentage(getVal('Attendance', 'Attendance %', 'Att', 'Present') || '95%'),
           conduct: String(getVal('Conduct') || 'Good'),
         };
       });
 
-      setStudents(parsedStudents);
+      const ranked = assignRanksToStudents(parsedStudents, subjectItems, passingPercentage);
+      setStudents(ranked);
+      setHasUserUploadedData(true);
       setSelectedRowNumbers(new Set(parsedStudents.map((s) => s.rowNumber)));
       setStatusMessage(`Successfully loaded ${parsedStudents.length} student records from spreadsheet.`);
     } catch (err) {
@@ -695,6 +927,10 @@ export default function ReportCardGeneratorPage() {
 
   // Download Sample Excel Template with 100% Anonymous Dummy Placeholders
   const handleDownloadSampleExcel = () => {
+    const base = parseFloat(defaultMaxMarks) || 100;
+    const oralBase = parseFloat(customSubjectMaxMarks.islamiat_oral || '') || Math.round(base * 0.4);
+    const writtenBase = parseFloat(customSubjectMaxMarks.islamiat_written || '') || Math.round(base * 0.6);
+
     const sampleData = [
       {
         'School Name': schoolName || 'ABC High School',
@@ -707,14 +943,15 @@ export default function ReportCardGeneratorPage() {
         Address: 'Address 123, Area ABC, City',
         Session: '2026-2027',
         Exam: 'SUMMATIVE ASSESSMENT - 1',
-        English: 85,
-        Urdu: 88,
-        Sindhi: 82,
-        'Islamiat Oral': 38,
-        'Islamiat Written': 54,
-        'General Science': 86,
-        Mathematics: 92,
-        'Social Studies': 80,
+        English: Math.round(base * 0.85),
+        Urdu: Math.round(base * 0.88),
+        Sindhi: Math.round(base * 0.82),
+        'Islamiat Oral': Math.round(oralBase * 0.85),
+        'Islamiat Written': Math.round(writtenBase * 0.86),
+        'General Science': Math.round(base * 0.85),
+        Mathematics: Math.round(base * 0.92),
+        'Social Studies': Math.round(base * 0.80),
+        Rank: '1st',
         Attendance: '98%',
         Conduct: 'Excellent',
       },
@@ -729,14 +966,15 @@ export default function ReportCardGeneratorPage() {
         Address: 'Address 456, Area XYZ, City',
         Session: '2026-2027',
         Exam: 'SUMMATIVE ASSESSMENT - 1',
-        English: 78,
-        Urdu: 82,
-        Sindhi: 75,
-        'Islamiat Oral': 35,
-        'Islamiat Written': 48,
-        'General Science': 79,
-        Mathematics: 85,
-        'Social Studies': 77,
+        English: Math.round(base * 0.76),
+        Urdu: Math.round(base * 0.81),
+        Sindhi: Math.round(base * 0.75),
+        'Islamiat Oral': Math.round(oralBase * 0.80),
+        'Islamiat Written': Math.round(writtenBase * 0.78),
+        'General Science': Math.round(base * 0.77),
+        Mathematics: Math.round(base * 0.80),
+        'Social Studies': Math.round(base * 0.74),
+        Rank: '2nd',
         Attendance: '94%',
         Conduct: 'Good',
       },
@@ -751,14 +989,15 @@ export default function ReportCardGeneratorPage() {
         Address: 'Address 789, Area 123, City',
         Session: '2026-2027',
         Exam: 'SUMMATIVE ASSESSMENT - 1',
-        English: 92,
-        Urdu: 90,
-        Sindhi: 88,
-        'Islamiat Oral': 40,
-        'Islamiat Written': 58,
-        'General Science': 94,
-        Mathematics: 96,
-        'Social Studies': 89,
+        English: Math.round(base * 0.92),
+        Urdu: Math.round(base * 0.90),
+        Sindhi: Math.round(base * 0.88),
+        'Islamiat Oral': Math.round(oralBase * 0.92),
+        'Islamiat Written': Math.round(writtenBase * 0.90),
+        'General Science': Math.round(base * 0.94),
+        Mathematics: Math.round(base * 0.96),
+        'Social Studies': Math.round(base * 0.89),
+        Rank: '1st',
         Attendance: '99%',
         Conduct: 'Excellent',
       },
@@ -851,8 +1090,10 @@ export default function ReportCardGeneratorPage() {
             };
           });
 
-          setStudents(converted);
-          setSelectedRowNumbers(new Set(converted.map((s) => s.rowNumber)));
+          const ranked = assignRanksToStudents(converted, subjectItems, passingPercentage);
+          setStudents(ranked);
+          setHasUserUploadedData(true);
+          setSelectedRowNumbers(new Set(ranked.map((s) => s.rowNumber)));
           setStatusMessage(`Successfully loaded ${converted.length} student records.`);
         } catch (scanErr) {
           setErrorMessage(scanErr instanceof Error ? scanErr.message : 'Scanning failed. Please try a clearer photo.');
@@ -870,6 +1111,10 @@ export default function ReportCardGeneratorPage() {
 
   // Direct Browser Print
   const handlePrint = () => {
+    if (!hasUserUploadedData) {
+      setErrorMessage('Dummy sample data cannot be printed. Please upload your student Excel file or scan a marksheet first.');
+      return;
+    }
     window.print();
   };
 
@@ -1207,6 +1452,20 @@ export default function ReportCardGeneratorPage() {
                       />
                     </div>
 
+                    <div className="flex items-center gap-1.5 border-l border-slate-200 pl-2">
+                      <span className="text-xs font-semibold text-slate-600">Passing %:</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={passingPercentage}
+                        onChange={(e) => handlePassingPercentageChange(parseFloat(e.target.value) || 40)}
+                        className="w-14 rounded-lg border border-slate-300 px-2 py-1 text-xs font-bold text-center focus:border-indigo-600 focus:outline-none bg-white"
+                        title="Passing percentage per subject and overall (default: 40%)"
+                      />
+                      <span className="text-xs font-bold text-slate-500">%</span>
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => setShowSubjectMaxConfig(!showSubjectMaxConfig)}
@@ -1442,7 +1701,34 @@ export default function ReportCardGeneratorPage() {
           const backRightCard = mirrorBackForDuplex ? firstCard : secondCard;
 
           return (
-            <div key={`pair-${pairIndex}`} className="flex flex-col items-center gap-6">
+            <div key={`pair-${pairIndex}`} className="rc-pair-wrapper flex flex-col items-center gap-6" data-pair-index={pairIndex}>
+              {/* Pair Controls Header */}
+              <div className="no-print w-full max-w-[297mm] flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-100 border border-slate-200 px-4 py-2 text-xs">
+                <div className="font-bold text-slate-700 flex items-center gap-2">
+                  <span className="rounded bg-indigo-100 text-indigo-800 px-2 py-0.5 text-[11px] font-black">
+                    Pair #{pairIndex + 1}
+                  </span>
+                  <span>
+                    Left: <strong className="text-slate-900">{firstCard.name}</strong> (Roll: {firstCard.rollNo}) | Right:{' '}
+                    {secondCard ? (
+                      <><strong className="text-slate-900">{secondCard.name}</strong> (Roll: {secondCard.rollNo})</>
+                    ) : (
+                      <em className="text-slate-400">Empty</em>
+                    )}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handlePrintSinglePair(pairIndex)}
+                  disabled={!hasUserUploadedData}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                  title={!hasUserUploadedData ? 'Upload student data to enable printing' : `Print Sheet ${pairIndex * 2 + 1} & ${pairIndex * 2 + 2}`}
+                >
+                  <FiPrinter size={13} className="text-emerald-600" />
+                  <span>Print This Pair</span>
+                </button>
+              </div>
+
               {/* SHEET 1: 2 FRONTS ON A4 LANDSCAPE */}
               <div className="rc-sheet-wrapper w-full">
                 <div className="no-print mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-600">
@@ -1481,7 +1767,7 @@ export default function ReportCardGeneratorPage() {
                 <div className="rc-a4-landscape-sheet">
                   <div className="rc-a5-half">
                     {backLeftCard ? (
-                      <ReportCardBack data={backLeftCard} school={activeSchoolConfig} subjectRows={subjectItems} />
+                      <ReportCardBack data={backLeftCard} school={activeSchoolConfig} subjectRows={subjectItems} isDummy={!hasUserUploadedData} />
                     ) : (
                       <div className="rc-a5-slot" />
                     )}
@@ -1490,7 +1776,7 @@ export default function ReportCardGeneratorPage() {
                   <div className="rc-center-cut-line" aria-hidden="true" />
                   <div className="rc-a5-half">
                     {backRightCard ? (
-                      <ReportCardBack data={backRightCard} school={activeSchoolConfig} subjectRows={subjectItems} />
+                      <ReportCardBack data={backRightCard} school={activeSchoolConfig} subjectRows={subjectItems} isDummy={!hasUserUploadedData} />
                     ) : (
                       <div className="rc-a5-slot" />
                     )}
@@ -1505,23 +1791,42 @@ export default function ReportCardGeneratorPage() {
         <div className="no-print w-full max-w-5xl mx-auto my-8 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-indigo-500/20">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300">
-                <FiCheckCircle size={14} className="text-emerald-400" />
-                <span>Review Complete</span>
-              </div>
-              <h3 className="mt-2 text-xl font-black tracking-tight text-white">
-                Ready to Print {cardsToPrint.length} Student Report Cards
-              </h3>
-              <p className="mt-1 text-xs text-indigo-200">
-                {cardPairs.length * 2} A4 Landscape Sheets total ({cardPairs.length} Front covers + {cardPairs.length} Back marks tables with duplex mirroring).
-              </p>
+              {!hasUserUploadedData ? (
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300">
+                    <FiEye size={14} />
+                    <span>Preview Mode (Sample Data)</span>
+                  </div>
+                  <h3 className="mt-2 text-xl font-black tracking-tight text-white">
+                    Sample Preview Mode • Upload Student Data to Print
+                  </h3>
+                  <p className="mt-1 text-xs text-indigo-200">
+                    Dummy obtained marks are shown in light gray for review only. Upload your Excel marksheet or scan students above to enable printing and PDF download.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300">
+                    <FiCheckCircle size={14} className="text-emerald-400" />
+                    <span>Review Complete</span>
+                  </div>
+                  <h3 className="mt-2 text-xl font-black tracking-tight text-white">
+                    Ready to Print {cardsToPrint.length} Student Report Cards
+                  </h3>
+                  <p className="mt-1 text-xs text-indigo-200">
+                    {cardPairs.length * 2} A4 Landscape Sheets total ({cardPairs.length} Front covers + {cardPairs.length} Back marks tables with duplex mirroring).
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={handlePrint}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-black text-white shadow-lg hover:bg-emerald-400 transition"
+                disabled={!hasUserUploadedData}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-black text-white shadow-lg hover:bg-emerald-400 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-700"
+                title={!hasUserUploadedData ? 'Upload student data to enable printing' : 'Print All Report Cards'}
               >
                 <FiPrinter size={18} />
                 <span>Print All Report Cards</span>
@@ -1530,8 +1835,9 @@ export default function ReportCardGeneratorPage() {
               <button
                 type="button"
                 onClick={handleExportPdf}
-                disabled={pdfGenerating}
-                className="inline-flex items-center gap-2 rounded-xl bg-white text-indigo-950 px-5 py-3.5 text-sm font-bold shadow-lg hover:bg-indigo-50 transition disabled:opacity-50"
+                disabled={!hasUserUploadedData || pdfGenerating}
+                className="inline-flex items-center gap-2 rounded-xl bg-white text-indigo-950 px-5 py-3.5 text-sm font-bold shadow-lg hover:bg-indigo-50 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-200"
+                title={!hasUserUploadedData ? 'Upload student data to enable PDF export' : 'Download Complete PDF'}
               >
                 <FiDownload size={18} />
                 <span>{pdfGenerating ? 'Generating PDF...' : 'Download Complete PDF'}</span>
@@ -2074,7 +2380,24 @@ export default function ReportCardGeneratorPage() {
           line-height: 1;
         }
 
+        .rc-dummy-num {
+          color: #94a3b8 !important;
+          font-weight: 500 !important;
+        }
+
         @media print {
+          ${!hasUserUploadedData ? `
+            .rc-print-container {
+              display: none !important;
+            }
+          ` : ''}
+
+          ${activePrintPairIndex !== null ? `
+            .rc-pair-wrapper:not([data-pair-index="${activePrintPairIndex}"]) {
+              display: none !important;
+            }
+          ` : ''}
+
           .rc-print-hidden {
             display: none !important;
           }
