@@ -215,9 +215,11 @@ const formatExamBannerYear = (suffix: string) => {
 export function ReportCardBack({
   data,
   school = SCHOOL_PRESETS.gbss_pak_quarter,
+  subjectRows = REPORT_SUBJECT_ROWS,
 }: {
   data: ReportCardStudentData;
   school?: SchoolConfig;
+  subjectRows?: Array<{ key: string; label: string; compactText?: boolean }>;
 }) {
   const activeSchool = school || SCHOOL_PRESETS.gbss_pak_quarter;
   return (
@@ -286,7 +288,7 @@ export function ReportCardBack({
                 </tr>
               </thead>
               <tbody>
-                {REPORT_SUBJECT_ROWS.map((subj, idx) => {
+                {subjectRows.map((subj, idx) => {
                   const score = data.subjects[subj.key] || { maxMarks: '', marksObtained: '' };
 
                   if (subj.key === 'islamiat_total') {
@@ -306,7 +308,7 @@ export function ReportCardBack({
                       <tr key={subj.key} className="rc-subj-row rc-islamiat-row">
                         <td className="rc-islamiat-cell">
                           <div className="rc-islamiat-grid">
-                            <div className="rc-islamiat-main">Islamiat</div>
+                            <div className="rc-islamiat-main">{subj.label}</div>
                             <div className="rc-islamiat-sub">
                               <div className="rc-islamiat-sub-top">
                                 <span>Nazra / Oral</span>
@@ -322,7 +324,7 @@ export function ReportCardBack({
                         <td className="rc-num-cell">{hasIsl ? (score.maxMarks || '100') : '-'}</td>
                         <td className="rc-num-cell">{hasIsl ? (score.marksObtained || '-') : '-'}</td>
                         {idx === 0 ? (
-                          <td rowSpan={REPORT_SUBJECT_ROWS.length + 1} className="rc-remarks-merged-cell">
+                          <td rowSpan={subjectRows.length + 1} className="rc-remarks-merged-cell">
                             <RemarksColumnContent data={data} />
                           </td>
                         ) : null}
@@ -334,13 +336,13 @@ export function ReportCardBack({
 
                   return (
                     <tr key={subj.key} className="rc-subj-row">
-                      <td className={`rc-subj-name-cell ${subj.compactText ? 'rc-subj-compact' : ''}`}>
+                      <td className={`rc-subj-name-cell ${subj.compactText || subj.label.length > 18 ? 'rc-subj-compact' : ''}`}>
                         {subj.label}
                       </td>
                       <td className="rc-num-cell">{hasMarks ? score.maxMarks : '-'}</td>
                       <td className="rc-num-cell">{hasMarks ? score.marksObtained : '-'}</td>
                       {idx === 0 ? (
-                        <td rowSpan={REPORT_SUBJECT_ROWS.length + 1} className="rc-remarks-merged-cell">
+                        <td rowSpan={subjectRows.length + 1} className="rc-remarks-merged-cell">
                           <RemarksColumnContent data={data} />
                         </td>
                       ) : null}

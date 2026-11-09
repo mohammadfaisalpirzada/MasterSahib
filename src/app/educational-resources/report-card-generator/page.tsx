@@ -13,6 +13,8 @@ import {
   FiRefreshCw,
   FiEye,
   FiSliders,
+  FiPlus,
+  FiTrash2,
 } from 'react-icons/fi';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
@@ -59,6 +61,30 @@ export const TERM_OPTIONS = [
   { id: 'second_assessment', label: 'Second Assessment (Formative 2)', defaultTitle: 'SECOND ASSESSMENT' },
   { id: 'other', label: 'Custom Examination Title', defaultTitle: '' },
 ] as const;
+
+export interface SubjectConfigItem {
+  key: string;
+  label: string;
+  maxMarks: string;
+  isIslamiat?: boolean;
+}
+
+const DEFAULT_SUBJECT_ITEMS: SubjectConfigItem[] = [
+  { key: 'english', label: 'English', maxMarks: '100' },
+  { key: 'urdu', label: 'Urdu', maxMarks: '100' },
+  { key: 'social_pak_studies', label: 'S. Studies / Pak. Studies', maxMarks: '100' },
+  { key: 'sindhi', label: 'Sindhi', maxMarks: '100' },
+  { key: 'islamiat_total', label: 'Islamiat', maxMarks: '100', isIslamiat: true },
+  { key: 'g_science', label: 'G. Science', maxMarks: '100' },
+  { key: 'mathematics', label: 'Mathematics', maxMarks: '100' },
+  { key: 'h_economics', label: 'H. Economics', maxMarks: '100' },
+  { key: 'arabic_drawing', label: 'Arabic / Drawing', maxMarks: '100' },
+  { key: 'biology_computer', label: 'Biology / Computer', maxMarks: '100' },
+  { key: 'physics', label: 'Physics', maxMarks: '100' },
+  { key: 'chemistry', label: 'Chemistry', maxMarks: '100' },
+];
+
+const MAX_SUBJECTS_LIMIT = 12;
 
 const CONFIGURABLE_SUBJECTS: Array<{ key: SubjectKey; label: string; badge?: string }> = [
   { key: 'english', label: 'English' },
@@ -171,6 +197,7 @@ export default function ReportCardGeneratorPage() {
 
   // Max Marks Configuration
   const [defaultMaxMarks, setDefaultMaxMarks] = useState<string>('100');
+    const [subjectItems, setSubjectItems] = useState<SubjectConfigItem[]>(DEFAULT_SUBJECT_ITEMS);
   const [customSubjectMaxMarks, setCustomSubjectMaxMarks] = useState<Partial<Record<SubjectKey, string>>>({
     islamiat_oral: '40',
     islamiat_written: '60',
@@ -287,15 +314,21 @@ export default function ReportCardGeneratorPage() {
 
   // Helper to calculate total, percentage, grade
   const computeStudentStats = (
-    subjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>>,
+    subjects: Partial<Record<string, { maxMarks: string; marksObtained: string }>>,
+    activeItems: SubjectConfigItem[] = subjectItems,
   ) => {
     let totalMax = 0;
     let totalObt = 0;
     let anySubjFailed = false;
 
+    const activeKeys = new Set(activeItems.map((s) => s.key));
+
     Object.entries(subjects).forEach(([key, score]) => {
       if (key === 'islamiat_oral' || key === 'islamiat_written') {
         // Skip individual islamiat parts from grand total if islamiat_total is counted
+        return;
+      }
+      if (!activeKeys.has(key)) {
         return;
       }
       const rawObt = score?.marksObtained != null ? String(score.marksObtained).trim() : '';
@@ -333,35 +366,125 @@ export default function ReportCardGeneratorPage() {
     };
   };
 
+  // Subject manipulation handlers
+  const handleSubjectLabelChange = (key: string, newLabel: string) => {
+    setSubjectItems((prev) =>
+      prev.map((s) => (s.key === key ? { ...s, label: newLabel } : s)),
+    );
+  };
+
+  const handleSubjectMaxMarksChange = (key: string, newMax: string) => {
+    const updatedItems = subjectItems.map((s) => (s.key === key ? { ...s, maxMarks: newMax } : s));
+    setSubjectItems(updatedItems);
+    const updatedCustom = { ...customSubjectMaxMarks, [key]: newMax };
+    setCustomSubjectMaxMarks(updatedCustom);
+
+    setStudents((prev) =>
+      prev.map((st) => {
+        const nextSubjects = { ...st.subjects };
+        if (nextSubjects[key]) {
+          nextSubjects[key] = {
+            maxMarks: newMax,
+            marksObtained: nextSubjects[key]!.marksObtained,
+          };
+        }
+        const stats = computeStudentStats(nextSubjects, updatedItems);
+        return {
+          ...st,
+          subjects: nextSubjects,
+          grandTotalMax: stats.grandTotalMax,
+          grandTotalObtained: stats.grandTotalObtained,
+          percentage: stats.percentage,
+          grade: stats.grade,
+          result: stats.result,
+        };
+      }),
+    );
+  };
+
+  const handleAddSubject = () => {
+    if (subjectItems.length >= MAX_SUBJECTS_LIMIT) return;
+    const newKey = `custom_subj_${Date.now()}`;
+    const newItem: SubjectConfigItem = {
+      key: newKey,
+      label: `Subject ${subjectItems.length + 1}`,
+      maxMarks: defaultMaxMarks,
+    };
+    const nextList = [...subjectItems, newItem];
+    setSubjectItems(nextList);
+  };
+
+  const handleRemoveSubject = (key: string) => {
+    if (subjectItems.length <= 1) return;
+    const nextList = subjectItems.filter((s) => s.key !== key);
+    setSubjectItems(nextList);
+    setStudents((prev) =>
+      prev.map((st) => {
+        const stats = computeStudentStats(st.subjects, nextList);
+        return {
+          ...st,
+          grandTotalMax: stats.grandTotalMax,
+          grandTotalObtained: stats.grandTotalObtained,
+          percentage: stats.percentage,
+          grade: stats.grade,
+          result: stats.result,
+        };
+      }),
+    );
+  };
+
+  const handleResetSubjects = () => {
+    const base = defaultMaxMarks;
+    const reset = DEFAULT_SUBJECT_ITEMS.map((s) => ({ ...s, maxMarks: base }));
+    setSubjectItems(reset);
+    setStudents((prev) =>
+      prev.map((st) => {
+        const stats = computeStudentStats(st.subjects, reset);
+        return {
+          ...st,
+          grandTotalMax: stats.grandTotalMax,
+          grandTotalObtained: stats.grandTotalObtained,
+          percentage: stats.percentage,
+          grade: stats.grade,
+          result: stats.result,
+        };
+      }),
+    );
+  };
+
   // Handler for changing default max marks
   const handleMaxMarksChange = (newVal: string) => {
     setDefaultMaxMarks(newVal);
     const base = parseFloat(newVal) || 100;
-    const nextCustom: Partial<Record<SubjectKey, string>> = {
+    const nextCustom: Partial<Record<string, string>> = {
       islamiat_oral: String(Math.round(base * 0.4)),
       islamiat_written: String(Math.round(base * 0.6)),
       islamiat_total: String(base),
     };
     setCustomSubjectMaxMarks(nextCustom);
 
+    const updatedItems = subjectItems.map((s) => ({
+      ...s,
+      maxMarks: String(base),
+    }));
+    setSubjectItems(updatedItems);
+
     // Update all student records dynamically with the new Max Marks
     setStudents((prev) =>
       prev.map((st) => {
-        const nextSubjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>> = {};
+        const nextSubjects: Partial<Record<string, { maxMarks: string; marksObtained: string }>> = {};
         Object.entries(st.subjects).forEach(([k, score]) => {
           if (!score) return;
-          const key = k as SubjectKey;
           let subMax = String(base);
-          if (nextCustom[key]) {
-            subMax = nextCustom[key]!;
-          }
-          nextSubjects[key] = {
+          if (k === 'islamiat_oral') subMax = nextCustom.islamiat_oral!;
+          else if (k === 'islamiat_written') subMax = nextCustom.islamiat_written!;
+          nextSubjects[k] = {
             maxMarks: subMax,
             marksObtained: score.marksObtained,
           };
         });
 
-        const stats = computeStudentStats(nextSubjects);
+        const stats = computeStudentStats(nextSubjects, updatedItems);
         return {
           ...st,
           subjects: nextSubjects,
@@ -379,7 +502,7 @@ export default function ReportCardGeneratorPage() {
   const effectiveStudents: ReportCardStudentData[] = useMemo(() => {
     const { startSuffix, endSuffix } = parseSessionYears(sessionLabel);
     return students.map((st) => {
-      const stats = computeStudentStats(st.subjects);
+      const stats = computeStudentStats(st.subjects, subjectItems);
       return {
         ...st,
         schoolName: schoolName.trim() || st.schoolName,
@@ -1098,53 +1221,112 @@ export default function ReportCardGeneratorPage() {
                   </div>
                 </div>
 
-                {/* Collapsible Subject-Wise Detailed Max Marks */}
+                {/* Collapsible Subject-Wise Detailed Max Marks & Names */}
                 {showSubjectMaxConfig ? (
                   <div className="mt-3 pt-3 border-t border-slate-200">
-                    <p className="text-[11px] font-semibold text-slate-600 mb-2">
-                      Set different maximum marks for individual subjects (e.g. Nazra, Written, Maths):
-                    </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                      {CONFIGURABLE_SUBJECTS.map((s) => {
-                        const base = parseFloat(defaultMaxMarks) || 100;
-                        let defaultVal = defaultMaxMarks;
-                        if (s.key === 'islamiat_oral') defaultVal = String(Math.round(base * 0.4));
-                        else if (s.key === 'islamiat_written') defaultVal = String(Math.round(base * 0.6));
-                        else if (s.key === 'islamiat_total') {
-                          const oral = parseFloat(customSubjectMaxMarks['islamiat_oral'] || String(Math.round(base * 0.4))) || 0;
-                          const written = parseFloat(customSubjectMaxMarks['islamiat_written'] || String(Math.round(base * 0.6))) || 0;
-                          defaultVal = String(oral + written);
-                        }
-                        const currentVal = customSubjectMaxMarks[s.key] ?? defaultVal;
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                      <p className="text-[11px] font-semibold text-slate-600">
+                        Edit subject names and maximum marks. You can add up to {MAX_SUBJECTS_LIMIT} subjects (fits comfortably on A4 report card).
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-slate-500">
+                          {subjectItems.length} / {MAX_SUBJECTS_LIMIT} Subjects
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleResetSubjects}
+                          className="text-[10px] font-semibold text-indigo-600 hover:underline"
+                        >
+                          Reset Defaults
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                      {subjectItems.map((s) => {
                         return (
-                          <div key={s.key} className="rounded-lg border border-slate-200 p-2 bg-slate-50">
-                            <div className="flex items-center justify-between gap-1 mb-1">
-                              <label className="block text-[11px] font-bold text-slate-700 truncate">
-                                {s.label}
-                              </label>
-                              {s.badge ? (
-                                <span className="text-[9px] font-bold uppercase px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">
-                                  {s.badge}
-                                </span>
+                          <div
+                            key={s.key}
+                            className="rounded-xl border border-slate-200 p-2.5 bg-slate-50 flex flex-col justify-between gap-2 shadow-sm"
+                          >
+                            <div className="flex items-center justify-between gap-1">
+                              <input
+                                type="text"
+                                value={s.label}
+                                onChange={(e) => handleSubjectLabelChange(s.key, e.target.value)}
+                                className="w-full rounded-lg border border-slate-300 px-2 py-1 text-xs font-bold text-slate-800 bg-white focus:border-indigo-600 focus:outline-none"
+                                title="Click to rename subject"
+                              />
+                              {subjectItems.length > 1 ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSubject(s.key)}
+                                  title="Remove this subject"
+                                  className="text-slate-400 hover:text-rose-600 p-1 shrink-0 transition"
+                                >
+                                  <FiTrash2 size={13} />
+                                </button>
                               ) : null}
                             </div>
-                            <input
-                              type="number"
-                              min="1"
-                              max="500"
-                              value={currentVal}
-                              onChange={(e) => {
-                                const updated = {
-                                  ...customSubjectMaxMarks,
-                                  [s.key]: e.target.value,
-                                };
-                                applyCustomSubjectChange(updated);
-                              }}
-                              className="w-full rounded border border-slate-300 px-2 py-1 text-xs font-bold text-center bg-white"
-                            />
+
+                            <div className="flex items-center justify-between gap-2 text-xs">
+                              <span className="text-[11px] font-semibold text-slate-500">Max Marks:</span>
+                              <input
+                                type="number"
+                                min="1"
+                                max="500"
+                                value={s.maxMarks}
+                                onChange={(e) => handleSubjectMaxMarksChange(s.key, e.target.value)}
+                                className="w-20 rounded-lg border border-slate-300 px-2 py-1 text-xs font-bold text-center bg-white focus:border-indigo-600 focus:outline-none"
+                              />
+                            </div>
+
+                            {s.isIslamiat ? (
+                              <div className="mt-1 pt-1.5 border-t border-slate-200 flex items-center justify-between gap-1 text-[10px]">
+                                <span className="text-slate-500 font-semibold">Oral / Written:</span>
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="number"
+                                    value={customSubjectMaxMarks['islamiat_oral'] || String(Math.round((parseFloat(s.maxMarks) || 100) * 0.4))}
+                                    onChange={(e) => {
+                                      const updated = { ...customSubjectMaxMarks, islamiat_oral: e.target.value };
+                                      setCustomSubjectMaxMarks(updated);
+                                    }}
+                                    title="Nazra / Oral Max Marks"
+                                    className="w-10 rounded border border-slate-300 px-1 py-0.5 text-center font-bold bg-white"
+                                  />
+                                  <span>+</span>
+                                  <input
+                                    type="number"
+                                    value={customSubjectMaxMarks['islamiat_written'] || String(Math.round((parseFloat(s.maxMarks) || 100) * 0.6))}
+                                    onChange={(e) => {
+                                      const updated = { ...customSubjectMaxMarks, islamiat_written: e.target.value };
+                                      setCustomSubjectMaxMarks(updated);
+                                    }}
+                                    title="Written Max Marks"
+                                    className="w-10 rounded border border-slate-300 px-1 py-0.5 text-center font-bold bg-white"
+                                  />
+                                </div>
+                              </div>
+                            ) : null}
                           </div>
                         );
                       })}
+
+                      {subjectItems.length < MAX_SUBJECTS_LIMIT ? (
+                        <button
+                          type="button"
+                          onClick={handleAddSubject}
+                          className="rounded-xl border-2 border-dashed border-indigo-300 p-2.5 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-50 flex items-center justify-center gap-2 text-xs font-bold transition min-h-[75px]"
+                        >
+                          <FiPlus size={16} />
+                          <span>Add Subject ({subjectItems.length}/{MAX_SUBJECTS_LIMIT})</span>
+                        </button>
+                      ) : (
+                        <div className="rounded-xl border border-slate-200 p-2.5 bg-slate-100 flex items-center justify-center text-[11px] font-semibold text-slate-500 text-center min-h-[75px]">
+                          Max 12 subjects capacity reached (A4 layout full)
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : null}
@@ -1262,7 +1444,7 @@ export default function ReportCardGeneratorPage() {
           return (
             <div key={`pair-${pairIndex}`} className="flex flex-col items-center gap-6">
               {/* SHEET 1: 2 FRONTS ON A4 LANDSCAPE */}
-              <div className="w-full">
+              <div className="rc-sheet-wrapper w-full">
                 <div className="no-print mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-600">
                   <span>A4 Sheet {pairIndex * 2 + 1} — FRONT COVER (2 × A5 Fronts)</span>
                   <span>
@@ -1288,7 +1470,7 @@ export default function ReportCardGeneratorPage() {
               </div>
 
               {/* SHEET 2: 2 BACKS ON A4 LANDSCAPE (Reverse) */}
-              <div className="w-full">
+              <div className="rc-sheet-wrapper w-full">
                 <div className="no-print mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-600">
                   <span>A4 Sheet {pairIndex * 2 + 2} — RESULT MARKS TABLE (2 × A5 Backs)</span>
                   <span>
@@ -1299,7 +1481,7 @@ export default function ReportCardGeneratorPage() {
                 <div className="rc-a4-landscape-sheet">
                   <div className="rc-a5-half">
                     {backLeftCard ? (
-                      <ReportCardBack data={backLeftCard} school={activeSchoolConfig} />
+                      <ReportCardBack data={backLeftCard} school={activeSchoolConfig} subjectRows={subjectItems} />
                     ) : (
                       <div className="rc-a5-slot" />
                     )}
@@ -1308,7 +1490,7 @@ export default function ReportCardGeneratorPage() {
                   <div className="rc-center-cut-line" aria-hidden="true" />
                   <div className="rc-a5-half">
                     {backRightCard ? (
-                      <ReportCardBack data={backRightCard} school={activeSchoolConfig} />
+                      <ReportCardBack data={backRightCard} school={activeSchoolConfig} subjectRows={subjectItems} />
                     ) : (
                       <div className="rc-a5-slot" />
                     )}
@@ -1480,26 +1662,24 @@ export default function ReportCardGeneratorPage() {
         .rc-progress-pill {
           border: 1.4px solid #000000;
           border-radius: 999px;
-          height: 11mm;
-          min-height: 11mm;
+          height: 12mm;
+          min-height: 12mm;
           padding: 0 8mm;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           background: #ffffff;
           box-sizing: border-box;
-          overflow: hidden;
         }
 
         .rc-blackletter-text {
           font-family: 'UnifrakturMaguntia', 'Old English Text MT', 'Engravers Old English BT', Georgia, serif;
-          font-size: 19pt;
+          font-size: 18pt;
           font-weight: 400;
           line-height: 1;
           color: #000000;
           display: inline-block;
           vertical-align: middle;
-          margin-top: -1.2mm;
           letter-spacing: 0.5px;
         }
 
@@ -1522,15 +1702,15 @@ export default function ReportCardGeneratorPage() {
 
         .rc-year-dots {
           display: inline-flex;
-          align-items: center;
+          align-items: flex-end;
           justify-content: center;
           min-width: 16mm;
-          height: 5.5mm;
+          height: 6mm;
           border-bottom: 1.5px dotted #000000;
           text-align: center;
           font-size: 11.5pt;
           font-weight: 700;
-          padding: 0 1mm;
+          padding: 0 1mm 1.5mm 1mm;
           margin: 0 1.5mm 0 1mm;
           line-height: 1;
           box-sizing: border-box;
@@ -1584,12 +1764,12 @@ export default function ReportCardGeneratorPage() {
           font-weight: 700;
           color: #000000;
           text-align: center;
-          min-height: 5.5mm;
-          height: 5.5mm;
+          min-height: 6mm;
+          height: 6mm;
           line-height: 1;
-          padding: 0 1.5mm;
+          padding: 0 1.5mm 1.5mm 1.5mm;
           display: inline-flex;
-          align-items: center;
+          align-items: flex-end;
           justify-content: center;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -1925,16 +2105,45 @@ export default function ReportCardGeneratorPage() {
           }
 
           .rc-print-container {
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            gap: 0 !important;
+            width: 100% !important;
+          }
+
+          .rc-pair-wrapper {
+            display: block !important;
+            margin: 0 !important;
             padding: 0 !important;
             gap: 0 !important;
+            width: 100% !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+          }
+
+          .rc-sheet-wrapper {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
           }
 
           .rc-a4-landscape-sheet {
+            display: flex !important;
+            width: 297mm !important;
+            height: 209.5mm !important;
+            max-height: 209.5mm !important;
+            box-sizing: border-box !important;
             border: none !important;
             box-shadow: none !important;
-            margin: 0 !important;
-            page-break-after: always;
-            break-after: page;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: always !important;
+            break-after: page !important;
+            overflow: hidden !important;
           }
         }
       `}</style>
