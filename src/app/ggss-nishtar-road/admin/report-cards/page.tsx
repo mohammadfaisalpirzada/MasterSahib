@@ -17,6 +17,7 @@ import {
   FiX,
   FiSearch,
 } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -177,8 +178,23 @@ export default function ReportCardsPage() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Print controls
-  const [mirrorBackForDuplex, setMirrorBackForDuplex] = useState<boolean>(true);
+  const [duplexMode, setDuplexMode] = useState<'long_edge' | 'short_edge' | 'none'>('long_edge');
+  const [previewRotatedOnScreen, setPreviewRotatedOnScreen] = useState<boolean>(false);
+  const mirrorBackForDuplex = duplexMode !== 'none';
+  const rotateBackForDuplex = duplexMode === 'long_edge';
   const [fillOddSlotWithBlankTemplate, setFillOddSlotWithBlankTemplate] = useState<boolean>(true);
+  const [passingPercentage, setPassingPercentage] = useState<number>(40);
+  const [activePrintPairIndex, setActivePrintPairIndex] = useState<number | null>(null);
+
+  const handlePrintSinglePair = (pairIndex: number) => {
+    setActivePrintPairIndex(pairIndex);
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        setActivePrintPairIndex(null);
+      }, 1000);
+    }, 150);
+  };
 
   // Live Data Lists
   const [admissionRecords, setAdmissionRecords] = useState<AdmissionRecord[]>([]);
@@ -605,12 +621,60 @@ export default function ReportCardsPage() {
       for (let i = 0; i < sheets.length; i += 1) {
         if (i > 0) pdf.addPage('a4', 'landscape');
         const sheetEl = sheets[i];
+        const isBackSheet = i % 2 === 1;
+
         const canvas = await html2canvas(sheetEl, {
           scale: 2,
           useCORS: true,
           backgroundColor: '#ffffff',
+          logging: false,
+          onclone: (_clonedDoc, element) => {
+            const clonedDoc = element.ownerDocument;
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-field-text').forEach((el) => {
+              el.style.position = 'relative';
+              el.style.top = '-1.5px';
+              el.style.display = 'inline-block';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-year-dots span').forEach((el) => {
+              el.style.position = 'relative';
+              el.style.top = '-1.5px';
+              el.style.display = 'inline-block';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-back-top-val span').forEach((el) => {
+              el.style.position = 'relative';
+              el.style.top = '-1px';
+              el.style.display = 'inline-block';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-progress-pill').forEach((el) => {
+              el.style.display = 'flex';
+              el.style.justifyContent = 'center';
+              el.style.alignItems = 'center';
+              el.style.textAlign = 'center';
+              el.style.margin = '0 auto';
+            });
+            clonedDoc.querySelectorAll<HTMLElement>('.rc-blackletter-text').forEach((el) => {
+              el.style.display = 'inline-block';
+              el.style.textAlign = 'center';
+              el.style.letterSpacing = 'normal';
+            });
+          },
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+        let finalCanvas: HTMLCanvasElement = canvas;
+        if (isBackSheet && rotateBackForDuplex) {
+          const rotatedCanvas = document.createElement('canvas');
+          rotatedCanvas.width = canvas.width;
+          rotatedCanvas.height = canvas.height;
+          const ctx = rotatedCanvas.getContext('2d');
+          if (ctx) {
+            ctx.translate(canvas.width, canvas.height);
+            ctx.rotate(Math.PI);
+            ctx.drawImage(canvas, 0, 0);
+            finalCanvas = rotatedCanvas;
+          }
+        }
+
+        const imgData = finalCanvas.toDataURL('image/jpeg', 0.95);
         pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
       }
 
@@ -1257,17 +1321,30 @@ export default function ReportCardsPage() {
                 Select All ({filteredCards.length} students)
               </label>
 
-              <label
-                className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1 text-xs text-slate-600"
-                title="When flipping paper left-to-right for duplex printing, the front-left card aligns with the back-right card."
-              >
-                <input
-                  type="checkbox"
-                  checked={mirrorBackForDuplex}
-                  onChange={(e) => setMirrorBackForDuplex(e.target.checked)}
-                />
-                Duplex Flip (Back 2 | Back 1)
-              </label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="font-bold text-slate-700 text-xs">Duplex Printer Setting:</span>
+                <select
+                  value={duplexMode}
+                  onChange={(e) => setDuplexMode(e.target.value as 'long_edge' | 'short_edge' | 'none')}
+                  className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                >
+                  <option value="long_edge">Flip on Long Edge (Rotate 180° - Standard Duplex)</option>
+                  <option value="short_edge">Flip on Short Edge (0° Upright - Booklet Mode)</option>
+                  <option value="none">Single-Sided / Manual Feed (No Mirroring)</option>
+                </select>
+              </div>
+
+              {rotateBackForDuplex ? (
+                <label className="inline-flex items-center gap-1.5 font-semibold text-slate-600 cursor-pointer select-none text-xs">
+                  <input
+                    type="checkbox"
+                    checked={previewRotatedOnScreen}
+                    onChange={(e) => setPreviewRotatedOnScreen(e.target.checked)}
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span>Preview 180° on Screen</span>
+                </label>
+              ) : null}
 
               <label
                 className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1 text-xs text-slate-600"
@@ -1302,6 +1379,17 @@ export default function ReportCardsPage() {
                 <FiDownload size={15} /> {pdfGenerating ? 'Creating PDF...' : 'Download PDF'}
               </button>
             </div>
+
+            {rotateBackForDuplex ? (
+              <div className="w-full mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-[11px] text-emerald-800 flex items-center justify-between">
+                <span>
+                  <strong>ڈوپلیکس پرنٹنگ محفوظ ہے:</strong> بیک پیج خودکار طور پر 180 ڈگری روٹیٹ ہو کر پرنٹ اور پی ڈی ایف میں جائے گا تاکہ ڈوپلیکس پرنٹر سے کارڈ نکلنے پر پچھلا صفحہ الٹا نہ آئے۔
+                </span>
+                <span className="text-emerald-700 font-semibold hidden md:inline">
+                  Back page auto-rotated 180° for standard duplex printers.
+                </span>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -1778,7 +1866,75 @@ export default function ReportCardsPage() {
 
       {/* ===================== A4 Print & Preview Sheets ===================== */}
       {activeTab === 'print' ? (
-        <div className="mx-auto mt-8 flex flex-col items-center gap-10 px-4 print:mt-0 print:gap-0 print:px-0">
+        <div className="mx-auto mt-6 flex flex-col items-center gap-4 px-4 print:mt-0 print:gap-0 print:px-0 max-w-[297mm]">
+          {/* DARK ACTION BAR ON TOP */}
+          <div className="no-print w-full rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-5 text-white shadow-xl border border-indigo-500/20">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30">
+                  <FiCheckCircle size={14} className="text-emerald-400" />
+                  <span>Ready for Printing</span>
+                </div>
+                <h3 className="mt-1.5 text-lg font-black tracking-tight text-white">
+                  Ready to Print {cardsToPrint.length} Student Report Cards
+                </h3>
+                <p className="mt-0.5 text-xs text-indigo-200">
+                  {cardPairs.length * 2} A4 Landscape Sheets total ({cardPairs.length} Front covers + {cardPairs.length} Back marks tables with {rotateBackForDuplex ? '180° duplex auto-rotation' : 'standard layout'}).
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleBulkPrint}
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-emerald-400 transition"
+                  title="Recommended: Open print dialog to print directly or save crisp vector PDF"
+                >
+                  <FiPrinter size={18} />
+                  <span>Print All (or Save as PDF)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExportBulkPdf}
+                  disabled={pdfGenerating}
+                  className="inline-flex items-center gap-2 rounded-xl bg-white text-indigo-950 px-5 py-3 text-sm font-bold shadow-lg hover:bg-indigo-50 transition disabled:opacity-40"
+                  title="Download direct PDF file"
+                >
+                  <FiDownload size={18} />
+                  <span>{pdfGenerating ? 'Generating PDF...' : 'Download Direct PDF'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* WHATSAPP FEEDBACK & CONTACT BAR (UNDERNEATH) */}
+          <div className="no-print w-full rounded-xl bg-white border border-slate-200 px-5 py-3 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <FaWhatsapp className="text-emerald-600 text-base shrink-0" />
+                  <span className="text-xs font-bold text-slate-800">
+                    Feedback &amp; Support / رہنمائی و تجاویز
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 leading-normal">
+                  اگر آپ کو رپورٹ کارڈ میں کوئی غلطی نظر آئے یا اپنے اسکول کے لیے کچھ نیا شامل کروانا ہو، تو براہِ راست واٹس ایپ پر رابطہ فرمائیں۔
+                </p>
+              </div>
+              <a
+                href="https://wa.me/923332248749?text=Assalam-o-Alaikum%20Master%20Sahib,%20I%20have%20feedback%20regarding%20Report%20Cards."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-bold transition shrink-0 shadow-sm"
+              >
+                <FaWhatsapp className="text-base" />
+                <span>Contact on WhatsApp</span>
+              </a>
+            </div>
+          </div>
+
+          {/* PRINTABLE A4 SHEETS */}
           {cardPairs.map(([firstCard, secondCardOrNull], pairIndex) => {
             const secondCard =
               secondCardOrNull ||
@@ -1808,9 +1964,35 @@ export default function ReportCardsPage() {
             const backRightCard = mirrorBackForDuplex ? firstCard : secondCard;
 
             return (
-              <div key={`pair-${pairIndex}`} className="flex flex-col items-center gap-8 print:gap-0">
+              <div key={`pair-${pairIndex}`} className="rc-pair-wrapper flex flex-col items-center gap-4 w-full" data-pair-index={pairIndex}>
+                {/* Pair Controls Header */}
+                <div className="no-print w-full flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-100 border border-slate-200 px-4 py-2 text-xs">
+                  <div className="font-bold text-slate-700 flex items-center gap-2">
+                    <span className="rounded bg-indigo-100 text-indigo-800 px-2 py-0.5 text-[11px] font-black">
+                      Pair #{pairIndex + 1}
+                    </span>
+                    <span>
+                      Left: <strong className="text-slate-900">{firstCard.name || 'Card 1'}</strong> (Roll: {firstCard.rollNo || '-'}) | Right:{' '}
+                      {secondCard ? (
+                        <><strong className="text-slate-900">{secondCard.name || 'Card 2'}</strong> (Roll: {secondCard.rollNo || '-'})</>
+                      ) : (
+                        <em className="text-slate-400">Empty</em>
+                      )}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handlePrintSinglePair(pairIndex)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+                    title={`Print Sheet ${pairIndex * 2 + 1} & ${pairIndex * 2 + 2}`}
+                  >
+                    <FiPrinter size={13} className="text-emerald-600" />
+                    <span>Print This Pair</span>
+                  </button>
+                </div>
+
                 {/* SHEET 1: 2 FRONTS ON A4 LANDSCAPE */}
-                <div className="w-full">
+                <div className="rc-sheet-wrapper w-full">
                   <div className="no-print mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-600">
                     <span>A4 Sheet {pairIndex * 2 + 1} — FRONT SIDE (2 × A5 Fronts)</span>
                     <span>
@@ -1831,22 +2013,37 @@ export default function ReportCardsPage() {
                 </div>
 
                 {/* SHEET 2: 2 BACKS ON A4 LANDSCAPE (Reverse) */}
-                <div className="w-full">
+                <div className={`rc-sheet-wrapper rc-sheet-back w-full ${previewRotatedOnScreen && rotateBackForDuplex ? 'rc-preview-rotated' : ''}`}>
                   <div className="no-print mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-600">
-                    <span>A4 Sheet {pairIndex * 2 + 2} — BACK SIDE (2 × A5 Backs)</span>
+                    <div className="flex items-center gap-2">
+                      <span>A4 Sheet {pairIndex * 2 + 2} — RESULT MARKS TABLE (2 × A5 Backs)</span>
+                      {rotateBackForDuplex ? (
+                        <span className="rounded bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-black lowercase tracking-normal">
+                          duplex 180° auto-flip active
+                        </span>
+                      ) : null}
+                    </div>
                     <span>
-                      Left: {backLeftCard?.name || 'Back 2'} | Right: {backRightCard?.name || 'Back 1'}
+                      Left: {backLeftCard?.name || 'Empty'} | Right: {backRightCard?.name || 'Empty'}
                     </span>
                   </div>
 
                   <div className="rc-a4-landscape-sheet">
                     <div className="rc-a5-half">
-                      {backLeftCard ? <ReportCardBack data={backLeftCard} school={activeSchool} /> : <div className="rc-a5-slot" />}
+                      {backLeftCard ? (
+                        <ReportCardBack data={backLeftCard} school={activeSchool} passingPct={passingPercentage} />
+                      ) : (
+                        <div className="rc-a5-slot" />
+                      )}
                     </div>
                     {/* Center Dotted Cutting Line */}
                     <div className="rc-center-cut-line" aria-hidden="true" />
                     <div className="rc-a5-half">
-                      {backRightCard ? <ReportCardBack data={backRightCard} school={activeSchool} /> : <div className="rc-a5-slot" />}
+                      {backRightCard ? (
+                        <ReportCardBack data={backRightCard} school={activeSchool} passingPct={passingPercentage} />
+                      ) : (
+                        <div className="rc-a5-slot" />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1909,6 +2106,19 @@ export default function ReportCardsPage() {
 
       {/* ===================== Print & Card CSS ===================== */}
       <style jsx global>{`
+        .rc-preview-rotated .rc-a4-landscape-sheet {
+          transform: rotate(180deg);
+          transform-origin: 50% 50%;
+        }
+
+        .rc-failed-mark {
+          border-bottom: 1.5px solid currentColor;
+          display: inline-block;
+          line-height: 1.05;
+          padding-bottom: 0.5px;
+          font-weight: 800;
+        }
+
         .rc-a4-landscape-sheet {
           position: relative;
           width: 297mm;
@@ -2000,17 +2210,23 @@ export default function ReportCardsPage() {
         .rc-badge-wrap {
           display: flex;
           justify-content: center;
+          align-items: center;
           width: 100%;
-          margin: 2mm 0;
+          margin: 1.5mm 0 2mm 0;
+          text-align: center;
         }
 
         .rc-progress-pill {
-          border: 1.2px solid #000000;
+          border: 1.4px solid #000000;
           border-radius: 999px;
-          padding: 2mm 7mm 2.5mm 7mm;
+          height: 11mm;
+          min-height: 11mm;
+          padding: 0 6mm;
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          text-align: center;
+          margin: 0 auto;
           background: #ffffff;
         }
 
@@ -2020,7 +2236,7 @@ export default function ReportCardsPage() {
           font-weight: 400;
           line-height: 1;
           color: #000000;
-          letter-spacing: 0.5px;
+          letter-spacing: normal;
         }
 
         .rc-session-year-row {
@@ -2037,24 +2253,17 @@ export default function ReportCardsPage() {
           font-weight: 800;
         }
 
-        .rc-year-dash {
-          font-size: 14pt;
-          font-weight: 800;
-          margin: 0 2.5mm;
-          line-height: 1;
-          display: inline-block;
-        }
-
         .rc-year-dots {
           display: inline-flex;
           align-items: flex-end;
           justify-content: center;
           min-width: 18mm;
+          height: 6mm;
           border-bottom: 1.5px dotted #000000;
           text-align: center;
           font-size: 12.5pt;
           font-weight: 700;
-          padding: 0 1mm 1.8mm 1mm;
+          padding: 0 1mm 1.3mm 1mm;
           margin-right: 1.5mm;
           line-height: 1.1;
           box-sizing: border-box;
@@ -2099,9 +2308,10 @@ export default function ReportCardsPage() {
           font-weight: 700;
           color: #000000;
           text-align: center;
-          min-height: 5.6mm;
+          min-height: 6.2mm;
+          height: 6.2mm;
           line-height: 1.1;
-          padding: 0 1.5mm 1.8mm 1.5mm;
+          padding: 0 1.5mm 1.4mm 1.5mm;
           display: inline-flex;
           align-items: flex-end;
           justify-content: center;
@@ -2109,6 +2319,11 @@ export default function ReportCardsPage() {
           text-overflow: ellipsis;
           white-space: nowrap;
           box-sizing: border-box;
+        }
+
+        .rc-field-text {
+          display: inline-block;
+          line-height: 1.1;
         }
 
         .rc-field-value-left {
@@ -2150,8 +2365,9 @@ export default function ReportCardsPage() {
           font-size: 10pt;
           font-weight: 700;
           text-align: center;
-          min-height: 5mm;
-          padding: 0 1.5mm 1.5mm 1.5mm;
+          min-height: 5.5mm;
+          height: 5.5mm;
+          padding: 0 1.5mm 1.3mm 1.5mm;
           display: inline-flex;
           align-items: flex-end;
           justify-content: center;
@@ -2405,6 +2621,19 @@ export default function ReportCardsPage() {
         }
 
         @media print {
+          ${rotateBackForDuplex ? `
+            .rc-sheet-back .rc-a4-landscape-sheet {
+              transform: rotate(180deg) !important;
+              transform-origin: 50% 50% !important;
+            }
+          ` : ''}
+
+          ${activePrintPairIndex !== null ? `
+            .rc-pair-wrapper:not([data-pair-index="${activePrintPairIndex}"]) {
+              display: none !important;
+            }
+          ` : ''}
+
           @page {
             size: A4 landscape;
             margin: 0;
@@ -2417,17 +2646,8 @@ export default function ReportCardsPage() {
             background: #ffffff !important;
           }
 
-          header,
-          nav,
-          footer,
-          .navbar,
-          [aria-label="Back to global website"],
-          [class*="NewsTicker"],
-          [class*="Navbar"],
           .no-print {
             display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
           }
 
           .rc-a4-landscape-sheet {

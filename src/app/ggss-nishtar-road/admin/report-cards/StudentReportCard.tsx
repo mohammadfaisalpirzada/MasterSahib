@@ -37,6 +37,7 @@ export type ReportCardStudentData = {
   sessionFull: string;      // e.g. "2026-2027"
   examTitle: string;        // e.g. "MID TERM EXAMINATION"
   examYearSuffix: string;   // e.g. "26"
+  schoolName?: string;
   subjects: Partial<Record<SubjectKey, SubjectScore>>;
   grandTotalMax: string;
   grandTotalObtained: string;
@@ -146,13 +147,13 @@ export function ReportCardFront({
             </div>
           </div>
 
-          {/* Session Year Line: 20........20........ */}
+          {/* Session Year Line: 20.... - 20.... */}
           <div className="rc-session-year-row">
             <span className="rc-year-prefix">20</span>
-            <span className="rc-year-dots">{data.sessionStartYear || ''}</span>
+            <span className="rc-year-dots"><span>{data.sessionStartYear || ''}</span></span>
             <span className="rc-year-dash">-</span>
             <span className="rc-year-prefix">20</span>
-            <span className="rc-year-dots">{data.sessionEndYear || ''}</span>
+            <span className="rc-year-dots"><span>{data.sessionEndYear || ''}</span></span>
           </div>
 
           {/* Student Bio Fields */}
@@ -160,41 +161,57 @@ export function ReportCardFront({
             <div className="rc-field-row-split">
               <div className="rc-field-line" style={{ flex: 1 }}>
                 <span className="rc-field-label">Roll No.</span>
-                <span className="rc-field-value">{data.rollNo}</span>
+                <span className="rc-field-value">
+                  <span className="rc-field-text">{data.rollNo}</span>
+                </span>
               </div>
               <div className="rc-field-line" style={{ flex: 1 }}>
                 <span className="rc-field-label">G. R No.</span>
-                <span className="rc-field-value">{data.grNo}</span>
+                <span className="rc-field-value">
+                  <span className="rc-field-text">{data.grNo}</span>
+                </span>
               </div>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Name</span>
-              <span className="rc-field-value">{data.name}</span>
+              <span className="rc-field-value">
+                <span className="rc-field-text">{data.name}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Father&apos;s Name</span>
-              <span className="rc-field-value">{data.fatherName}</span>
+              <span className="rc-field-value">
+                <span className="rc-field-text">{data.fatherName}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Class</span>
-              <span className="rc-field-value">{data.studentClass}</span>
+              <span className="rc-field-value">
+                <span className="rc-field-text">{data.studentClass}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Date of Birth</span>
-              <span className="rc-field-value">{data.dob}</span>
+              <span className="rc-field-value">
+                <span className="rc-field-text">{data.dob}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Address</span>
-              <span className="rc-field-value rc-field-value-left">{addressLine1}</span>
+              <span className="rc-field-value rc-field-value-left">
+                <span className="rc-field-text">{addressLine1}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
-              <span className="rc-field-value rc-field-value-left">{addressLine2}</span>
+              <span className="rc-field-value rc-field-value-left">
+                <span className="rc-field-text">{addressLine2}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -217,11 +234,13 @@ export function ReportCardBack({
   school = SCHOOL_PRESETS.gbss_pak_quarter,
   subjectRows = REPORT_SUBJECT_ROWS,
   isDummy = false,
+  passingPct = 40,
 }: {
   data: ReportCardStudentData;
   school?: SchoolConfig;
-  subjectRows?: Array<{ key: string; label: string; compactText?: boolean }>;
+  subjectRows?: Array<{ key: SubjectKey; label: string; compactText?: boolean }>;
   isDummy?: boolean;
+  passingPct?: number;
 }) {
   const activeSchool = school || SCHOOL_PRESETS.gbss_pak_quarter;
   return (
@@ -232,11 +251,11 @@ export function ReportCardBack({
           <div className="rc-back-top-row">
             <div className="rc-back-top-field" style={{ width: '48%' }}>
               <span className="rc-back-top-label">Session :</span>
-              <span className="rc-back-top-val">{data.sessionFull}</span>
+              <span className="rc-back-top-val"><span>{data.sessionFull}</span></span>
             </div>
             <div className="rc-back-top-field" style={{ width: '44%' }}>
               <span className="rc-back-top-label">Class:</span>
-              <span className="rc-back-top-val">{data.studentClass}</span>
+              <span className="rc-back-top-val"><span>{data.studentClass}</span></span>
             </div>
           </div>
 
@@ -303,8 +322,18 @@ export function ReportCardBack({
 
                     const oralMax = hasIsl ? (oral.maxMarks || '40') : '-';
                     const writtenMax = hasIsl ? (written.maxMarks || '60') : '-';
-                    const oralMarks = hasOral ? ` (${oral.marksObtained})` : '';
-                    const writtenMarks = hasWritten ? ` (${written.marksObtained})` : '';
+
+                    const oralMaxNum = parseFloat(oral.maxMarks || '0') || 0;
+                    const oralObtNum = parseFloat(oral.marksObtained || '0') || 0;
+                    const isOralFailed = hasOral && oralMaxNum > 0 && ((oralObtNum / oralMaxNum) * 100 < passingPct);
+
+                    const writtenMaxNum = parseFloat(written.maxMarks || '0') || 0;
+                    const writtenObtNum = parseFloat(written.marksObtained || '0') || 0;
+                    const isWrittenFailed = hasWritten && writtenMaxNum > 0 && ((writtenObtNum / writtenMaxNum) * 100 < passingPct);
+
+                    const islMaxNum = parseFloat(score.maxMarks || '0') || 0;
+                    const islObtNum = parseFloat(score.marksObtained || '0') || 0;
+                    const isIslFailed = hasIsl && islMaxNum > 0 && ((islObtNum / islMaxNum) * 100 < passingPct);
 
                     return (
                       <tr key={subj.key} className="rc-subj-row rc-islamiat-row">
@@ -317,7 +346,15 @@ export function ReportCardBack({
                                 <span className="rc-islamiat-num">
                                   {oralMax}
                                   {hasOral ? (
-                                    <span className={isDummy ? 'rc-dummy-num' : ''}>{oralMarks}</span>
+                                    <span className={isDummy ? 'rc-dummy-num' : ''}>
+                                      {' ('}
+                                      {isOralFailed ? (
+                                        <span className="rc-failed-mark">{oral.marksObtained}</span>
+                                      ) : (
+                                        oral.marksObtained
+                                      )}
+                                      {')'}
+                                    </span>
                                   ) : null}
                                 </span>
                               </div>
@@ -326,7 +363,15 @@ export function ReportCardBack({
                                 <span className="rc-islamiat-num">
                                   {writtenMax}
                                   {hasWritten ? (
-                                    <span className={isDummy ? 'rc-dummy-num' : ''}>{writtenMarks}</span>
+                                    <span className={isDummy ? 'rc-dummy-num' : ''}>
+                                      {' ('}
+                                      {isWrittenFailed ? (
+                                        <span className="rc-failed-mark">{written.marksObtained}</span>
+                                      ) : (
+                                        written.marksObtained
+                                      )}
+                                      {')'}
+                                    </span>
                                   ) : null}
                                 </span>
                               </div>
@@ -334,7 +379,17 @@ export function ReportCardBack({
                           </div>
                         </td>
                         <td className="rc-num-cell">{hasIsl ? (score.maxMarks || '100') : '-'}</td>
-                        <td className={`rc-num-cell ${isDummy && hasIsl ? 'rc-dummy-num' : ''}`}>{hasIsl ? (score.marksObtained || '-') : '-'}</td>
+                        <td className={`rc-num-cell ${isDummy && hasIsl ? 'rc-dummy-num' : ''}`}>
+                          {hasIsl ? (
+                            isIslFailed ? (
+                              <span className="rc-failed-mark">{score.marksObtained}</span>
+                            ) : (
+                              score.marksObtained
+                            )
+                          ) : (
+                            '-'
+                          )}
+                        </td>
                         {idx === 0 ? (
                           <td rowSpan={subjectRows.length + 1} className="rc-remarks-merged-cell">
                             <RemarksColumnContent data={data} isDummy={isDummy} />
@@ -345,6 +400,9 @@ export function ReportCardBack({
                   }
 
                   const hasMarks = Boolean(score.marksObtained && String(score.marksObtained).trim() !== '' && String(score.marksObtained).trim() !== '-');
+                  const maxNum = parseFloat(score.maxMarks || '0') || 0;
+                  const obtNum = parseFloat(score.marksObtained || '0') || 0;
+                  const isFailed = hasMarks && maxNum > 0 && ((obtNum / maxNum) * 100 < passingPct);
 
                   return (
                     <tr key={subj.key} className="rc-subj-row">
@@ -352,7 +410,17 @@ export function ReportCardBack({
                         {subj.label}
                       </td>
                       <td className="rc-num-cell">{hasMarks ? score.maxMarks : '-'}</td>
-                      <td className={`rc-num-cell ${isDummy && hasMarks ? 'rc-dummy-num' : ''}`}>{hasMarks ? score.marksObtained : '-'}</td>
+                      <td className={`rc-num-cell ${isDummy && hasMarks ? 'rc-dummy-num' : ''}`}>
+                        {hasMarks ? (
+                          isFailed ? (
+                            <span className="rc-failed-mark">{score.marksObtained}</span>
+                          ) : (
+                            score.marksObtained
+                          )
+                        ) : (
+                          '-'
+                        )}
+                      </td>
                       {idx === 0 ? (
                         <td rowSpan={subjectRows.length + 1} className="rc-remarks-merged-cell">
                           <RemarksColumnContent data={data} isDummy={isDummy} />
