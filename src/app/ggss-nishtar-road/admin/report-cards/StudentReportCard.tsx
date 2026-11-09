@@ -37,6 +37,7 @@ export type ReportCardStudentData = {
   sessionFull: string;      // e.g. "2026-2027"
   examTitle: string;        // e.g. "MID TERM EXAMINATION"
   examYearSuffix: string;   // e.g. "26"
+  schoolName?: string;
   subjects: Partial<Record<SubjectKey, SubjectScore>>;
   grandTotalMax: string;
   grandTotalObtained: string;
@@ -146,12 +147,13 @@ export function ReportCardFront({
             </div>
           </div>
 
-          {/* Session Year Line: 20........20........ */}
+          {/* Session Year Line: 20.... - 20.... */}
           <div className="rc-session-year-row">
             <span className="rc-year-prefix">20</span>
-            <span className="rc-year-dots">{data.sessionStartYear || ''}</span>
+            <span className="rc-year-dots"><span>{data.sessionStartYear || ''}</span></span>
+            <span className="rc-year-dash">-</span>
             <span className="rc-year-prefix">20</span>
-            <span className="rc-year-dots">{data.sessionEndYear || ''}</span>
+            <span className="rc-year-dots"><span>{data.sessionEndYear || ''}</span></span>
           </div>
 
           {/* Student Bio Fields */}
@@ -159,41 +161,57 @@ export function ReportCardFront({
             <div className="rc-field-row-split">
               <div className="rc-field-line" style={{ flex: 1 }}>
                 <span className="rc-field-label">Roll No.</span>
-                <span className="rc-field-value">{data.rollNo}</span>
+                <span className="rc-field-value">
+                  <span className="rc-field-text">{data.rollNo}</span>
+                </span>
               </div>
               <div className="rc-field-line" style={{ flex: 1 }}>
                 <span className="rc-field-label">G. R No.</span>
-                <span className="rc-field-value">{data.grNo}</span>
+                <span className="rc-field-value">
+                  <span className="rc-field-text">{data.grNo}</span>
+                </span>
               </div>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Name</span>
-              <span className="rc-field-value">{data.name}</span>
+              <span className="rc-field-value">
+                <span className="rc-field-text">{data.name}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Father&apos;s Name</span>
-              <span className="rc-field-value">{data.fatherName}</span>
+              <span className="rc-field-value">
+                <span className="rc-field-text">{data.fatherName}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Class</span>
-              <span className="rc-field-value">{data.studentClass}</span>
+              <span className="rc-field-value">
+                <span className="rc-field-text">{data.studentClass}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Date of Birth</span>
-              <span className="rc-field-value">{data.dob}</span>
+              <span className="rc-field-value">
+                <span className="rc-field-text">{data.dob}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
               <span className="rc-field-label">Address</span>
-              <span className="rc-field-value rc-field-value-left">{addressLine1}</span>
+              <span className="rc-field-value rc-field-value-left">
+                <span className="rc-field-text">{addressLine1}</span>
+              </span>
             </div>
 
             <div className="rc-field-line">
-              <span className="rc-field-value rc-field-value-left">{addressLine2}</span>
+              <span className="rc-field-value rc-field-value-left">
+                <span className="rc-field-text">{addressLine2}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -214,9 +232,15 @@ const formatExamBannerYear = (suffix: string) => {
 export function ReportCardBack({
   data,
   school = SCHOOL_PRESETS.gbss_pak_quarter,
+  subjectRows = REPORT_SUBJECT_ROWS,
+  isDummy = false,
+  passingPct = 40,
 }: {
   data: ReportCardStudentData;
   school?: SchoolConfig;
+  subjectRows?: Array<{ key: SubjectKey; label: string; compactText?: boolean }>;
+  isDummy?: boolean;
+  passingPct?: number;
 }) {
   const activeSchool = school || SCHOOL_PRESETS.gbss_pak_quarter;
   return (
@@ -227,11 +251,11 @@ export function ReportCardBack({
           <div className="rc-back-top-row">
             <div className="rc-back-top-field" style={{ width: '48%' }}>
               <span className="rc-back-top-label">Session :</span>
-              <span className="rc-back-top-val">{data.sessionFull}</span>
+              <span className="rc-back-top-val"><span>{data.sessionFull}</span></span>
             </div>
             <div className="rc-back-top-field" style={{ width: '44%' }}>
               <span className="rc-back-top-label">Class:</span>
-              <span className="rc-back-top-val">{data.studentClass}</span>
+              <span className="rc-back-top-val"><span>{data.studentClass}</span></span>
             </div>
           </div>
 
@@ -285,48 +309,121 @@ export function ReportCardBack({
                 </tr>
               </thead>
               <tbody>
-                {REPORT_SUBJECT_ROWS.map((subj, idx) => {
+                {subjectRows.map((subj, idx) => {
                   const score = data.subjects[subj.key] || { maxMarks: '', marksObtained: '' };
 
                   if (subj.key === 'islamiat_total') {
+                    const oral = data.subjects.islamiat_oral || { maxMarks: '', marksObtained: '' };
+                    const written = data.subjects.islamiat_written || { maxMarks: '', marksObtained: '' };
+                    const hasOral = Boolean(oral.marksObtained && String(oral.marksObtained).trim() !== '' && String(oral.marksObtained).trim() !== '-');
+                    const hasWritten = Boolean(written.marksObtained && String(written.marksObtained).trim() !== '' && String(written.marksObtained).trim() !== '-');
+                    const hasTotal = Boolean(score.marksObtained && String(score.marksObtained).trim() !== '' && String(score.marksObtained).trim() !== '-');
+                    const hasIsl = hasOral || hasWritten || hasTotal;
+
+                    const oralMax = hasIsl ? (oral.maxMarks || '40') : '-';
+                    const writtenMax = hasIsl ? (written.maxMarks || '60') : '-';
+
+                    const oralMaxNum = parseFloat(oral.maxMarks || '0') || 0;
+                    const oralObtNum = parseFloat(oral.marksObtained || '0') || 0;
+                    const isOralFailed = hasOral && oralMaxNum > 0 && ((oralObtNum / oralMaxNum) * 100 < passingPct);
+
+                    const writtenMaxNum = parseFloat(written.maxMarks || '0') || 0;
+                    const writtenObtNum = parseFloat(written.marksObtained || '0') || 0;
+                    const isWrittenFailed = hasWritten && writtenMaxNum > 0 && ((writtenObtNum / writtenMaxNum) * 100 < passingPct);
+
+                    const islMaxNum = parseFloat(score.maxMarks || '0') || 0;
+                    const islObtNum = parseFloat(score.marksObtained || '0') || 0;
+                    const isIslFailed = hasIsl && islMaxNum > 0 && ((islObtNum / islMaxNum) * 100 < passingPct);
+
                     return (
                       <tr key={subj.key} className="rc-subj-row rc-islamiat-row">
                         <td className="rc-islamiat-cell">
                           <div className="rc-islamiat-grid">
-                            <div className="rc-islamiat-main">Islamiat</div>
+                            <div className="rc-islamiat-main">{subj.label}</div>
                             <div className="rc-islamiat-sub">
                               <div className="rc-islamiat-sub-top">
                                 <span>Nazra / Oral</span>
-                                <span className="rc-islamiat-num">40</span>
+                                <span className="rc-islamiat-num">
+                                  {oralMax}
+                                  {hasOral ? (
+                                    <span className={isDummy ? 'rc-dummy-num' : ''}>
+                                      {' ('}
+                                      {isOralFailed ? (
+                                        <span className="rc-failed-mark">{oral.marksObtained}</span>
+                                      ) : (
+                                        oral.marksObtained
+                                      )}
+                                      {')'}
+                                    </span>
+                                  ) : null}
+                                </span>
                               </div>
                               <div className="rc-islamiat-sub-bottom">
                                 <span>Written</span>
-                                <span className="rc-islamiat-num">60</span>
+                                <span className="rc-islamiat-num">
+                                  {writtenMax}
+                                  {hasWritten ? (
+                                    <span className={isDummy ? 'rc-dummy-num' : ''}>
+                                      {' ('}
+                                      {isWrittenFailed ? (
+                                        <span className="rc-failed-mark">{written.marksObtained}</span>
+                                      ) : (
+                                        written.marksObtained
+                                      )}
+                                      {')'}
+                                    </span>
+                                  ) : null}
+                                </span>
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="rc-num-cell">{score.maxMarks}</td>
-                        <td className="rc-num-cell">{score.marksObtained}</td>
+                        <td className="rc-num-cell">{hasIsl ? (score.maxMarks || '100') : '-'}</td>
+                        <td className={`rc-num-cell ${isDummy && hasIsl ? 'rc-dummy-num' : ''}`}>
+                          {hasIsl ? (
+                            isIslFailed ? (
+                              <span className="rc-failed-mark">{score.marksObtained}</span>
+                            ) : (
+                              score.marksObtained
+                            )
+                          ) : (
+                            '-'
+                          )}
+                        </td>
                         {idx === 0 ? (
-                          <td rowSpan={REPORT_SUBJECT_ROWS.length + 1} className="rc-remarks-merged-cell">
-                            <RemarksColumnContent data={data} />
+                          <td rowSpan={subjectRows.length + 1} className="rc-remarks-merged-cell">
+                            <RemarksColumnContent data={data} isDummy={isDummy} />
                           </td>
                         ) : null}
                       </tr>
                     );
                   }
 
+                  const hasMarks = Boolean(score.marksObtained && String(score.marksObtained).trim() !== '' && String(score.marksObtained).trim() !== '-');
+                  const maxNum = parseFloat(score.maxMarks || '0') || 0;
+                  const obtNum = parseFloat(score.marksObtained || '0') || 0;
+                  const isFailed = hasMarks && maxNum > 0 && ((obtNum / maxNum) * 100 < passingPct);
+
                   return (
                     <tr key={subj.key} className="rc-subj-row">
-                      <td className={`rc-subj-name-cell ${subj.compactText ? 'rc-subj-compact' : ''}`}>
+                      <td className={`rc-subj-name-cell ${subj.compactText || subj.label.length > 18 ? 'rc-subj-compact' : ''}`}>
                         {subj.label}
                       </td>
-                      <td className="rc-num-cell">{score.maxMarks}</td>
-                      <td className="rc-num-cell">{score.marksObtained}</td>
+                      <td className="rc-num-cell">{hasMarks ? score.maxMarks : '-'}</td>
+                      <td className={`rc-num-cell ${isDummy && hasMarks ? 'rc-dummy-num' : ''}`}>
+                        {hasMarks ? (
+                          isFailed ? (
+                            <span className="rc-failed-mark">{score.marksObtained}</span>
+                          ) : (
+                            score.marksObtained
+                          )
+                        ) : (
+                          '-'
+                        )}
+                      </td>
                       {idx === 0 ? (
-                        <td rowSpan={REPORT_SUBJECT_ROWS.length + 1} className="rc-remarks-merged-cell">
-                          <RemarksColumnContent data={data} />
+                        <td rowSpan={subjectRows.length + 1} className="rc-remarks-merged-cell">
+                          <RemarksColumnContent data={data} isDummy={isDummy} />
                         </td>
                       ) : null}
                     </tr>
@@ -337,7 +434,7 @@ export function ReportCardBack({
                 <tr className="rc-subj-row rc-grand-total-row">
                   <td className="rc-subj-name-cell rc-grand-total-label">Grand Total</td>
                   <td className="rc-num-cell rc-grand-total-val">{data.grandTotalMax}</td>
-                  <td className="rc-num-cell rc-grand-total-val">{data.grandTotalObtained}</td>
+                  <td className={`rc-num-cell rc-grand-total-val ${isDummy ? 'rc-dummy-num' : ''}`}>{data.grandTotalObtained}</td>
                 </tr>
               </tbody>
             </table>
@@ -368,28 +465,52 @@ export function ReportCardBack({
   );
 }
 
-function RemarksColumnContent({ data }: { data: ReportCardStudentData }) {
+export function formatAttendancePercentage(val: string | number | undefined | null): string {
+  if (!val) return '95%';
+  const clean = String(val).trim();
+  if (!clean) return '95%';
+  if (clean.endsWith('%')) return clean;
+
+  // Fraction like 180/200
+  if (clean.includes('/')) {
+    const parts = clean.split('/').map((p) => parseFloat(p.trim()));
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] > 0) {
+      return `${Math.round((parts[0] / parts[1]) * 100)}%`;
+    }
+  }
+
+  const num = parseFloat(clean);
+  if (!isNaN(num)) {
+    if (num <= 1 && num > 0) {
+      return `${Math.round(num * 100)}%`;
+    }
+    return `${Math.round(num)}%`;
+  }
+  return clean;
+}
+
+function RemarksColumnContent({ data, isDummy = false }: { data: ReportCardStudentData; isDummy?: boolean }) {
   return (
     <div className="rc-remarks-stack">
       <div className="rc-remark-item">
         <div className="rc-remark-heading">RESULT</div>
-        <div className="rc-remark-value">{data.result}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{data.result}</div>
       </div>
       <div className="rc-remark-item">
         <div className="rc-remark-heading">PERCENTAGE</div>
-        <div className="rc-remark-value">{data.percentage}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{data.percentage}</div>
       </div>
       <div className="rc-remark-item">
         <div className="rc-remark-heading">GRADE</div>
-        <div className="rc-remark-value">{data.grade}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{data.grade}</div>
       </div>
       <div className="rc-remark-item">
         <div className="rc-remark-heading">RANK</div>
-        <div className="rc-remark-value">{data.rank}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{data.rank}</div>
       </div>
       <div className="rc-remark-item">
         <div className="rc-remark-heading">ATTENDANCE</div>
-        <div className="rc-remark-value">{data.attendance}</div>
+        <div className={`rc-remark-value ${isDummy ? 'rc-dummy-num' : ''}`}>{formatAttendancePercentage(data.attendance)}</div>
       </div>
     </div>
   );
