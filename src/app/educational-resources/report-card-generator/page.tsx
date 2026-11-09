@@ -21,6 +21,7 @@ import {
   ReportCardFront,
   ReportCardBack,
   REPORT_SUBJECT_ROWS,
+  formatAttendancePercentage,
   type SchoolConfig,
   type ReportCardStudentData,
   type SubjectKey,
@@ -336,10 +337,10 @@ export default function ReportCardGeneratorPage() {
   const handleMaxMarksChange = (newVal: string) => {
     setDefaultMaxMarks(newVal);
     const base = parseFloat(newVal) || 100;
-    const nextCustom = {
-      ...customSubjectMaxMarks,
+    const nextCustom: Partial<Record<SubjectKey, string>> = {
       islamiat_oral: String(Math.round(base * 0.4)),
       islamiat_written: String(Math.round(base * 0.6)),
+      islamiat_total: String(base),
     };
     setCustomSubjectMaxMarks(nextCustom);
 
@@ -353,10 +354,6 @@ export default function ReportCardGeneratorPage() {
           let subMax = String(base);
           if (nextCustom[key]) {
             subMax = nextCustom[key]!;
-          } else if (key === 'islamiat_total') {
-            const oral = parseFloat(nextCustom['islamiat_oral'] || String(Math.round(base * 0.4))) || 0;
-            const written = parseFloat(nextCustom['islamiat_written'] || String(Math.round(base * 0.6))) || 0;
-            subMax = String(oral + written);
           }
           nextSubjects[key] = {
             maxMarks: subMax,
@@ -396,6 +393,7 @@ export default function ReportCardGeneratorPage() {
         percentage: stats.percentage,
         grade: stats.grade,
         result: stats.result,
+        attendance: formatAttendancePercentage(st.attendance),
       };
     });
   }, [students, schoolName, sessionLabel, examTitle, examYearSuffix]);
@@ -557,7 +555,7 @@ export default function ReportCardGeneratorPage() {
           grade: stats.grade,
           rank: `${index + 1}${index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th'}`,
           result: stats.result,
-          attendance: String(getVal('Attendance') || '95%'),
+          attendance: formatAttendancePercentage(getVal('Attendance', 'Attendance %', 'Att', 'Present') || '95%'),
           conduct: String(getVal('Conduct') || 'Good'),
         };
       });
@@ -725,7 +723,7 @@ export default function ReportCardGeneratorPage() {
               grade: String(st.grade || stats.grade),
               rank: String(st.rank || `${idx + 1}${idx === 0 ? 'st' : idx === 1 ? 'nd' : idx === 2 ? 'rd' : 'th'}`),
               result: String(st.result || stats.result),
-              attendance: String(st.attendance || '95%'),
+              attendance: formatAttendancePercentage(st.attendance || '95%'),
               conduct: String(st.conduct || 'Good'),
             };
           });
@@ -809,155 +807,19 @@ export default function ReportCardGeneratorPage() {
           >
             &larr; Back to Educational Resources
           </Link>
-          <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700">
-            No Database Required &bull; 100% Client-Side
-          </span>
         </div>
 
         {/* Header Banner */}
         <div className="mb-6 rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 p-6 text-white shadow-xl">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300">
-                The Master Sahib Educational Series
-              </p>
-              <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
-                Student Progress Report Card Generator
-              </h1>
-              <p className="mt-1 text-xs text-indigo-200">
-                Generate authentic, print-ready student progress report cards with duplex printing and PDF export.
-              </p>
-            </div>
-
-            {/* Quick Action Navigation */}
-            <div className="flex flex-wrap items-center gap-2">
-              <a
-                href="#cards-review-section"
-                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600/70 border border-indigo-400/40 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-600 transition"
-              >
-                <span>Review Cards Below</span>
-              </a>
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-emerald-500 transition"
-              >
-                <FiPrinter size={15} />
-                <span>Print All</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Marks / Max Marks Configuration Bar */}
-        <div className="mb-4 rounded-2xl bg-white p-4 shadow-sm border border-slate-200">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <FiSliders className="text-indigo-600" size={16} />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                  Exam Total Marks per Subject (Max Marks)
-                </h3>
-              </div>
-              <p className="mt-0.5 text-[11px] text-slate-500">
-                Set total marks for proper percentage and grade calculations (e.g. 100 for Annual, 50 for Mid-Term / Assessment).
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold text-slate-600">Quick Presets:</span>
-              {[
-                { label: '100 (Standard)', val: '100' },
-                { label: '75', val: '75' },
-                { label: '50 (Assessment)', val: '50' },
-                { label: '25 (Monthly)', val: '25' },
-              ].map((btn) => (
-                <button
-                  key={btn.val}
-                  type="button"
-                  onClick={() => handleMaxMarksChange(btn.val)}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
-                    defaultMaxMarks === btn.val
-                      ? 'bg-indigo-900 text-white shadow-sm'
-                      : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  {btn.label}
-                </button>
-              ))}
-
-              <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 pl-3">
-                <span className="text-xs font-semibold text-slate-600">Custom:</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="1000"
-                  value={defaultMaxMarks}
-                  onChange={(e) => handleMaxMarksChange(e.target.value)}
-                  className="w-16 rounded-lg border border-slate-300 px-2 py-1 text-xs font-bold text-center focus:border-indigo-600 focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowSubjectMaxConfig(!showSubjectMaxConfig)}
-                className="ml-2 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition"
-              >
-                {showSubjectMaxConfig ? 'Hide Details' : 'Per-Subject Marks'}
-              </button>
-            </div>
-          </div>
-
-          {/* Collapsible Subject-Wise Detailed Max Marks */}
-          {showSubjectMaxConfig ? (
-            <div className="mt-4 pt-3 border-t border-slate-200">
-              <p className="text-[11px] font-semibold text-slate-600 mb-2">
-                Fine-tune Max Marks for individual subjects if your exam has different marks per paper:
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                {CONFIGURABLE_SUBJECTS.map((s) => {
-                  const base = parseFloat(defaultMaxMarks) || 100;
-                  let defaultVal = defaultMaxMarks;
-                  if (s.key === 'islamiat_oral') defaultVal = String(Math.round(base * 0.4));
-                  else if (s.key === 'islamiat_written') defaultVal = String(Math.round(base * 0.6));
-                  else if (s.key === 'islamiat_total') {
-                    const oral = parseFloat(customSubjectMaxMarks['islamiat_oral'] || String(Math.round(base * 0.4))) || 0;
-                    const written = parseFloat(customSubjectMaxMarks['islamiat_written'] || String(Math.round(base * 0.6))) || 0;
-                    defaultVal = String(oral + written);
-                  }
-                  const currentVal = customSubjectMaxMarks[s.key] ?? defaultVal;
-                  return (
-                    <div key={s.key} className="rounded-lg border border-slate-200 p-2 bg-slate-50">
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <label className="block text-[11px] font-bold text-slate-700 truncate">
-                          {s.label}
-                        </label>
-                        {s.badge ? (
-                          <span className="text-[9px] font-bold uppercase px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">
-                            {s.badge}
-                          </span>
-                        ) : null}
-                      </div>
-                      <input
-                        type="number"
-                        min="1"
-                        max="500"
-                        value={currentVal}
-                        onChange={(e) => {
-                          const updated = {
-                            ...customSubjectMaxMarks,
-                            [s.key]: e.target.value,
-                          };
-                          applyCustomSubjectChange(updated);
-                        }}
-                        className="w-full rounded border border-slate-300 px-2 py-1 text-xs font-bold text-center bg-white"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
+          <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300">
+            The Master Sahib Educational Series
+          </p>
+          <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+            Student Progress Report Card Generator
+          </h1>
+          <p className="mt-1 text-xs text-indigo-200">
+            Generate authentic, print-ready student progress report cards with duplex printing and PDF export.
+          </p>
         </div>
 
         {/* Notifications */}
@@ -1181,6 +1043,111 @@ export default function ReportCardGeneratorPage() {
                     />
                   </label>
                 </div>
+              </div>
+
+              {/* PER SUBJECT MAX MARKS SECTION */}
+              <div className="md:col-span-2 lg:col-span-4 mt-2 pt-4 border-t border-slate-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <FiSliders className="text-indigo-600 shrink-0" size={16} />
+                    <span className="text-xs font-bold text-slate-800">
+                      Per Subject Max Marks
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {['25', '50', '75', '100'].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => handleMaxMarksChange(val)}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-bold transition shadow-sm ${
+                          defaultMaxMarks === val && !showSubjectMaxConfig
+                            ? 'bg-indigo-900 text-white'
+                            : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        {val}
+                      </button>
+                    ))}
+
+                    <div className="flex items-center gap-1.5 border-l border-slate-200 pl-2">
+                      <span className="text-xs font-semibold text-slate-600">Custom:</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="500"
+                        value={defaultMaxMarks}
+                        onChange={(e) => handleMaxMarksChange(e.target.value)}
+                        placeholder="e.g. 50"
+                        className="w-16 rounded-lg border border-slate-300 px-2 py-1 text-xs font-bold text-center focus:border-indigo-600 focus:outline-none bg-white"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowSubjectMaxConfig(!showSubjectMaxConfig)}
+                      className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition shadow-sm ${
+                        showSubjectMaxConfig
+                          ? 'border-indigo-600 bg-indigo-600 text-white'
+                          : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                      }`}
+                    >
+                      {showSubjectMaxConfig ? 'Close Per-Subject Marks' : 'Per-Subject Marks'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Collapsible Subject-Wise Detailed Max Marks */}
+                {showSubjectMaxConfig ? (
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <p className="text-[11px] font-semibold text-slate-600 mb-2">
+                      Set different maximum marks for individual subjects (e.g. Nazra, Written, Maths):
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                      {CONFIGURABLE_SUBJECTS.map((s) => {
+                        const base = parseFloat(defaultMaxMarks) || 100;
+                        let defaultVal = defaultMaxMarks;
+                        if (s.key === 'islamiat_oral') defaultVal = String(Math.round(base * 0.4));
+                        else if (s.key === 'islamiat_written') defaultVal = String(Math.round(base * 0.6));
+                        else if (s.key === 'islamiat_total') {
+                          const oral = parseFloat(customSubjectMaxMarks['islamiat_oral'] || String(Math.round(base * 0.4))) || 0;
+                          const written = parseFloat(customSubjectMaxMarks['islamiat_written'] || String(Math.round(base * 0.6))) || 0;
+                          defaultVal = String(oral + written);
+                        }
+                        const currentVal = customSubjectMaxMarks[s.key] ?? defaultVal;
+                        return (
+                          <div key={s.key} className="rounded-lg border border-slate-200 p-2 bg-slate-50">
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <label className="block text-[11px] font-bold text-slate-700 truncate">
+                                {s.label}
+                              </label>
+                              {s.badge ? (
+                                <span className="text-[9px] font-bold uppercase px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">
+                                  {s.badge}
+                                </span>
+                              ) : null}
+                            </div>
+                            <input
+                              type="number"
+                              min="1"
+                              max="500"
+                              value={currentVal}
+                              onChange={(e) => {
+                                const updated = {
+                                  ...customSubjectMaxMarks,
+                                  [s.key]: e.target.value,
+                                };
+                                applyCustomSubjectChange(updated);
+                              }}
+                              className="w-full rounded border border-slate-300 px-2 py-1 text-xs font-bold text-center bg-white"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           ) : null}

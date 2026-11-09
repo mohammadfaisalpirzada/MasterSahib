@@ -383,6 +383,30 @@ export function ReportCardBack({
   );
 }
 
+export function formatAttendancePercentage(val: string | number | undefined | null): string {
+  if (!val) return '95%';
+  const clean = String(val).trim();
+  if (!clean) return '95%';
+  if (clean.endsWith('%')) return clean;
+
+  // Fraction like 180/200
+  if (clean.includes('/')) {
+    const parts = clean.split('/').map((p) => parseFloat(p.trim()));
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] > 0) {
+      return `${Math.round((parts[0] / parts[1]) * 100)}%`;
+    }
+  }
+
+  const num = parseFloat(clean);
+  if (!isNaN(num)) {
+    if (num <= 1 && num > 0) {
+      return `${Math.round(num * 100)}%`;
+    }
+    return `${Math.round(num)}%`;
+  }
+  return clean;
+}
+
 function RemarksColumnContent({ data }: { data: ReportCardStudentData }) {
   return (
     <div className="rc-remarks-stack">
@@ -404,7 +428,7 @@ function RemarksColumnContent({ data }: { data: ReportCardStudentData }) {
       </div>
       <div className="rc-remark-item">
         <div className="rc-remark-heading">ATTENDANCE</div>
-        <div className="rc-remark-value">{data.attendance}</div>
+        <div className="rc-remark-value">{formatAttendancePercentage(data.attendance)}</div>
       </div>
     </div>
   );
