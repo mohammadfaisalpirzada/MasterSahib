@@ -8,7 +8,12 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const school = searchParams.get('school');
     const studentClass = searchParams.get('class');
-    const session = searchParams.get('session') || '2026-2027';
+    const rawSession = (searchParams.get('session') || '2026-2027').trim();
+    const sessionVariants = Array.from(new Set([
+      rawSession,
+      rawSession.replace(/(\d{4})-(\d{2})$/, '$1-20$2'),
+      rawSession.replace(/(\d{4})-20(\d{2})$/, '$1-$2'),
+    ]));
 
     const supabase = createClient();
 
@@ -40,7 +45,7 @@ export async function GET(req: NextRequest) {
           status
         )
       `)
-      .eq('session_id', session);
+      .in('session_id', sessionVariants);
 
     if (studentClass) {
       query = query.ilike('student_class', studentClass);
