@@ -1847,7 +1847,7 @@ export default function ReportCardGeneratorPage() {
                 <div className="rc-a4-landscape-sheet">
                   <div className="rc-a5-half">
                     {backLeftCard ? (
-                      <ReportCardBack data={backLeftCard} school={activeSchoolConfig} subjectRows={subjectItems} isDummy={!hasUserUploadedData} />
+                      <ReportCardBack data={backLeftCard} school={activeSchoolConfig} subjectRows={subjectItems} isDummy={!hasUserUploadedData} passingPct={passingPercentage} />
                     ) : (
                       <div className="rc-a5-slot" />
                     )}
@@ -1856,7 +1856,7 @@ export default function ReportCardGeneratorPage() {
                   <div className="rc-center-cut-line" aria-hidden="true" />
                   <div className="rc-a5-half">
                     {backRightCard ? (
-                      <ReportCardBack data={backRightCard} school={activeSchoolConfig} subjectRows={subjectItems} isDummy={!hasUserUploadedData} />
+                      <ReportCardBack data={backRightCard} school={activeSchoolConfig} subjectRows={subjectItems} isDummy={!hasUserUploadedData} passingPct={passingPercentage} />
                     ) : (
                       <div className="rc-a5-slot" />
                     )}
@@ -1867,91 +1867,94 @@ export default function ReportCardGeneratorPage() {
           );
         })}
 
-        {/* ===================== WHATSAPP FEEDBACK & CONTACT BAR ===================== */}
-        <div className="no-print w-full max-w-5xl mx-auto my-6 rounded-2xl bg-white border border-slate-200 p-5 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <FaWhatsapp className="text-emerald-600 text-lg shrink-0" />
-                <span className="text-sm font-bold text-slate-800">
-                  Feedback & Support / رہنمائی و تجاویز
-                </span>
+        {/* ===================== BOTTOM ACTIONS & FEEDBACK ===================== */}
+        <div className="no-print w-full max-w-5xl mx-auto flex flex-col gap-3 mt-4 mb-8">
+          {/* READY TO PRINT ACTION BAR (TOP) */}
+          <div className="w-full rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-5 text-white shadow-2xl border border-indigo-500/20">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                {!hasUserUploadedData ? (
+                  <div>
+                    <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300">
+                      <FiEye size={14} />
+                      <span>Preview Mode (Sample Data)</span>
+                    </div>
+                    <h3 className="mt-1.5 text-lg font-black tracking-tight text-white">
+                      Sample Preview Mode • Upload Student Data to Print
+                    </h3>
+                    <p className="mt-0.5 text-xs text-indigo-200">
+                      Dummy obtained marks are shown in light gray for review only. Upload your Excel marksheet or scan students above to enable printing and PDF download.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300">
+                      <FiCheckCircle size={14} className="text-emerald-400" />
+                      <span>Review Complete</span>
+                    </div>
+                    <h3 className="mt-1.5 text-lg font-black tracking-tight text-white">
+                      Ready to Print {cardsToPrint.length} Student Report Cards
+                    </h3>
+                    <p className="mt-0.5 text-xs text-indigo-200">
+                      {cardPairs.length * 2} A4 Landscape Sheets total ({cardPairs.length} Front covers + {cardPairs.length} Back marks tables with duplex mirroring).
+                    </p>
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                اگر آپ کو رپورٹ کارڈ میں کوئی غلطی نظر آئے یا اپنے اسکول کے لیے کچھ نیا شامل کروانا ہو، تو براہِ راست واٹس ایپ پر رابطہ فرمائیں۔
-              </p>
-              <p className="text-[11px] text-slate-400">
-                Notice any mistake or need custom features or subjects added? Message Master Sahib directly on WhatsApp.
-              </p>
-            </div>
 
-            <a
-              href="https://wa.me/923458340669?text=Assalam%20o%20Alaikum%20Master%20Sahib,%20I%20have%20feedback%20regarding%20the%20Report%20Card%20Generator"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-500 transition shrink-0"
-            >
-              <FaWhatsapp size={16} />
-              <span>Contact on WhatsApp (+92 345 8340669)</span>
-            </a>
+              <div className="flex flex-wrap items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  disabled={!hasUserUploadedData}
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-emerald-400 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-700"
+                  title={!hasUserUploadedData ? 'Upload student data to enable printing' : 'Print All Report Cards'}
+                >
+                  <FiPrinter size={18} />
+                  <span>Print All Report Cards</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExportPdf}
+                  disabled={!hasUserUploadedData || pdfGenerating}
+                  className="inline-flex items-center gap-2 rounded-xl bg-white text-indigo-950 px-5 py-3 text-sm font-bold shadow-lg hover:bg-indigo-50 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-200"
+                  title={!hasUserUploadedData ? 'Upload student data to enable PDF export' : 'Download Complete PDF'}
+                >
+                  <FiDownload size={18} />
+                  <span>{pdfGenerating ? 'Generating PDF...' : 'Download Complete PDF'}</span>
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* ===================== BOTTOM REVIEW & PRINT ACTION BAR ===================== */}
-        <div className="no-print w-full max-w-5xl mx-auto my-8 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-indigo-500/20">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-            <div>
-              {!hasUserUploadedData ? (
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300">
-                    <FiEye size={14} />
-                    <span>Preview Mode (Sample Data)</span>
-                  </div>
-                  <h3 className="mt-2 text-xl font-black tracking-tight text-white">
-                    Sample Preview Mode • Upload Student Data to Print
-                  </h3>
-                  <p className="mt-1 text-xs text-indigo-200">
-                    Dummy obtained marks are shown in light gray for review only. Upload your Excel marksheet or scan students above to enable printing and PDF download.
-                  </p>
+          {/* WHATSAPP FEEDBACK & CONTACT BAR (UNDERNEATH) */}
+          <div className="w-full rounded-xl bg-white border border-slate-200 px-5 py-3 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <FaWhatsapp className="text-emerald-600 text-base shrink-0" />
+                  <span className="text-xs font-bold text-slate-800">
+                    Feedback & Support / رہنمائی و تجاویز
+                  </span>
                 </div>
-              ) : (
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300">
-                    <FiCheckCircle size={14} className="text-emerald-400" />
-                    <span>Review Complete</span>
-                  </div>
-                  <h3 className="mt-2 text-xl font-black tracking-tight text-white">
-                    Ready to Print {cardsToPrint.length} Student Report Cards
-                  </h3>
-                  <p className="mt-1 text-xs text-indigo-200">
-                    {cardPairs.length * 2} A4 Landscape Sheets total ({cardPairs.length} Front covers + {cardPairs.length} Back marks tables with duplex mirroring).
-                  </p>
-                </div>
-              )}
-            </div>
+                <p className="text-xs text-slate-600 leading-normal">
+                  اگر آپ کو رپورٹ کارڈ میں کوئی غلطی نظر آئے یا اپنے اسکول کے لیے کچھ نیا شامل کروانا ہو، تو براہِ راست واٹس ایپ پر رابطہ فرمائیں۔
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  Notice any mistake or need custom features or subjects added? Message Master Sahib directly on WhatsApp.
+                </p>
+              </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={handlePrint}
-                disabled={!hasUserUploadedData}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-black text-white shadow-lg hover:bg-emerald-400 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-700"
-                title={!hasUserUploadedData ? 'Upload student data to enable printing' : 'Print All Report Cards'}
+              <a
+                href="https://wa.me/923458340669?text=Assalam%20o%20Alaikum%20Master%20Sahib,%20I%20have%20feedback%20regarding%20the%20Report%20Card%20Generator"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-500 transition shrink-0"
               >
-                <FiPrinter size={18} />
-                <span>Print All Report Cards</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleExportPdf}
-                disabled={!hasUserUploadedData || pdfGenerating}
-                className="inline-flex items-center gap-2 rounded-xl bg-white text-indigo-950 px-5 py-3.5 text-sm font-bold shadow-lg hover:bg-indigo-50 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-200"
-                title={!hasUserUploadedData ? 'Upload student data to enable PDF export' : 'Download Complete PDF'}
-              >
-                <FiDownload size={18} />
-                <span>{pdfGenerating ? 'Generating PDF...' : 'Download Complete PDF'}</span>
-              </button>
+                <FaWhatsapp size={15} />
+                <span>Contact on WhatsApp (+92 345 8340669)</span>
+              </a>
             </div>
           </div>
         </div>
@@ -2121,15 +2124,21 @@ export default function ReportCardGeneratorPage() {
           align-items: flex-end;
           justify-content: center;
           min-width: 16mm;
-          height: 6mm;
+          height: 6.5mm;
           border-bottom: 1.5px dotted #000000;
           text-align: center;
           font-size: 11.5pt;
           font-weight: 700;
-          padding: 0 1mm 1.5mm 1mm;
+          padding: 0 1mm 0 1mm;
           margin: 0 1.5mm 0 1mm;
           line-height: 1;
           box-sizing: border-box;
+        }
+
+        .rc-year-dots span {
+          display: inline-block;
+          margin-bottom: 1.8mm;
+          line-height: 1;
         }
 
         .rc-year-dash {
@@ -2180,10 +2189,10 @@ export default function ReportCardGeneratorPage() {
           font-weight: 700;
           color: #000000;
           text-align: center;
-          min-height: 6mm;
-          height: 6mm;
+          min-height: 6.5mm;
+          height: 6.5mm;
           line-height: 1;
-          padding: 0 1.5mm 1.5mm 1.5mm;
+          padding: 0 1.5mm 0 1.5mm;
           display: inline-flex;
           align-items: flex-end;
           justify-content: center;
@@ -2191,6 +2200,12 @@ export default function ReportCardGeneratorPage() {
           text-overflow: ellipsis;
           white-space: nowrap;
           box-sizing: border-box;
+        }
+
+        .rc-field-text {
+          display: inline-block;
+          margin-bottom: 2.2mm;
+          line-height: 1.1;
         }
 
         .rc-field-value-left {
@@ -2232,13 +2247,19 @@ export default function ReportCardGeneratorPage() {
           font-size: 10pt;
           font-weight: 700;
           text-align: center;
-          min-height: 5mm;
-          height: 5mm;
-          padding: 0 1.5mm;
+          min-height: 5.5mm;
+          height: 5.5mm;
+          padding: 0 1.5mm 0 1.5mm;
           display: inline-flex;
-          align-items: center;
+          align-items: flex-end;
           justify-content: center;
           box-sizing: border-box;
+          line-height: 1;
+        }
+
+        .rc-back-top-val span {
+          display: inline-block;
+          margin-bottom: 1.8mm;
           line-height: 1;
         }
 
@@ -2493,6 +2514,14 @@ export default function ReportCardGeneratorPage() {
         .rc-dummy-num {
           color: #94a3b8 !important;
           font-weight: 500 !important;
+        }
+
+        .rc-failed-mark {
+          border-bottom: 1.5px solid currentColor;
+          display: inline-block;
+          line-height: 1.05;
+          padding-bottom: 0.5px;
+          font-weight: 800;
         }
 
         @media print {
