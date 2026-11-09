@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { FaWhatsapp } from 'react-icons/fa';
 import {
   FiPrinter,
   FiUploadCloud,
@@ -607,9 +608,23 @@ export default function ReportCardGeneratorPage() {
   };
 
   const handleSubjectMaxMarksChange = (key: string, newMax: string) => {
+    let updatedCustom = { ...customSubjectMaxMarks, [key]: newMax };
+
+    // If changing Islamiat total directly, keep oral and written in perfect sync (40% oral, 60% written)
+    if (key === 'islamiat_total') {
+      const totalNum = parseFloat(newMax) || 0;
+      const oral = Math.round(totalNum * 0.4);
+      const written = Math.max(0, totalNum - oral);
+      updatedCustom = {
+        ...updatedCustom,
+        islamiat_total: newMax,
+        islamiat_oral: String(oral),
+        islamiat_written: String(written),
+      };
+    }
+
     const updatedItems = subjectItems.map((s) => (s.key === key ? { ...s, maxMarks: newMax } : s));
     setSubjectItems(updatedItems);
-    const updatedCustom = { ...customSubjectMaxMarks, [key]: newMax };
     setCustomSubjectMaxMarks(updatedCustom);
 
     if (!hasUserUploadedData) {
@@ -622,6 +637,71 @@ export default function ReportCardGeneratorPage() {
             nextSubjects[key] = {
               maxMarks: newMax,
               marksObtained: nextSubjects[key]!.marksObtained,
+            };
+          }
+          if (key === 'islamiat_total') {
+            if (nextSubjects.islamiat_oral) {
+              nextSubjects.islamiat_oral = {
+                maxMarks: updatedCustom.islamiat_oral!,
+                marksObtained: nextSubjects.islamiat_oral.marksObtained,
+              };
+            }
+            if (nextSubjects.islamiat_written) {
+              nextSubjects.islamiat_written = {
+                maxMarks: updatedCustom.islamiat_written!,
+                marksObtained: nextSubjects.islamiat_written.marksObtained,
+              };
+            }
+          }
+          return { ...st, subjects: nextSubjects };
+        });
+        return assignRanksToStudents(updated, updatedItems, passingPercentage);
+      });
+    }
+  };
+
+  const handleIslamiatSubMarksChange = (newOralStr: string, newWrittenStr: string) => {
+    const oralNum = parseFloat(newOralStr) || 0;
+    const writtenNum = parseFloat(newWrittenStr) || 0;
+    const newTotal = oralNum + writtenNum;
+    const newTotalStr = String(newTotal);
+
+    const updatedCustom: Partial<Record<string, string>> = {
+      ...customSubjectMaxMarks,
+      islamiat_oral: newOralStr,
+      islamiat_written: newWrittenStr,
+      islamiat_total: newTotalStr,
+    };
+    setCustomSubjectMaxMarks(updatedCustom);
+
+    // Update Islamiat's maxMarks in subjectItems to match the sum of Oral + Written
+    const updatedItems = subjectItems.map((s) =>
+      s.key === 'islamiat_total' ? { ...s, maxMarks: newTotalStr } : s,
+    );
+    setSubjectItems(updatedItems);
+
+    if (!hasUserUploadedData) {
+      setStudents(generateDummyStudents(updatedItems, defaultMaxMarks, updatedCustom, passingPercentage));
+    } else {
+      setStudents((prev) => {
+        const updated = prev.map((st) => {
+          const nextSubjects = { ...st.subjects };
+          if (nextSubjects.islamiat_oral) {
+            nextSubjects.islamiat_oral = {
+              maxMarks: newOralStr,
+              marksObtained: nextSubjects.islamiat_oral.marksObtained,
+            };
+          }
+          if (nextSubjects.islamiat_written) {
+            nextSubjects.islamiat_written = {
+              maxMarks: newWrittenStr,
+              marksObtained: nextSubjects.islamiat_written.marksObtained,
+            };
+          }
+          if (nextSubjects.islamiat_total) {
+            nextSubjects.islamiat_total = {
+              maxMarks: newTotalStr,
+              marksObtained: nextSubjects.islamiat_total.marksObtained,
             };
           }
           return { ...st, subjects: nextSubjects };
@@ -1546,24 +1626,24 @@ export default function ReportCardGeneratorPage() {
                                 <div className="flex items-center gap-1">
                                   <input
                                     type="number"
-                                    value={customSubjectMaxMarks['islamiat_oral'] || String(Math.round((parseFloat(s.maxMarks) || 100) * 0.4))}
+                                    value={customSubjectMaxMarks['islamiat_oral'] ?? String(Math.round((parseFloat(s.maxMarks) || 100) * 0.4))}
                                     onChange={(e) => {
-                                      const updated = { ...customSubjectMaxMarks, islamiat_oral: e.target.value };
-                                      setCustomSubjectMaxMarks(updated);
+                                      const curWritten = customSubjectMaxMarks['islamiat_written'] ?? String(Math.round((parseFloat(s.maxMarks) || 100) * 0.6));
+                                      handleIslamiatSubMarksChange(e.target.value, curWritten);
                                     }}
                                     title="Nazra / Oral Max Marks"
-                                    className="w-10 rounded border border-slate-300 px-1 py-0.5 text-center font-bold bg-white"
+                                    className="w-12 rounded border border-slate-300 px-1 py-0.5 text-center font-bold bg-white text-slate-800 focus:border-indigo-600 focus:outline-none"
                                   />
-                                  <span>+</span>
+                                  <span className="font-bold text-slate-400">+</span>
                                   <input
                                     type="number"
-                                    value={customSubjectMaxMarks['islamiat_written'] || String(Math.round((parseFloat(s.maxMarks) || 100) * 0.6))}
+                                    value={customSubjectMaxMarks['islamiat_written'] ?? String(Math.round((parseFloat(s.maxMarks) || 100) * 0.6))}
                                     onChange={(e) => {
-                                      const updated = { ...customSubjectMaxMarks, islamiat_written: e.target.value };
-                                      setCustomSubjectMaxMarks(updated);
+                                      const curOral = customSubjectMaxMarks['islamiat_oral'] ?? String(Math.round((parseFloat(s.maxMarks) || 100) * 0.4));
+                                      handleIslamiatSubMarksChange(curOral, e.target.value);
                                     }}
                                     title="Written Max Marks"
-                                    className="w-10 rounded border border-slate-300 px-1 py-0.5 text-center font-bold bg-white"
+                                    className="w-12 rounded border border-slate-300 px-1 py-0.5 text-center font-bold bg-white text-slate-800 focus:border-indigo-600 focus:outline-none"
                                   />
                                 </div>
                               </div>
@@ -1786,6 +1866,36 @@ export default function ReportCardGeneratorPage() {
             </div>
           );
         })}
+
+        {/* ===================== WHATSAPP FEEDBACK & CONTACT BAR ===================== */}
+        <div className="no-print w-full max-w-5xl mx-auto my-6 rounded-2xl bg-white border border-slate-200 p-5 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <FaWhatsapp className="text-emerald-600 text-lg shrink-0" />
+                <span className="text-sm font-bold text-slate-800">
+                  Feedback & Support / رہنمائی و تجاویز
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                اگر آپ کو رپورٹ کارڈ میں کوئی غلطی نظر آئے یا اپنے اسکول کے لیے کچھ نیا شامل کروانا ہو، تو براہِ راست واٹس ایپ پر رابطہ فرمائیں۔
+              </p>
+              <p className="text-[11px] text-slate-400">
+                Notice any mistake or need custom features or subjects added? Message Master Sahib directly on WhatsApp.
+              </p>
+            </div>
+
+            <a
+              href="https://wa.me/923458340669?text=Assalam%20o%20Alaikum%20Master%20Sahib,%20I%20have%20feedback%20regarding%20the%20Report%20Card%20Generator"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-500 transition shrink-0"
+            >
+              <FaWhatsapp size={16} />
+              <span>Contact on WhatsApp (+92 345 8340669)</span>
+            </a>
+          </div>
+        </div>
 
         {/* ===================== BOTTOM REVIEW & PRINT ACTION BAR ===================== */}
         <div className="no-print w-full max-w-5xl mx-auto my-8 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-indigo-500/20">
