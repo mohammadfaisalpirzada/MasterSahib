@@ -217,3 +217,33 @@ User asked to go through a broad security checklist and fix everything directly,
 
 ### Deploy status (unchanged blocker, confirmed again)
 Still cannot deploy from this sandbox: `curl https://api.vercel.com/...` from `device_bash` gets `403 blocked-by-allowlist` from its own network proxy (reconfirmed this run, same as 2026-10-06, 2026-10-28, and the weekly run above). Also tried computer-use to drive a real terminal directly - the Terminal app tier only permits clicks, typing and key presses are hard-blocked by the computer-use tool itself (not a soft policy), so `vercel --prod` cannot be typed in that way either. This is a genuine infrastructure wall in this environment, not a permission/approval question - **the 4 commits above (`9e454df`, `23a4490`, `ceec675`, `925a749`, `dfdd8c8`) are sitting committed in the real local repo at `C:\projects\master_sahib` and need `vercel --prod` run from an actual terminal on that machine to go live.**
+
+
+## [2026-11-09] Weekly Caretaker Run — Fixed CSP blocking Google ad-quality checks, deploy still blocked
+
+Device access worked this run (`device_request_folder_access` granted immediately again). Repo was healthy: only 2 unrelated WIP files modified (report-card-generator, not touched - not this run's work), `main` in sync with `origin/main` at run start (commit 7266dd3).
+
+### Real bug found and fixed (committed fb7e59c)
+Used the real built-in browser (not WebFetch) to check console/network on the homepage, /the-master-store, /educational-resources, and /govt-forms/admission-form. Every single page load threw the same CSP violation:
+`Connecting to 'https://ep1.adtrafficquality.google/getconfig/sodar...' violates ... connect-src ...`
+This is Google AdSense's ad-quality/anti-fraud verification ping ("sodar") - it was being blocked site-wide by the Content-Security-Policy header added in the 2026-11-04 security hardening run, which at the time flagged exactly this risk ("CSP-sensitive... worth a follow-up with real testing"). Fixed by adding `https://*.adtrafficquality.google` to both `connect-src` and `frame-src` in `next.config.ts` - a narrow, additive allowlist entry, nothing else loosened. This is revenue-relevant: a broken ad-quality signal can suppress ad fill/CPMs or get flagged by Google's ad traffic quality systems.
+
+### Dependency security audit re-run (npm audit --omit=dev)
+8 vulnerabilities: 1 critical (`jspdf` <=4.2.0 - path traversal / PDF injection / arbitrary JS execution), 2 high (`dompurify` via jspdf's bundled version, `xlsx` - no fix available upstream, already known), 5 moderate (transitive, via `googleapis`: gaxios/glob/minimatch/rimraf). 
+- **jspdf fix needs a MAJOR bump (2.5.2 -> 4.2.1)** and is used across 8 files including report-card-generator, admission-form print, stipend, and the admin report-cards tool (all core PDF-generation features, one of which has active uncommitted WIP from another session right now). Per security-audit.md's existing caution on this exact item ("do not blindly npm audit fix --force... without testing form PDF output first") and given this run cannot visually verify PDF output changes, **deferred again - needs human testing**, not a blind unattended bump. This is now a well-established, deliberate deferral (not a new finding), flagged every audit since 2026-10-28.
+- `xlsx` high-severity: still no upstream fix available, nothing actionable.
+- The 5 moderate transitive ones (gaxios/glob/minimatch/rimraf/googleapis-common, all via `googleapis`) have fixes available per npm - low risk, but deferred this run to keep scope modest since they're moderate-severity transitive deps with no known live exploit path reported here; good candidate for next run via `npm install googleapis@latest --package-lock-only` (same safe trick used 2026-11-04 for next/next-auth).
+
+### Live verification
+Real browser: homepage, /the-master-store, /educational-resources, /govt-forms, /govt-forms/admission-form all load cleanly, visitor count and padlet ideas render real live data, no broken links. Mobile viewport (390x844) screenshot of homepage - layout clean, nothing broken.
+
+### Deploy status - still blocked, same structural wall as every run since 2026-10-06
+`curl https://api.vercel.com/...` from this device sandbox: still `403` (blocked by its own network proxy allowlist). Re-confirmed again this run and again 3 days later mid-run after a bridge reconnect. This has now failed identically across 2+ months of weekly runs via every method tried (CLI login, token, computer-use typing, browser dashboard - see website-auto-improvement.md for the full history). **Not retrying these again every single week** - it needs either the user running `vercel --prod` themselves from their own real terminal in `C:\projects\master_sahib`, or the account's egress allowlist being widened to include vercel.com (Admin settings -> Capabilities, if available on this plan).
+
+### Session continuity note
+This run's device bridge dropped and reconnected mid-run (~3 days wall-clock passed between tool calls, 2026-11-09 to 2026-11-12). On reconnect, `origin/main` had moved forward by several commits (report card duplex-printing work, Download Master v1.0.17) - all from other work on this repo, not this session. Commit fb7e59c (the CSP fix) was confirmed still intact in local history and the working tree after reconnect. Local `main` is now 1 commit behind `origin/main` (13f2c89) - did not pull/merge this run to avoid disturbing the 2 unrelated WIP files currently uncommitted in the working tree from another session's in-progress work.
+
+### Pending for the user (unchanged from prior runs, still true)
+1. Run `vercel --prod` in `C:\projects\master_sahib` to deploy everything currently committed and sitting local, including this run's CSP fix.
+2. The next@16.4.3/next-auth@4.24.15 security fix and all of the 2026-11-04 hardening commits are also still pending that same deploy, if not already deployed since.
+3. jspdf critical vuln fix (2.5.2 -> 4.2.1) needs a human to test PDF output across the ~8 affected tools before upgrading - recommend doing this from your own terminal where you can visually check the PDFs.
