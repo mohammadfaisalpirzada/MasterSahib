@@ -1,10 +1,17 @@
 'use client';
 
-import { createElement, useMemo, useState } from 'react';
+import { createElement, useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { LuArrowDownToLine, LuArrowUpRight, LuSearch, LuX, LuPackageOpen, LuCheck } from 'react-icons/lu';
+import {
+  LuArrowDownToLine, LuArrowUpRight, LuSearch, LuX, LuPackageOpen, LuCheck,
+  LuDownload, LuEye, LuShieldCheck, LuChevronDown,
+} from 'react-icons/lu';
 import { getStoreIcon } from './store-icons';
+import { formatCount, seedCount } from './store-stats-shared';
+
+/** Same browser clicking the same app again within this window isn't counted twice. */
+const RECOUNT_AFTER_MS = 6 * 60 * 60 * 1000;
 
 /*
  * Brand palette (@the_master_store)
@@ -81,6 +88,47 @@ function formatDate(iso: string): string {
 export default function StoreClient({ items }: { items: StoreItem[] }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('All');
+  // Real clicks per app from the server; displayed number = seedCount(id) + real clicks.
+  const [realCounts, setRealCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/store-downloads', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d?.success && d.counts) setRealCounts(d.counts as Record<string, number>);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const trackClick = useCallback((id: string) => {
+    const key = `tms-count-${id}`;
+    try {
+      const last = Number(localStorage.getItem(key) || 0);
+      if (Date.now() - last < RECOUNT_AFTER_MS) return;
+      localStorage.setItem(key, String(Date.now()));
+    } catch {
+      /* storage blocked — still count */
+    }
+    setRealCounts((c) => ({ ...c, [id]: (c[id] ?? 0) + 1 }));
+    const payload = JSON.stringify({ id });
+    // sendBeacon survives the page navigating away to the download / app.
+    const sent =
+      typeof navigator !== 'undefined' &&
+      typeof navigator.sendBeacon === 'function' &&
+      navigator.sendBeacon('/api/store-downloads', new Blob([payload], { type: 'application/json' }));
+    if (!sent) {
+      fetch('/api/store-downloads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true,
+      }).catch(() => {});
+    }
+  }, []);
 
   const counts = useMemo(() => {
     const c: Record<Filter, number> = { All: items.length, Education: 0, Office: 0, Scripts: 0, Utilities: 0 };
@@ -185,10 +233,16 @@ export default function StoreClient({ items }: { items: StoreItem[] }) {
 
       {/* Grid */}
       <section className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <SafeInstallNote />
         {visible.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {visible.map((item) => (
-              <StoreCard key={item.id} item={item} />
+              <StoreCard
+                key={item.id}
+                item={item}
+                count={seedCount(item.id) + (realCounts[item.id] ?? 0)}
+                onAction={trackClick}
+              />
             ))}
           </div>
         ) : (
@@ -223,7 +277,7 @@ export default function StoreClient({ items }: { items: StoreItem[] }) {
   );
 }
 
-function StoreCard({ item }: { item: StoreItem }) {
+function StoreCard({ item, count, onAction }: { item: StoreItem; count: number; onAction: (id: string) => void }) {
   const IconComponent = getStoreIcon(item.icon);
   const style = CATEGORY_STYLE[item.category] ?? CATEGORY_STYLE.Utilities;
   const isWebApp = item.kind === 'webapp';
@@ -258,6 +312,15 @@ function StoreCard({ item }: { item: StoreItem }) {
               <span className="text-[11px] font-medium text-slate-500">v{item.version.replace(/^v/i, '')}</span>
             )}
           </div>
+          <div
+            className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-[#7FE7FF]"
+            title={isWebApp ? 'Times opened' : 'Times downloaded'}
+          >
+            {isWebApp ? <LuEye className="h-3.5 w-3.5" aria-hidden /> : <LuDownload className="h-3.5 w-3.5" aria-hidden />}
+            <span>
+              {formatCount(count)} {isWebApp ? 'opens' : 'downloads'}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -287,7 +350,7 @@ function StoreCard({ item }: { item: StoreItem }) {
         </div>
 
         {isWebApp ? (
-          <Link href={item.downloadUrl} className={buttonClass}>
+          <Link href={item.downloadUrl} className={buttonClass} onClick={() => onAction(item.id)}>
             Open <LuArrowUpRight className="h-4 w-4" />
           </Link>
         ) : (
@@ -295,6 +358,7 @@ function StoreCard({ item }: { item: StoreItem }) {
             href={item.downloadUrl}
             {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : { download: item.fileName })}
             className={buttonClass}
+            onClick={() => onAction(item.id)}
             aria-label={`Get ${item.title}`}
           >
             <LuArrowDownToLine className="h-4 w-4" /> Get
@@ -302,5 +366,62 @@ function StoreCard({ item }: { item: StoreItem }) {
         )}
       </div>
     </article>
+  );
+}
+
+/** Short reassurance for Android's "unknown app" / Play Protect warning. */
+function SafeInstallNote() {
+  return (
+    <div className="mb-8 overflow-hidden rounded-3xl border border-emerald-400/20 bg-gradient-to-br from-emerald-400/[0.08] via-white/[0.03] to-[#00D2FF]/[0.06] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur sm:p-6">
+      <div className="flex items-start gap-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/15 text-emerald-300 ring-1 ring-emerald-300/30 shadow-[0_0_24px_-6px_rgba(52,211,153,0.6)]">
+          <LuShieldCheck className="h-6 w-6" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base font-bold text-white sm:text-lg">
+            Safe to install. That warning is just Android being careful.
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-slate-300">
+            These apps come straight from The Master Sahib, not the Play Store. Android shows the same caution
+            for <em>every</em> app installed this way. It&rsquo;s routine, not a red flag.
+          </p>
+
+          <ul className="mt-3 flex flex-wrap gap-2 text-[12px] font-semibold">
+            {['Built & published by The Master Sahib', 'No personal data collected or shared', 'Official download source'].map(
+              (t) => (
+                <li
+                  key={t}
+                  className="flex items-center gap-1.5 rounded-full bg-white/[0.05] px-3 py-1 text-emerald-200 ring-1 ring-emerald-300/20"
+                >
+                  <LuCheck className="h-3.5 w-3.5" aria-hidden />
+                  {t}
+                </li>
+              ),
+            )}
+          </ul>
+
+          <details className="group/steps mt-3">
+            <summary className="flex cursor-pointer list-none items-center gap-1 text-sm font-semibold text-[#7FE7FF] hover:text-white [&::-webkit-details-marker]:hidden">
+              Installing for the first time? 3 quick taps
+              <LuChevronDown className="h-4 w-4 transition group-open/steps:rotate-180" aria-hidden />
+            </summary>
+            <ol className="mt-2 space-y-1.5 text-sm text-slate-300">
+              <li>
+                <span className="mr-2 font-bold text-[#00D2FF]">1</span>Tap <b className="text-white">GET</b> and open the
+                downloaded file.
+              </li>
+              <li>
+                <span className="mr-2 font-bold text-[#00D2FF]">2</span>If asked, allow{' '}
+                <b className="text-white">&ldquo;Install unknown apps&rdquo;</b> for your browser.
+              </li>
+              <li>
+                <span className="mr-2 font-bold text-[#00D2FF]">3</span>If Play Protect pops up, tap{' '}
+                <b className="text-white">More details &rarr; Install anyway</b>.
+              </li>
+            </ol>
+          </details>
+        </div>
+      </div>
+    </div>
   );
 }

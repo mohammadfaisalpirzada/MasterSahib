@@ -222,6 +222,148 @@ export default function HomePage() {
       <WorkshopBannerCarousel />
       <HomeMasterBlogsBanner />
 
+      {/* The Master Store promo banner */}
+      <HomeMasterStoreBanner />
+
+      {/* All Tools Section with Category Filter Tabs */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border-2 border-[#837D68]/70 bg-[#F5E9E7] px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#837D68] shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-[#ECC5C6]">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#837D68] opacity-75"></span>
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#837D68]"></span>
+              </span>
+              Directory of Educational Tools
+            </div>
+            <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl lg:text-4xl">
+              Academic & Teacher{' '}
+              <span
+                className="inline-block rounded-xl px-2.5 py-0.5 text-slate-900 shadow-sm"
+                style={{
+                  backgroundImage: 'linear-gradient(90deg, #C1C0C2, #F5E9E7, #ECC5C6)', border: '1px solid #C1C0C2',
+                }}
+              >
+                Tools
+              </span>
+            </h2>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+              All digital learning software, school utilities, and teacher tools in one unified workspace.
+            </p>
+          </div>
+
+          {/* Category Filter Tabs - Touch friendly for Mobile */}
+          <div className="flex flex-wrap gap-1.5 rounded-2xl border-2 border-[#C1C0C2] bg-white p-1.5 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
+            {(
+              [
+                { id: 'all', label: 'All Tools' },
+                { id: 'latest', label: '🚀 Latest & AI' },
+                { id: 'teacher', label: '📝 Teacher & Forms' },
+                { id: 'academic', label: '📚 Curriculum' },
+              ] as const
+            ).map((tab) => {
+              const active = selectedCategory === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedCategory(tab.id)}
+                  className={`rounded-xl px-3.5 py-2 text-xs font-bold transition min-h-[38px] ${
+                    active
+                      ? 'bg-gradient-to-r from-[#837D68] via-[#8A9DB1] to-[#837D68] text-white shadow-md'
+                      : 'text-slate-600 hover:bg-[#F5E9E7] hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Tools Grid: 1 column on mobile, 2 on small tablet, 3 on tablet, 4 on desktop */}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredTools.map((tool, index) => {
+            const showNewBadge = Boolean(tool.newUntil) && now <= new Date(tool.newUntil as string).getTime();
+            const borderColors = [
+              'border-[#C1C0C2] hover:border-[#837D68]',
+              'border-[#8A9DB1]/70 hover:border-[#8A9DB1]',
+              'border-[#ECC5C6] hover:border-[#837D68]',
+            ];
+            const cardBorderClass = borderColors[index % 3];
+
+            return (
+              <Link
+                key={tool.title}
+                href={tool.href}
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border-2 ${cardBorderClass} bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-[#8A9DB1] backdrop-blur-sm`}
+              >
+                {/* Top expanding gradient accent line using #88E788, #B788E7, #E788B8 */}
+                <div
+                  className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#837D68] via-[#8A9DB1] to-[#ECC5C6] opacity-95 transition-all duration-300 group-hover:h-2 group-hover:opacity-100"
+                />
+
+                {/* Ambient corner radial hover glow */}
+                <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-gradient-to-br from-[#C1C0C2]/35 via-[#8A9DB1]/25 to-[#ECC5C6]/35 blur-2xl transition-all duration-300 group-hover:scale-150 group-hover:opacity-100" />
+
+                {/* Badge with live pulsing dot for NEW */}
+                {showNewBadge || tool.badge ? (
+                  <div className="absolute right-4 top-4 z-10">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-sm ${
+                        showNewBadge
+                          ? 'bg-[#ECC5C6] text-slate-950 border border-[#837D68]/30'
+                          : 'border border-[#8A9DB1] bg-[#F5E9E7] text-[#837D68] dark:bg-slate-800 dark:text-slate-100'
+                      }`}
+                    >
+                      {showNewBadge ? (
+                        <>
+                          <span className="relative flex h-1.5 w-1.5">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-slate-900 opacity-75" />
+                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-slate-900" />
+                          </span>
+                          NEW
+                        </>
+                      ) : (
+                        tool.badge
+                      )}
+                    </span>
+                  </div>
+                ) : null}
+
+                {/* Card Content */}
+                <div className="relative z-10">
+                  {/* 3D-styled app icon tile with hover scaling */}
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[#C1C0C2] bg-gradient-to-br from-[#F5E9E7] via-white to-[#ECC5C6]/45 p-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-md dark:border-slate-700/80 dark:from-slate-800 dark:to-slate-800/60">
+                    <span className="text-2xl filter drop-shadow-sm">{tool.icon}</span>
+                  </div>
+
+                  <h3 className="text-base font-bold text-slate-900 transition-colors duration-200 group-hover:text-[#837D68] dark:text-white dark:group-hover:text-[#ECC5C6]">
+                    {tool.title}
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                    {tool.description}
+                  </p>
+                </div>
+
+                {/* Sleek interactive card footer */}
+                <div className="relative z-10 mt-6 flex items-center justify-between border-t border-[#C1C0C2]/50 pt-3 dark:border-slate-800/80">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    {tool.category === 'teacher' ? 'Teacher Tool' : tool.category === 'academic' ? 'Academic' : 'Software'}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#F5E9E7] px-2.5 py-0.5 text-xs font-bold text-[#837D68] border border-[#C1C0C2] transition-all duration-200 group-hover:bg-[#837D68] group-hover:text-white group-hover:border-[#837D68] dark:bg-slate-800 dark:text-[#ECC5C6]">
+                    Open
+                    <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">→</span>
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <HomePadletBoard />
+
+      {/* Intro + live visitor counter — moved to the bottom so the blog banner leads the page */}
       {/* Top Quick Contact & Status Bar (Graphite Palette: #C1C0C2, #F5E9E7, #837D68, #8A9DB1, #ECC5C6) */}
       <div
         className="border-b border-white/40 shadow-sm"
@@ -382,147 +524,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* The Master Store promo banner */}
-      <HomeMasterStoreBanner />
-
-      {/* All Tools Section with Category Filter Tabs */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border-2 border-[#837D68]/70 bg-[#F5E9E7] px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#837D68] shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-[#ECC5C6]">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#837D68] opacity-75"></span>
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#837D68]"></span>
-              </span>
-              Directory of Educational Tools
-            </div>
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl lg:text-4xl">
-              Academic & Teacher{' '}
-              <span
-                className="inline-block rounded-xl px-2.5 py-0.5 text-slate-900 shadow-sm"
-                style={{
-                  backgroundImage: 'linear-gradient(90deg, #C1C0C2, #F5E9E7, #ECC5C6)', border: '1px solid #C1C0C2',
-                }}
-              >
-                Tools
-              </span>
-            </h2>
-            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-              All digital learning software, school utilities, and teacher tools in one unified workspace.
-            </p>
-          </div>
-
-          {/* Category Filter Tabs - Touch friendly for Mobile */}
-          <div className="flex flex-wrap gap-1.5 rounded-2xl border-2 border-[#C1C0C2] bg-white p-1.5 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
-            {(
-              [
-                { id: 'all', label: 'All Tools' },
-                { id: 'latest', label: '🚀 Latest & AI' },
-                { id: 'teacher', label: '📝 Teacher & Forms' },
-                { id: 'academic', label: '📚 Curriculum' },
-              ] as const
-            ).map((tab) => {
-              const active = selectedCategory === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setSelectedCategory(tab.id)}
-                  className={`rounded-xl px-3.5 py-2 text-xs font-bold transition min-h-[38px] ${
-                    active
-                      ? 'bg-gradient-to-r from-[#837D68] via-[#8A9DB1] to-[#837D68] text-white shadow-md'
-                      : 'text-slate-600 hover:bg-[#F5E9E7] hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Tools Grid: 1 column on mobile, 2 on small tablet, 3 on tablet, 4 on desktop */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredTools.map((tool, index) => {
-            const showNewBadge = Boolean(tool.newUntil) && now <= new Date(tool.newUntil as string).getTime();
-            const borderColors = [
-              'border-[#C1C0C2] hover:border-[#837D68]',
-              'border-[#8A9DB1]/70 hover:border-[#8A9DB1]',
-              'border-[#ECC5C6] hover:border-[#837D68]',
-            ];
-            const cardBorderClass = borderColors[index % 3];
-
-            return (
-              <Link
-                key={tool.title}
-                href={tool.href}
-                className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border-2 ${cardBorderClass} bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-[#8A9DB1] backdrop-blur-sm`}
-              >
-                {/* Top expanding gradient accent line using #88E788, #B788E7, #E788B8 */}
-                <div
-                  className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#837D68] via-[#8A9DB1] to-[#ECC5C6] opacity-95 transition-all duration-300 group-hover:h-2 group-hover:opacity-100"
-                />
-
-                {/* Ambient corner radial hover glow */}
-                <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-gradient-to-br from-[#C1C0C2]/35 via-[#8A9DB1]/25 to-[#ECC5C6]/35 blur-2xl transition-all duration-300 group-hover:scale-150 group-hover:opacity-100" />
-
-                {/* Badge with live pulsing dot for NEW */}
-                {showNewBadge || tool.badge ? (
-                  <div className="absolute right-4 top-4 z-10">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-sm ${
-                        showNewBadge
-                          ? 'bg-[#ECC5C6] text-slate-950 border border-[#837D68]/30'
-                          : 'border border-[#8A9DB1] bg-[#F5E9E7] text-[#837D68] dark:bg-slate-800 dark:text-slate-100'
-                      }`}
-                    >
-                      {showNewBadge ? (
-                        <>
-                          <span className="relative flex h-1.5 w-1.5">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-slate-900 opacity-75" />
-                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-slate-900" />
-                          </span>
-                          NEW
-                        </>
-                      ) : (
-                        tool.badge
-                      )}
-                    </span>
-                  </div>
-                ) : null}
-
-                {/* Card Content */}
-                <div className="relative z-10">
-                  {/* 3D-styled app icon tile with hover scaling */}
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[#C1C0C2] bg-gradient-to-br from-[#F5E9E7] via-white to-[#ECC5C6]/45 p-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-md dark:border-slate-700/80 dark:from-slate-800 dark:to-slate-800/60">
-                    <span className="text-2xl filter drop-shadow-sm">{tool.icon}</span>
-                  </div>
-
-                  <h3 className="text-base font-bold text-slate-900 transition-colors duration-200 group-hover:text-[#837D68] dark:text-white dark:group-hover:text-[#ECC5C6]">
-                    {tool.title}
-                  </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                    {tool.description}
-                  </p>
-                </div>
-
-                {/* Sleek interactive card footer */}
-                <div className="relative z-10 mt-6 flex items-center justify-between border-t border-[#C1C0C2]/50 pt-3 dark:border-slate-800/80">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    {tool.category === 'teacher' ? 'Teacher Tool' : tool.category === 'academic' ? 'Academic' : 'Software'}
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#F5E9E7] px-2.5 py-0.5 text-xs font-bold text-[#837D68] border border-[#C1C0C2] transition-all duration-200 group-hover:bg-[#837D68] group-hover:text-white group-hover:border-[#837D68] dark:bg-slate-800 dark:text-[#ECC5C6]">
-                    Open
-                    <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">→</span>
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      <HomePadletBoard />
 
       <Footer />
     </main>

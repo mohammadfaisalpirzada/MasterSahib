@@ -65,7 +65,30 @@ export default function HomeMasterBlogsBanner() {
       .catch(() => {});
   }, []);
 
-  if (loading || posts.length === 0) return null;
+  // Reserve the banner's space while posts load, so the page doesn't jump when it appears.
+  if (loading) {
+    return (
+      <section
+        aria-busy="true"
+        aria-label="Loading latest blogs"
+        className="relative border-b border-slate-200/80 bg-gradient-to-b from-white to-slate-50/80 py-8 dark:border-slate-800 dark:from-slate-900 dark:to-slate-950/70"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="h-6 w-48 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+          <div className="mt-5 grid gap-6 lg:grid-cols-2">
+            <div className="aspect-[4/3] w-full animate-pulse rounded-3xl bg-slate-200/80 dark:bg-slate-800/80" />
+            <div className="space-y-3">
+              <div className="h-8 w-3/4 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+              <div className="h-4 w-full animate-pulse rounded bg-slate-200/80 dark:bg-slate-800/80" />
+              <div className="h-4 w-5/6 animate-pulse rounded bg-slate-200/80 dark:bg-slate-800/80" />
+              <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200/80 dark:bg-slate-800/80" />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (posts.length === 0) return null;
 
   const currentPost = posts[currentIndex];
   const activeOrientation = detectedOrientations[currentPost.id] || currentPost.orientation || 'portrait';
