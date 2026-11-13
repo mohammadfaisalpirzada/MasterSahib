@@ -140,7 +140,8 @@ function computeStudentStats(
     const rawObt = score?.marksObtained != null ? String(score.marksObtained).trim() : '';
     if (rawObt === '' || rawObt === '-') return;
     const max = parseFloat(score?.maxMarks || '0') || 0;
-    const obt = parseFloat(rawObt) || 0;
+    const rawNum = parseFloat(rawObt);
+    const obt = isNaN(rawNum) ? 0 : (max > 0 ? Math.min(Math.max(0, rawNum), max) : Math.max(0, rawNum));
     if (max > 0) {
       totalMax += max;
       totalObt += obt;
@@ -815,9 +816,11 @@ export default function ReportCardGeneratorPage() {
   const handleMaxMarksChange = (newVal: string) => {
     setDefaultMaxMarks(newVal);
     const base = parseFloat(newVal) || 100;
+    const oralDefault = Math.round(base * 0.4);
+    const writtenDefault = base - oralDefault;
     const nextCustom: Partial<Record<string, string>> = {
-      islamiat_oral: String(Math.round(base * 0.4)),
-      islamiat_written: String(Math.round(base * 0.6)),
+      islamiat_oral: String(oralDefault),
+      islamiat_written: String(writtenDefault),
       islamiat_total: String(base),
     };
     setCustomSubjectMaxMarks(nextCustom);
@@ -839,11 +842,26 @@ export default function ReportCardGeneratorPage() {
             let subMax = String(base);
             if (k === 'islamiat_oral') subMax = nextCustom.islamiat_oral!;
             else if (k === 'islamiat_written') subMax = nextCustom.islamiat_written!;
+            const rawObt = String(score.marksObtained ?? '').trim();
+            const numObt = parseFloat(rawObt);
+            const subMaxNum = parseFloat(subMax);
+            const clampedObt =
+              rawObt !== '' && rawObt !== '-' && !isNaN(numObt) && subMaxNum > 0
+                ? String(Math.min(Math.max(0, numObt), subMaxNum))
+                : score.marksObtained;
             nextSubjects[k] = {
               maxMarks: subMax,
-              marksObtained: score.marksObtained,
+              marksObtained: clampedObt,
             };
           });
+          if (nextSubjects.islamiat_total) {
+            if (!nextSubjects.islamiat_oral) {
+              nextSubjects.islamiat_oral = { maxMarks: nextCustom.islamiat_oral!, marksObtained: '' };
+            }
+            if (!nextSubjects.islamiat_written) {
+              nextSubjects.islamiat_written = { maxMarks: nextCustom.islamiat_written!, marksObtained: '' };
+            }
+          }
           return {
             ...st,
             subjects: nextSubjects,
@@ -972,9 +990,16 @@ export default function ReportCardGeneratorPage() {
         const addSubj = (key: SubjectKey, ...colNames: string[]) => {
           const val = getVal(...colNames);
           if (val !== '') {
+            const maxStr = getSubjectMaxMarks(key);
+            const maxNum = parseFloat(maxStr);
+            const numVal = parseFloat(val);
+            const clampedVal =
+              val !== '-' && !isNaN(numVal) && !isNaN(maxNum) && maxNum > 0
+                ? String(Math.min(Math.max(0, numVal), maxNum))
+                : val;
             subjects[key] = {
-              maxMarks: getSubjectMaxMarks(key),
-              marksObtained: val,
+              maxMarks: maxStr,
+              marksObtained: clampedVal,
             };
           }
         };
@@ -993,13 +1018,28 @@ export default function ReportCardGeneratorPage() {
         const writtenMax = getSubjectMaxMarks('islamiat_written');
         const totalIslMax = getSubjectMaxMarks('islamiat_total');
 
-        if (oral !== '' || written !== '') {
-          if (oral !== '') subjects.islamiat_oral = { maxMarks: oralMax, marksObtained: oral };
-          if (written !== '') subjects.islamiat_written = { maxMarks: writtenMax, marksObtained: written };
-          const sumIsl = (parseFloat(oral || '0') + parseFloat(written || '0')).toString();
-          subjects.islamiat_total = { maxMarks: totalIslMax, marksObtained: totalIsl || sumIsl };
-        } else if (totalIsl !== '') {
-          subjects.islamiat_total = { maxMarks: totalIslMax, marksObtained: totalIsl };
+        const clampToMax = (raw: string, maxStr: string) => {
+          if (raw === '' || raw === '-') return raw;
+          const n = parseFloat(raw);
+          const m = parseFloat(maxStr);
+          if (isNaN(n) || isNaN(m) || m <= 0) return raw;
+          return String(Math.min(Math.max(0, n), m));
+        };
+
+        if (oral !== '' || written !== '' || totalIsl !== '') {
+          const clampedOral = oral !== '' ? clampToMax(oral, oralMax) : '';
+          const clampedWritten = written !== '' ? clampToMax(written, writtenMax) : '';
+          subjects.islamiat_oral = { maxMarks: oralMax, marksObtained: clampedOral };
+          subjects.islamiat_written = { maxMarks: writtenMax, marksObtained: clampedWritten };
+          const sumIsl =
+            oral !== '' || written !== ''
+              ? String((parseFloat(clampedOral || '0') || 0) + (parseFloat(clampedWritten || '0') || 0))
+              : '';
+          const rawTotalIsl = totalIsl !== '' ? totalIsl : sumIsl;
+          subjects.islamiat_total = {
+            maxMarks: totalIslMax,
+            marksObtained: clampToMax(rawTotalIsl, totalIslMax),
+          };
         }
 
         addSubj('g_science', 'General Science', 'Science', 'G. Science', 'Sci');
@@ -1181,11 +1221,27 @@ export default function ReportCardGeneratorPage() {
             const subjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>> = {};
             if (st.subjects) {
               Object.entries(st.subjects).forEach(([k, v]: [string, any]) => {
+                const maxStr = String(v?.maxMarks || getSubjectMaxMarks(k as SubjectKey));
+                const rawObt = String(v?.marksObtained ?? '').trim();
+                const numObt = parseFloat(rawObt);
+                const maxNum = parseFloat(maxStr);
+                const clampedObt =
+                  rawObt !== '' && rawObt !== '-' && !isNaN(numObt) && !isNaN(maxNum) && maxNum > 0
+                    ? String(Math.min(Math.max(0, numObt), maxNum))
+                    : String(v?.marksObtained ?? '');
                 subjects[k as SubjectKey] = {
-                  maxMarks: String(v?.maxMarks || getSubjectMaxMarks(k as SubjectKey)),
-                  marksObtained: String(v?.marksObtained ?? ''),
+                  maxMarks: maxStr,
+                  marksObtained: clampedObt,
                 };
               });
+              if (subjects.islamiat_total) {
+                if (!subjects.islamiat_oral) {
+                  subjects.islamiat_oral = { maxMarks: getSubjectMaxMarks('islamiat_oral'), marksObtained: '' };
+                }
+                if (!subjects.islamiat_written) {
+                  subjects.islamiat_written = { maxMarks: getSubjectMaxMarks('islamiat_written'), marksObtained: '' };
+                }
+              }
             }
 
             const stats = computeStudentStats(subjects);
@@ -2756,10 +2812,12 @@ export default function ReportCardGeneratorPage() {
 
   function applyCustomSubjectChange(updated: Partial<Record<SubjectKey, string>>) {
     const base = parseFloat(defaultMaxMarks) || 100;
+    const defaultOral = Math.round(base * 0.4);
+    const defaultWritten = base - defaultOral;
     const nextUpdated: Partial<Record<SubjectKey, string>> = { ...updated };
     if (updated.islamiat_oral || updated.islamiat_written) {
-      const oral = parseFloat(updated.islamiat_oral || String(Math.round(base * 0.4))) || 0;
-      const written = parseFloat(updated.islamiat_written || String(Math.round(base * 0.6))) || 0;
+      const oral = parseFloat(updated.islamiat_oral || String(defaultOral)) || 0;
+      const written = parseFloat(updated.islamiat_written || String(defaultWritten)) || 0;
       nextUpdated.islamiat_total = String(oral + written);
     }
     setCustomSubjectMaxMarks(nextUpdated);
@@ -2770,14 +2828,39 @@ export default function ReportCardGeneratorPage() {
           if (!score) return;
           const key = k as SubjectKey;
           let subMax = nextUpdated[key] || defaultMaxMarks;
-          if (key === 'islamiat_total' && nextUpdated.islamiat_total) {
+          if (key === 'islamiat_oral') {
+            subMax = nextUpdated.islamiat_oral || String(defaultOral);
+          } else if (key === 'islamiat_written') {
+            subMax = nextUpdated.islamiat_written || String(defaultWritten);
+          } else if (key === 'islamiat_total' && nextUpdated.islamiat_total) {
             subMax = nextUpdated.islamiat_total;
           }
+          const rawObt = String(score.marksObtained ?? '').trim();
+          const numObt = parseFloat(rawObt);
+          const subMaxNum = parseFloat(subMax);
+          const clampedObt =
+            rawObt !== '' && rawObt !== '-' && !isNaN(numObt) && !isNaN(subMaxNum) && subMaxNum > 0
+              ? String(Math.min(Math.max(0, numObt), subMaxNum))
+              : score.marksObtained;
           nextSubjects[key] = {
             maxMarks: subMax,
-            marksObtained: score.marksObtained,
+            marksObtained: clampedObt,
           };
         });
+        if (nextSubjects.islamiat_total) {
+          if (!nextSubjects.islamiat_oral) {
+            nextSubjects.islamiat_oral = {
+              maxMarks: nextUpdated.islamiat_oral || String(defaultOral),
+              marksObtained: '',
+            };
+          }
+          if (!nextSubjects.islamiat_written) {
+            nextSubjects.islamiat_written = {
+              maxMarks: nextUpdated.islamiat_written || String(defaultWritten),
+              marksObtained: '',
+            };
+          }
+        }
         const stats = computeStudentStats(nextSubjects);
         return {
           ...st,

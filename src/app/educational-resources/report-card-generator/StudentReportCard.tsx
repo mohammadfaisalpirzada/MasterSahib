@@ -203,6 +203,17 @@ export function ReportCardFront({
   );
 }
 
+const clampDisplayObtained = (rawObt: string | undefined, maxStr: string | undefined): string => {
+  const clean = rawObt != null ? String(rawObt).trim() : '';
+  if (clean === '' || clean === '-') return clean;
+  const max = parseFloat(maxStr || '0') || 0;
+  const obt = parseFloat(clean);
+  if (isNaN(obt)) return clean;
+  if (obt < 0) return '0';
+  if (max > 0 && obt > max) return String(max);
+  return clean;
+};
+
 const formatExamBannerYear = (suffix: string) => {
   const clean = String(suffix || '').trim();
   if (!clean) return '____';
@@ -302,20 +313,28 @@ export function ReportCardBack({
                     const hasTotal = Boolean(score.marksObtained && String(score.marksObtained).trim() !== '' && String(score.marksObtained).trim() !== '-');
                     const hasIsl = hasOral || hasWritten || hasTotal;
 
-                    const oralMax = hasIsl ? (oral.maxMarks || '40') : '-';
-                    const writtenMax = hasIsl ? (written.maxMarks || '60') : '-';
+                    const islTotalMaxStr = score.maxMarks || '100';
+                    const islTotalMaxNum = parseFloat(islTotalMaxStr) || 100;
+                    const defaultOralNum = Math.round(islTotalMaxNum * 0.4);
+                    const defaultWrittenNum = Math.max(0, islTotalMaxNum - defaultOralNum);
 
-                    const oralMaxNum = parseFloat(oral.maxMarks || '0') || 0;
-                    const oralObtNum = parseFloat(oral.marksObtained || '0') || 0;
+                    const oralMax = hasIsl ? (oral.maxMarks || String(defaultOralNum)) : '-';
+                    const writtenMax = hasIsl ? (written.maxMarks || String(defaultWrittenNum)) : '-';
+
+                    const oralObtDisplay = clampDisplayObtained(oral.marksObtained, oralMax);
+                    const writtenObtDisplay = clampDisplayObtained(written.marksObtained, writtenMax);
+                    const islObtDisplay = clampDisplayObtained(score.marksObtained, islTotalMaxStr);
+
+                    const oralMaxNum = parseFloat(oralMax) || 0;
+                    const oralObtNum = parseFloat(oralObtDisplay || '0') || 0;
                     const isOralFailed = hasOral && oralMaxNum > 0 && ((oralObtNum / oralMaxNum) * 100 < passingPct);
 
-                    const writtenMaxNum = parseFloat(written.maxMarks || '0') || 0;
-                    const writtenObtNum = parseFloat(written.marksObtained || '0') || 0;
+                    const writtenMaxNum = parseFloat(writtenMax) || 0;
+                    const writtenObtNum = parseFloat(writtenObtDisplay || '0') || 0;
                     const isWrittenFailed = hasWritten && writtenMaxNum > 0 && ((writtenObtNum / writtenMaxNum) * 100 < passingPct);
 
-                    const islMaxNum = parseFloat(score.maxMarks || '0') || 0;
-                    const islObtNum = parseFloat(score.marksObtained || '0') || 0;
-                    const isIslFailed = hasIsl && islMaxNum > 0 && ((islObtNum / islMaxNum) * 100 < passingPct);
+                    const islObtNum = parseFloat(islObtDisplay || '0') || 0;
+                    const isIslFailed = hasIsl && islTotalMaxNum > 0 && ((islObtNum / islTotalMaxNum) * 100 < passingPct);
 
                     return (
                       <tr key={subj.key} className="rc-subj-row rc-islamiat-row">
@@ -331,9 +350,9 @@ export function ReportCardBack({
                                     <span className={isDummy ? 'rc-dummy-num' : ''}>
                                       {' ('}
                                       {isOralFailed ? (
-                                        <span className="rc-failed-mark">{oral.marksObtained}</span>
+                                        <span className="rc-failed-mark">{oralObtDisplay}</span>
                                       ) : (
-                                        oral.marksObtained
+                                        oralObtDisplay
                                       )}
                                       {')'}
                                     </span>
@@ -348,9 +367,9 @@ export function ReportCardBack({
                                     <span className={isDummy ? 'rc-dummy-num' : ''}>
                                       {' ('}
                                       {isWrittenFailed ? (
-                                        <span className="rc-failed-mark">{written.marksObtained}</span>
+                                        <span className="rc-failed-mark">{writtenObtDisplay}</span>
                                       ) : (
-                                        written.marksObtained
+                                        writtenObtDisplay
                                       )}
                                       {')'}
                                     </span>
@@ -360,13 +379,13 @@ export function ReportCardBack({
                             </div>
                           </div>
                         </td>
-                        <td className="rc-num-cell">{hasIsl ? (score.maxMarks || '100') : '-'}</td>
+                        <td className="rc-num-cell">{hasIsl ? islTotalMaxStr : '-'}</td>
                         <td className={`rc-num-cell ${isDummy && hasIsl ? 'rc-dummy-num' : ''}`}>
                           {hasIsl ? (
                             isIslFailed ? (
-                              <span className="rc-failed-mark">{score.marksObtained}</span>
+                              <span className="rc-failed-mark">{islObtDisplay}</span>
                             ) : (
-                              score.marksObtained
+                              islObtDisplay
                             )
                           ) : (
                             '-'
@@ -382,8 +401,9 @@ export function ReportCardBack({
                   }
 
                   const hasMarks = Boolean(score.marksObtained && String(score.marksObtained).trim() !== '' && String(score.marksObtained).trim() !== '-');
+                  const obtDisplay = clampDisplayObtained(score.marksObtained, score.maxMarks);
                   const maxNum = parseFloat(score.maxMarks || '0') || 0;
-                  const obtNum = parseFloat(score.marksObtained || '0') || 0;
+                  const obtNum = parseFloat(obtDisplay || '0') || 0;
                   const isFailed = hasMarks && maxNum > 0 && ((obtNum / maxNum) * 100 < passingPct);
 
                   return (
@@ -395,9 +415,9 @@ export function ReportCardBack({
                       <td className={`rc-num-cell ${isDummy && hasMarks ? 'rc-dummy-num' : ''}`}>
                         {hasMarks ? (
                           isFailed ? (
-                            <span className="rc-failed-mark">{score.marksObtained}</span>
+                            <span className="rc-failed-mark">{obtDisplay}</span>
                           ) : (
-                            score.marksObtained
+                            obtDisplay
                           )
                         ) : (
                           '-'
