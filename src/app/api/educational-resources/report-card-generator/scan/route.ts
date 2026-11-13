@@ -131,6 +131,7 @@ export async function POST(request: NextRequest) {
       fileBase64?: string;
       mimeType?: string;
       files?: Array<{ fileBase64: string; mimeType: string }>;
+      rawText?: string;
       additionalNotes?: string;
     };
 
@@ -140,12 +141,19 @@ export async function POST(request: NextRequest) {
         : body.fileBase64
           ? [{ fileBase64: body.fileBase64, mimeType: body.mimeType || 'image/jpeg' }]
           : [];
+    const trimmedText = typeof body.rawText === 'string' ? body.rawText.trim() : '';
 
-    if (!filesToScan.length) {
-      return NextResponse.json({ success: false, message: 'No image or PDF received for scanning.' }, { status: 400 });
+    if (!filesToScan.length && !trimmedText) {
+      return NextResponse.json({ success: false, message: 'No image, PDF, or text data received for scanning.' }, { status: 400 });
     }
 
     const parts: Array<Record<string, unknown>> = [{ text: PROMPT_INSTRUCTIONS }];
+
+    if (trimmedText) {
+      parts.push({
+        text: `RAW TEXT / PASTED DATA TO PARSE INTO STUDENT REPORT CARDS:\n${trimmedText}`,
+      });
+    }
 
     if (body.additionalNotes?.trim()) {
       parts.push({
@@ -223,12 +231,16 @@ export async function POST(request: NextRequest) {
 
       if (st.subjects && typeof st.subjects === 'object') {
         Object.entries(st.subjects).forEach(([key, score]: [string, any]) => {
+          const max = parseFloat(String(score?.maxMarks ?? '0')) || 0;
+          const rawObt = parseFloat(String(score?.marksObtained ?? '0')) || 0;
+          const obt = max > 0 ? Math.min(Math.max(0, rawObt), max) : Math.max(0, rawObt);
+          if (score && typeof score === 'object' && max > 0) {
+            score.marksObtained = obt;
+          }
           if (key === 'islamiat_oral' || key === 'islamiat_written') {
             // Handled as part of islamiat_total
             return;
           }
-          const max = parseFloat(String(score?.maxMarks ?? '0')) || 0;
-          const obt = parseFloat(String(score?.marksObtained ?? '0')) || 0;
           if (max > 0) {
             calcMax += max;
             calcObt += obt;

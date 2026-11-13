@@ -321,17 +321,7 @@ export function ReportCardBack({
                     const oralMax = hasIsl ? (oral.maxMarks || String(defaultOralNum)) : '-';
                     const writtenMax = hasIsl ? (written.maxMarks || String(defaultWrittenNum)) : '-';
 
-                    const oralObtDisplay = clampDisplayObtained(oral.marksObtained, oralMax);
-                    const writtenObtDisplay = clampDisplayObtained(written.marksObtained, writtenMax);
                     const islObtDisplay = clampDisplayObtained(score.marksObtained, islTotalMaxStr);
-
-                    const oralMaxNum = parseFloat(oralMax) || 0;
-                    const oralObtNum = parseFloat(oralObtDisplay || '0') || 0;
-                    const isOralFailed = hasOral && oralMaxNum > 0 && ((oralObtNum / oralMaxNum) * 100 < passingPct);
-
-                    const writtenMaxNum = parseFloat(writtenMax) || 0;
-                    const writtenObtNum = parseFloat(writtenObtDisplay || '0') || 0;
-                    const isWrittenFailed = hasWritten && writtenMaxNum > 0 && ((writtenObtNum / writtenMaxNum) * 100 < passingPct);
 
                     const islObtNum = parseFloat(islObtDisplay || '0') || 0;
                     const isIslFailed = hasIsl && islTotalMaxNum > 0 && ((islObtNum / islTotalMaxNum) * 100 < passingPct);
@@ -344,37 +334,11 @@ export function ReportCardBack({
                             <div className="rc-islamiat-sub">
                               <div className="rc-islamiat-sub-top">
                                 <span>Nazra / Oral</span>
-                                <span className="rc-islamiat-num">
-                                  {oralMax}
-                                  {hasOral ? (
-                                    <span className={isDummy ? 'rc-dummy-num' : ''}>
-                                      {' ('}
-                                      {isOralFailed ? (
-                                        <span className="rc-failed-mark">{oralObtDisplay}</span>
-                                      ) : (
-                                        oralObtDisplay
-                                      )}
-                                      {')'}
-                                    </span>
-                                  ) : null}
-                                </span>
+                                <span className="rc-islamiat-num">{oralMax}</span>
                               </div>
                               <div className="rc-islamiat-sub-bottom">
                                 <span>Written</span>
-                                <span className="rc-islamiat-num">
-                                  {writtenMax}
-                                  {hasWritten ? (
-                                    <span className={isDummy ? 'rc-dummy-num' : ''}>
-                                      {' ('}
-                                      {isWrittenFailed ? (
-                                        <span className="rc-failed-mark">{writtenObtDisplay}</span>
-                                      ) : (
-                                        writtenObtDisplay
-                                      )}
-                                      {')'}
-                                    </span>
-                                  ) : null}
-                                </span>
+                                <span className="rc-islamiat-num">{writtenMax}</span>
                               </div>
                             </div>
                           </div>
