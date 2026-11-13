@@ -413,7 +413,8 @@ export default function ReportCardGeneratorPage() {
   const [hasUserUploadedData, setHasUserUploadedData] = useState<boolean>(false);
   const [passingPercentage, setPassingPercentage] = useState<number>(40);
   const [students, setStudents] = useState<ReportCardStudentData[]>(INITIAL_DEMO_STUDENTS);
-  const [activeTab, setActiveTab] = useState<'excel' | 'ai_scan' | 'settings'>('excel');
+  const [activeTab, setActiveTab] = useState<'excel' | 'ai_scan' | 'text_ai' | 'settings'>('excel');
+  const [rawTextData, setRawTextData] = useState<string>('');
 
   // School configuration
   const [schoolName, setSchoolName] = useState<string>('ABC Model High School');
@@ -1177,6 +1178,115 @@ export default function ReportCardGeneratorPage() {
   };
 
   // Marksheet Scanner Handler
+  const applyAiExtractedResult = (data: any) => {
+    if (data.schoolName && String(data.schoolName).trim()) {
+      setSchoolName(String(data.schoolName).trim());
+    }
+
+    const rawStudents = data.students || [];
+    if (!rawStudents.length) {
+      throw new Error('No student results could be identified in the provided data.');
+    }
+
+    const { startSuffix, endSuffix } = parseSessionYears(sessionLabel);
+
+    const converted: ReportCardStudentData[] = rawStudents.map((st: any, idx: number) => {
+      const subjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>> = {};
+      if (st.subjects) {
+        Object.entries(st.subjects).forEach(([k, v]: [string, any]) => {
+          const maxStr = String(v?.maxMarks || getSubjectMaxMarks(k as SubjectKey));
+          const rawObt = String(v?.marksObtained ?? '').trim();
+          const numObt = parseFloat(rawObt);
+          const maxNum = parseFloat(maxStr);
+          const clampedObt =
+            rawObt !== '' && rawObt !== '-' && !isNaN(numObt) && !isNaN(maxNum) && maxNum > 0
+              ? String(Math.min(Math.max(0, numObt), maxNum))
+              : String(v?.marksObtained ?? '');
+          subjects[k as SubjectKey] = {
+            maxMarks: maxStr,
+            marksObtained: clampedObt,
+          };
+        });
+        if (subjects.islamiat_total) {
+          if (!subjects.islamiat_oral) {
+            subjects.islamiat_oral = { maxMarks: getSubjectMaxMarks('islamiat_oral'), marksObtained: '' };
+          }
+          if (!subjects.islamiat_written) {
+            subjects.islamiat_written = { maxMarks: getSubjectMaxMarks('islamiat_written'), marksObtained: '' };
+          }
+        }
+      }
+
+      const stats = computeStudentStats(subjects);
+
+      return {
+        rowNumber: String(idx + 1),
+        rollNo: String(st.rollNo || idx + 1),
+        grNo: String(st.grNo || ''),
+        name: String(st.studentName || `Student ${idx + 1}`),
+        fatherName: String(st.fatherName || ''),
+        studentClass: String(st.studentClass || 'VIII'),
+        dob: String(st.dob || ''),
+        address: String(st.address || ''),
+        sessionStartYear: startSuffix,
+        sessionEndYear: endSuffix,
+        sessionFull: sessionLabel,
+        examTitle,
+        examYearSuffix,
+        schoolName: data.schoolName || schoolName,
+        subjects,
+        grandTotalMax: String(stats.grandTotalMax || st.grandTotalMax || 0),
+        grandTotalObtained: String(stats.grandTotalObtained || st.grandTotalObtained || 0),
+        percentage: String(stats.percentage || st.percentage || '0.0%'),
+        grade: String(stats.grade || st.grade || 'Fail'),
+        rank: String(st.rank || `${idx + 1}${idx === 0 ? 'st' : idx === 1 ? 'nd' : idx === 2 ? 'rd' : 'th'}`),
+        result: String(stats.result || st.result || 'FAIL'),
+        attendance: formatAttendancePercentage(st.attendance || '95%'),
+        conduct: String(st.conduct || 'Good'),
+      };
+    });
+
+    const ranked = assignRanksToStudents(converted, subjectItems, passingPercentage);
+    setStudents(ranked);
+    setHasUserUploadedData(true);
+    setSelectedRowNumbers(new Set(ranked.map((s) => s.rowNumber)));
+    setStatusMessage(`Successfully loaded ${converted.length} student records.`);
+  };
+
+  const handleAiTextParse = async () => {
+    const trimmed = rawTextData.trim();
+    if (!trimmed) {
+      setErrorMessage('Please paste or type student marks text first.');
+      return;
+    }
+
+    setIsScanning(true);
+    setStatusMessage('Organizing text data with Gemini AI...');
+    setErrorMessage('');
+
+    try {
+      const res = await fetch('/api/educational-resources/report-card-generator/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rawText: trimmed,
+          additionalNotes: `Default max marks per subject is ${defaultMaxMarks} unless explicitly specified otherwise in the text.`,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Unable to parse text data. Please check the formatting and try again.');
+      }
+
+      applyAiExtractedResult(data);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to parse text data with AI.');
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   const handleAiScanUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1206,78 +1316,7 @@ export default function ReportCardGeneratorPage() {
             throw new Error(data.message || 'Unable to scan document. Please ensure the photo or PDF is clear and well-lit.');
           }
 
-          if (data.schoolName && String(data.schoolName).trim()) {
-            setSchoolName(String(data.schoolName).trim());
-          }
-
-          const rawStudents = data.students || [];
-          if (!rawStudents.length) {
-            throw new Error('No student results could be identified in this image.');
-          }
-
-          const { startSuffix, endSuffix } = parseSessionYears(sessionLabel);
-
-          const converted: ReportCardStudentData[] = rawStudents.map((st: any, idx: number) => {
-            const subjects: Partial<Record<SubjectKey, { maxMarks: string; marksObtained: string }>> = {};
-            if (st.subjects) {
-              Object.entries(st.subjects).forEach(([k, v]: [string, any]) => {
-                const maxStr = String(v?.maxMarks || getSubjectMaxMarks(k as SubjectKey));
-                const rawObt = String(v?.marksObtained ?? '').trim();
-                const numObt = parseFloat(rawObt);
-                const maxNum = parseFloat(maxStr);
-                const clampedObt =
-                  rawObt !== '' && rawObt !== '-' && !isNaN(numObt) && !isNaN(maxNum) && maxNum > 0
-                    ? String(Math.min(Math.max(0, numObt), maxNum))
-                    : String(v?.marksObtained ?? '');
-                subjects[k as SubjectKey] = {
-                  maxMarks: maxStr,
-                  marksObtained: clampedObt,
-                };
-              });
-              if (subjects.islamiat_total) {
-                if (!subjects.islamiat_oral) {
-                  subjects.islamiat_oral = { maxMarks: getSubjectMaxMarks('islamiat_oral'), marksObtained: '' };
-                }
-                if (!subjects.islamiat_written) {
-                  subjects.islamiat_written = { maxMarks: getSubjectMaxMarks('islamiat_written'), marksObtained: '' };
-                }
-              }
-            }
-
-            const stats = computeStudentStats(subjects);
-
-            return {
-              rowNumber: String(idx + 1),
-              rollNo: String(st.rollNo || idx + 1),
-              grNo: String(st.grNo || ''),
-              name: String(st.studentName || `Student ${idx + 1}`),
-              fatherName: String(st.fatherName || ''),
-              studentClass: String(st.studentClass || 'VIII'),
-              dob: String(st.dob || ''),
-              address: String(st.address || ''),
-              sessionStartYear: startSuffix,
-              sessionEndYear: endSuffix,
-              sessionFull: sessionLabel,
-              examTitle,
-              examYearSuffix,
-              schoolName: data.schoolName || schoolName,
-              subjects,
-              grandTotalMax: String(st.grandTotalMax || stats.grandTotalMax),
-              grandTotalObtained: String(st.grandTotalObtained || stats.grandTotalObtained),
-              percentage: String(st.percentage || stats.percentage),
-              grade: String(st.grade || stats.grade),
-              rank: String(st.rank || `${idx + 1}${idx === 0 ? 'st' : idx === 1 ? 'nd' : idx === 2 ? 'rd' : 'th'}`),
-              result: String(st.result || stats.result),
-              attendance: formatAttendancePercentage(st.attendance || '95%'),
-              conduct: String(st.conduct || 'Good'),
-            };
-          });
-
-          const ranked = assignRanksToStudents(converted, subjectItems, passingPercentage);
-          setStudents(ranked);
-          setHasUserUploadedData(true);
-          setSelectedRowNumbers(new Set(ranked.map((s) => s.rowNumber)));
-          setStatusMessage(`Successfully loaded ${converted.length} student records.`);
+          applyAiExtractedResult(data);
         } catch (scanErr) {
           setErrorMessage(scanErr instanceof Error ? scanErr.message : 'Scanning failed. Please try a clearer photo.');
         } finally {
@@ -1466,6 +1505,19 @@ export default function ReportCardGeneratorPage() {
 
             <button
               type="button"
+              onClick={() => setActiveTab('text_ai')}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
+                activeTab === 'text_ai'
+                  ? 'bg-emerald-900 text-white shadow'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              <FiFileText size={15} />
+              <span>Paste Text Data (AI)</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveTab('settings')}
               className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
                 activeTab === 'settings'
@@ -1544,6 +1596,60 @@ export default function ReportCardGeneratorPage() {
                     <span>Scanning marksheet... Please wait a moment.</span>
                   </div>
                 ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          {/* TAB 2B: TEXT DATA PARSE WITH GEMINI AI */}
+          {activeTab === 'text_ai' ? (
+            <div className="space-y-4">
+              <div className="rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/40 p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Paste Text Data (Gemini AI Organizer)</h3>
+                    <p className="mt-0.5 text-xs text-slate-600">
+                      Paste any student marks list, WhatsApp message, rough notes, or copied table (English or Urdu). Gemini AI will automatically organize names, subjects, and marks into report cards.
+                    </p>
+                  </div>
+                </div>
+
+                <textarea
+                  value={rawTextData}
+                  onChange={(e) => setRawTextData(e.target.value)}
+                  rows={7}
+                  disabled={isScanning}
+                  placeholder={`Example:\nRoll 1: Ali Ahmed s/o Tariq Mehmood, Class 5 - English 78, Urdu 82, Math 65, Science 74, Islamiat 88\nRoll 2: Sara Khan d/o Kamran Khan, Class 5 - Eng 90, Urdu 85, Math 92, Sci 89, Isl 94`}
+                  className="mt-3 w-full rounded-xl border border-emerald-300 bg-white p-3 text-xs font-mono text-slate-800 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none"
+                />
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                  <span className="text-[11px] text-slate-500">
+                    Tip: You can include class, school name, or subject max marks in your text if different from {defaultMaxMarks}.
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    {rawTextData.trim() ? (
+                      <button
+                        type="button"
+                        onClick={() => setRawTextData('')}
+                        disabled={isScanning}
+                        className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition disabled:opacity-50"
+                      >
+                        Clear
+                      </button>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      onClick={handleAiTextParse}
+                      disabled={isScanning || !rawTextData.trim()}
+                      className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-bold text-white shadow hover:bg-emerald-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isScanning ? <FiRefreshCw className="animate-spin" size={15} /> : <FiFileText size={15} />}
+                      <span>{isScanning ? 'Organizing with AI...' : 'Generate Report Cards with AI'}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           ) : null}
