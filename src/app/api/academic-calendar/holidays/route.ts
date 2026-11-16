@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
 
 import type { AcademicHolidayEntry } from '@/app/lib/academicCalendar';
 
@@ -95,6 +96,15 @@ function normalizeHolidays(input: HolidayLookupPayload | null, sessionStart: str
 
 export async function POST(request: Request) {
   try {
+    const clientId = getClientIdentifier(request);
+    const rateLimit = checkRateLimit(`academic-calendar-holidays:${clientId}`, 20, 10 * 60);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: 'Too many requests. Please wait a bit and try again.' },
+        { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) } },
+      );
+    }
+
     const payload = (await request.json()) as Partial<HolidayLookupInput>;
 
     const input: HolidayLookupInput = {
