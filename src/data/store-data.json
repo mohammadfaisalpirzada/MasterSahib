@@ -2,6 +2,56 @@
   "generatedAt": "2026-10-24T09:17:00.000Z",
   "items": [
     {
+      "id": "vpn-master-windows",
+      "fileName": "VPNMaster.exe",
+      "title": "VPN Master - Windows",
+      "category": "Utilities",
+      "caption": "Free, portable VPN for Windows: US locations for US-only sites, plus 100 worldwide servers.",
+      "features": [
+        "One-click United States connect and WireGuard locations",
+        "Worldwide free servers with ping and speed",
+        "Portable single exe, no installer or account"
+      ],
+      "icon": "Monitor",
+      "version": "2.2.0",
+      "format": "EXE",
+      "sizeBytes": 9361920,
+      "modified": "2026-11-17T13:40:00.000Z",
+      "downloadUrl": "https://github.com/mohammadfaisalpirzada/VPN_Master/releases/latest/download/VPNMaster.exe",
+      "external": true,
+      "github": {
+        "owner": "mohammadfaisalpirzada",
+        "repo": "VPN_Master",
+        "tag": null,
+        "asset": "VPNMaster.exe"
+      }
+    },
+    {
+      "id": "vpn-master-android",
+      "fileName": "VPNMaster.apk",
+      "title": "VPN Master - Android",
+      "category": "Utilities",
+      "caption": "Free WireGuard VPN for Android: add US locations or connect instantly with Cloudflare WARP.",
+      "features": [
+        "United States locations via WireGuard",
+        "Fast WARP mode, no account needed",
+        "Live speed, IP and location with one-tap disconnect"
+      ],
+      "icon": "ShieldCheck",
+      "version": "2.2.0",
+      "format": "APK",
+      "sizeBytes": 4450657,
+      "modified": "2026-11-17T13:40:00.000Z",
+      "downloadUrl": "https://github.com/mohammadfaisalpirzada/VPN_Master/releases/latest/download/VPNMaster.apk",
+      "external": true,
+      "github": {
+        "owner": "mohammadfaisalpirzada",
+        "repo": "VPN_Master",
+        "tag": null,
+        "asset": "VPNMaster.apk"
+      }
+    },
+    {
       "id": "download-master",
       "fileName": "Download-Master.apk",
       "title": "Download Master",
