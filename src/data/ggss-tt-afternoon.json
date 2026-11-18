@@ -1,7 +1,7 @@
 {
   "title": "GGSS Nishtar Road — Afternoon Shift Timetable (Mon–Fri)",
   "subtitle": "Mon–Thu: 1:00 PM – 5:00 PM (4 Units) | Friday: 10:30 AM – 1:00 PM (3 Units)",
-  "updatedAt": 1794985064.388,
+  "updatedAt": 1794985877.972,
   "categories": [
     {
       "id": "master",
@@ -84,25 +84,25 @@
           "Tuesday",
           "X",
           "Biology\nSir Ahsan",
-          "PST\nSir Shoukat",
+          "Sindhi\nMs. Shahida",
           "BREAK",
           "Math\nSir Faraz",
-          "Sindhi\nMs. Shahida"
+          "PST\nSir Shoukat"
         ],
         [
           "Wednesday",
           "VI & VII (Combined)",
-          "Urdu\nSir Asif",
           "English\nSir Faisal",
+          "Sindhi\nMs. Shahida",
           "BREAK",
           "Science\nMs. Humaira",
-          "Sindhi\nMs. Shahida"
+          "Urdu\nSir Asif"
         ],
         [
           "Wednesday",
           "VIII",
-          "Math\nSir Faraz",
           "Islamiat\nSir Asif",
+          "Math\nSir Faraz",
           "BREAK",
           "Sindhi\nMs. Shahida",
           ""
@@ -111,9 +111,9 @@
           "Wednesday",
           "IX",
           "Urdu\nSir Shoukat",
-          "Chemistry\nSir Ahsan",
-          "BREAK",
           "English\nSir Faisal",
+          "BREAK",
+          "Chemistry\nSir Ahsan",
           ""
         ],
         [
@@ -155,11 +155,11 @@
         [
           "Thursday",
           "X",
-          "Science Lab\nSir Ahsan",
+          "Sindhi\nMs. Shahida",
           "English\nSir Faisal",
           "BREAK",
           "PST\nSir Shoukat",
-          "Sindhi\nMs. Shahida"
+          "Science Lab\nSir Ahsan"
         ],
         [
           "Day",
@@ -227,7 +227,7 @@
           "Sir Shoukat",
           "IX (Urdu, Islamiat), X (PST)",
           "U1 (1:00–1:45): IX Urdu\nU2 (1:45–2:30): X PST",
-          "U1 (1:00–1:45): IX Islamiat\nU2 (1:45–2:30): X PST",
+          "U1 (1:00–1:45): IX Islamiat\nU4 (4:15–5:00): X PST",
           "U1 (1:00–1:45): IX Urdu\nU2 (1:45–2:30): X PST",
           "U1 (1:00–1:45): IX Islamiat\nU3 (3:30–4:15): X PST",
           "U1 (10:30–11:15): IX Urdu\nU2 (11:15–12:00): X PST",
@@ -238,8 +238,8 @@
           "IX & X (Physics, Chem, Bio, Sci Lab)",
           "U1 (1:00–1:45): X Chemistry\nU3 (3:30–4:15): IX Physics",
           "U1 (1:00–1:45): X Biology\nU3 (3:30–4:15): IX Science Lab",
-          "U1 (1:00–1:45): X Physics\nU2 (1:45–2:30): IX Chemistry",
-          "U1 (1:00–1:45): X Science Lab\nU2 (1:45–2:30): IX Biology",
+          "U1 (1:00–1:45): X Physics\nU3 (3:30–4:15): IX Chemistry",
+          "U2 (1:45–2:30): IX Biology\nU4 (4:15–5:00): X Science Lab",
           "U1 (10:30–11:15): X Chemistry\nU2 (11:15–12:00): IX Physics",
           "10"
         ],
@@ -248,7 +248,7 @@
           "VI–X (English)",
           "U2 (1:45–2:30): VI & VII English\nU3 (3:30–4:15): X English",
           "U2 (1:45–2:30): IX English\nU3 (3:30–4:15): VIII English",
-          "U2 (1:45–2:30): VI & VII English\nU3 (3:30–4:15): IX English",
+          "U1 (1:00–1:45): VI & VII English\nU2 (1:45–2:30): IX English",
           "U2 (1:45–2:30): X English\nU3 (3:30–4:15): VI & VII English",
           "U1 (10:30–11:15): VIII English\nU3 (12:15–1:00): IX English",
           "10"
@@ -258,7 +258,7 @@
           "VI–X (Math)",
           "U1 (1:00–1:45): VIII Math\nU2 (1:45–2:30): IX Math",
           "U2 (1:45–2:30): VI & VII Math\nU3 (3:30–4:15): X Math",
-          "U1 (1:00–1:45): VIII Math\nU3 (3:30–4:15): X Math",
+          "U2 (1:45–2:30): VIII Math\nU3 (3:30–4:15): X Math",
           "U2 (1:45–2:30): VI & VII Math\nU3 (3:30–4:15): IX Math",
           "U2 (11:15–12:00): VI & VII Math\nU3 (12:15–1:00): VIII Math",
           "10"
@@ -268,7 +268,7 @@
           "VI–VIII (Urdu, Islamiat)",
           "U1 (1:00–1:45): VI & VII Urdu\nU2 (1:45–2:30): VIII Islamiat",
           "U1 (1:00–1:45): VI & VII Islamiat\nU2 (1:45–2:30): VIII Urdu",
-          "U1 (1:00–1:45): VI & VII Urdu\nU2 (1:45–2:30): VIII Islamiat",
+          "U1 (1:00–1:45): VIII Islamiat\nU4 (4:15–5:00): VI & VII Urdu",
           "U1 (1:00–1:45): VI & VII Islamiat\nU2 (1:45–2:30): VIII Urdu",
           "U1 (10:30–11:15): VI & VII Urdu\nU2 (11:15–12:00): VIII Islamiat",
           "10"
@@ -277,9 +277,9 @@
           "Ms. Shahida",
           "VI–VIII & X (Sindhi)",
           "U3 (3:30–4:15): VIII Sindhi\nU4 (4:15–5:00): VI & VII Sindhi",
-          "U3 (3:30–4:15): VI & VII Sindhi\nU4 (4:15–5:00): X Sindhi",
-          "U3 (3:30–4:15): VIII Sindhi\nU4 (4:15–5:00): VI & VII Sindhi",
-          "U3 (3:30–4:15): VIII Sindhi\nU4 (4:15–5:00): X Sindhi",
+          "U2 (1:45–2:30): X Sindhi\nU3 (3:30–4:15): VI & VII Sindhi",
+          "U2 (1:45–2:30): VI & VII Sindhi\nU3 (3:30–4:15): VIII Sindhi",
+          "U1 (1:00–1:45): X Sindhi\nU3 (3:30–4:15): VIII Sindhi",
           "U3 (12:15–1:00): X Sindhi",
           "9"
         ],
@@ -364,11 +364,11 @@
         ],
         [
           "Wednesday",
-          "Urdu\nSir Asif",
           "English\nSir Faisal",
+          "Sindhi\nMs. Shahida",
           "BREAK",
           "Science\nMs. Humaira",
-          "Sindhi\nMs. Shahida"
+          "Urdu\nSir Asif"
         ],
         [
           "Thursday",
@@ -419,8 +419,8 @@
         ],
         [
           "Wednesday",
-          "Math\nSir Faraz",
           "Islamiat\nSir Asif",
+          "Math\nSir Faraz",
           "BREAK",
           "Sindhi\nMs. Shahida",
           ""
@@ -475,9 +475,9 @@
         [
           "Wednesday",
           "Urdu\nSir Shoukat",
-          "Chemistry\nSir Ahsan",
-          "BREAK",
           "English\nSir Faisal",
+          "BREAK",
+          "Chemistry\nSir Ahsan",
           ""
         ],
         [
@@ -522,10 +522,10 @@
         [
           "Tuesday",
           "Biology\nSir Ahsan",
-          "PST\nSir Shoukat",
+          "Sindhi\nMs. Shahida",
           "BREAK",
           "Math\nSir Faraz",
-          "Sindhi\nMs. Shahida"
+          "PST\nSir Shoukat"
         ],
         [
           "Wednesday",
@@ -537,11 +537,11 @@
         ],
         [
           "Thursday",
-          "Science Lab\nSir Ahsan",
+          "Sindhi\nMs. Shahida",
           "English\nSir Faisal",
           "BREAK",
           "PST\nSir Shoukat",
-          "Sindhi\nMs. Shahida"
+          "Science Lab\nSir Ahsan"
         ],
         [
           "Friday",
