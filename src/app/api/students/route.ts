@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { hasAdminPortalAccess } from '@/app/lib/adminPortalAccess';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    if (!(await hasAdminPortalAccess())) {
+      return NextResponse.json({ success: false, error: 'Admin access only.' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const school = searchParams.get('school');
     const studentClass = searchParams.get('class');

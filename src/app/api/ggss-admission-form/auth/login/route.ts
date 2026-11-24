@@ -21,7 +21,7 @@ const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
 export async function POST(request: Request) {
   try {
     const clientId = getClientIdentifier(request);
-    const rateLimit = checkRateLimit(`login:admission-form:${clientId}`, 10, 10 * 60);
+    const rateLimit = await checkRateLimit(`login:admission-form:${clientId}`, 10, 10 * 60);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { success: false, message: 'Too many attempts. Please try again later.' },

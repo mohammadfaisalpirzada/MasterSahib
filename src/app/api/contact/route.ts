@@ -1,3 +1,4 @@
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
 import { NextResponse } from 'next/server';
 
 import { saveContactMessage } from '@/app/lib/contactMessages';
@@ -5,6 +6,15 @@ import { saveContactMessage } from '@/app/lib/contactMessages';
 const sanitize = (value: unknown) => String(value ?? '').trim();
 
 export async function POST(request: Request) {
+  {
+    const rl = await checkRateLimit(`post:contact:${getClientIdentifier(request)}`, 5, 600);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many requests. Please try again later.', message: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } },
+      );
+    }
+  }
   try {
     const body = (await request.json()) as {
       name?: string;

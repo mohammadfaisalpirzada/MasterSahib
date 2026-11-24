@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { signIn, useSession } from 'next-auth/react';
 import { FiPrinter, FiEye, FiEdit2, FiX } from 'react-icons/fi';
 import { FaFilePdf } from 'react-icons/fa';
 import QRCode from 'qrcode';
@@ -16,6 +17,11 @@ import {
 import { fileToCompressedJpegBase64 } from '../imageUtils';
 
 type AdmissionRecord = Record<string, string>;
+
+// Only this Google account gets full rights (list, edit, print, PDF).
+// Everyone else who logs in with a school password can only VIEW a record
+// opened from a scanned QR code. The server enforces the same rule.
+const ADMISSION_OWNER_EMAIL = 'mohammadfaisalpirzada@gmail.com';
 
 const LIST_COLUMNS: Array<{ key: string; label: string }> = [
   { key: 'sr_no', label: 'Sr No.' },
@@ -109,8 +115,18 @@ const parseJsonResponse = async (response: Response) => {
 };
 
 export default function AdmissionRecordsPage() {
-  const [authLoading, setAuthLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const { data: googleSession, status: googleStatus } = useSession();
+  const isOwner =
+    googleStatus === 'authenticated' &&
+    googleSession?.user?.email?.trim().toLowerCase() === ADMISSION_OWNER_EMAIL;
+
+  // Viewer access is granted ONLY by entering a password on this page for the
+  // signed QR link that was scanned — never by an old cookie from another page.
+  const [passwordAuthenticated, setPasswordAuthenticated] = useState(false);
+  const authLoading = googleStatus === 'loading';
+  const authenticated = isOwner || passwordAuthenticated;
+  const [qrTarget, setQrTarget] = useState('');
+  const [qrSig, setQrSig] = useState('');
 
   const [records, setRecords] = useState<AdmissionRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -156,16 +172,16 @@ export default function AdmissionRecordsPage() {
     setIsLoggingIn(true);
     setLoginError('');
     try {
-      const response = await fetch('/api/staff-records/admin/auth/login', {
+      const response = await fetch('/api/ggss-admission-form/records/viewer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: adminPassword }),
+        body: JSON.stringify({ password: adminPassword, target: qrTarget, sig: qrSig }),
       });
       const data = await parseJsonResponse(response);
       if (!response.ok || !data.success) {
         throw new Error(data.message || 'Incorrect password.');
       }
-      setAuthenticated(true);
+      setPasswordAuthenticated(true);
       setAdminPassword('');
     } catch (err) {
       setLoginError(err instanceof Error ? err.message : 'Login failed.');
@@ -175,18 +191,11 @@ export default function AdmissionRecordsPage() {
   };
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const response = await fetch('/api/staff-records/admin/auth/session', { cache: 'no-store' });
-        const data = await parseJsonResponse(response);
-        setAuthenticated(Boolean(data.authenticated));
-      } catch {
-        setAuthenticated(false);
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-    void checkSession();
+    const params = new URLSearchParams(window.location.search);
+    setQrTarget((params.get('verify') || '').trim());
+    setQrSig((params.get('s') || '').trim());
+    // Drop any viewer session left over from an earlier visit — every scan must log in again.
+    void fetch('/api/ggss-admission-form/records/viewer', { method: 'DELETE' }).catch(() => undefined);
   }, []);
 
   const fetchRecords = async () => {
@@ -206,10 +215,11 @@ export default function AdmissionRecordsPage() {
     }
   };
 
+  // Full list is owner-only (server returns 403 for everyone else anyway).
   useEffect(() => {
-    if (authenticated) void fetchRecords();
+    if (isOwner) void fetchRecords();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated]);
+  }, [isOwner]);
 
   // A form's printed "Scan to verify" QR code links here as
   // ?verify=<row_number> — once the admin is logged in, jump straight to
@@ -223,6 +233,7 @@ export default function AdmissionRecordsPage() {
 
     const url = new URL(window.location.href);
     url.searchParams.delete('verify');
+    url.searchParams.delete('s');
     window.history.replaceState({}, '', url.toString());
 
     (async () => {
@@ -282,6 +293,13 @@ export default function AdmissionRecordsPage() {
   };
 
   const closeViewModal = () => {
+    if (!isOwner && passwordAuthenticated) {
+      // Viewer is done — end the session so the record can't be reopened without logging in again.
+      void fetch('/api/ggss-admission-form/records/viewer', { method: 'DELETE' }).catch(() => undefined);
+      setPasswordAuthenticated(false);
+      setQrTarget('');
+      setQrSig('');
+    }
     setViewRecord(null);
     setViewLoading(false);
     setVerifiedViaQr(false);
@@ -289,6 +307,7 @@ export default function AdmissionRecordsPage() {
   };
 
   const openEditModal = async (rowNumber: string) => {
+    if (!isOwner) return;
     closeViewModal();
     setEditRecord(null);
     setEditError('');
@@ -343,7 +362,7 @@ export default function AdmissionRecordsPage() {
   };
 
   const handleEditSave = async () => {
-    if (!editRecord) return;
+    if (!isOwner || !editRecord) return;
     setEditSaving(true);
     setEditSaveMessage('');
     setEditError('');
@@ -367,11 +386,12 @@ export default function AdmissionRecordsPage() {
   };
 
   const handlePrintRecord = async (record: AdmissionRecord) => {
+    if (!isOwner) return;
     const previousTitle = document.title;
     const studentName = (record.student_name || 'Student').trim();
     document.title = `${studentName} - Admission Form`;
 
-    const verifyUrl = buildAdmissionVerifyUrl(record.row_number, record.sr_no);
+    const verifyUrl = buildAdmissionVerifyUrl(record.row_number, record.sr_no, record.verify_sig);
     let qrDataUrl = '';
     if (verifyUrl) {
       try {
@@ -394,11 +414,12 @@ export default function AdmissionRecordsPage() {
   };
 
   const handleDownloadPdf = async (record: AdmissionRecord) => {
+    if (!isOwner) return;
     const targetEl = printContainerRef.current || offscreenPrintRef.current;
     if (!targetEl) return;
     setDownloadingPdf(true);
     try {
-      const verifyUrl = buildAdmissionVerifyUrl(record.row_number, record.sr_no);
+      const verifyUrl = buildAdmissionVerifyUrl(record.row_number, record.sr_no, record.verify_sig);
       let qrDataUrl = '';
       if (verifyUrl) {
         try {
@@ -419,6 +440,7 @@ export default function AdmissionRecordsPage() {
   };
 
   const handleRowPrint = async (record: AdmissionRecord) => {
+    if (!isOwner) return;
     setPrintingRowId(record.row_number);
     try {
       const full = await ensureFullRecord(record);
@@ -429,11 +451,12 @@ export default function AdmissionRecordsPage() {
   };
 
   const handleRowDownloadPdf = async (record: AdmissionRecord) => {
+    if (!isOwner) return;
     setDownloadingRowId(record.row_number);
     try {
       const full = await ensureFullRecord(record);
       setOffscreenRecord(full);
-      const verifyUrl = buildAdmissionVerifyUrl(full.row_number, full.sr_no);
+      const verifyUrl = buildAdmissionVerifyUrl(full.row_number, full.sr_no, full.verify_sig);
       let qrDataUrl = '';
       if (verifyUrl) {
         try {
@@ -466,50 +489,47 @@ export default function AdmissionRecordsPage() {
   }
 
   if (!authenticated) {
+    const canUsePassword = Boolean(qrTarget && qrSig);
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
         <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4 text-center">
             <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1a3a6b]/10 text-[#1a3a6b]">
-              <span className="text-2xl">🔐</span>
+              <span className="text-2xl">🔒</span>
             </div>
-            <p className="text-base font-bold text-slate-900">Admin Access Required</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Enter Admin Password to verify and view student admission records.
-            </p>
+            <p className="text-base font-bold text-slate-900">Login Required</p>
           </div>
 
-          <form onSubmit={handleAdminLogin} className="space-y-3">
-            <div>
+          {canUsePassword ? (
+            <form onSubmit={handleAdminLogin} className="mb-3 space-y-3">
               <input
                 type="password"
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="Enter Admin Password"
+                placeholder="Password"
                 className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#1a3a6b]"
                 autoFocus
               />
-            </div>
-            {loginError ? (
-              <p className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700">{loginError}</p>
-            ) : null}
-            <button
-              type="submit"
-              disabled={isLoggingIn}
-              className="w-full rounded-xl bg-[#1a3a6b] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#132c52] disabled:opacity-60"
-            >
-              {isLoggingIn ? 'Verifying...' : 'Login & View Record'}
-            </button>
-          </form>
+              {loginError ? (
+                <p className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700">{loginError}</p>
+              ) : null}
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="w-full rounded-xl bg-[#1a3a6b] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#132c52] disabled:opacity-60"
+              >
+                {isLoggingIn ? 'Verifying...' : 'View Record'}
+              </button>
+            </form>
+          ) : null}
 
-          <div className="mt-4 text-center">
-            <Link
-              href="/ggss-nishtar-road/admin"
-              className="text-xs text-slate-500 transition hover:text-slate-800"
-            >
-              ← Back to Admin Dashboard
-            </Link>
-          </div>
+          <button
+            type="button"
+            onClick={() => void signIn('google', { callbackUrl: window.location.href }, { prompt: 'select_account' })}
+            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-800 transition hover:bg-slate-50"
+          >
+            Sign in with Google
+          </button>
         </div>
       </main>
     );
@@ -530,6 +550,8 @@ export default function AdmissionRecordsPage() {
             </button>
           </div>
         ) : null}
+        {isOwner ? (
+        <>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <Link href="/ggss-nishtar-road/admin" className="text-sm font-semibold text-[#1a3a6b] transition hover:underline">
@@ -647,6 +669,12 @@ export default function AdmissionRecordsPage() {
             </tbody>
           </table>
         </div>
+        </>
+        ) : (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-600 shadow-sm">
+            {viewLoading ? 'Loading...' : '🔒'}
+          </div>
+        )}
       </div>
 
       {/* Proper Official Admission Form View Modal */}
@@ -672,6 +700,13 @@ export default function AdmissionRecordsPage() {
 
               {/* Action Icons (no bulky text) */}
               <div className="flex items-center gap-2">
+                {!isOwner ? (
+                  <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">
+                    🔒 View only
+                  </span>
+                ) : null}
+                {isOwner ? (
+                <>
                 {/* Print Icon */}
                 <button
                   type="button"
@@ -709,6 +744,8 @@ export default function AdmissionRecordsPage() {
                 >
                   <FiEdit2 className="h-4 w-4" />
                 </button>
+                </>
+                ) : null}
 
                 {/* Close Icon */}
                 <button
@@ -729,7 +766,7 @@ export default function AdmissionRecordsPage() {
                 ref={printContainerRef}
                 id="admission-a4-form"
                 data={normalizeRecordToPrintData(viewRecord)}
-                verifyUrl={buildAdmissionVerifyUrl(viewRecord.row_number)}
+                verifyUrl={buildAdmissionVerifyUrl(viewRecord.row_number, undefined, viewRecord.verify_sig)}
               />
             </div>
           </div>
@@ -737,7 +774,7 @@ export default function AdmissionRecordsPage() {
       ) : null}
 
       {/* Edit Record Modal */}
-      {editRecord ? (
+      {isOwner && editRecord ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 px-4 py-8">
           <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
@@ -852,7 +889,7 @@ export default function AdmissionRecordsPage() {
       ) : null}
 
       {/* Offscreen container for direct row download */}
-      {offscreenRecord ? (
+      {isOwner && offscreenRecord ? (
         <div
           style={{
             position: 'fixed',
@@ -866,17 +903,17 @@ export default function AdmissionRecordsPage() {
           <AdmissionFormPrintView
             ref={offscreenPrintRef}
             data={normalizeRecordToPrintData(offscreenRecord)}
-            verifyUrl={buildAdmissionVerifyUrl(offscreenRecord.row_number)}
+            verifyUrl={buildAdmissionVerifyUrl(offscreenRecord.row_number, undefined, offscreenRecord.verify_sig)}
           />
         </div>
       ) : null}
 
       {/* Dedicated Top-Level Print Target (Outside any modal or scroll container) */}
       <div id="records-standalone-print-root">
-        {printRecordState ? (
+        {isOwner && printRecordState ? (
           <AdmissionFormPrintView
             data={normalizeRecordToPrintData(printRecordState)}
-            verifyUrl={buildAdmissionVerifyUrl(printRecordState.row_number, printRecordState.sr_no)}
+            verifyUrl={buildAdmissionVerifyUrl(printRecordState.row_number, printRecordState.sr_no, printRecordState.verify_sig)}
             qrCodeDataUrl={printQrDataUrl || undefined}
           />
         ) : null}

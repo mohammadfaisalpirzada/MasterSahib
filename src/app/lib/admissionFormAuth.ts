@@ -84,3 +84,66 @@ export const verifyAdmissionFormSessionToken = (token: string): AdmissionFormSes
     return null;
   }
 };
+
+// ---------------------------------------------------------------------------
+// QR verification links + single-record viewer sessions
+// ---------------------------------------------------------------------------
+// Every printed QR link carries a server-made signature (?verify=<target>&s=<sig>).
+// Changing the row/serial number in the link breaks the signature, so a viewer
+// can never open a different record by editing the URL.
+
+export const ADMISSION_RECORD_VIEWER_COOKIE = 'ggss_admission_record_viewer';
+export const ADMISSION_RECORD_VIEWER_COOKIE_PATH = '/api/ggss-admission-form/records';
+export const ADMISSION_RECORD_VIEWER_TTL_SECONDS = 60 * 10; // 10 minutes, then login again
+
+type AdmissionRecordViewerPayload = {
+  role: 'admission-record-viewer';
+  target: string;
+  iat: number;
+  exp: number;
+};
+
+const safeEqual = (a: string, b: string) => {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  return left.length === right.length && timingSafeEqual(left, right);
+};
+
+export const signAdmissionVerifyTarget = (target: string) =>
+  sign(`admission-verify:v1:${String(target).trim()}`).slice(0, 22);
+
+export const isValidAdmissionVerifySignature = (target: string, signature: string) => {
+  const cleanTarget = String(target ?? '').trim();
+  const cleanSig = String(signature ?? '').trim();
+  if (!cleanTarget || !cleanSig) return false;
+  try {
+    return safeEqual(signAdmissionVerifyTarget(cleanTarget), cleanSig);
+  } catch {
+    return false;
+  }
+};
+
+export const createAdmissionRecordViewerToken = (target: string) => {
+  const now = Math.floor(Date.now() / 1000);
+  const payload: AdmissionRecordViewerPayload = {
+    role: 'admission-record-viewer',
+    target: String(target).trim(),
+    iat: now,
+    exp: now + ADMISSION_RECORD_VIEWER_TTL_SECONDS,
+  };
+  const payloadPart = encode(JSON.stringify(payload));
+  return `${payloadPart}.${sign(payloadPart)}`;
+};
+
+export const verifyAdmissionRecordViewerToken = (token: string): AdmissionRecordViewerPayload | null => {
+  try {
+    const [payloadPart, signaturePart] = token.split('.');
+    if (!payloadPart || !signaturePart || !safeEqual(sign(payloadPart), signaturePart)) return null;
+    const payload = JSON.parse(decode(payloadPart)) as AdmissionRecordViewerPayload;
+    if (payload.role !== 'admission-record-viewer' || !payload.target) return null;
+    if (!payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+};

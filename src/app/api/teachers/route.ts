@@ -1,3 +1,4 @@
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
 import { NextResponse } from 'next/server';
 import { getAllTeachers, addTeacher, updateTeacher, ensureSheetExists } from '@/lib/district-east-sheets';
 
@@ -36,6 +37,15 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  {
+    const rl = await checkRateLimit(`post:teachers:${getClientIdentifier(req)}`, 20, 600);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many requests. Please try again later.', message: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } },
+      );
+    }
+  }
   try {
     const body = await req.json();
     const isUpdate = Boolean(body.id);

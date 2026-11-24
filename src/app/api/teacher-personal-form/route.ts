@@ -1,3 +1,4 @@
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getTeachersDropdownList,
@@ -26,6 +27,15 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  {
+    const rl = await checkRateLimit(`post:teacher-personal-form:${getClientIdentifier(req)}`, 15, 600);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many requests. Please try again later.', message: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } },
+      );
+    }
+  }
   try {
     const body = await req.json();
     const { action, rowNumber, personalNumber, viewToken } = body;

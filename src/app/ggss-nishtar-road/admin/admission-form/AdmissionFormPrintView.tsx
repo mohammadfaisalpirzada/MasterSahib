@@ -107,13 +107,16 @@ export const buildAdmissionPdfFileName = (studentName?: string): string => {
 // scanning the printed form's QR code opens this record straight in the
 // records screen (login already required there) so staff can confirm
 // the printed copy matches what's actually on file.
-export const buildAdmissionVerifyUrl = (rowNumber?: string, srNo?: string) => {
+// `sig` is a server-made signature for the target (row no. / serial no.). Without
+// it, or if anyone edits the link, only the administrator's Google login can open it.
+export const buildAdmissionVerifyUrl = (rowNumber?: string, srNo?: string, sig?: string) => {
   if (typeof window === 'undefined') return undefined;
   const target = rowNumber ? String(rowNumber).trim() : srNo ? String(srNo).trim() : '';
   if (!target) {
     return `${window.location.origin}/ggss-nishtar-road/admin/admission-form/records`;
   }
-  return `${window.location.origin}/ggss-nishtar-road/admin/admission-form/records?verify=${encodeURIComponent(target)}`;
+  const sigPart = sig ? `&s=${encodeURIComponent(sig)}` : '';
+  return `${window.location.origin}/ggss-nishtar-road/admin/admission-form/records?verify=${encodeURIComponent(target)}${sigPart}`;
 };
 
 export const downloadBlob = (blob: Blob, fileName: string) => {

@@ -117,7 +117,7 @@ function normalizeResume(input: GeneratedResumeContent | null): GeneratedResumeC
 export async function POST(request: Request) {
   try {
     const clientId = getClientIdentifier(request);
-    const rateLimit = checkRateLimit(`resume-builder-generate:${clientId}`, 20, 10 * 60);
+    const rateLimit = await checkRateLimit(`resume-builder-generate:${clientId}`, 20, 10 * 60);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { success: false, message: 'Too many requests. Please wait a bit and try again.' },

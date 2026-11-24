@@ -1,3 +1,4 @@
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
 import { NextResponse } from 'next/server';
 import {
   NAME_KEY,
@@ -49,6 +50,15 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  {
+    const rl = await checkRateLimit(`post:staff-records:${getClientIdentifier(request)}`, 20, 600);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many requests. Please try again later.', message: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } },
+      );
+    }
+  }
   try {
     const body = (await request.json()) as { rowId?: string; pid?: string };
     const rowNumber = Number(body.rowId || 0);
