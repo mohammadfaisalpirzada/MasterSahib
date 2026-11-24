@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { hasAdminPortalAccess } from '@/app/lib/adminPortalAccess';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    if (!(await hasAdminPortalAccess())) {
+      return NextResponse.json({ success: false, error: 'Admin access only.' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const session = searchParams.get('session') || '2026-2027';
     const examTitle = searchParams.get('term') || searchParams.get('examTitle');
@@ -66,6 +71,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await hasAdminPortalAccess())) {
+      return NextResponse.json({ success: false, error: 'Admin access only.' }, { status: 401 });
+    }
+
     const body = await req.json();
     const records = Array.isArray(body) ? body : [body];
 

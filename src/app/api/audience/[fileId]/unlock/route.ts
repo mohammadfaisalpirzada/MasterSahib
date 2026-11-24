@@ -17,7 +17,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ fil
   // Audience PINs are short (often a handful of digits), so this endpoint is
   // directly brute-forceable without a limit - rate-limit by IP+fileId.
   const clientId = getClientIdentifier(request);
-  const rateLimit = checkRateLimit(`audience-unlock:${fileId}:${clientId}`, 10, 10 * 60);
+  const rateLimit = await checkRateLimit(`audience-unlock:${fileId}:${clientId}`, 10, 10 * 60);
   if (!rateLimit.allowed) {
     return NextResponse.json(
       { error: 'Too many attempts. Please try again later.' },

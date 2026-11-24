@@ -1,3 +1,5 @@
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
+import { timingSafeEqual } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { appendQuizRowToSheet, deleteSheetRow, getQuizRowsFromSheet, ensureSheetTabExists, getQuizSheetIdByTitle, updateQuizRowInSheet } from '@/app/lib/googleSheets';
 import { PID_KEY, getStaffSheetRows, rowsToRecords } from '@/app/lib/staffRecords';
@@ -75,7 +77,9 @@ const toQuotedSheetName = (sheetName: string) => {
 
 const validatePassword = async (className: string, password: string): Promise<boolean> => {
   if (className.toLowerCase() === 'admin') {
-    return password === getAdminPassword();
+    const expected = Buffer.from(getAdminPassword());
+    const provided = Buffer.from(password);
+    return expected.length === provided.length && timingSafeEqual(expected, provided);
   }
 
   // Any class: the "password" field is now the teacher's own staff PID.
@@ -193,6 +197,15 @@ const findRowByClass = (rows: string[][], classKey: string, classIndex: number) 
 };
 
 export async function POST(request: NextRequest) {
+  {
+    const rl = await checkRateLimit(`post:ggss-student-record:${getClientIdentifier(request)}`, 15, 600);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many requests. Please try again later.', message: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } },
+      );
+    }
+  }
   try {
     const body = (await request.json()) as {
       action?: string;

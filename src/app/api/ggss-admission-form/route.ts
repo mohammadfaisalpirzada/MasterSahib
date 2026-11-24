@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { STAFF_ADMIN_SESSION_COOKIE, verifyStaffAdminSessionToken } from '@/app/lib/staffAdminAuth';
-import { ADMISSION_FORM_SESSION_COOKIE, verifyAdmissionFormSessionToken } from '@/app/lib/admissionFormAuth';
+import { ADMISSION_FORM_SESSION_COOKIE, signAdmissionVerifyTarget, verifyAdmissionFormSessionToken } from '@/app/lib/admissionFormAuth';
 import { appendQuizRowToSheet, ensureSheetTabExists, getQuizRowsFromSheet, updateQuizRowInSheet } from '@/app/lib/googleSheets';
 import {
   ADMISSION_TAB_NAME,
@@ -203,11 +203,17 @@ export async function POST(request: NextRequest) {
     const match = updatedRange.match(/!A(\d+)/i) || updatedRange.match(/(\d+):[A-Z]+(\d+)/i);
     const rowNumber = match ? match[1] : undefined;
 
+    // Signature for the printed QR link — same target rule as buildAdmissionVerifyUrl
+    // (row number if known, otherwise serial number).
+    const verifyTarget = rowNumber || String(values.sr_no ?? '').trim();
+    const verifySig = verifyTarget ? signAdmissionVerifyTarget(verifyTarget) : undefined;
+
     return NextResponse.json({
       success: true,
       submittedAt,
       rowNumber,
       srNo: values.sr_no || undefined,
+      verifySig,
     });
   } catch (error) {
     return NextResponse.json(

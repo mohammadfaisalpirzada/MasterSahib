@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const clientId = getClientIdentifier(request);
-    const rateLimit = checkRateLimit(`login:staff-admin:${clientId}`, 10, 10 * 60);
+    const rateLimit = await checkRateLimit(`login:staff-admin:${clientId}`, 10, 10 * 60);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { success: false, message: 'Too many attempts. Please try again later.' },

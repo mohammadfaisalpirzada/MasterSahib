@@ -1,3 +1,4 @@
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
 import { NextResponse } from 'next/server';
 
 type UsageRecord = {
@@ -160,6 +161,15 @@ function normalizePlan(input: LessonPlan | null): LessonPlan | null {
 }
 
 export async function POST(request: Request) {
+  {
+    const rl = await checkRateLimit(`post:educational-resources-automatic-lesson-plan:${getClientIdentifier(request)}`, 10, 600);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many requests. Please try again later.', message: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } },
+      );
+    }
+  }
   try {
     const apiKey = pickApiKey();
     if (!apiKey) {

@@ -1,3 +1,4 @@
+import { checkRateLimit, getClientIdentifier } from '@/app/lib/rateLimit';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,6 +17,15 @@ function verifyPassword(input: string, expected: string): boolean {
 }
 
 export async function POST(request: Request) {
+  {
+    const rl = await checkRateLimit(`post:ggss-tt-afternoon:${getClientIdentifier(request)}`, 8, 600);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many requests. Please try again later.', message: 'Too many requests. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSeconds) } },
+      );
+    }
+  }
   try {
     const body = (await request.json().catch(() => ({}))) as { password?: unknown };
     const password = typeof body.password === 'string' ? body.password.trim() : '';

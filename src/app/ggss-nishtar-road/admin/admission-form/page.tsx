@@ -933,7 +933,7 @@ export default function AdmissionFormPage() {
       try {
         const rowNumber = data.rowNumber ? String(data.rowNumber) : undefined;
         const srNo = data.srNo || form.srNo;
-        const verifyUrl = buildAdmissionVerifyUrl(rowNumber, srNo);
+        const verifyUrl = buildAdmissionVerifyUrl(rowNumber, srNo, data.verifySig ? String(data.verifySig) : undefined);
 
         let finalQrDataUrl = savedQrCodeDataUrl;
         if (verifyUrl) {

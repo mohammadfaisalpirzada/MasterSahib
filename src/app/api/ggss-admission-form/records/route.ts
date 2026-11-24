@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { STAFF_ADMIN_SESSION_COOKIE, verifyStaffAdminSessionToken } from '@/app/lib/staffAdminAuth';
+import { getViewerAllowedTarget, isAdmissionOwner } from '@/app/lib/admissionOwnerAuth';
+import { signAdmissionVerifyTarget } from '@/app/lib/admissionFormAuth';
 import { ensureSheetTabExists, getQuizRowsFromSheet, updateQuizRowInSheet } from '@/app/lib/googleSheets';
 import {
   ADMISSION_TAB_NAME,
@@ -13,26 +13,38 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Deliberately admin-only — the admission-desk password (used by front-desk
-// staff to fill new forms) does NOT grant access here. Front-desk staff can
-// add admissions, but only the school admin can browse/edit the full list.
-const isFullAdmin = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(STAFF_ADMIN_SESSION_COOKIE)?.value;
-  return Boolean(token && verifyStaffAdminSessionToken(token));
-};
+// Access model:
+// - Full list, edit (PATCH)  -> ONLY the owner's Google account (isAdmissionOwner).
+// - Single record (?row=)    -> a viewer who opened a SIGNED QR link and unlocked it
+//                               with a school password on the records page. Only
+//                               that exact record, view only, for 10 minutes.
+// - Anything else            -> nothing (old cookies from other pages don't count).
 
 export async function GET(request: NextRequest) {
   try {
-    if (!(await isFullAdmin())) {
-      return NextResponse.json({ success: false, message: 'Admin access only.' }, { status: 403 });
+    const owner = await isAdmissionOwner();
+    const { searchParams } = new URL(request.url);
+    const singleRowParam = searchParams.get('row');
+
+    if (!owner) {
+      const allowedTarget = await getViewerAllowedTarget();
+      if (!allowedTarget) {
+        return NextResponse.json({ success: false, message: 'Please login to view this record.' }, { status: 401 });
+      }
+      // A viewer may only ever read the one record their signed QR link named.
+      if (!singleRowParam || singleRowParam.trim() !== allowedTarget) {
+        return NextResponse.json({ success: false, message: 'You can only view the record from the QR code you scanned.' }, { status: 403 });
+      }
     }
+
+    // Owner-only extra: the signature needed to print a tamper-proof QR link.
+    const withVerifySig = (record: Record<string, string>) => {
+      if (owner && record.row_number) record.verify_sig = signAdmissionVerifyTarget(record.row_number);
+      return record;
+    };
 
     const spreadsheetId = resolveAdmissionSpreadsheetId();
     await ensureSheetTabExists(ADMISSION_TAB_NAME, [...ADMISSION_HEADER_ROW], { spreadsheetId });
-
-    const { searchParams } = new URL(request.url);
-    const singleRowParam = searchParams.get('row');
 
     if (singleRowParam) {
       // Single-record detail fetch — includes picture_base64, used by the view/edit screen.
@@ -48,7 +60,7 @@ export async function GET(request: NextRequest) {
           ADMISSION_HEADER_ROW.forEach((key, colIndex) => {
             record[key] = String(row[colIndex] ?? '').trim();
           });
-          return NextResponse.json({ success: true, record });
+          return NextResponse.json({ success: true, record: withVerifySig(record) });
         }
       }
 
@@ -69,12 +81,17 @@ export async function GET(request: NextRequest) {
             headerRow.forEach((key, colIndex) => {
               record[key] = String(row[colIndex] ?? '').trim();
             });
-            return NextResponse.json({ success: true, record });
+            return NextResponse.json({ success: true, record: withVerifySig(record) });
           }
         }
       }
 
       return NextResponse.json({ success: false, message: 'Record not found.' }, { status: 404 });
+    }
+
+    // Full list is owner-only.
+    if (!owner) {
+      return NextResponse.json({ success: false, message: 'Only the administrator can browse all records.' }, { status: 403 });
     }
 
     const rows = await getQuizRowsFromSheet({
@@ -95,7 +112,8 @@ export async function GET(request: NextRequest) {
         });
         return record;
       })
-      .filter((record) => record.student_name);
+      .filter((record) => record.student_name)
+      .map(withVerifySig);
 
     return NextResponse.json({ success: true, records });
   } catch (error) {
@@ -108,8 +126,8 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    if (!(await isFullAdmin())) {
-      return NextResponse.json({ success: false, message: 'Admin access only.' }, { status: 403 });
+    if (!(await isAdmissionOwner())) {
+      return NextResponse.json({ success: false, message: 'Only the administrator can edit records.' }, { status: 403 });
     }
 
     const body = (await request.json()) as { rowNumber?: number | string; values?: Record<string, string> };

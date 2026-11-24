@@ -121,7 +121,7 @@ OUTPUT FORMAT (STRICT JSON ONLY):
 export async function POST(request: NextRequest) {
   try {
     const clientId = getClientIdentifier(request);
-    const rateLimit = checkRateLimit(`report-card-scan:${clientId}`, 20, 10 * 60);
+    const rateLimit = await checkRateLimit(`report-card-scan:${clientId}`, 20, 10 * 60);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { success: false, message: 'Too many scan requests. Please wait a bit and try again.' },

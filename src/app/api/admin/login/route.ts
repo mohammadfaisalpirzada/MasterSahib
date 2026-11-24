@@ -12,7 +12,7 @@ const safeEqual = (a: string, b: string) => {
 
 export async function POST(req: Request) {
   const clientId = getClientIdentifier(req);
-  const rateLimit = checkRateLimit(`login:admin:${clientId}`, 10, 10 * 60);
+  const rateLimit = await checkRateLimit(`login:admin:${clientId}`, 10, 10 * 60);
   if (!rateLimit.allowed) {
     return NextResponse.json(
       { error: 'Too many attempts. Please try again later.' },
