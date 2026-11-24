@@ -105,10 +105,12 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    document.body.style.overflow = isMobileOpen ? 'hidden' : 'auto';
+    // '' (not 'auto') restores the stylesheet value. 'auto' turned <body> into its own scroll box,
+    // which silently broke every sticky element on the site (this menu bar, reader toolbars).
+    document.body.style.overflow = isMobileOpen ? 'hidden' : '';
 
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
     };
   }, [isMobileOpen]);
 
@@ -179,6 +181,7 @@ export default function Navbar() {
   return (
     <header
       ref={headerRef}
+      data-site-header
       className={`sticky top-0 z-40 w-full border-b bg-gradient-to-r ${theme.navGradient} ${
         isLightNav
           ? 'border-white/60 text-slate-900'
