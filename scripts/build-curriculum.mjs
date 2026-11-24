@@ -9,7 +9,12 @@ const OUTPUT_FILE = path.join(process.cwd(), 'src', 'data', 'curriculum-data.jso
 fs.mkdirSync(path.dirname(OUTPUT_FILE), { recursive: true });
 
 function sanitizeKey(str) {
-  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const key = str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  if (key) return key;
+  // Urdu / Sindhi names have no a-z letters: use a short stable hash so ids stay unique.
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+  return 'u' + (h >>> 0).toString(36);
 }
 
 function detectResourceType(fileName) {
