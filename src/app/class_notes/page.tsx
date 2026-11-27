@@ -14,6 +14,7 @@ import {
 
 import curriculumData from '@/data/curriculum-data.json';
 import { normalizeCurriculum, isPlanningChapter, type Chapter, type ClassItem } from './_lib/normalize';
+import { getChapterVideo } from './_lib/chapterVideos';
 import { parseChapterBlocks, tableOfContents } from './_lib/parseBlocks';
 import { smartCase, hasUrdu, shortTitle, topicFromSeries } from './_lib/text';
 import { SpeechProvider, ListenControls, ListenSettings, SpeakButton, useSpeech } from './_components/Speech';
@@ -148,6 +149,7 @@ function NotesReader() {
   const [theme, setTheme] = useState<ReaderTheme>('light');
   const [fontSize, setFontSize] = useState<FontSize>('normal');
   const [practice, setPractice] = useState(false);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
   const chapterRef = useRef(chapterId);
   chapterRef.current = chapterId;
 
@@ -244,6 +246,7 @@ function NotesReader() {
 
   useEffect(() => {
     stopSpeech();
+    setShowVideoPlayer(false);
   }, [chapterId, stopSpeech]);
 
   const openChapter = useCallback((sId: string, cId: string) => {
@@ -279,6 +282,7 @@ function NotesReader() {
   const { topic, lessons } = topicFromSeries(series && series.type === 'series' ? series.subText : undefined);
   const nameOf = (ch: Chapter) => shortTitle(chapterLabel(ch), subject?.name);
   const heading = chapter ? topic || nameOf(chapter) : '';
+  const chapterVideo = useMemo(() => getChapterVideo(chapter?.id), [chapter?.id]);
 
   const hits: SearchHit[] = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -548,6 +552,58 @@ function NotesReader() {
                       >
                         <span aria-hidden>✍️</span> {practice ? 'Practice mode on' : 'Practice mode'}
                       </button>
+                    )}
+                  </div>
+                )}
+
+                {chapterVideo && (
+                  <div className="no-print mt-5 overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--page)]">
+                    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#cc0000] text-white"
+                          aria-hidden
+                        >
+                          <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-[12px] font-bold uppercase tracking-wide text-[var(--accent-strong)]">
+                            Video Lesson{chapterVideo.duration ? ` • ${chapterVideo.duration}` : ''}
+                          </p>
+                          <p className="truncate text-[14px] font-bold text-[var(--ink)]">{chapterVideo.title}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowVideoPlayer((v) => !v)}
+                          aria-expanded={showVideoPlayer}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-1.5 text-[13px] font-bold text-white transition hover:bg-[var(--accent-strong)]"
+                        >
+                          {showVideoPlayer ? 'Hide Video' : 'Watch Here'}
+                        </button>
+                        <a
+                          href={chapterVideo.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--paper)] px-4 py-1.5 text-[13px] font-bold text-[var(--ink)] transition hover:border-[#cc0000] hover:text-[#cc0000]"
+                        >
+                          Open on YouTube
+                        </a>
+                      </div>
+                    </div>
+                    {showVideoPlayer && (
+                      <div className="aspect-video w-full border-t border-[var(--line)] bg-black">
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${chapterVideo.youtubeId}?rel=0`}
+                          title={chapterVideo.title}
+                          className="h-full w-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      </div>
                     )}
                   </div>
                 )}
